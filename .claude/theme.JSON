@@ -1,0 +1,304 @@
+{
+    "designSystem": {
+      "name": "Linear Design System",
+      "version": "2024",
+      "description": "Linear's design system uses LCH color space for theme generation with a focus on speed, clarity, and professional aesthetic",
+      
+      "colors": {
+        "brand": {
+          "primary": {
+            "magicBlue": "#5E6AD2",
+            "magicBlueRGB": "94, 106, 210",
+            "description": "Primary brand color - subtle desaturated blue"
+          },
+          "secondary": {
+            "mercuryWhite": "#F4F5F8",
+            "mercuryWhiteRGB": "244, 245, 248",
+            "description": "Light accent color"
+          },
+          "tertiary": {
+            "nordicGray": "#222326",
+            "nordicGrayRGB": "35, 35, 38",
+            "description": "Dark accent color"
+          }
+        },
+        "text": {
+          "primary": "#F7F8F8",
+          "secondary": "#95A2B3",
+          "white": "#FFFFFF",
+          "description": "Text colors used across typography styles"
+        },
+        "ui": {
+          "buttonBackground": "#4551B5",
+          "description": "UI element colors"
+        },
+        "themeGeneration": {
+          "colorSpace": "LCH",
+          "coreVariables": {
+            "baseColor": "User-defined or theme-specific",
+            "accentColor": "User-defined or theme-specific",
+            "contrast": "User-defined contrast level (supports high-contrast for accessibility)"
+          },
+          "description": "Linear uses LCH color space instead of HSL for perpetually uniform color generation, allowing only 3 variables to generate 98+ theme colors"
+        },
+        "customThemes": {
+          "ash": {
+            "base": "#FFFFFF",
+            "text": "#44494D",
+            "surface": "#EDEEF3",
+            "secondaryText": "#44494D",
+            "accent": "#475BA1",
+            "highlight": "#FFFFFF"
+          },
+          "midnight": {
+            "base": "#0F0F10",
+            "text": "#EEEFF1",
+            "surface": "#151516",
+            "secondaryText": "#EEEFF1",
+            "accent": "#D25E65",
+            "highlight": "#FFFFFF"
+          },
+          "dawn": {
+            "base": "#2A222E",
+            "text": "#EEEFF1",
+            "surface": "#382A3C",
+            "secondaryText": "#EEEFF1",
+            "accent": "#A84376",
+            "highlight": "#FFFFFF"
+          }
+        }
+      },
+  
+      "typography": {
+        "fontFamily": {
+          "primary": "\"Inter UI\", \"SF Pro Display\", -apple-system, system-ui, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "application": {
+            "headings": "Inter Display",
+            "body": "Inter"
+          }
+        },
+        "typeScale": {
+          "header1": {
+            "fontSize": "12px",
+            "fontWeight": "600",
+            "letterSpacing": "11px",
+            "lineHeight": "15px",
+            "textTransform": "uppercase",
+            "color": "#95A2B3",
+            "fontStyle": "normal"
+          },
+          "header2": {
+            "fontSize": "62px",
+            "fontWeight": "800",
+            "letterSpacing": "normal",
+            "lineHeight": "72px",
+            "textTransform": "none",
+            "color": "#F7F8F8",
+            "fontStyle": "normal"
+          },
+          "content1": {
+            "fontSize": "20px",
+            "fontWeight": "400",
+            "letterSpacing": "normal",
+            "lineHeight": "31px",
+            "textTransform": "none",
+            "color": "#95A2B3",
+            "fontStyle": "normal"
+          },
+          "content2": {
+            "fontSize": "15px",
+            "fontWeight": "400",
+            "letterSpacing": "normal",
+            "lineHeight": "normal",
+            "textTransform": "none",
+            "color": "#FFFFFF",
+            "fontStyle": "normal"
+          },
+          "content3": {
+            "fontSize": "14px",
+            "fontWeight": "600",
+            "letterSpacing": "normal",
+            "lineHeight": "normal",
+            "textTransform": "none",
+            "color": "#FFFFFF",
+            "backgroundColor": "#4551B5",
+            "fontStyle": "normal"
+          }
+        },
+        "fontWeights": {
+          "regular": "400",
+          "semiBold": "600",
+          "extraBold": "800"
+        }
+      },
+  
+      "spacing": {
+        "description": "Linear uses a consistent spacing system focused on density and hierarchy",
+        "scale": {
+          "xs": "0.25rem",
+          "sm": "0.5rem",
+          "md": "1rem",
+          "lg": "1.5rem",
+          "xl": "2rem",
+          "2xl": "3rem"
+        }
+      },
+  
+      "borders": {
+        "radius": {
+          "icon": "appropriate corner radius for chip design",
+          "description": "Rounded corners used for icons and UI elements"
+        },
+        "width": {
+          "default": "1px",
+          "description": "Standard border width"
+        }
+      },
+  
+      "shadows": {
+        "description": "Elevation system for surfaces using LCH color space calculations",
+        "elevation": {
+          "background": "Base level with no shadow",
+          "foreground": "Slight elevation",
+          "panel": "Medium elevation",
+          "dialog": "Higher elevation",
+          "modal": "Highest elevation"
+        }
+      },
+  
+      "gradients": {
+        "style": "Linear style design",
+        "characteristics": [
+          "Angular gradients with blur effects",
+          "Dark background base",
+          "Dynamic streamers",
+          "Micro-motion effects"
+        ],
+        "example": {
+          "colors": ["#08AEEA", "#2AF598", "#B5FFFC", "#FF5ACD", "#FFFFFF"],
+          "type": "angular",
+          "blur": "layer blur effect applied",
+          "description": "Purple/blue gradient sphere commonly used in branding"
+        },
+        "implementation": "Uses CSS linear-gradient with angular positioning and blur filters"
+      },
+  
+      "animations": {
+        "philosophy": "Subtle, smooth micro-animations",
+        "characteristics": [
+          "Fast execution",
+          "Smooth transitions",
+          "Performance-focused",
+          "Natural motion"
+        ],
+        "timing": {
+          "fast": "150ms",
+          "base": "300ms",
+          "slow": "500ms",
+          "description": "Animation duration values for different interaction types"
+        },
+        "easing": {
+          "default": "ease-in-out",
+          "enter": "ease-out",
+          "exit": "ease-in",
+          "description": "Easing functions for natural motion"
+        }
+      },
+  
+      "breakpoints": {
+        "mobile": "375px",
+        "tablet": "768px",
+        "desktop": "1024px",
+        "wide": "1440px",
+        "description": "Responsive design breakpoints"
+      },
+  
+      "componentLibrary": {
+        "framework": "Radix Primitives",
+        "description": "Linear uses Radix Primitives for accessibility-compliant UI components in their design system called 'Orbiter'",
+        "components": [
+          "Sidebar",
+          "Tabs",
+          "Headers (app headers, view headers)",
+          "Panels",
+          "Dialogs",
+          "Modals",
+          "Buttons",
+          "Filters"
+        ]
+      },
+  
+      "designPrinciples": {
+        "focus": "Relentless focus",
+        "speed": "Fast execution and performance",
+        "craft": "Quality of craft and attention to detail",
+        "clarity": "Reduce visual noise, maintain alignment",
+        "hierarchy": "Increase hierarchy and density",
+        "timelessness": "Neutral and timeless appearance",
+        "professional": "Professional aesthetic for engineers"
+      },
+  
+      "darkMode": {
+        "supported": true,
+        "primary": true,
+        "description": "Dark mode is the primary design mode, based on black coding environments engineers prefer",
+        "benefits": [
+          "Minimizes battery drain",
+          "Reduces eye strain",
+          "Professional appearance"
+        ]
+      },
+  
+      "accessibility": {
+        "colorContrast": "Improved contrast in redesign",
+        "highContrast": "Supports super high-contrast themes via contrast variable",
+        "primitives": "Uses Radix Primitives for accessibility compliance",
+        "textReadability": "Darker text in light mode, lighter in dark mode"
+      },
+  
+      "layout": {
+        "structure": "Inverted L-shape chrome",
+        "components": [
+          "Global sidebar",
+          "Tabs",
+          "App headers",
+          "View headers",
+          "Main content area",
+          "Side panels for meta properties"
+        ],
+        "views": [
+          "List",
+          "Board",
+          "Timeline",
+          "Split",
+          "Fullscreen"
+        ]
+      },
+  
+      "cssVariables": {
+        "description": "Linear generates theme colors from 3 core CSS variables using LCH color space",
+        "coreVariables": {
+          "--base-color": "Background color",
+          "--accent-color": "Accent/brand color",
+          "--contrast": "Contrast level (30 default)"
+        },
+        "generatedCount": "98+ variables generated from core 3",
+        "aliases": [
+          "surfaces",
+          "texts",
+          "icons",
+          "controls",
+          "borders",
+          "elevated elements",
+          "translucent parts"
+        ]
+      },
+  
+      "implementation": {
+        "platform": "Electron (Web + Desktop)",
+        "browsers": ["macOS", "Windows", "Chrome", "Firefox", "Safari", "Edge"],
+        "responsive": true,
+        "progressive": true
+      }
+    }
+  }

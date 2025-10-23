@@ -1,0 +1,66 @@
+# Virtual Environment
+~/venv/
+venv/
+env/
+
+# Node Modules
+~/node_modules/
+node_modules/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+*.so
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git Cleanup Reports
+...bfg-report/
+..bfg-report/
+
+# Test Outputs
+screenshots/
+logs/
+outputs/
+.playwright-mcp/
+samples_image/
+
+# Data Backups (keep production data)
+app/data/backups/
+data/backups/
+
+# Model Files (large files)
+*.h5
+*.onnx
+*.pkl
+*.npy
+app/data/models/*.h5
+app/data/models/*.pkl
+data/models/*.h5
+data/models/*.pkl
+
+# CSV Data (optional - comment out if you want to track data)
+*.csv
+!config/*.csv
+
+# Archive
+archive/
+
+# Temporary Files
+*.tmp
+*.temp
+*.log

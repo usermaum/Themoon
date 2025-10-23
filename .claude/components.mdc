@@ -1,0 +1,1008 @@
+---
+alwaysApply: true
+---
+
+# Lotto AI WebApp Project - Cursor Rules
+
+## 프로젝트 개요
+이 프로젝트는 로또 6/45 번호 예측을 위한 AI 기반 웹 애플리케이션입니다. Streamlit과 Linear Design System을 사용하여 구축되었습니다.
+
+## 🏗️ 프로젝트 전체 구조
+
+### 📁 디렉토리 구조
+```
+Lotto_AI_WebApp_ProJect/
+├── app/                        # 웹 애플리케이션 (메인)
+│   ├── main.py                 # 메인 프로덕션 페이지 (Linear Design System)
+│   ├── lotto_web.py            # 기존 테스트 페이지
+│   ├── data/                   # 앱 데이터 디렉토리
+│   │   ├── lotto.db            # SQLite 데이터베이스
+│   │   ├── raw/                # 원본 CSV 데이터
+│   │   ├── backups/            # 데이터베이스 백업
+│   │   └── models/             # AI 모델 파일
+│   ├── screenshots/            # 테스트 스크린샷
+│   ├── playwright_test.py      # 자동화 테스트
+│   ├── run.sh                  # 실행 스크립트 (Linux/Mac)
+│   └── run.bat                 # 실행 스크립트 (Windows)
+│
+├── modules/                    # 핵심 모듈
+│   ├── lotto/                  # 로또 분석 라이브러리
+│   │   ├── models/             # AI 모델들
+│   │   │   ├── lstm_predictor.py
+│   │   │   ├── transformer_predictor.py
+│   │   │   ├── prophet_predictor.py
+│   │   │   └── ensemble_predictor.py
+│   │   ├── model_manager.py    # 모델 통합 관리
+│   │   ├── performance_monitor.py # 성능 모니터링
+│   │   ├── hyperparameter_tuner.py # 하이퍼파라미터 튜닝
+│   │   ├── realtime_learner.py # 실시간 학습
+│   │   ├── ab_testing.py       # A/B 테스트
+│   │   ├── user_feedback.py    # 사용자 피드백
+│   │   ├── data.py             # 데이터 수집
+│   │   ├── analysis.py         # 통계 분석
+│   │   ├── visualization.py    # 시각화
+│   │   └── ui_components.py    # UI 컴포넌트
+│   │
+│   └── settings/               # 설정 모듈
+│       ├── database.py         # DB 관리
+│       ├── auth.py             # 인증
+│       └── admin/              # 관리자 기능
+│           ├── admin_page.py
+│           ├── data_manager.py
+│           └── user_manager.py
+│
+├── components/                 # Linear Design System UI 컴포넌트
+│   ├── __init__.py
+│   ├── theme.py                # 테마 시스템
+│   ├── button.py               # 버튼
+│   ├── card.py                 # 카드
+│   ├── input.py                # 입력 필드
+│   ├── layout.py               # 레이아웃
+│   ├── navbar.py               # 네비게이션
+│   ├── hero.py                 # Hero 섹션
+│   ├── footer.py               # 푸터
+│   ├── chart.py                # 차트
+│   └── chart_js.py             # Chart.js 래퍼
+│
+├── templates/                  # 페이지 템플릿
+│   ├── page_template.py        # 기본 페이지 템플릿
+│   ├── simple_page_template.py # 간단한 페이지 템플릿
+│   └── demo_test.py            # 데모 테스트 페이지
+│
+├── scripts/                    # 유틸리티 스크립트
+│   ├── component_helper.py     # 컴포넌트 도우미
+│   └── test_components.py      # 컴포넌트 테스트
+│
+├── test/                       # 테스트 (구버전 보관)
+│   ├── lotto_web.py
+│   ├── data/
+│   └── ...
+│
+├── unity-mcp/                  # Unity MCP 통합
+├── config/                     # 설정 파일
+├── requirements.txt            # Python 의존성
+├── .cursorrules               # 이 파일
+├── ARCHITECTURE.md            # 아키텍처 문서
+├── PROJECT_STRUCTURE.md       # 프로젝트 구조 문서
+└── README.md                  # 프로젝트 README
+```
+
+## 핵심 아키텍처
+
+### 1. 디자인 시스템
+- **Linear Design System** 사용 필수
+- 모든 UI 컴포넌트는 `components/` 모듈에서 import
+- 일관된 디자인 토큰과 스타일링 적용
+
+### 2. AI 모델 구조
+- **4가지 AI 모델** 구현: LSTM, Transformer, Prophet, Ensemble
+- 모든 모델은 `modules/lotto/models/` 디렉토리에 위치
+- ModelManager를 통한 통합 관리
+
+### 3. 데이터베이스 구조
+- SQLite 데이터베이스 사용 (`app/data/lotto.db`)
+- 사용자 인증, 예측 결과, 성능 모니터링 테이블 포함
+
+## 필수 컴포넌트 사용 규칙
+
+### UI 컴포넌트 (Linear Design System)
+```python
+# 필수 import
+from components.layout import Container, Section, Panel
+from components.button import Button
+from components.card import Card
+from components.chart_js import render_frequency_chart
+
+# 사용 예시
+with Container.render(max_width="1400px", padding="xl"):
+    with Section.render("제목", "설명"):
+        with Panel.render("패널 제목", padding="xl", elevation="dialog"):
+            # 내용
+```
+
+### AI 모델 컴포넌트
+```python
+# 모델 매니저 사용
+from modules.lotto.model_manager import ModelManager
+
+# 성능 모니터링
+from modules.lotto.performance_monitor import PerformanceMonitor
+
+# 하이퍼파라미터 튜닝
+from modules.lotto.hyperparameter_tuner import HyperparameterTuner
+
+# A/B 테스트
+from modules.lotto.ab_testing import ABTestManager, create_ensemble_weight_test
+
+# 사용자 피드백
+from modules.lotto.user_feedback import UserFeedbackManager, FeedbackType
+
+# 인증 관리
+from modules.settings.auth import get_auth_manager
+```
+
+### 차트 컴포넌트
+```python
+# Chart.js 컴포넌트 사용
+from components.chart_js import (
+    render_frequency_chart,
+    render_odd_even_chart,
+    render_sum_trend_chart
+)
+
+# 사용 예시
+chart_html = render_frequency_chart(freq_dist, "번호별 출현 빈도")
+st.components.v1.html(chart_html, height=500)
+```
+
+## 코딩 규칙
+
+### 1. 파일 구조
+```
+Lotto_AI_WebApp_ProJect/
+├── app/                       # 웹 애플리케이션 (메인)
+│   ├── main.py                # 메인 애플리케이션
+│   ├── lotto_web.py           # 기존 테스트 페이지
+│   └── data/
+│       └── lotto.db           # SQLite 데이터베이스
+├── components/                # Linear Design System
+│   ├── layout.py              # 레이아웃 컴포넌트
+│   ├── button.py              # 버튼 컴포넌트
+│   ├── card.py                # 카드 컴포넌트
+│   └── chart_js.py            # Chart.js 컴포넌트
+├── modules/                   # 핵심 모듈
+│   ├── lotto/
+│   │   ├── models/            # AI 모델들
+│   │   ├── model_manager.py   # 모델 통합 관리
+│   │   ├── performance_monitor.py
+│   │   ├── hyperparameter_tuner.py
+│   │   ├── realtime_learner.py
+│   │   ├── ab_testing.py
+│   │   └── user_feedback.py
+│   └── settings/              # 설정 및 인증
+├── templates/                 # 페이지 템플릿
+│   ├── page_template.py       # 기본 페이지 템플릿
+│   └── simple_page_template.py # 간단한 페이지 템플릿
+└── requirements.txt
+```
+
+### 2. 네이밍 컨벤션
+- **클래스**: PascalCase (예: `ModelManager`, `PerformanceMonitor`)
+- **함수/변수**: snake_case (예: `get_model_performance`, `user_id`)
+- **상수**: UPPER_SNAKE_CASE (예: `DB_PATH`, `MAX_RETRIES`)
+- **파일명**: snake_case (예: `model_manager.py`, `user_feedback.py`)
+
+### 3. 에러 처리
+```python
+# 모든 AI 모델 호출에 try-catch 적용
+try:
+    predicted = manager.predict_lstm(top_k=6)
+    st.success("예측 완료!")
+except Exception as e:
+    st.error(f"예측 실패: {e}")
+    logger.error(f"LSTM prediction failed: {e}")
+```
+
+### 4. 로깅
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+# 중요한 작업에 로깅 추가
+logger.info("Starting model training...")
+logger.error(f"Training failed: {e}")
+```
+
+## AI 모델 사용 규칙
+
+### 1. 모델 예측
+```python
+# ModelManager를 통한 통합 예측
+manager = ModelManager(db_path="app/data/lotto.db")
+
+# 개별 모델 예측
+lstm_pred = manager.predict_lstm(top_k=6)
+transformer_pred = manager.predict_transformer(top_k=6)
+prophet_pred = manager.predict_prophet(top_k=6)
+ensemble_pred = manager.predict_ensemble(top_k=6)
+```
+
+### 2. 모델 학습
+```python
+# 자동 학습 (DB에 모델이 없을 때)
+if not manager.load_model_from_db('LSTM'):
+    manager.train_lstm(sequence_length=10, epochs=20, batch_size=32)
+```
+
+### 3. 성능 모니터링
+```python
+# 성능 추적
+performance_monitor = PerformanceMonitor(DB_PATH)
+performance_monitor.record_prediction('LSTM', predicted_numbers)
+performance_monitor.update_actual_results(record_id, actual_numbers)
+```
+
+## 데이터베이스 규칙
+
+### 1. 연결 관리
+```python
+# 항상 context manager 사용
+with sqlite3.connect(self.db_path) as conn:
+    cursor = conn.cursor()
+    # 쿼리 실행
+    conn.commit()
+```
+
+### 2. 테이블 구조
+- `users`: 사용자 정보
+- `lotto_draws`: 로또 당첨 번호
+- `user_predictions`: 사용자 예측 결과
+- `ai_models`: AI 모델 가중치
+- `model_performance`: 모델 성능 추적
+- `user_feedback`: 사용자 피드백
+
+## UI/UX 규칙
+
+### 1. 반응형 디자인
+```python
+# 반응형 그리드 사용
+perf_cols = Grid.render(columns=4, gap='md')
+with perf_cols[0]:
+    # 내용
+```
+
+### 2. 사용자 피드백
+```python
+# 모든 예측 결과에 피드백 기능 추가
+rating = st.selectbox("예측 만족도 (1-5점)", [1, 2, 3, 4, 5])
+comment = st.text_area("의견이나 제안사항을 남겨주세요")
+```
+
+### 3. 로딩 상태
+```python
+# 시간이 걸리는 작업에 스피너 추가
+with st.spinner("모델 학습 중..."):
+    manager.train_lstm()
+```
+
+## 보안 규칙
+
+### 1. 사용자 인증
+```python
+# 모든 보호된 페이지에 인증 확인
+if not auth.is_authenticated():
+    st.error("로그인이 필요합니다.")
+    return
+
+# 관리자 권한 확인
+if not auth.is_admin():
+    st.error("관리자 권한이 필요합니다.")
+    return
+```
+
+### 2. 데이터 검증
+```python
+# 사용자 입력 검증
+if not user_input or len(user_input) < 4:
+    st.error("올바른 입력을 해주세요.")
+    return
+```
+
+## 성능 최적화 규칙
+
+### 1. 모델 캐싱
+```python
+# 모델을 한 번만 로드하고 재사용
+@st.cache_resource
+def load_model_manager():
+    return ModelManager(DB_PATH)
+```
+
+### 2. 데이터 캐싱
+```python
+# 자주 사용되는 데이터 캐싱
+@st.cache_data
+def load_lotto_data():
+    return processor.load_data()
+```
+
+## 테스트 규칙
+
+### 1. 단위 테스트
+- 모든 새로운 모델에 대한 단위 테스트 작성
+- 성능 모니터링 함수 테스트
+- 데이터 검증 로직 테스트
+
+### 2. 통합 테스트
+- 전체 예측 파이프라인 테스트
+- 사용자 인증 플로우 테스트
+- 데이터베이스 연동 테스트
+
+## 문서화 규칙
+
+### 1. 함수 문서화
+```python
+def predict_lstm(self, top_k: int = 6) -> List[int]:
+    """
+    LSTM 모델을 사용한 로또 번호 예측
+    
+    Args:
+        top_k: 예측할 번호 개수 (기본값: 6)
+        
+    Returns:
+        List[int]: 예측된 로또 번호 리스트 [1-45]
+        
+    Raises:
+        ValueError: 학습된 모델이 없을 때
+    """
+```
+
+### 2. 클래스 문서화
+```python
+class ModelManager:
+    """
+    AI 모델 통합 관리 클래스
+    
+    Features:
+    - 모델 학습 및 예측
+    - 데이터베이스 저장/로드
+    - 성능 모니터링
+    """
+```
+
+## 가상환경 규칙
+
+### 1. 가상환경 사용
+- **위치**: `~/venv` (홈 디렉토리)
+- **프로젝트별 설치 금지**: 각 프로젝트 내부에 venv 생성하지 않음
+- **공유 사용**: 모든 프로젝트에서 동일한 venv 사용
+
+### 2. 가상환경 활성화
+```bash
+# WSL/Linux 환경
+source ~/venv/bin/activate
+
+# Windows 환경 (Git Bash)
+source ~/venv/Scripts/activate
+```
+
+### 3. 의존성 관리
+```bash
+# 가상환경 활성화 후
+pip install -r requirements.txt
+
+# 새 패키지 설치
+pip install package_name
+
+# requirements.txt 업데이트
+pip freeze > requirements.txt
+```
+
+### 4. 프로젝트 실행
+```bash
+# 가상환경 활성화
+source ~/venv/bin/activate
+
+# 프로젝트 디렉토리로 이동
+cd /mnt/d/Ai/WslProject/Lotto_AI_WebApp_ProJect
+
+# 메인 애플리케이션 실행
+streamlit run app/main.py --server.port 8501
+
+# 기존 테스트 페이지 실행
+streamlit run app/lotto_web.py --server.port 8502
+
+# 페이지 템플릿 실행
+streamlit run templates/page_template.py --server.port 8503
+
+# 데모 테스트 실행
+streamlit run templates/demo_test.py --server.port 8504
+```
+
+## 배포 규칙
+
+### 1. 의존성 관리
+- `requirements.txt`에 모든 의존성 명시
+- 버전 고정으로 안정성 확보
+- `~/venv`에서 의존성 관리
+
+### 2. 환경 변수
+```python
+# 민감한 정보는 환경 변수 사용
+DB_PATH = os.getenv('DB_PATH', 'app/data/lotto.db')
+```
+
+## 코드 리뷰 체크리스트
+
+- [ ] Linear Design System 컴포넌트 사용
+- [ ] 적절한 에러 처리 및 로깅
+- [ ] 사용자 인증 확인
+- [ ] 데이터 검증
+- [ ] 성능 최적화 (캐싱)
+- [ ] 문서화 완료
+- [ ] 테스트 케이스 작성
+
+## 🎯 주요 실행 방법
+
+### 1. 메인 애플리케이션
+```bash
+# 메인 프로덕션 앱 (권장)
+streamlit run app/main.py --server.port 8501
+```
+
+### 2. 페이지 템플릿
+```bash
+# 기본 페이지 템플릿
+streamlit run templates/page_template.py --server.port 8503
+
+# 간단한 페이지 템플릿
+streamlit run templates/simple_page_template.py --server.port 8504
+
+# 데모 테스트 페이지
+streamlit run templates/demo_test.py --server.port 8505
+```
+
+### 3. 직접 Python 실행
+```bash
+# PYTHONPATH 설정 후 직접 실행
+PYTHONPATH=. python templates/page_template.py
+```
+
+## 🚀 개발 워크플로우
+
+### 1. 새 페이지 생성
+1. `templates/page_template.py` 복사
+2. 새 페이지명으로 파일명 변경
+3. 필요한 컴포넌트 import 수정
+4. 페이지별 로직 구현
+
+### 2. 새 컴포넌트 추가
+1. `components/` 디렉토리에 새 파일 생성
+2. Linear Design System 스타일 적용
+3. `__init__.py`에 export 추가
+4. VS Code 스니펫 업데이트
+
+### 3. 새 AI 모델 추가
+1. `modules/lotto/models/` 디렉토리에 새 모델 클래스 생성
+2. `ModelManager`에 새 모델 메서드 추가
+3. UI에 새 모델 버튼 추가
+4. 성능 모니터링 연동
+
+## 주의사항
+
+1. **절대 하지 말 것**:
+   - 하드코딩된 비밀번호나 API 키
+   - 예외 처리 없는 AI 모델 호출
+   - 사용자 인증 없이 보호된 기능 접근
+   - 프로젝트 내부에 venv 생성 (반드시 ~/venv 사용)
+
+2. **반드시 해야 할 것**:
+   - 모든 사용자 입력 검증
+   - 적절한 로깅 및 에러 처리
+   - Linear Design System 컴포넌트 사용
+   - 데이터베이스 연결 관리
+   - PYTHONPATH 설정으로 모듈 import 문제 해결
+
+이 규칙들을 따라 일관성 있고 유지보수 가능한 코드를 작성하세요.
+# Lotto AI WebApp Project - Cursor Rules
+
+## 프로젝트 개요
+이 프로젝트는 로또 6/45 번호 예측을 위한 AI 기반 웹 애플리케이션입니다. Streamlit과 Linear Design System을 사용하여 구축되었습니다.
+
+## 🏗️ 프로젝트 전체 구조
+
+### 📁 디렉토리 구조
+```
+Lotto_AI_WebApp_ProJect/
+├── app/                        # 웹 애플리케이션 (메인)
+│   ├── main.py                 # 메인 프로덕션 페이지 (Linear Design System)
+│   ├── lotto_web.py            # 기존 테스트 페이지
+│   ├── data/                   # 앱 데이터 디렉토리
+│   │   ├── lotto.db            # SQLite 데이터베이스
+│   │   ├── raw/                # 원본 CSV 데이터
+│   │   ├── backups/            # 데이터베이스 백업
+│   │   └── models/             # AI 모델 파일
+│   ├── screenshots/            # 테스트 스크린샷
+│   ├── playwright_test.py      # 자동화 테스트
+│   ├── run.sh                  # 실행 스크립트 (Linux/Mac)
+│   └── run.bat                 # 실행 스크립트 (Windows)
+│
+├── modules/                    # 핵심 모듈
+│   ├── lotto/                  # 로또 분석 라이브러리
+│   │   ├── models/             # AI 모델들
+│   │   │   ├── lstm_predictor.py
+│   │   │   ├── transformer_predictor.py
+│   │   │   ├── prophet_predictor.py
+│   │   │   └── ensemble_predictor.py
+│   │   ├── model_manager.py    # 모델 통합 관리
+│   │   ├── performance_monitor.py # 성능 모니터링
+│   │   ├── hyperparameter_tuner.py # 하이퍼파라미터 튜닝
+│   │   ├── realtime_learner.py # 실시간 학습
+│   │   ├── ab_testing.py       # A/B 테스트
+│   │   ├── user_feedback.py    # 사용자 피드백
+│   │   ├── data.py             # 데이터 수집
+│   │   ├── analysis.py         # 통계 분석
+│   │   ├── visualization.py    # 시각화
+│   │   └── ui_components.py    # UI 컴포넌트
+│   │
+│   └── settings/               # 설정 모듈
+│       ├── database.py         # DB 관리
+│       ├── auth.py             # 인증
+│       └── admin/              # 관리자 기능
+│           ├── admin_page.py
+│           ├── data_manager.py
+│           └── user_manager.py
+│
+├── components/                 # Linear Design System UI 컴포넌트
+│   ├── __init__.py
+│   ├── theme.py                # 테마 시스템
+│   ├── button.py               # 버튼
+│   ├── card.py                 # 카드
+│   ├── input.py                # 입력 필드
+│   ├── layout.py               # 레이아웃
+│   ├── navbar.py               # 네비게이션
+│   ├── hero.py                 # Hero 섹션
+│   ├── footer.py               # 푸터
+│   ├── chart.py                # 차트
+│   └── chart_js.py             # Chart.js 래퍼
+│
+├── templates/                  # 페이지 템플릿
+│   ├── page_template.py        # 기본 페이지 템플릿
+│   ├── simple_page_template.py # 간단한 페이지 템플릿
+│   └── demo_test.py            # 데모 테스트 페이지
+│
+├── scripts/                    # 유틸리티 스크립트
+│   ├── component_helper.py     # 컴포넌트 도우미
+│   └── test_components.py      # 컴포넌트 테스트
+│
+├── test/                       # 테스트 (구버전 보관)
+│   ├── lotto_web.py
+│   ├── data/
+│   └── ...
+│
+├── unity-mcp/                  # Unity MCP 통합
+├── config/                     # 설정 파일
+├── requirements.txt            # Python 의존성
+├── .cursorrules               # 이 파일
+├── ARCHITECTURE.md            # 아키텍처 문서
+├── PROJECT_STRUCTURE.md       # 프로젝트 구조 문서
+└── README.md                  # 프로젝트 README
+```
+
+## 핵심 아키텍처
+
+### 1. 디자인 시스템
+- **Linear Design System** 사용 필수
+- 모든 UI 컴포넌트는 `components/` 모듈에서 import
+- 일관된 디자인 토큰과 스타일링 적용
+
+### 2. AI 모델 구조
+- **4가지 AI 모델** 구현: LSTM, Transformer, Prophet, Ensemble
+- 모든 모델은 `modules/lotto/models/` 디렉토리에 위치
+- ModelManager를 통한 통합 관리
+
+### 3. 데이터베이스 구조
+- SQLite 데이터베이스 사용 (`app/data/lotto.db`)
+- 사용자 인증, 예측 결과, 성능 모니터링 테이블 포함
+
+## 필수 컴포넌트 사용 규칙
+
+### UI 컴포넌트 (Linear Design System)
+```python
+# 필수 import
+from components.layout import Container, Section, Panel
+from components.button import Button
+from components.card import Card
+from components.chart_js import render_frequency_chart
+
+# 사용 예시
+with Container.render(max_width="1400px", padding="xl"):
+    with Section.render("제목", "설명"):
+        with Panel.render("패널 제목", padding="xl", elevation="dialog"):
+            # 내용
+```
+
+### AI 모델 컴포넌트
+```python
+# 모델 매니저 사용
+from modules.lotto.model_manager import ModelManager
+
+# 성능 모니터링
+from modules.lotto.performance_monitor import PerformanceMonitor
+
+# 하이퍼파라미터 튜닝
+from modules.lotto.hyperparameter_tuner import HyperparameterTuner
+
+# A/B 테스트
+from modules.lotto.ab_testing import ABTestManager, create_ensemble_weight_test
+
+# 사용자 피드백
+from modules.lotto.user_feedback import UserFeedbackManager, FeedbackType
+
+# 인증 관리
+from modules.settings.auth import get_auth_manager
+```
+
+### 차트 컴포넌트
+```python
+# Chart.js 컴포넌트 사용
+from components.chart_js import (
+    render_frequency_chart,
+    render_odd_even_chart,
+    render_sum_trend_chart
+)
+
+# 사용 예시
+chart_html = render_frequency_chart(freq_dist, "번호별 출현 빈도")
+st.components.v1.html(chart_html, height=500)
+```
+
+## 코딩 규칙
+
+### 1. 파일 구조
+```
+Lotto_AI_WebApp_ProJect/
+├── app/                       # 웹 애플리케이션 (메인)
+│   ├── main.py                # 메인 애플리케이션
+│   ├── lotto_web.py           # 기존 테스트 페이지
+│   └── data/
+│       └── lotto.db           # SQLite 데이터베이스
+├── components/                # Linear Design System
+│   ├── layout.py              # 레이아웃 컴포넌트
+│   ├── button.py              # 버튼 컴포넌트
+│   ├── card.py                # 카드 컴포넌트
+│   └── chart_js.py            # Chart.js 컴포넌트
+├── modules/                   # 핵심 모듈
+│   ├── lotto/
+│   │   ├── models/            # AI 모델들
+│   │   ├── model_manager.py   # 모델 통합 관리
+│   │   ├── performance_monitor.py
+│   │   ├── hyperparameter_tuner.py
+│   │   ├── realtime_learner.py
+│   │   ├── ab_testing.py
+│   │   └── user_feedback.py
+│   └── settings/              # 설정 및 인증
+├── templates/                 # 페이지 템플릿
+│   ├── page_template.py       # 기본 페이지 템플릿
+│   └── simple_page_template.py # 간단한 페이지 템플릿
+└── requirements.txt
+```
+
+### 2. 네이밍 컨벤션
+- **클래스**: PascalCase (예: `ModelManager`, `PerformanceMonitor`)
+- **함수/변수**: snake_case (예: `get_model_performance`, `user_id`)
+- **상수**: UPPER_SNAKE_CASE (예: `DB_PATH`, `MAX_RETRIES`)
+- **파일명**: snake_case (예: `model_manager.py`, `user_feedback.py`)
+
+### 3. 에러 처리
+```python
+# 모든 AI 모델 호출에 try-catch 적용
+try:
+    predicted = manager.predict_lstm(top_k=6)
+    st.success("예측 완료!")
+except Exception as e:
+    st.error(f"예측 실패: {e}")
+    logger.error(f"LSTM prediction failed: {e}")
+```
+
+### 4. 로깅
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+# 중요한 작업에 로깅 추가
+logger.info("Starting model training...")
+logger.error(f"Training failed: {e}")
+```
+
+## AI 모델 사용 규칙
+
+### 1. 모델 예측
+```python
+# ModelManager를 통한 통합 예측
+manager = ModelManager(db_path="app/data/lotto.db")
+
+# 개별 모델 예측
+lstm_pred = manager.predict_lstm(top_k=6)
+transformer_pred = manager.predict_transformer(top_k=6)
+prophet_pred = manager.predict_prophet(top_k=6)
+ensemble_pred = manager.predict_ensemble(top_k=6)
+```
+
+### 2. 모델 학습
+```python
+# 자동 학습 (DB에 모델이 없을 때)
+if not manager.load_model_from_db('LSTM'):
+    manager.train_lstm(sequence_length=10, epochs=20, batch_size=32)
+```
+
+### 3. 성능 모니터링
+```python
+# 성능 추적
+performance_monitor = PerformanceMonitor(DB_PATH)
+performance_monitor.record_prediction('LSTM', predicted_numbers)
+performance_monitor.update_actual_results(record_id, actual_numbers)
+```
+
+## 데이터베이스 규칙
+
+### 1. 연결 관리
+```python
+# 항상 context manager 사용
+with sqlite3.connect(self.db_path) as conn:
+    cursor = conn.cursor()
+    # 쿼리 실행
+    conn.commit()
+```
+
+### 2. 테이블 구조
+- `users`: 사용자 정보
+- `lotto_draws`: 로또 당첨 번호
+- `user_predictions`: 사용자 예측 결과
+- `ai_models`: AI 모델 가중치
+- `model_performance`: 모델 성능 추적
+- `user_feedback`: 사용자 피드백
+
+## UI/UX 규칙
+
+### 1. 반응형 디자인
+```python
+# 반응형 그리드 사용
+perf_cols = Grid.render(columns=4, gap='md')
+with perf_cols[0]:
+    # 내용
+```
+
+### 2. 사용자 피드백
+```python
+# 모든 예측 결과에 피드백 기능 추가
+rating = st.selectbox("예측 만족도 (1-5점)", [1, 2, 3, 4, 5])
+comment = st.text_area("의견이나 제안사항을 남겨주세요")
+```
+
+### 3. 로딩 상태
+```python
+# 시간이 걸리는 작업에 스피너 추가
+with st.spinner("모델 학습 중..."):
+    manager.train_lstm()
+```
+
+## 보안 규칙
+
+### 1. 사용자 인증
+```python
+# 모든 보호된 페이지에 인증 확인
+if not auth.is_authenticated():
+    st.error("로그인이 필요합니다.")
+    return
+
+# 관리자 권한 확인
+if not auth.is_admin():
+    st.error("관리자 권한이 필요합니다.")
+    return
+```
+
+### 2. 데이터 검증
+```python
+# 사용자 입력 검증
+if not user_input or len(user_input) < 4:
+    st.error("올바른 입력을 해주세요.")
+    return
+```
+
+## 성능 최적화 규칙
+
+### 1. 모델 캐싱
+```python
+# 모델을 한 번만 로드하고 재사용
+@st.cache_resource
+def load_model_manager():
+    return ModelManager(DB_PATH)
+```
+
+### 2. 데이터 캐싱
+```python
+# 자주 사용되는 데이터 캐싱
+@st.cache_data
+def load_lotto_data():
+    return processor.load_data()
+```
+
+## 테스트 규칙
+
+### 1. 단위 테스트
+- 모든 새로운 모델에 대한 단위 테스트 작성
+- 성능 모니터링 함수 테스트
+- 데이터 검증 로직 테스트
+
+### 2. 통합 테스트
+- 전체 예측 파이프라인 테스트
+- 사용자 인증 플로우 테스트
+- 데이터베이스 연동 테스트
+
+## 문서화 규칙
+
+### 1. 함수 문서화
+```python
+def predict_lstm(self, top_k: int = 6) -> List[int]:
+    """
+    LSTM 모델을 사용한 로또 번호 예측
+    
+    Args:
+        top_k: 예측할 번호 개수 (기본값: 6)
+        
+    Returns:
+        List[int]: 예측된 로또 번호 리스트 [1-45]
+        
+    Raises:
+        ValueError: 학습된 모델이 없을 때
+    """
+```
+
+### 2. 클래스 문서화
+```python
+class ModelManager:
+    """
+    AI 모델 통합 관리 클래스
+    
+    Features:
+    - 모델 학습 및 예측
+    - 데이터베이스 저장/로드
+    - 성능 모니터링
+    """
+```
+
+## 가상환경 규칙
+
+### 1. 가상환경 사용
+- **위치**: `~/venv` (홈 디렉토리)
+- **프로젝트별 설치 금지**: 각 프로젝트 내부에 venv 생성하지 않음
+- **공유 사용**: 모든 프로젝트에서 동일한 venv 사용
+
+### 2. 가상환경 활성화
+```bash
+# WSL/Linux 환경
+source ~/venv/bin/activate
+
+# Windows 환경 (Git Bash)
+source ~/venv/Scripts/activate
+```
+
+### 3. 의존성 관리
+```bash
+# 가상환경 활성화 후
+pip install -r requirements.txt
+
+# 새 패키지 설치
+pip install package_name
+
+# requirements.txt 업데이트
+pip freeze > requirements.txt
+```
+
+### 4. 프로젝트 실행
+```bash
+# 가상환경 활성화
+source ~/venv/bin/activate
+
+# 프로젝트 디렉토리로 이동
+cd /mnt/d/Ai/WslProject/Lotto_AI_WebApp_ProJect
+
+# 메인 애플리케이션 실행
+streamlit run app/main.py --server.port 8501
+
+# 기존 테스트 페이지 실행
+streamlit run app/lotto_web.py --server.port 8502
+
+# 페이지 템플릿 실행
+streamlit run templates/page_template.py --server.port 8503
+
+# 데모 테스트 실행
+streamlit run templates/demo_test.py --server.port 8504
+```
+
+## 배포 규칙
+
+### 1. 의존성 관리
+- `requirements.txt`에 모든 의존성 명시
+- 버전 고정으로 안정성 확보
+- `~/venv`에서 의존성 관리
+
+### 2. 환경 변수
+```python
+# 민감한 정보는 환경 변수 사용
+DB_PATH = os.getenv('DB_PATH', 'app/data/lotto.db')
+```
+
+## 코드 리뷰 체크리스트
+
+- [ ] Linear Design System 컴포넌트 사용
+- [ ] 적절한 에러 처리 및 로깅
+- [ ] 사용자 인증 확인
+- [ ] 데이터 검증
+- [ ] 성능 최적화 (캐싱)
+- [ ] 문서화 완료
+- [ ] 테스트 케이스 작성
+
+## 🎯 주요 실행 방법
+
+### 1. 메인 애플리케이션
+```bash
+# 메인 프로덕션 앱 (권장)
+streamlit run app/main.py --server.port 8501
+```
+
+### 2. 페이지 템플릿
+```bash
+# 기본 페이지 템플릿
+streamlit run templates/page_template.py --server.port 8503
+
+# 간단한 페이지 템플릿
+streamlit run templates/simple_page_template.py --server.port 8504
+
+# 데모 테스트 페이지
+streamlit run templates/demo_test.py --server.port 8505
+```
+
+### 3. 직접 Python 실행
+```bash
+# PYTHONPATH 설정 후 직접 실행
+PYTHONPATH=. python templates/page_template.py
+```
+
+## 🚀 개발 워크플로우
+
+### 1. 새 페이지 생성
+1. `templates/page_template.py` 복사
+2. 새 페이지명으로 파일명 변경
+3. 필요한 컴포넌트 import 수정
+4. 페이지별 로직 구현
+
+### 2. 새 컴포넌트 추가
+1. `components/` 디렉토리에 새 파일 생성
+2. Linear Design System 스타일 적용
+3. `__init__.py`에 export 추가
+4. VS Code 스니펫 업데이트
+
+### 3. 새 AI 모델 추가
+1. `modules/lotto/models/` 디렉토리에 새 모델 클래스 생성
+2. `ModelManager`에 새 모델 메서드 추가
+3. UI에 새 모델 버튼 추가
+4. 성능 모니터링 연동
+
+## 주의사항
+
+1. **절대 하지 말 것**:
+   - 하드코딩된 비밀번호나 API 키
+   - 예외 처리 없는 AI 모델 호출
+   - 사용자 인증 없이 보호된 기능 접근
+   - 프로젝트 내부에 venv 생성 (반드시 ~/venv 사용)
+
+2. **반드시 해야 할 것**:
+   - 모든 사용자 입력 검증
+   - 적절한 로깅 및 에러 처리
+   - Linear Design System 컴포넌트 사용
+   - 데이터베이스 연결 관리
+   - PYTHONPATH 설정으로 모듈 import 문제 해결
+
+이 규칙들을 따라 일관성 있고 유지보수 가능한 코드를 작성하세요.

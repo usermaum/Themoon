@@ -1,0 +1,13 @@
+# The Moon Drip BAR - Roasting Cost Calculator
+# 더문 드립바 로스팅 원가 계산기 의존성
+
+# Core
+streamlit==1.38.0
+pandas==2.2.3
+numpy==2.1.3
+
+# Visualization
+plotly==5.24.1
+
+# Utilities
+openpyxl==3.1.5
