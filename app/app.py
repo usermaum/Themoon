@@ -1,231 +1,321 @@
 """
-더문 드립바 로스팅 원가 계산기
-The Moon Drip BAR - Roasting Cost Calculator
-
-Streamlit Web Application for calculating roasting costs and profit margins
-for specialty coffee roasting business.
+더문드립바 웹 애플리케이션 - 메인 앱 (v2.0)
+The Moon Drip BAR - Roasting Management System
+Streamlit 멀티페이지 애플리케이션
 """
 
 import streamlit as st
-import pandas as pd
-import numpy as np
-import sqlite3
-from datetime import datetime
-import plotly.express as px
+import sys
 import os
+from datetime import datetime
 
-# Page Configuration
+# 프로젝트 경로 추가
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from models import SessionLocal, init_db
+from services.bean_service import BeanService
+from services.blend_service import BlendService
+from utils.constants import UI_CONFIG
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🎨 페이지 설정
+# ═══════════════════════════════════════════════════════════════════════════════
+
 st.set_page_config(
-    page_title="더문 로스팅 원가 계산기",
-    page_icon="☕",
+    page_title=UI_CONFIG["app_title"],
+    page_icon=UI_CONFIG["page_icon"],
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🎨 커스텀 스타일
+# ═══════════════════════════════════════════════════════════════════════════════
+
 st.markdown("""
 <style>
-    .main {
-        padding: 20px;
+    /* 주요 컬러 */
+    :root {
+        --primary: #1F4E78;
+        --secondary: #4472C4;
+        --success: #70AD47;
+        --danger: #C41E3A;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 10px 0;
+
+    /* 메인 헤더 */
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1F4E78;
+        margin-bottom: 0.5rem;
     }
-    h1 {
-        color: #2c3e50;
-        text-align: center;
+
+    .sub-header {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 1.5rem;
     }
-    h2 {
-        color: #34495e;
-        border-bottom: 3px solid #3498db;
-        padding-bottom: 10px;
+
+    /* 사이드바 */
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa;
+    }
+
+    /* 버튼 */
+    .stButton > button {
+        background-color: #4472C4 !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #1F4E78 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Database Path
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'Data', 'roasting_data.db')
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🔄 세션 상태 초기화
+# ═══════════════════════════════════════════════════════════════════════════════
 
-def init_database():
-    """Initialize SQLite database with required tables"""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+def init_session_state():
+    """세션 상태 초기화"""
+    if "db" not in st.session_state:
+        st.session_state.db = SessionLocal()
 
-    # Create roasting_logs table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS roasting_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            bean_name TEXT NOT NULL,
-            bean_code TEXT,
-            green_weight_kg REAL NOT NULL,
-            roasted_weight_kg REAL NOT NULL,
-            roasting_loss_rate REAL DEFAULT 16.7,
-            bean_cost_per_kg REAL NOT NULL,
-            roasting_cost_per_kg REAL DEFAULT 2000,
-            labor_cost REAL DEFAULT 15000,
-            electricity_cost REAL DEFAULT 5000,
-            misc_cost REAL DEFAULT 3000,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+    if "bean_service" not in st.session_state:
+        st.session_state.bean_service = BeanService(st.session_state.db)
 
-    # Create bean_prices table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS bean_prices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            bean_name TEXT UNIQUE NOT NULL,
-            price_per_kg REAL NOT NULL,
-            updated_date TEXT DEFAULT CURRENT_DATE
-        )
-    ''')
+    if "blend_service" not in st.session_state:
+        st.session_state.blend_service = BlendService(st.session_state.db)
 
-    # Create cost_settings table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS cost_settings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            parameter_name TEXT UNIQUE NOT NULL,
-            value REAL NOT NULL,
-            description TEXT
-        )
-    ''')
 
-    # Insert default cost settings
-    default_settings = [
-        ('roasting_loss_rate', 16.7, '로스팅 손실률 (%)'),
-        ('roasting_cost_per_kg', 2000, '킬로그램당 로스팅 비용 (₩)'),
-        ('labor_cost_per_hour', 15000, '시간당 인건비 (₩)'),
-        ('roasting_time_hours', 2, '로스팅 시간 (시간)'),
-        ('electricity_cost', 5000, '전기료 (₩)'),
-        ('misc_cost', 3000, '기타 비용 (₩)'),
-    ]
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🏠 헤더 및 사이드바
+# ═══════════════════════════════════════════════════════════════════════════════
 
-    for param_name, value, description in default_settings:
-        cursor.execute('''
-            INSERT OR IGNORE INTO cost_settings (parameter_name, value, description)
-            VALUES (?, ?, ?)
-        ''', (param_name, value, description))
+def render_header():
+    """헤더 렌더링"""
+    col1, col2 = st.columns([3, 1])
 
-    conn.commit()
-    conn.close()
+    with col1:
+        st.markdown(f'<p class="main-header">☕ {UI_CONFIG["app_title"]}</p>',
+                   unsafe_allow_html=True)
+        st.markdown(f'<p class="sub-header">{UI_CONFIG["app_subtitle"]}</p>',
+                   unsafe_allow_html=True)
 
-def get_db_connection():
-    """Get database connection"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    with col2:
+        st.write("")
+        st.write("")
+        st.metric("현재시간", datetime.now().strftime("%H:%M"))
 
-# Initialize session state
-if 'initialized' not in st.session_state:
-    init_database()
-    st.session_state.initialized = True
 
-# Main UI
-st.title("☕ 더문 로스팅 원가 계산기")
-st.markdown("### The Moon Drip BAR - Roasting Cost Calculator")
+def render_sidebar():
+    """사이드바 렌더링"""
+    with st.sidebar:
+        st.markdown("### 🔗 네비게이션")
 
-# Sidebar
-with st.sidebar:
-    st.header("메뉴")
-    page = st.radio(
-        "페이지 선택",
-        ["홈", "로스팅 기록", "원가 설정", "분석", "통계"]
-    )
+        st.info("""
+        좌측 상단의 ☰ 메뉴를 통해 페이지를 이동합니다:
 
-# Home Page
-if page == "홈":
+        - 🏠 **홈** (현재)
+        - 🎨 **블렌딩관리**
+        - ☕ **원두관리**
+        - 📊 **분석**
+        - 📦 **재고관리**
+        """)
+
+        st.divider()
+
+        # 빠른 통계
+        st.markdown("### 📊 현황")
+
+        db = st.session_state.db
+        bean_service = st.session_state.bean_service
+        blend_service = st.session_state.blend_service
+
+        beans = bean_service.get_active_beans()
+        blends = blend_service.get_active_blends()
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("☕ 원두", len(beans))
+        with col2:
+            st.metric("🎨 블렌드", len(blends))
+
+        st.divider()
+
+        # 도구
+        st.markdown("### ⚙️ 도구")
+
+        if st.button("🔄 새로고침", use_container_width=True):
+            st.rerun()
+
+        st.divider()
+
+        # 정보
+        st.markdown("### ℹ️ 정보")
+        st.caption(f"""
+        **{UI_CONFIG["app_title"]}**
+
+        🚀 버전: 2.0.0
+        📅 시작: 2025-10-24
+        🎯 상태: Phase 2
+
+        **데이터:**
+        - 원두: {len(beans)}종
+        - 블렌드: {len(blends)}개
+        - 포션: 20개
+        """)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🏠 홈 페이지
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def render_home():
+    """홈 페이지"""
+    render_header()
+
+    st.divider()
+
+    # 환영 메시지
+    st.markdown("""
+    # 👋 더문드립바 웹 시스템에 오신 것을 환영합니다!
+
+    이 시스템은 로스팅 원두를 효율적으로 관리하고 분석하기 위한 통합 플랫폼입니다.
+    """)
+
+    st.divider()
+
+    # 빠른 시작
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("총 로스팅 건수", "0")
+        st.markdown("""
+        ### 🎯 시작하기
+
+        **원두 관리**
+        - 13종 원두 확인
+        - 새 원두 추가
+        - 원두 정보 수정
+        """)
+        if st.button("☕ 원두관리로 이동", use_container_width=True):
+            st.switch_page("pages/2_원두관리.py")
+
     with col2:
-        st.metric("평균 원가", "₩ 0")
+        st.markdown("""
+        ### 🎨 블렌드 관리
+
+        **블렌딩 레시피**
+        - 풀문 블렌드 (3개)
+        - 뉴문 블렌딩 (3개)
+        - 원가 자동 계산
+        """)
+        if st.button("🎨 블렌딩관리로 이동", use_container_width=True):
+            st.switch_page("pages/3_블렌딩관리.py")
+
     with col3:
-        st.metric("총 로스팅량", "0 kg")
+        st.markdown("""
+        ### 📊 분석
 
-    st.markdown("""
-    ---
-    ## 소개
+        **통계 및 분석**
+        - 판매 추이
+        - 수익 분석
+        - 선호도 분석
+        """)
+        if st.button("📊 분석으로 이동", use_container_width=True):
+            st.switch_page("pages/4_분석.py")
 
-    **더문 드립바 로스팅 원가 계산기**는 전문 커피 로스팅 사업의 원가 분석과
-    수익성 계산을 위한 도구입니다.
+    st.divider()
 
-    ### 주요 기능
-    - 💾 로스팅 기록 저장 및 관리
-    - 💰 실시간 원가 계산
-    - 📊 수익성 분석 및 시각화
-    - 🔧 비용 설정 커스터마이징
-    """)
+    # 주요 통계
+    st.markdown("## 📊 주요 통계")
 
-# Roasting Logs Page
-elif page == "로스팅 기록":
-    st.header("로스팅 기록")
+    db = st.session_state.db
+    bean_service = st.session_state.bean_service
+    blend_service = st.session_state.blend_service
 
-    with st.form("roasting_form"):
-        col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
 
-        with col1:
-            record_date = st.date_input("로스팅 날짜")
-            bean_name = st.text_input("원두 이름")
-            green_weight = st.number_input("생두 무게 (kg)", min_value=0.1, step=0.1)
+    with col1:
+        bean_summary = bean_service.get_beans_summary()
+        st.metric("☕ 총 원두", f"{bean_summary['total_beans']}종")
 
-        with col2:
-            roasted_weight = st.number_input("로스팅 후 무게 (kg)", min_value=0.1, step=0.1)
-            bean_cost = st.number_input("원두 비용 (₩/kg)", min_value=0, step=100)
-            notes = st.text_area("메모")
+    with col2:
+        blend_summary = blend_service.get_blends_summary()
+        st.metric("🎨 총 블렌드", f"{blend_summary['total_blends']}개")
 
-        if st.form_submit_button("저장"):
-            try:
-                conn = get_db_connection()
-                cursor = conn.cursor()
+    with col3:
+        st.metric("📦 총 포션", "20개")
 
-                cursor.execute('''
-                    INSERT INTO roasting_logs
-                    (date, bean_name, green_weight_kg, roasted_weight_kg, bean_cost_per_kg, notes)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (record_date.isoformat(), bean_name, green_weight, roasted_weight, bean_cost, notes))
+    with col4:
+        st.metric("🌍 국가", "6개")
 
-                conn.commit()
-                conn.close()
+    st.divider()
 
-                st.success("✅ 기록이 저장되었습니다!")
-            except Exception as e:
-                st.error(f"❌ 오류: {str(e)}")
+    # 원두 분포
+    st.markdown("## 🔥 원두 로스팅 레벨 분포")
 
-# Cost Settings Page
-elif page == "원가 설정":
-    st.header("원가 설정")
+    bean_summary = bean_service.get_beans_summary()
+    roast_data = bean_summary['by_roast_level']
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM cost_settings")
-        settings = cursor.fetchall()
-        conn.close()
+    if roast_data:
+        cols = st.columns(len(roast_data))
 
-        for setting in settings:
-            st.number_input(
-                f"{setting['description']}",
-                value=float(setting['value']),
-                key=setting['parameter_name']
-            )
-    except Exception as e:
-        st.error(f"설정 로드 오류: {str(e)}")
+        for i, (level, count) in enumerate(roast_data.items()):
+            level_names = {
+                "W": "Light/White",
+                "N": "Normal",
+                "Pb": "Plus Black",
+                "Rh": "Rheuma",
+                "SD": "Semi-Dark",
+                "SC": "Semi-Dark"
+            }
 
-# Analysis Page
-elif page == "분석":
-    st.header("원가 분석")
-    st.info("아직 데이터가 없습니다. 로스팅 기록을 추가해주세요.")
+            with cols[i]:
+                st.metric(f"{level}\n({level_names.get(level, level)})", f"{count}개")
 
-# Statistics Page
-elif page == "통계":
-    st.header("통계")
-    st.info("아직 데이터가 없습니다. 로스팅 기록을 추가해주세요.")
+    st.divider()
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("© 2025 더문 드립바 | Version 0.1.0")
+    # 블렌드 분포
+    st.markdown("## 🎨 블렌드 타입 분포")
+
+    blend_summary = blend_service.get_blends_summary()
+    type_data = blend_summary['by_type']
+
+    if type_data:
+        cols = st.columns(3)
+
+        for i, (blend_type, count) in enumerate(type_data.items()):
+            if i < len(cols):
+                with cols[i]:
+                    st.metric(f"{blend_type} 블렌드", f"{count}개")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🚀 메인 실행
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def main():
+    """메인 함수"""
+    # 세션 상태 초기화
+    init_session_state()
+
+    # 데이터베이스 초기화 (필요 시)
+    if not os.path.exists("Data/roasting_data.db"):
+        with st.spinner("📊 데이터베이스 초기화 중..."):
+            init_db()
+            st.session_state.bean_service.init_default_beans()
+            st.session_state.blend_service.init_default_blends()
+            st.success("✅ 데이터베이스 초기화 완료!")
+
+    # 사이드바
+    render_sidebar()
+
+    # 홈 페이지
+    render_home()
+
+
+if __name__ == "__main__":
+    main()

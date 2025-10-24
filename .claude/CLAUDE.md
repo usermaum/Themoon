@@ -9,6 +9,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+### 체계적인 접근 방법 순서도
+1. Constitution (원칙) - 프로젝트 기본 원칙 설정
+2. Specify (명세) - 무엇을 만들지 상세하게 정의 
+3. Clarify (명확화) - 불분명한 부분을 질문으로 해소
+4. Plan (계획) - 기술 스택과 아키텍처 결정
+5. Tasks (작업 분해) - 실행 가능한 단위로 쪼개기 
+6. Implement (구현) - 자동으로 코드 생성
+7. Analyze (검증) - 명세와 코드 일치 확인
+
+---
+
 ## 🎯 Critical Rules
 
 ### 1. **Project-Isolated Virtual Environment** (MANDATORY)
