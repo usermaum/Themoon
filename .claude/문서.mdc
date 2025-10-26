@@ -5,8 +5,8 @@ alwaysApply: false
 ### SpecKit의 체계적 접근 - Spec-Driven Development: ###
 
 # 체계적인 적근 방법 순서 도 @
-1. Constitution (원칙) - 프로젝트 기본 원칙 설정 --- @Lotto_AI_WebApp_ProJect/Claude.md 
-2. Specify (명세) - 무엇을 만들지 상세하게 정의 -- @Lotto_AI_WebApp_ProJect/ARCHITECTURE.md
+1. Constitution (원칙) - 프로젝트 기본 원칙 설정
+2. Specify (명세) - 무엇을 만들지 상세하게 정의
 3. Clarify (명확화) - 불분명한 부분을 질문으로 해소
 4. Plan (계획) - 기술 스택과 아키텍처 결정
 5. Tasks (작업 분해) - 실행 가능한 단위로 쪼개기 
