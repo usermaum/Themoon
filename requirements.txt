@@ -26,4 +26,4 @@ APScheduler==3.10.4
 python-dotenv==1.0.0
 
 # Image Processing
-+ Pillow==10.3.0
+Pillow==10.3.0
