@@ -64,3 +64,56 @@ archive/
 *.tmp
 *.temp
 *.log
+
+# ========================================
+# SECURITY: Sensitive Information
+# ========================================
+
+# Configuration & Credentials
+.claude/mcpServers.json
+.claude/claude_code.json
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# API Keys & Tokens (any filename)
+*_key.json
+*_token.json
+*_secret.json
+*.key
+*.pem
+*.p8
+credentials.json
+secrets.json
+
+# SSH & Security
+.ssh/
+ssh_key*
+*.ppk
+authorized_keys
+
+# GitHub & Git-related
+.github/workflows/secrets.yml
+github_token.txt
+personal_access_token.txt
+
+# IDE Secrets
+.vscode/settings.local.json
+.idea/workspace.xml
+.idea/dictionaries/
+
+# Database with sensitive data
+*.db.backup
+*.db.bak
+database_backup/
+
+# Build & Dependency
+dist/
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
