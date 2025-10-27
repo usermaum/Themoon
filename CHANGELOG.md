@@ -11,6 +11,13 @@
 
 ---
 
+## [0.1.2] - 2025-10-27
+
+### 🐛 패치 (Bug Fix): Remove unsupported Streamlit config options
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
 ## [0.1.1] - 2025-10-27
 
 ### 🐛 패치 (Bug Fix): feat: Implement comprehensive version management and fix multiple bugs
