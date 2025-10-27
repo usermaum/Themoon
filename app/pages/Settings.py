@@ -111,7 +111,7 @@ with tab1:
         st.markdown("**🔥 로스팅 비용**")
 
         roasting_cost = cost_dict.get('roasting_cost_per_kg')
-        current_roasting = float(roasting_cost.value) if roasting_cost else 2000
+        current_roasting = float(roasting_cost.value) if roasting_cost else 2000.0
 
         new_roasting = st.number_input(
             "로스팅 비용 (원/kg)",
@@ -181,7 +181,7 @@ with tab1:
         st.markdown("**⏱️ 로스팅 시간**")
 
         roasting_time = cost_dict.get('roasting_time_hours')
-        current_time = float(roasting_time.value) if roasting_time else 2
+        current_time = float(roasting_time.value) if roasting_time else 2.0
 
         new_time = st.number_input(
             "로스팅 시간 (시간)",

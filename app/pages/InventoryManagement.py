@@ -283,7 +283,7 @@ with tab3:
                 price_per_unit_out = st.number_input("단가 (원/kg)", min_value=0, value=0, step=1000, key="price_outflow")
                 description_out = st.text_input("설명", "", key="desc_outflow")
 
-            if st.form_submit_button("✅ 출고 기록", use_container_width=True, key="btn_outflow"):
+            if st.form_submit_button("✅ 출고 기록", use_container_width=True):
                 bean = next((b for b in beans if b.name == bean_name_out), None)
 
                 if bean:

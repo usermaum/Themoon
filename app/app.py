@@ -201,7 +201,7 @@ def render_home():
         - 원두 정보 수정
         """)
         if st.button("☕ 원두관리로 이동", use_container_width=True):
-            st.switch_page("pages/2_원두관리.py")
+            st.switch_page("pages/BeanManagement.py")
 
     with col2:
         st.markdown("""
@@ -213,7 +213,7 @@ def render_home():
         - 원가 자동 계산
         """)
         if st.button("🎨 블렌딩관리로 이동", use_container_width=True):
-            st.switch_page("pages/3_블렌딩관리.py")
+            st.switch_page("pages/BlendManagement.py")
 
     with col3:
         st.markdown("""
@@ -225,7 +225,7 @@ def render_home():
         - 선호도 분석
         """)
         if st.button("📊 분석으로 이동", use_container_width=True):
-            st.switch_page("pages/4_분석.py")
+            st.switch_page("pages/Analysis.py")
 
     st.divider()
 

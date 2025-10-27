@@ -387,19 +387,19 @@ col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     if st.button("☕ 원두 관리", use_container_width=True):
-        st.switch_page("pages/2_원두관리.py")
+        st.switch_page("pages/BeanManagement.py")
 
 with col2:
     if st.button("🎨 블렌딩 관리", use_container_width=True):
-        st.switch_page("pages/3_블렌딩관리.py")
+        st.switch_page("pages/BlendManagement.py")
 
 with col3:
     if st.button("📊 분석", use_container_width=True):
-        st.switch_page("pages/4_분석.py")
+        st.switch_page("pages/Analysis.py")
 
 with col4:
     if st.button("📦 재고 관리", use_container_width=True):
-        st.switch_page("pages/5_재고관리.py")
+        st.switch_page("pages/InventoryManagement.py")
 
 with col5:
     if st.button("🔄 새로고침", use_container_width=True):

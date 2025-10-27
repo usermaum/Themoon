@@ -1,11 +1,21 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Claude Code 프로젝트 지시사항 (한글 기본 설정)
 
-> **Version**: 1.0.0 · **Date**: 2025-10-24
-> **System**: The Moon Drip BAR - Roasting Cost Calculator
-> **Stack**: Streamlit + SQLite + Plotly + Pandas + NumPy
-> **Environment**: Project-isolated Python venv (./venv/)
+> **버전**: 1.0.0 · **날짜**: 2025-10-24
+> **시스템**: The Moon Drip BAR - 로스팅 비용 계산기
+> **스택**: Streamlit + SQLite + Plotly + Pandas + NumPy
+> **환경**: 프로젝트 격리 Python venv (./venv/)
+
+---
+
+## 🌐 언어 설정 (MANDATORY)
+
+**모든 대화, 설명, 피드백은 한글로 진행합니다.**
+- Claude의 모든 응답은 한글로 작성
+- 코드 주석과 변수명은 영문 유지
+- 오류 메시지와 로그는 원본 유지 (영문)
+- 사용자 대면 메시지와 문서는 한글로 작성
 
 ---
 

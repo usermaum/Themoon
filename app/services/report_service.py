@@ -182,110 +182,152 @@ class ReportService:
     def export_to_excel(self, report_type: str = "summary", data: dict = None):
         """Excel 형식으로 내보내기"""
         output = BytesIO()
+        sheets_created = 0
 
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             if report_type == "summary" or report_type == "all":
                 self._create_summary_sheet(writer)
+                sheets_created += 1
 
             if report_type == "cost" or report_type == "all":
                 cost_data = self.get_cost_analysis()
-                self._create_cost_sheet(writer, cost_data)
+                if cost_data.get('cost_analysis'):
+                    self._create_cost_sheet(writer, cost_data)
+                    sheets_created += 1
 
             if report_type == "bean_usage" or report_type == "all":
                 usage_data = self.get_bean_usage_analysis()
-                self._create_bean_usage_sheet(writer, usage_data)
+                if usage_data.get('usage_analysis'):
+                    self._create_bean_usage_sheet(writer, usage_data)
+                    sheets_created += 1
 
             if report_type == "blend" or report_type == "all":
                 performance = self.get_blend_performance()
-                self._create_blend_sheet(writer, performance)
+                if performance.get('performance'):
+                    self._create_blend_sheet(writer, performance)
+                    sheets_created += 1
+
+            # 시트가 하나도 없으면 빈 요약 시트 생성
+            if sheets_created == 0:
+                empty_data = {"정보": ["데이터 없음"], "상태": ["생성할 데이터가 없습니다"]}
+                df = pd.DataFrame(empty_data)
+                df.to_excel(writer, sheet_name="정보", index=False)
 
         output.seek(0)
         return output
 
     def _create_summary_sheet(self, writer):
         """요약 시트 생성"""
-        bean_summary = self.bean_service.get_beans_summary()
-        blend_summary = self.blend_service.get_blends_summary()
+        try:
+            bean_summary = self.bean_service.get_beans_summary()
+            blend_summary = self.blend_service.get_blends_summary()
 
-        data = {
-            "항목": [
-                "총 원두 종류",
-                "총 블렌드 개수",
-                "총 포션",
-                "총 원두 가격합",
-                "평균 원두 가격"
-            ],
-            "값": [
-                bean_summary['total_beans'],
-                blend_summary['total_blends'],
-                sum(b.total_portion for b in self.blend_service.get_active_blends()),
-                sum(b.price_per_kg for b in self.bean_service.get_active_beans() if b.price_per_kg > 0),
-                sum(b.price_per_kg for b in self.bean_service.get_active_beans() if b.price_per_kg > 0)
-                / len([b for b in self.bean_service.get_active_beans() if b.price_per_kg > 0])
-            ]
-        }
+            active_beans = self.bean_service.get_active_beans()
+            beans_with_price = [b for b in active_beans if b.price_per_kg > 0]
 
-        df = pd.DataFrame(data)
-        df.to_excel(writer, sheet_name="요약", index=False)
+            avg_price = (sum(b.price_per_kg for b in beans_with_price) / len(beans_with_price)) if beans_with_price else 0
+
+            data = {
+                "항목": [
+                    "총 원두 종류",
+                    "총 블렌드 개수",
+                    "총 포션",
+                    "총 원두 가격합",
+                    "평균 원두 가격"
+                ],
+                "값": [
+                    bean_summary['total_beans'],
+                    blend_summary['total_blends'],
+                    sum(b.total_portion for b in self.blend_service.get_active_blends()),
+                    sum(b.price_per_kg for b in beans_with_price),
+                    avg_price
+                ]
+            }
+
+            df = pd.DataFrame(data)
+            df.to_excel(writer, sheet_name="요약", index=False)
+        except Exception as e:
+            # 오류 발생 시 빈 시트 생성
+            empty_data = {"오류": [str(e)]}
+            df = pd.DataFrame(empty_data)
+            df.to_excel(writer, sheet_name="요약", index=False)
 
     def _create_cost_sheet(self, writer, cost_data):
         """비용 분석 시트 생성"""
-        cost_list = []
+        try:
+            cost_list = []
 
-        for cost in cost_data['cost_analysis']:
-            cost_list.append({
-                "블렌드명": cost['blend_name'],
-                "타입": cost['blend_type'],
-                "포션": cost['total_portions'],
-                "원두비용": f"₩{cost['bean_cost']:,.0f}",
-                "로스팅비용": f"₩{cost['roasting_cost']:,.0f}",
-                "인건비": f"₩{cost['labor_cost']:,.0f}",
-                "기타비용": f"₩{cost['misc_cost']:,.0f}",
-                "총원가": f"₩{cost['total_cost']:,.0f}",
-                "포션당원가": f"₩{cost['cost_per_portion']:,.0f}",
-                "제안판매가": f"₩{cost['suggested_price']:,.0f}",
-                "예상이익": f"₩{cost['profit_margin']:,.0f}"
-            })
+            for cost in cost_data['cost_analysis']:
+                cost_list.append({
+                    "블렌드명": cost['blend_name'],
+                    "타입": cost['blend_type'],
+                    "포션": cost['total_portions'],
+                    "원두비용": f"₩{cost['bean_cost']:,.0f}",
+                    "로스팅비용": f"₩{cost['roasting_cost']:,.0f}",
+                    "인건비": f"₩{cost['labor_cost']:,.0f}",
+                    "기타비용": f"₩{cost['misc_cost']:,.0f}",
+                    "총원가": f"₩{cost['total_cost']:,.0f}",
+                    "포션당원가": f"₩{cost['cost_per_portion']:,.0f}",
+                    "제안판매가": f"₩{cost['suggested_price']:,.0f}",
+                    "예상이익": f"₩{cost['profit_margin']:,.0f}"
+                })
 
-        df = pd.DataFrame(cost_list)
-        df.to_excel(writer, sheet_name="비용분석", index=False)
+            if cost_list:
+                df = pd.DataFrame(cost_list)
+                df.to_excel(writer, sheet_name="비용분석", index=False)
+        except Exception as e:
+            empty_data = {"오류": [str(e)]}
+            df = pd.DataFrame(empty_data)
+            df.to_excel(writer, sheet_name="비용분석", index=False)
 
     def _create_bean_usage_sheet(self, writer, usage_data):
         """원두 사용량 시트 생성"""
-        usage_list = []
+        try:
+            usage_list = []
 
-        for usage in usage_data['usage_analysis']:
-            usage_list.append({
-                "원두명": usage['bean_name'],
-                "국가": usage['country'],
-                "로스팅": usage['roast_level'],
-                "가격/kg": f"₩{usage['price_per_kg']:,.0f}",
-                "입고량": f"{usage['inflow_kg']:.2f}kg",
-                "출고량": f"{usage['outflow_kg']:.2f}kg",
-                "순변화": f"{usage['net_kg']:.2f}kg",
-                "사용비용": f"₩{usage['outflow_cost']:,.0f}"
-            })
+            for usage in usage_data['usage_analysis']:
+                usage_list.append({
+                    "원두명": usage['bean_name'],
+                    "국가": usage['country'],
+                    "로스팅": usage['roast_level'],
+                    "가격/kg": f"₩{usage['price_per_kg']:,.0f}",
+                    "입고량": f"{usage['inflow_kg']:.2f}kg",
+                    "출고량": f"{usage['outflow_kg']:.2f}kg",
+                    "순변화": f"{usage['net_kg']:.2f}kg",
+                    "사용비용": f"₩{usage['outflow_cost']:,.0f}"
+                })
 
-        df = pd.DataFrame(usage_list)
-        df.to_excel(writer, sheet_name="원두사용", index=False)
+            if usage_list:
+                df = pd.DataFrame(usage_list)
+                df.to_excel(writer, sheet_name="원두사용", index=False)
+        except Exception as e:
+            empty_data = {"오류": [str(e)]}
+            df = pd.DataFrame(empty_data)
+            df.to_excel(writer, sheet_name="원두사용", index=False)
 
     def _create_blend_sheet(self, writer, performance):
         """블렌드 성과 시트 생성"""
-        blend_list = []
+        try:
+            blend_list = []
 
-        for blend in performance['performance']:
-            blend_list.append({
-                "블렌드명": blend['blend_name'],
-                "타입": blend['blend_type'],
-                "포션": blend['total_portions'],
-                "포션당원가": f"₩{blend['cost_per_portion']:,.0f}",
-                "제안판매가": f"₩{blend['suggested_price']:,.0f}",
-                "포션당이익": f"₩{blend['profit_per_portion']:,.0f}",
-                "수익률": f"{blend['profit_rate']:.1f}%"
-            })
+            for blend in performance['performance']:
+                blend_list.append({
+                    "블렌드명": blend['blend_name'],
+                    "타입": blend['blend_type'],
+                    "포션": blend['total_portions'],
+                    "포션당원가": f"₩{blend['cost_per_portion']:,.0f}",
+                    "제안판매가": f"₩{blend['suggested_price']:,.0f}",
+                    "포션당이익": f"₩{blend['profit_per_portion']:,.0f}",
+                    "수익률": f"{blend['profit_rate']:.1f}%"
+                })
 
-        df = pd.DataFrame(blend_list)
-        df.to_excel(writer, sheet_name="블렌드성과", index=False)
+            if blend_list:
+                df = pd.DataFrame(blend_list)
+                df.to_excel(writer, sheet_name="블렌드성과", index=False)
+        except Exception as e:
+            empty_data = {"오류": [str(e)]}
+            df = pd.DataFrame(empty_data)
+            df.to_excel(writer, sheet_name="블렌드성과", index=False)
 
     def export_to_csv(self, report_type: str = "summary"):
         """CSV 형식으로 내보내기"""

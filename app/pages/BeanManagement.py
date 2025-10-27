@@ -115,8 +115,12 @@ with tab1:
             st.metric("로스팅 레벨", len(roast_levels))
 
         with col3:
-            avg_price = sum(b.price_per_kg for b in filtered_beans if b.price_per_kg > 0) / len([b for b in filtered_beans if b.price_per_kg > 0])
-            st.metric("평균 가격", f"₩{avg_price:,.0f}" if avg_price > 0 else "N/A")
+            valid_beans = [b for b in filtered_beans if b.price_per_kg > 0]
+            if valid_beans:
+                avg_price = sum(b.price_per_kg for b in valid_beans) / len(valid_beans)
+                st.metric("평균 가격", f"₩{avg_price:,.0f}")
+            else:
+                st.metric("평균 가격", "N/A")
 
     else:
         st.info("필터 조건에 맞는 원두가 없습니다.")
@@ -182,7 +186,7 @@ with tab3:
                     new_name = st.text_input("원두명", value=selected_bean.name)
                     new_roast = st.selectbox("로스팅 레벨", ["W", "N", "Pb", "Rh", "SD", "SC"],
                                             index=["W", "N", "Pb", "Rh", "SD", "SC"].index(selected_bean.roast_level))
-                    new_price = st.number_input("가격 (원/kg)", value=float(selected_bean.price_per_kg), min_value=0, step=100)
+                    new_price = st.number_input("가격 (원/kg)", value=float(selected_bean.price_per_kg), min_value=0.0, step=100.0)
 
                 with col2:
                     new_description = st.text_input("설명", value=selected_bean.description or "")

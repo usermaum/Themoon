@@ -21,6 +21,9 @@ __pycache__/
 .env.local
 .env.*.local
 
+# MCP Configuration (contains sensitive tokens)
+.claude/mcpServers.json
+
 # IDE
 .DS_Store
 .vscode/
@@ -64,3 +67,6 @@ archive/
 *.tmp
 *.temp
 *.log
+
+# 개인 정보 파일
+documents/Usermaum_doc.mdc

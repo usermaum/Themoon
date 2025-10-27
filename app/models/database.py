@@ -124,13 +124,15 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    blend_id = Column(Integer, ForeignKey("blends.id"), nullable=False)
+    blend_id = Column(Integer, ForeignKey("blends.id"), nullable=True)
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=True)
     transaction_type = Column(String(20), nullable=False)  # 판매, 사용, 입고
     quantity_kg = Column(Float, nullable=False)
     price_per_unit = Column(Float, default=0.0)
     total_amount = Column(Float, default=0.0)
     user_id = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # 관계
