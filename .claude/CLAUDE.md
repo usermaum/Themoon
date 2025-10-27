@@ -312,6 +312,125 @@ All dependencies are locked in `requirements.txt` and installed in `./venv/`.
 
 ---
 
+## 📦 버전 관리 시스템 (Version Management)
+
+### 개요
+프로젝트의 모든 변경사항을 자동으로 추적하고 버전을 관리합니다.
+**Semantic Versioning (SemVer)** 규칙: `MAJOR.MINOR.PATCH`
+
+### 파일 구조
+```
+logs/                          # 버전 관리 폴더
+├── VERSION                    # 현재 버전 (예: 0.1.2)
+├── CHANGELOG.md              # 변경 이력 (자동 생성)
+├── update_version.py         # 버전 관리 스크립트
+├── VERSION_MANAGEMENT.md     # 상세 가이드
+└── QUICK_START.md            # 빠른 시작 가이드
+
+.git/hooks/
+└── post-commit               # Git 훅 (자동 실행)
+```
+
+### 🚀 자동 버전 관리 (권장)
+
+Git 커밋 메시지 규칙에 따라 자동으로 버전이 업데이트됩니다:
+
+#### 1️⃣ 버그 수정 (PATCH: 0.1.0 → 0.1.1)
+```bash
+git commit -m "fix: 버그 설명"
+git commit -m "🐛 버그 설명"
+```
+**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+
+#### 2️⃣ 새 기능 (MINOR: 0.1.0 → 0.2.0)
+```bash
+git commit -m "feat: 기능 설명"
+git commit -m "✨ 기능 설명"
+```
+**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+
+#### 3️⃣ 호환성 변경 (MAJOR: 0.1.0 → 1.0.0)
+```bash
+git commit -m "🚀 설명"
+git commit -m "BREAKING CHANGE: 설명"
+```
+**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+
+### 🔧 수동 버전 관리
+
+자동화가 필요 없을 때 또는 테스트 목적:
+```bash
+# 현재 버전 확인
+python3 logs/update_version.py --show
+
+# 패치 버전 업데이트
+python3 logs/update_version.py --type patch --summary "버그 설명"
+
+# 마이너 버전 업데이트
+python3 logs/update_version.py --type minor --summary "기능 설명"
+
+# 메이저 버전 업데이트
+python3 logs/update_version.py --type major --summary "주요 변경"
+
+# 상세 변경사항 포함
+python3 logs/update_version.py \
+  --type patch \
+  --summary "설명" \
+  --changes "
+- 변경사항 1
+- 변경사항 2
+- 변경사항 3
+  "
+```
+
+### 📋 파일 설명
+
+#### `logs/VERSION`
+- 현재 프로젝트 버전을 저장하는 텍스트 파일
+- 형식: `MAJOR.MINOR.PATCH` (예: 0.1.2)
+- 자동으로 업데이트됨
+
+#### `logs/CHANGELOG.md`
+- 모든 버전의 변경사항을 기록
+- 마크다운 형식으로 자동 생성
+- 버전별로 추가/수정/개선사항 분류
+
+#### `logs/update_version.py`
+- Python 스크립트로 버전 자동 관리
+- 버전 파싱, 증가, 파일 업데이트 기능
+- 자동 실행 (post-commit 훅 사용) 또는 수동 실행 가능
+
+#### `logs/VERSION_MANAGEMENT.md`
+- 버전 관리 시스템의 상세 가이드
+- 사용 방법, 예제, 베스트 프랙티스 포함
+
+#### `logs/QUICK_START.md`
+- 빠른 시작을 위한 간단한 가이드
+- Git 커밋 메시지 규칙과 예제
+
+#### `.git/hooks/post-commit`
+- Git 커밋 후 자동으로 실행되는 훅
+- 커밋 메시지 분석 후 버전 자동 업데이트
+- 수정 불필요 (이미 설정됨)
+
+### 📊 버전 관리 방식
+
+| 변경 유형 | 버전 증가 | 키워드 | 예시 |
+|---------|---------|--------|------|
+| 버그 수정 | PATCH | `fix:`, `🐛` | 0.1.0 → 0.1.1 |
+| 새 기능 | MINOR | `feat:`, `✨` | 0.1.0 → 0.2.0 |
+| 호환성 변경 | MAJOR | `🚀`, `BREAKING` | 0.1.0 → 1.0.0 |
+
+### 💡 팁
+
+1. **매 커밋마다 자동으로 관리됨** - 수동 작업 불필요
+2. **커밋 메시지 규칙 준수** - 규칙이 맞아야 자동 감지됨
+3. **CHANGELOG 자동 생성** - 변경사항이 자동으로 기록됨
+4. **언제든 현재 버전 확인** - `python3 logs/update_version.py --show`
+5. **다른 프로젝트에 복사 가능** - logs 폴더와 .git/hooks/post-commit 만 복사하면 됨
+
+---
+
 ## ⚠️ Important Notes
 
 ### Path References
