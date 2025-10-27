@@ -77,49 +77,54 @@ python3 logs/update_version.py --show
 ### 2️⃣ 버전 업데이트 (패치 - 버그 수정)
 
 ```bash
+# ✅ 한글 설명으로 작성
 python3 logs/update_version.py \
   --type patch \
-  --summary "폼 제출 버튼 오류 수정"
+  --summary "폼 제출 버튼 key 파라미터 오류 수정"
 ```
 
 **결과:**
 - `VERSION` 파일: `0.1.0` → `0.1.1`
-- `CHANGELOG.md`: 새 섹션 추가
+- `CHANGELOG.md`: 패치 버전 섹션 추가
 
 ### 3️⃣ 버전 업데이트 (마이너 - 새 기능)
 
 ```bash
+# ✅ 한글 설명으로 작성
 python3 logs/update_version.py \
   --type minor \
-  --summary "Excel 내보내기 기능 개선"
+  --summary "고급 분석 대시보드 추가"
 ```
 
 **결과:**
 - `VERSION` 파일: `0.1.0` → `0.2.0`
-- `CHANGELOG.md`: 새 섹션 추가
+- `CHANGELOG.md`: 마이너 버전 섹션 추가
 
 ### 4️⃣ 버전 업데이트 (메이저 - 구조 변경)
 
 ```bash
+# ✅ 한글 설명으로 작성
 python3 logs/update_version.py \
   --type major \
-  --summary "데이터베이스 스키마 대폭 개선"
+  --summary "데이터베이스 스키마 완전 개선"
 ```
 
 **결과:**
 - `VERSION` 파일: `0.1.0` → `1.0.0`
-- `CHANGELOG.md`: 새 섹션 추가
+- `CHANGELOG.md`: 메이저 버전 섹션 추가
 
-### 5️⃣ 상세한 변경사항 포함
+### 5️⃣ 상세한 변경사항 포함 (한글)
 
 ```bash
+# ✅ 한글 설명으로 작성
 python3 logs/update_version.py \
   --type patch \
-  --summary "성능 최적화" \
+  --summary "데이터베이스 성능 최적화" \
   --changes "
-- 데이터베이스 쿼리 최적화
+- 쿼리 성능 30% 개선
 - 메모리 사용량 50% 감소
-- 로딩 시간 개선
+- 로딩 시간 2배 단축
+- 인덱스 추가 및 최적화
   "
 ```
 
@@ -127,7 +132,7 @@ python3 logs/update_version.py \
 
 ## 예제
 
-### 예제 1: 버그 수정 후 버전 업데이트
+### 예제 1: 버그 수정 후 버전 업데이트 (한글)
 
 작업 내용: `st.form_submit_button()` key 파라미터 오류 수정
 
@@ -136,13 +141,16 @@ python3 logs/update_version.py \
 # 파일: app/pages/InventoryManagement.py
 # 변경: key="btn_outflow" 파라미터 제거
 
-# 2. 버전 업데이트
-python3 logs/update_version.py \
-  --type patch \
-  --summary "FormMixin.form_submit_button() key 파라미터 제거"
+# 2. 버전 업데이트 (한글 설명)
+git add app/pages/InventoryManagement.py
+git commit -m "fix: 폼 제출 버튼 key 파라미터 제거"
+
+# 자동 실행됨:
+# ✅ VERSION: 0.1.0 → 0.1.1
+# ✅ CHANGELOG.md 업데이트
 ```
 
-### 예제 2: 새 기능 추가 후 버전 업데이트
+### 예제 2: 새 기능 추가 후 버전 업데이트 (한글)
 
 작업 내용: 새로운 분석 기능 추가
 
@@ -151,27 +159,44 @@ python3 logs/update_version.py \
 # 파일: app/pages/Analysis.py
 # 변경: 고급 분석 기능 추가
 
-# 2. 버전 업데이트
-python3 logs/update_version.py \
-  --type minor \
-  --summary "고급 분석 기능 추가" \
-  --changes "
-- 원두별 판매 추이 분석
-- 시즈널 트렌드 분석
-- 고객 선호도 분석
-  "
+# 2. 버전 업데이트 (한글 설명)
+git add app/pages/Analysis.py app/services/
+git commit -m "feat: 고급 분석 대시보드 추가"
+
+# 자동 실행됨:
+# ✅ VERSION: 0.1.1 → 0.2.0
+# ✅ CHANGELOG.md 업데이트
 ```
 
-### 예제 3: 여러 버그 수정
+### 예제 3: 여러 버그 수정 (한글)
 
 ```bash
+# 여러 파일 수정 후 커밋 (한글 설명)
+git add .
+git commit -m "fix: UI 오류 및 성능 최적화"
+
+# 자동 실행됨:
+# ✅ VERSION: 0.2.0 → 0.2.1
+# ✅ CHANGELOG.md에 다음 항목 추가:
+#    - UI 오류 여러 건 수정
+#    - 데이터베이스 쿼리 성능 개선
+#    - 메모리 사용량 최적화
+```
+
+### 예제 4: 수동 버전 업데이트 (한글)
+
+수동으로 버전을 관리해야 할 경우:
+
+```bash
+# 상세한 변경사항 포함 (한글)
 python3 logs/update_version.py \
-  --type patch \
-  --summary "여러 UI 오류 수정" \
+  --type minor \
+  --summary "실시간 데이터 동기화 기능 추가" \
   --changes "
-- Excel 내보내기 'No visible sheet' 오류 수정
-- st.number_input() 타입 불일치 오류 수정
-- 데이터베이스 연결 오류 수정
+- WebSocket 기반 실시간 동기화
+- 자동 재연결 로직 구현
+- 동기화 상태 모니터링 추가
+- 성능 20% 개선
   "
 ```
 

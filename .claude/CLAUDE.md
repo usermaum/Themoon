@@ -331,55 +331,63 @@ logs/                          # 버전 관리 폴더
 └── post-commit               # Git 훅 (자동 실행)
 ```
 
-### 🚀 자동 버전 관리 (권장)
+### 🚀 자동 버전 관리 (권장) - 한글 설명으로 작성
 
 Git 커밋 메시지 규칙에 따라 자동으로 버전이 업데이트됩니다:
 
 #### 1️⃣ 버그 수정 (PATCH: 0.1.0 → 0.1.1)
 ```bash
-git commit -m "fix: 버그 설명"
-git commit -m "🐛 버그 설명"
+# ✅ 올바른 형식 (한글 설명)
+git commit -m "fix: Excel 내보내기 오류 수정"
+git commit -m "🐛 데이터베이스 연결 오류 해결"
+git commit -m "fix: 폼 제출 버튼 key 파라미터 제거"
+git commit -m "🐛 st.number_input 타입 불일치"
 ```
-**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+**자동 실행:** `logs/VERSION` 0.1.0 → 0.1.1, `logs/CHANGELOG.md` 추가
 
 #### 2️⃣ 새 기능 (MINOR: 0.1.0 → 0.2.0)
 ```bash
-git commit -m "feat: 기능 설명"
-git commit -m "✨ 기능 설명"
+# ✅ 올바른 형식 (한글 설명)
+git commit -m "feat: 고급 분석 대시보드 추가"
+git commit -m "✨ 실시간 데이터 동기화 기능"
+git commit -m "feat: 사용자 인증 시스템 구현"
+git commit -m "✨ 새로운 리포트 형식 추가"
 ```
-**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+**자동 실행:** `logs/VERSION` 0.1.0 → 0.2.0, `logs/CHANGELOG.md` 추가
 
 #### 3️⃣ 호환성 변경 (MAJOR: 0.1.0 → 1.0.0)
 ```bash
-git commit -m "🚀 설명"
-git commit -m "BREAKING CHANGE: 설명"
+# ✅ 올바른 형식 (한글 설명)
+git commit -m "🚀 데이터베이스 스키마 완전 개선"
+git commit -m "BREAKING CHANGE: API 재설계 및 구조 변경"
+git commit -m "🚀 로스팅 비용 계산 엔진 리팩토링"
 ```
-**자동 실행:** `logs/VERSION` 업데이트, `logs/CHANGELOG.md` 추가
+**자동 실행:** `logs/VERSION` 0.1.0 → 1.0.0, `logs/CHANGELOG.md` 추가
 
-### 🔧 수동 버전 관리
+### 🔧 수동 버전 관리 - 한글 설명으로 작성
 
 자동화가 필요 없을 때 또는 테스트 목적:
 ```bash
 # 현재 버전 확인
 python3 logs/update_version.py --show
 
-# 패치 버전 업데이트
-python3 logs/update_version.py --type patch --summary "버그 설명"
+# 패치 버전 업데이트 (버그 수정)
+python3 logs/update_version.py --type patch --summary "Excel 내보내기 오류 수정"
 
-# 마이너 버전 업데이트
-python3 logs/update_version.py --type minor --summary "기능 설명"
+# 마이너 버전 업데이트 (새 기능)
+python3 logs/update_version.py --type minor --summary "고급 분석 대시보드 추가"
 
-# 메이저 버전 업데이트
-python3 logs/update_version.py --type major --summary "주요 변경"
+# 메이저 버전 업데이트 (호환성 변경)
+python3 logs/update_version.py --type major --summary "데이터베이스 스키마 완전 개선"
 
-# 상세 변경사항 포함
+# 상세 변경사항 포함 (한글)
 python3 logs/update_version.py \
   --type patch \
-  --summary "설명" \
+  --summary "데이터베이스 연결 오류 해결" \
   --changes "
-- 변경사항 1
-- 변경사항 2
-- 변경사항 3
+- 커넥션 풀 타임아웃 설정 수정
+- 재연결 로직 개선
+- 에러 로깅 강화
   "
 ```
 

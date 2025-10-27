@@ -11,6 +11,13 @@
 
 ---
 
+## [1.1.0] - 2025-10-27
+
+### ✨ 마이너 업데이트 (Minor Update): Implement comprehensive reusable component system with 15+ components
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
 ## [1.0.0] - 2025-10-27
 
 ### 🚀 주요 버전 (Major Release): docs: Add comprehensive reusable component architecture design
