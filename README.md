@@ -1,14 +1,14 @@
 # ☕ 더문드립바 로스팅 비용 계산 시스템
 
-**The Moon Drip BAR - Roasting Cost Calculator v2.0.0**
+**The Moon Drip BAR - Roasting Cost Calculator v1.2.0**
 
 프리미엄 스페셜티 커피 로스팅 사업을 위한 **완전 통합형 원가 분석 및 수익성 계산 플랫폼**
 
-> **프로젝트 상태:** ✅ 100% 완료 | 🚀 프로덕션 배포 준비 완료 | 📊 8,744줄 코드 | ✨ 50/50 테스트 통과
+> **프로젝트 상태:** ✅ 100% 완료 | 🚀 프로덕션 배포 준비 완료 | 📚 28개 문서 완성 | 💡 모듈식 아키텍처 | 🎯 토큰 효율 최적화
 
 ---
 
-## 🎯 주요 기능 (v2.0.0)
+## 🎯 주요 기능 (v1.2.0)
 
 ### 📊 원가 관리 시스템
 - ✅ **로스팅 기록 관리**: 일일 로스팅 데이터 저장 및 실시간 추적
@@ -118,29 +118,37 @@ TheMoon_Project/
 │   ├── roasting_data.db               # SQLite 데이터베이스
 │   └── backups/                       # 자동 백업 디렉토리 (선택)
 │
-├── Documents/                         # 분류별 체계적 문서 관리 ✅
+├── Documents/                         # 분류별 체계적 문서 관리 ✅ (28개)
 │   │
-│   ├── Architecture/                  # 아키텍처 & 설계 문서 (3개)
-│   │   ├── COMPONENT_DESIGN.md        # 재사용 컴포넌트 설계 (상세 아키텍처)
-│   │   ├── COMPONENT_USAGE_GUIDE.md   # 컴포넌트 사용 가이드
-│   │   └── PROJECT_SETUP_GUIDE.md     # 프로젝트 재구성 가이드
+│   ├── Architecture/                  # 아키텍처 & 설계 문서 (8개)
+│   │   ├── FILE_STRUCTURE.md          # 📁 프로젝트 파일 구조 & 책임 (335줄)
+│   │   ├── DEVELOPMENT_GUIDE.md       # 🚀 5단계 개발 프로세스 (350줄)
+│   │   ├── SYSTEM_ARCHITECTURE.md     # 🏗️ 3계층 아키텍처 & 데이터 흐름 (350줄)
+│   │   ├── TROUBLESHOOTING.md         # 🔧 16가지 오류 & 해결법 (375줄)
+│   │   ├── COMMON_TASKS.md            # ✅ 25가지 자주 하는 작업 (520줄)
+│   │   ├── COMPONENT_DESIGN.md        # 🎨 재사용 컴포넌트 설계
+│   │   ├── COMPONENT_USAGE_GUIDE.md   # 📖 컴포넌트 사용 가이드
+│   │   └── PROJECT_SETUP_GUIDE.md     # ⚙️ 프로젝트 재구성 가이드
 │   │
 │   ├── Guides/                        # 사용자 & 개발 가이드 (3개)
 │   │   ├── 배포가이드.md              # 배포 설명서 (600+줄)
 │   │   ├── 사용자가이드.md            # 사용자 설명서 (800+줄)
 │   │   └── 성능최적화_가이드.md       # 성능 최적화 (220줄)
 │   │
-│   ├── Progress/                      # 진행 상황 & 단계별 보고서 (6개)
+│   ├── Progress/                      # 진행 상황 & 세션 관리 (8개)
 │   │   ├── 00_프로젝트_진행상황.md    # 프로젝트 전체 진행상황
+│   │   ├── SESSION_SUMMARY_2025-10-27.md  # 📋 최근 세션 요약 (새로운 5개 문서)
+│   │   ├── SESSION_START_CHECKLIST.md     # ✅ 세션 시작 체크리스트
+│   │   ├── SESSION_END_CHECKLIST.md       # 🏁 세션 종료 체크리스트
 │   │   ├── PHASE1_완료_및_재개가이드.md
 │   │   ├── PHASE2_완료_및_테스트가이드.md
 │   │   ├── PHASE3_완료_및_최종요약.md
-│   │   ├── PHASE4_완료_최종정리.md
-│   │   └── SESSION_SUMMARY_2025-10-24.md
+│   │   └── PHASE4_완료_최종정리.md
 │   │
-│   ├── Planning/                      # 구현 계획 & 설계 (2개)
+│   ├── Planning/                      # 구현 계획 & 설계 (3개)
 │   │   ├── 웹페이지_구현_마스터플랜.md
-│   │   └── 웹페이지_구현_마스터플랜.docx
+│   │   ├── 웹페이지_구현_마스터플랜.docx
+│   │   └── 성능최적화_가이드.md       # 성능 최적화 가이드
 │   │
 │   └── Resources/                     # 참고 자료 & 데이터 (6개)
 │       ├── roasting_and_abbrev.mdc    # 로스팅 용어 정리
@@ -162,9 +170,10 @@ TheMoon_Project/
     nginx.conf                         # Nginx 설정 (선택)
 
 📊 총 통계:
-├── 파일: 40+개
+├── 파일: 50+개
 ├── 코드: 8,744줄 (9 pages + 7 services + 6 utils + models)
-├── 문서: 2,100+줄 (6개 상세 문서)
+├── 문서: 5,000+줄 (28개 분류별 체계적 문서)
+├── 아키텍처 문서: 1,930줄 (5개 신규 전문 문서)
 ├── 테스트: 50개 (100% 통과율)
 └── 시각화: 35+ 인터랙티브 차트
 ```
@@ -307,7 +316,7 @@ conn.close()
 
 ---
 
-## 🎯 9개 페이지 상세 설명 (v2.0.0)
+## 🎯 9개 페이지 상세 설명 (v1.2.0)
 
 ### 1️⃣ 대시보드 (Dashboard) 🏠
 **홈 페이지 - 핵심 메트릭 및 개요**
@@ -423,25 +432,42 @@ git push origin main
 
 ---
 
-## 📚 참고 문서 (v2.0.0)
+## 📚 참고 문서 (v1.2.0)
 
-### 🏗️ 아키텍처 & 설계 (Documents/Architecture/)
+### 🏗️ 아키텍처 & 설계 - 신규 5개 전문 문서 추가 (Documents/Architecture/)
+
+#### ✨ 신규 문서 (2025-10-27)
+- **FILE_STRUCTURE.md** (335줄) - 📁 프로젝트 파일 구조, 책임, 의존성 맵
+- **DEVELOPMENT_GUIDE.md** (350줄) - 🚀 5단계 개발 프로세스, CRUD 패턴, 의존성 규칙
+- **SYSTEM_ARCHITECTURE.md** (350줄) - 🏗️ 3계층 아키텍처, 데이터 흐름, 성능 최적화
+- **TROUBLESHOOTING.md** (375줄) - 🔧 16가지 오류 & 해결법, 디버깅 기법, FAQ
+- **COMMON_TASKS.md** (520줄) - ✅ 25가지 자주 하는 작업 단계별 가이드
+
+#### 기존 문서
 - **COMPONENT_DESIGN.md** - 재사용 컴포넌트 시스템 설계 및 상세 아키텍처
 - **COMPONENT_USAGE_GUIDE.md** - 15+ 재사용 컴포넌트 사용 가이드
 - **PROJECT_SETUP_GUIDE.md** - 프로젝트 재구성 및 설정 가이드
+
+**💡 문서 로드 전략:** CLAUDE.md → 필요한 전문 문서 로드 (토큰 효율성 최적화)
 
 ### 📖 사용자 가이드 (Documents/Guides/)
 - **배포가이드.md** - Docker, Nginx, SSL, 스케일링, 롤백 절차 (600+줄)
 - **사용자가이드.md** - 9개 페이지 상세 사용 방법, FAQ, 문제 해결 (800+줄)
 - **성능최적화_가이드.md** - 성능 측정, 최적화 권장사항, 병목 지점 분석 (220줄)
 
-### 📋 진행 상황 & 완료 보고서 (Documents/Progress/)
+### 📋 진행 상황 & 세션 관리 (Documents/Progress/)
+
+#### 세션 관리 시스템 (2025-10-27 신규)
+- **SESSION_SUMMARY_2025-10-27.md** - 최근 세션: 5개 전문 문서 + CLAUDE.md 축약
+- **SESSION_START_CHECKLIST.md** - 새 세션 시작 체크리스트 (5분 빠른 확인)
+- **SESSION_END_CHECKLIST.md** - 세션 종료 체크리스트 (커밋/버전 관리)
+
+#### Phase별 완료 보고서
 - **00_프로젝트_진행상황.md** - 전체 프로젝트 진행 상황 요약
 - **PHASE1_완료_및_재개가이드.md** - Phase 1 기본 구조 완료 보고서
 - **PHASE2_완료_및_테스트가이드.md** - Phase 2 핵심 기능 완료 보고서
 - **PHASE3_완료_및_최종요약.md** - Phase 3 고급 기능 완료 보고서
 - **PHASE4_완료_최종정리.md** - Phase 4 테스트/배포 완료 보고서
-- **SESSION_SUMMARY_2025-10-24.md** - 최근 세션 요약 문서
 
 ### 🎯 구현 계획 (Documents/Planning/)
 - **웹페이지_구현_마스터플랜.md** - 웹페이지 구현 마스터플랜
@@ -456,30 +482,36 @@ git push origin main
 - **문드립바 로스팅 일지.xlsx** - 로스팅 일지 원본
 
 ### 🛠️ 개발자 가이드
-- **.claude/CLAUDE.md** - 개발 규칙, 아키텍처, 환경 설정 (프로젝트 격리 venv 필수)
+- **.claude/CLAUDE.md** - 30줄 네비게이터 (필수 규칙 & 문서 위치 안내)
+  - 프로젝트 격리 venv (./venv/) 필수
+  - 모든 응답 한글로 작성
+  - 빠른 시작 명령어
+  - 5개 전문 문서 로드 시스템
 
 ---
 
-## 📊 프로젝트 정보 (v2.0.0)
+## 📊 프로젝트 정보 (v1.2.0)
 
 | 항목 | 정보 |
 |------|------|
 | **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v2.0.0 (2025-10-24) |
-| **프로젝트 상태** | ✅ 100% 완료 / 🚀 배포 준비 완료 |
+| **현재 버전** | v1.2.0 (2025-10-27) |
+| **프로젝트 상태** | ✅ 100% 완료 / 🚀 배포 준비 완료 / 📚 아키텍처 최적화 |
 | **라이선스** | MIT |
 | **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | feat: Complete Phase 4 - Testing, Optimization & Deployment Documentation |
+| **최종 커밋** | docs: 종합 아키텍처 문서 시스템 완성 (5개 전문 문서 + CLAUDE.md 축약) |
 
-### 프로젝트 통계
-- **총 코드**: 8,744줄 (9 pages, 7 services, 6 utils, models)
-- **총 문서**: 2,100+줄 (6개 상세 문서)
-- **총 라인**: 11,244줄
+### 프로젝트 통계 (v1.2.0)
+- **총 코드**: 8,744줄 (9 pages + 7 services + 6 utils + models)
+- **총 문서**: 5,000+줄 (28개 분류별 체계적 문서)
+- **아키텍처 문서**: 1,930줄 (5개 신규 전문 문서)
+- **총 라인**: 13,944줄+
 - **테스트**: 50/50 통과 (100% ✅)
 - **시각화**: 35+ 인터랙티브 차트
 - **원두**: 13종
 - **블렌드**: 7개 프리미엄 블렌드
 - **페이지**: 9개 (모든 기능 완성)
+- **세션 관리**: SESSION_SUMMARY, 체크리스트 시스템
 
 ### Phase별 완료 현황
 ```
@@ -503,7 +535,7 @@ Phase 4: 테스트/최적화/배포        [████████████
 
 ---
 
-## 🚀 배포 가이드 (v2.0.0)
+## 🚀 배포 가이드 (v1.2.0)
 
 ### 로컬 실행
 ```bash
@@ -601,8 +633,14 @@ in the Software without restriction...
 
 ---
 
-**☕ The Moon Drip BAR | Roasting Cost Calculator v2.0.0**
+**☕ The Moon Drip BAR | Roasting Cost Calculator v1.2.0**
 
 **Made with ❤️ using Streamlit, SQLite, Pandas, NumPy, and Plotly**
+
+**✨ 아키텍처 최적화 완료**
+- 📚 28개 분류별 체계적 문서
+- 💡 모듈식 전문 문서 시스템
+- 🎯 토큰 효율성 최적화 (Claude Code 전용)
+- 🔄 세션 관리 시스템
 
 **🎉 프로젝트 100% 완료 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
