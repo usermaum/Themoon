@@ -8,8 +8,8 @@
 - Semantic Versioning 적용
 
 사용법:
-  python update_version.py --type patch --summary "버그 수정"
-  python update_version.py --type minor --summary "새 기능 추가"
+  python logs/update_version.py --type patch --summary "버그 수정"
+  python logs/update_version.py --type minor --summary "새 기능 추가"
 """
 
 import os
@@ -28,11 +28,15 @@ class VersionManager:
     def __init__(self, project_root=None):
         """버전 관리자 초기화"""
         if project_root is None:
-            project_root = os.path.dirname(os.path.abspath(__file__))
+            # 현재 스크립트 위치를 기준으로 프로젝트 루트 파악
+            current_file = os.path.abspath(__file__)
+            logs_dir = os.path.dirname(current_file)
+            project_root = os.path.dirname(logs_dir)
 
         self.project_root = project_root
-        self.version_file = os.path.join(project_root, "VERSION")
-        self.changelog_file = os.path.join(project_root, "CHANGELOG.md")
+        self.logs_dir = os.path.join(project_root, "logs")
+        self.version_file = os.path.join(self.logs_dir, "VERSION")
+        self.changelog_file = os.path.join(self.logs_dir, "CHANGELOG.md")
 
     def read_version(self):
         """현재 버전 읽기"""

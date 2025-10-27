@@ -66,7 +66,7 @@ MAJOR.MINOR.PATCH
 ### 1️⃣ 현재 버전 확인
 
 ```bash
-python3 update_version.py --show
+python3 logs/update_version.py --show
 ```
 
 **출력 예:**
@@ -77,7 +77,7 @@ python3 update_version.py --show
 ### 2️⃣ 버전 업데이트 (패치 - 버그 수정)
 
 ```bash
-python3 update_version.py \
+python3 logs/update_version.py \
   --type patch \
   --summary "폼 제출 버튼 오류 수정"
 ```
@@ -89,7 +89,7 @@ python3 update_version.py \
 ### 3️⃣ 버전 업데이트 (마이너 - 새 기능)
 
 ```bash
-python3 update_version.py \
+python3 logs/update_version.py \
   --type minor \
   --summary "Excel 내보내기 기능 개선"
 ```
@@ -101,7 +101,7 @@ python3 update_version.py \
 ### 4️⃣ 버전 업데이트 (메이저 - 구조 변경)
 
 ```bash
-python3 update_version.py \
+python3 logs/update_version.py \
   --type major \
   --summary "데이터베이스 스키마 대폭 개선"
 ```
@@ -113,7 +113,7 @@ python3 update_version.py \
 ### 5️⃣ 상세한 변경사항 포함
 
 ```bash
-python3 update_version.py \
+python3 logs/update_version.py \
   --type patch \
   --summary "성능 최적화" \
   --changes "
@@ -137,7 +137,7 @@ python3 update_version.py \
 # 변경: key="btn_outflow" 파라미터 제거
 
 # 2. 버전 업데이트
-python3 update_version.py \
+python3 logs/update_version.py \
   --type patch \
   --summary "FormMixin.form_submit_button() key 파라미터 제거"
 ```
@@ -152,7 +152,7 @@ python3 update_version.py \
 # 변경: 고급 분석 기능 추가
 
 # 2. 버전 업데이트
-python3 update_version.py \
+python3 logs/update_version.py \
   --type minor \
   --summary "고급 분석 기능 추가" \
   --changes "
@@ -165,7 +165,7 @@ python3 update_version.py \
 ### 예제 3: 여러 버그 수정
 
 ```bash
-python3 update_version.py \
+python3 logs/update_version.py \
   --type patch \
   --summary "여러 UI 오류 수정" \
   --changes "
@@ -261,7 +261,7 @@ vim CHANGELOG.md     # Vim
    (patch/minor/major)
         ↓
 4. 버전 업데이트 실행
-   python3 update_version.py \
+   python3 logs/update_version.py \
      --type [type] \
      --summary "설명"
         ↓
@@ -328,7 +328,7 @@ echo "0.1.0" > VERSION
 chmod +x update_version.py
 
 # 또는 Python으로 직접 실행
-python3 update_version.py --show
+python3 logs/update_version.py --show
 ```
 
 ### 문제: CHANGELOG.md 형식 오류

@@ -178,16 +178,16 @@ nano CHANGELOG.md
 
 ```bash
 # 패치 버전 업데이트
-python3 update_version.py --type patch --summary "버그 수정"
+python3 logs/update_version.py --type patch --summary "버그 수정"
 
 # 마이너 버전 업데이트
-python3 update_version.py --type minor --summary "새 기능 추가"
+python3 logs/update_version.py --type minor --summary "새 기능 추가"
 
 # 메이저 버전 업데이트
-python3 update_version.py --type major --summary "구조 변경"
+python3 logs/update_version.py --type major --summary "구조 변경"
 
 # 현재 버전 확인
-python3 update_version.py --show
+python3 logs/update_version.py --show
 ```
 
 ---
@@ -243,7 +243,7 @@ chmod +x .git/hooks/post-commit
 which python3
 
 # 4. 수동 실행 테스트
-python3 update_version.py --show
+python3 logs/update_version.py --show
 ```
 
 ### 커밋 메시지가 인식되지 않음

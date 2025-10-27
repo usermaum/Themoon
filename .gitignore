@@ -37,10 +37,15 @@ __pycache__/
 
 # Test Outputs
 screenshots/
-logs/
 outputs/
 .playwright-mcp/
 samples_image/
+
+# Logs - 일반 로그 파일만 무시, 버전 관리 파일은 추적
+logs/*.log
+logs/*.txt
+logs/*screenshot*
+logs/*temp*
 
 # Data Backups (keep production data)
 app/data/backups/
