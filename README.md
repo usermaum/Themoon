@@ -118,16 +118,37 @@ TheMoon_Project/
 │   ├── roasting_data.db               # SQLite 데이터베이스
 │   └── backups/                       # 자동 백업 디렉토리 (선택)
 │
-├── Documents/                         # 6개 상세 문서 ✅
-│   ├── 배포가이드.md                  # 배포 설명서 (600+줄)
-│   ├── 사용자가이드.md                # 사용자 설명서 (800+줄)
-│   ├── 성능최적화_가이드.md           # 성능 최적화 (220줄)
-│   ├── PHASE1_완료_및_재개가이드.md   # Phase 1 완료 보고서
-│   ├── PHASE2_완료_및_테스트가이드.md # Phase 2 완료 보고서
-│   ├── PHASE3_완료_및_최종요약.md     # Phase 3 완료 보고서
-│   ├── PHASE4_완료_최종정리.md        # Phase 4 완료 보고서
-│   ├── roasting_and_abbrev.mdc        # 로스팅 용어 정리
-│   └── the_moon.mdc                   # 사업 개요
+├── Documents/                         # 분류별 체계적 문서 관리 ✅
+│   │
+│   ├── Architecture/                  # 아키텍처 & 설계 문서 (3개)
+│   │   ├── COMPONENT_DESIGN.md        # 재사용 컴포넌트 설계 (상세 아키텍처)
+│   │   ├── COMPONENT_USAGE_GUIDE.md   # 컴포넌트 사용 가이드
+│   │   └── PROJECT_SETUP_GUIDE.md     # 프로젝트 재구성 가이드
+│   │
+│   ├── Guides/                        # 사용자 & 개발 가이드 (3개)
+│   │   ├── 배포가이드.md              # 배포 설명서 (600+줄)
+│   │   ├── 사용자가이드.md            # 사용자 설명서 (800+줄)
+│   │   └── 성능최적화_가이드.md       # 성능 최적화 (220줄)
+│   │
+│   ├── Progress/                      # 진행 상황 & 단계별 보고서 (6개)
+│   │   ├── 00_프로젝트_진행상황.md    # 프로젝트 전체 진행상황
+│   │   ├── PHASE1_완료_및_재개가이드.md
+│   │   ├── PHASE2_완료_및_테스트가이드.md
+│   │   ├── PHASE3_완료_및_최종요약.md
+│   │   ├── PHASE4_완료_최종정리.md
+│   │   └── SESSION_SUMMARY_2025-10-24.md
+│   │
+│   ├── Planning/                      # 구현 계획 & 설계 (2개)
+│   │   ├── 웹페이지_구현_마스터플랜.md
+│   │   └── 웹페이지_구현_마스터플랜.docx
+│   │
+│   └── Resources/                     # 참고 자료 & 데이터 (6개)
+│       ├── roasting_and_abbrev.mdc    # 로스팅 용어 정리
+│       ├── the_moon.mdc               # 사업 개요
+│       ├── 로스팅일지_분석결과.xlsx
+│       ├── 로스팅일지_분석보고서.docx
+│       ├── 메뉴판.xlsx
+│       └── 문드립바 로스팅 일지.xlsx
 │
 ├── run.py                             # 메인 런처 스크립트
 ├── requirements.txt                   # Python 패키지 의존성 (5개)
@@ -404,21 +425,38 @@ git push origin main
 
 ## 📚 참고 문서 (v2.0.0)
 
-### 📖 사용자 가이드
+### 🏗️ 아키텍처 & 설계 (Documents/Architecture/)
+- **COMPONENT_DESIGN.md** - 재사용 컴포넌트 시스템 설계 및 상세 아키텍처
+- **COMPONENT_USAGE_GUIDE.md** - 15+ 재사용 컴포넌트 사용 가이드
+- **PROJECT_SETUP_GUIDE.md** - 프로젝트 재구성 및 설정 가이드
+
+### 📖 사용자 가이드 (Documents/Guides/)
 - **배포가이드.md** - Docker, Nginx, SSL, 스케일링, 롤백 절차 (600+줄)
 - **사용자가이드.md** - 9개 페이지 상세 사용 방법, FAQ, 문제 해결 (800+줄)
 - **성능최적화_가이드.md** - 성능 측정, 최적화 권장사항, 병목 지점 분석 (220줄)
 
-### 📋 완료 보고서
-- **PHASE1_완료_및_재개가이드.md** - Phase 1 기본 구조 완료
-- **PHASE2_완료_및_테스트가이드.md** - Phase 2 핵심 기능 완료
-- **PHASE3_완료_및_최종요약.md** - Phase 3 고급 기능 완료
-- **PHASE4_완료_최종정리.md** - Phase 4 테스트/배포 완료
+### 📋 진행 상황 & 완료 보고서 (Documents/Progress/)
+- **00_프로젝트_진행상황.md** - 전체 프로젝트 진행 상황 요약
+- **PHASE1_완료_및_재개가이드.md** - Phase 1 기본 구조 완료 보고서
+- **PHASE2_완료_및_테스트가이드.md** - Phase 2 핵심 기능 완료 보고서
+- **PHASE3_완료_및_최종요약.md** - Phase 3 고급 기능 완료 보고서
+- **PHASE4_완료_최종정리.md** - Phase 4 테스트/배포 완료 보고서
+- **SESSION_SUMMARY_2025-10-24.md** - 최근 세션 요약 문서
+
+### 🎯 구현 계획 (Documents/Planning/)
+- **웹페이지_구현_마스터플랜.md** - 웹페이지 구현 마스터플랜
+- **웹페이지_구현_마스터플랜.docx** - 마스터플랜 Word 형식
+
+### 📚 참고 자료 (Documents/Resources/)
+- **the_moon.mdc** - 사업 모델 및 개요
+- **roasting_and_abbrev.mdc** - 로스팅 용어 및 약어 정리
+- **로스팅일지_분석결과.xlsx** - 로스팅 데이터 분석 결과
+- **로스팅일지_분석보고서.docx** - 로스팅 분석 보고서
+- **메뉴판.xlsx** - 메뉴판 데이터
+- **문드립바 로스팅 일지.xlsx** - 로스팅 일지 원본
 
 ### 🛠️ 개발자 가이드
 - **.claude/CLAUDE.md** - 개발 규칙, 아키텍처, 환경 설정 (프로젝트 격리 venv 필수)
-- **Documents/the_moon.mdc** - 사업 모델 및 개요
-- **Documents/roasting_and_abbrev.mdc** - 로스팅 용어 및 약어 정리
 
 ---
 

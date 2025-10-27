@@ -78,9 +78,32 @@ TheMoon_Project/
 ├── Data/
 │   └── roasting_data.db    # SQLite database (roasting logs & prices)
 │
-├── Documents/              # Project documentation & references
-│   ├── roasting_and_abbrev.mdc    # Roasting terminology
-│   └── the_moon.mdc               # Business overview
+├── Documents/              # 분류별 체계적 문서 관리 (20개 파일)
+│   ├── Architecture/       # 아키텍처 & 설계 (3개)
+│   │   ├── COMPONENT_DESIGN.md
+│   │   ├── COMPONENT_USAGE_GUIDE.md
+│   │   └── PROJECT_SETUP_GUIDE.md
+│   ├── Guides/            # 사용자 & 배포 가이드 (3개)
+│   │   ├── 배포가이드.md
+│   │   ├── 사용자가이드.md
+│   │   └── 성능최적화_가이드.md
+│   ├── Progress/          # 진행 상황 & PHASE 보고서 (6개)
+│   │   ├── 00_프로젝트_진행상황.md
+│   │   ├── PHASE1_완료_및_재개가이드.md
+│   │   ├── PHASE2_완료_및_테스트가이드.md
+│   │   ├── PHASE3_완료_및_최종요약.md
+│   │   ├── PHASE4_완료_최종정리.md
+│   │   └── SESSION_SUMMARY_2025-10-24.md
+│   ├── Planning/          # 구현 계획 & 설계 (2개)
+│   │   ├── 웹페이지_구현_마스터플랜.md
+│   │   └── 웹페이지_구현_마스터플랜.docx
+│   └── Resources/         # 참고 자료 & 데이터 (6개)
+│       ├── roasting_and_abbrev.mdc
+│       ├── the_moon.mdc
+│       ├── 로스팅일지_분석결과.xlsx
+│       ├── 로스팅일지_분석보고서.docx
+│       ├── 메뉴판.xlsx
+│       └── 문드립바 로스팅 일지.xlsx
 │
 ├── run.py                  # Main launcher (entry point)
 ├── requirements.txt        # Python dependencies (5 core packages)
