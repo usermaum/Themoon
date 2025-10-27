@@ -1,7 +1,6 @@
 [client]
 # 사이드바 설정
 showSidebarNavigation = true
-allowRunOnSave = true
 
 [theme]
 # 다크 테마 설정
@@ -25,4 +24,3 @@ level = "info"
 [ui]
 # UI 설정
 hideTopBar = false
-hideFooter = false
