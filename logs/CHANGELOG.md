@@ -11,6 +11,13 @@
 
 ---
 
+## [0.1.3] - 2025-10-27
+
+### 🐛 패치 (Bug Fix): docs: Add comprehensive version management documentation to CLAUDE.md
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
 ## [0.1.2] - 2025-10-27
 
 ### 🐛 패치 (Bug Fix): Remove unsupported Streamlit config options
