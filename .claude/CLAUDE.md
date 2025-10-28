@@ -80,4 +80,82 @@ TheMoon_Project/
 
 ---
 
-마지막 업데이트: 2025-10-27
+## 🎯 세션 관리 시스템 (PRIMARY SOURCE OF TRUTH)
+
+> ⚠️ **매우 중요**: 아래의 세 파일이 모든 세션 관리의 기준입니다.
+> 새로운 파일이나 규칙을 만들기 전에 항상 이 파일들을 먼저 확인하세요!
+
+### 필수 파일 (어제 정한 공식 시스템)
+
+| 파일 | 위치 | 용도 | 필수 여부 |
+|------|------|------|---------|
+| **SESSION_START_CHECKLIST** | `Documents/Progress/SESSION_START_CHECKLIST.md` | 세션 시작 시 반드시 확인 | ✅ 필수 |
+| **SESSION_END_CHECKLIST** | `Documents/Progress/SESSION_END_CHECKLIST.md` | 세션 종료 시 반드시 완료 | ✅ 필수 |
+| **VERSION_MANAGEMENT** | `logs/VERSION_MANAGEMENT.md` | 버전 관리 규칙 | ✅ 필수 |
+| **SESSION_SUMMARY** | `Documents/Progress/SESSION_SUMMARY_*.md` | 각 세션별 진행 기록 | ✅ 필수 |
+| **CHANGELOG** | `logs/CHANGELOG.md` | 프로젝트 변경 로그 | ✅ 필수 |
+| **VERSION** | `logs/VERSION` | 현재 버전 파일 | ✅ 필수 |
+
+### 세션 시작 (매번 필수)
+
+```bash
+# 1단계: SESSION_START_CHECKLIST 읽기
+cat Documents/Progress/SESSION_START_CHECKLIST.md
+
+# 2단계: 지난 세션 요약 읽기
+ls -lt Documents/Progress/SESSION_SUMMARY_*.md | head -1
+# 가장 최신 파일 읽기
+
+# 3단계: 버전 관리 규칙 확인 (필요시)
+cat logs/VERSION_MANAGEMENT.md | head -50
+```
+
+### 세션 종료 (매번 필수)
+
+```bash
+# 1단계: SESSION_END_CHECKLIST 모든 항목 완료
+cat Documents/Progress/SESSION_END_CHECKLIST.md
+
+# 2단계: SESSION_SUMMARY 작성
+# 파일명: Documents/Progress/SESSION_SUMMARY_YYYY-MM-DD.md
+
+# 3단계: 커밋 확인
+git status
+```
+
+### 버전 관리 규칙
+
+모든 버전 업데이트는 다음 파일을 따릅니다:
+- **logs/VERSION_MANAGEMENT.md** - 공식 버전 관리 가이드
+- **logs/CHANGELOG.md** - 변경 로그 기록
+- **logs/VERSION** - 현재 버전 저장
+
+---
+
+## ⚠️ 중요한 주의사항
+
+### 새로운 파일을 만들지 말 것!
+
+❌ **하지 말 것**: 위의 6개 파일 외에 새로운 세션 관리 파일을 만드는 것
+
+```
+예시 - 하지 말 것:
+❌ .claude/SESSION_CONTEXT.md
+❌ .claude/RULES_CHECKLIST.md
+❌ .claude/NEXT_SESSION_PROMPT.md
+```
+
+✅ **대신 할 것**: 위의 6개 파일만 사용하기
+
+### 이전 세션의 결정 존중
+
+각 세션에서 정한 규칙과 체계는 **다음 세션에서도 그대로 따릅니다**.
+
+- 새 규칙을 만들기 전에 이전 규칙이 있는지 확인
+- 기존 체계를 그대로 사용
+- 필요시 기존 파일을 수정 (새 파일 생성 금지)
+
+---
+
+마지막 업데이트: 2025-10-28
+세션 관리 시스템 확립: v1.2.0
