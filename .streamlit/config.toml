@@ -1,6 +1,6 @@
 [client]
 # 사이드바 설정
-showSidebarNavigation = true
+showSidebarNavigation = false
 
 [theme]
 # 다크 테마 설정

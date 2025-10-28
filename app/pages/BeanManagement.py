@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models import SessionLocal
 from services.bean_service import BeanService
 from i18n import Translator, LanguageManager
+from components.sidebar import render_sidebar
 
 # 다중 언어 지원 초기화
 if "translator" not in st.session_state:
@@ -28,6 +29,9 @@ st.set_page_config(page_title=page_title, page_icon="☕", layout="wide")
 
 # 현재 페이지 저장 (사이드바 활성 표시)
 st.session_state["current_page"] = "BeanManagement"
+
+# 사이드바 렌더링
+render_sidebar()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 세션 상태 초기화
