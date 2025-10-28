@@ -16,6 +16,7 @@ from models import SessionLocal, init_db
 from services.bean_service import BeanService
 from services.blend_service import BlendService
 from utils.constants import UI_CONFIG
+from i18n import Translator, LanguageManager
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🎨 페이지 설정
@@ -89,6 +90,13 @@ def init_session_state():
     if "blend_service" not in st.session_state:
         st.session_state.blend_service = BlendService(st.session_state.db)
 
+    # 다중 언어 지원 초기화
+    if "translator" not in st.session_state:
+        st.session_state.translator = Translator(default_language="ko")
+
+    if "language_manager" not in st.session_state:
+        st.session_state.language_manager = LanguageManager(st.session_state.translator)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🏠 헤더 및 사이드바
@@ -113,17 +121,31 @@ def render_header():
 def render_sidebar():
     """사이드바 렌더링"""
     with st.sidebar:
-        st.markdown("### 🔗 네비게이션")
+        # 언어 선택 UI
+        lang_manager = st.session_state.language_manager
+        translator = st.session_state.translator
+        current_lang = lang_manager.get_current_language()
 
-        st.info("""
-        좌측 상단의 ☰ 메뉴를 통해 페이지를 이동합니다:
+        st.markdown(f"### {translator.get('sidebar.language_label', '언어 선택')}")
+        col1, col2, col3 = st.columns(3)
 
-        - 🏠 **홈** (현재)
-        - 🎨 **블렌딩관리**
-        - ☕ **원두관리**
-        - 📊 **분석**
-        - 📦 **재고관리**
-        """)
+        with col1:
+            if st.button(translator.get("sidebar.language_korean", "🇰🇷 한글"), use_container_width=True):
+                if lang_manager.set_current_language("ko"):
+                    st.rerun()
+
+        with col3:
+            if st.button(translator.get("sidebar.language_english", "🇬🇧 English"), use_container_width=True):
+                if lang_manager.set_current_language("en"):
+                    st.rerun()
+
+        st.divider()
+
+        # 네비게이션 정보
+        st.markdown(f"### {translator.get('sidebar.navigation_title', '🔗 네비게이션')}")
+
+        menu_info = translator.get("sidebar.info_message", "좌측 상단의 ☰ 메뉴를 통해 페이지를 이동합니다:")
+        st.info(menu_info)
 
         st.divider()
 
@@ -139,16 +161,16 @@ def render_sidebar():
 
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("☕ 원두", len(beans))
+            st.metric("☕", len(beans))
         with col2:
-            st.metric("🎨 블렌드", len(blends))
+            st.metric("🎨", len(blends))
 
         st.divider()
 
         # 도구
         st.markdown("### ⚙️ 도구")
 
-        if st.button("🔄 새로고침", use_container_width=True):
+        if st.button("🔄", use_container_width=True):
             st.rerun()
 
         st.divider()

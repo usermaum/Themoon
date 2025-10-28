@@ -14,8 +14,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import SessionLocal, Inventory, Transaction
 from services.bean_service import BeanService
+from i18n import Translator, LanguageManager
 
-st.set_page_config(page_title="재고관리", page_icon="📦", layout="wide")
+# 다중 언어 지원 초기화
+if "translator" not in st.session_state:
+    st.session_state.translator = Translator(default_language="ko")
+
+if "language_manager" not in st.session_state:
+    st.session_state.language_manager = LanguageManager(st.session_state.translator)
+
+# 페이지 설정 (다중 언어 지원)
+translator = st.session_state.translator
+page_title = translator.get("menu.inventory_management.page_title", "재고관리")
+st.set_page_config(page_title=page_title, page_icon="📦", layout="wide")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 세션 상태 초기화

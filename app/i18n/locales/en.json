@@ -1,0 +1,203 @@
+{
+  "app": {
+    "title": "The Moon Drip BAR",
+    "subtitle": "The Moon Drip BAR - Roasting Management System",
+    "page_icon": "☕"
+  },
+  "menu": {
+    "home": {
+      "name": "Home",
+      "icon": "🏠",
+      "page_title": "Home"
+    },
+    "bean_management": {
+      "name": "Bean Management",
+      "icon": "☕",
+      "page_title": "Bean Management"
+    },
+    "blend_management": {
+      "name": "Blend Management",
+      "icon": "🎨",
+      "page_title": "Blend Management"
+    },
+    "analysis": {
+      "name": "Analysis",
+      "icon": "📊",
+      "page_title": "Analysis"
+    },
+    "inventory_management": {
+      "name": "Inventory Management",
+      "icon": "📦",
+      "page_title": "Inventory Management"
+    },
+    "dashboard": {
+      "name": "Dashboard",
+      "icon": "📊",
+      "page_title": "Dashboard"
+    },
+    "settings": {
+      "name": "Settings",
+      "icon": "⚙️",
+      "page_title": "Settings"
+    },
+    "report": {
+      "name": "Report",
+      "icon": "📄",
+      "page_title": "Report"
+    },
+    "excel_sync": {
+      "name": "Excel Sync",
+      "icon": "📊",
+      "page_title": "Excel Sync"
+    },
+    "advanced_analysis": {
+      "name": "Advanced Analysis",
+      "icon": "📈",
+      "page_title": "Advanced Analysis"
+    }
+  },
+  "sidebar": {
+    "navigation_title": "🔗 Navigation",
+    "language_label": "Select Language",
+    "language_korean": "🇰🇷 Korean",
+    "language_english": "🇬🇧 English",
+    "info_message": "Use the ☰ menu at the top left to navigate between pages:"
+  },
+  "home": {
+    "title": "☕ The Moon Drip BAR",
+    "subtitle": "Welcome to the Roasting Cost Management System!",
+    "main_title": "The Moon Drip BAR - Roasting Cost Calculator",
+    "description": "Systematically manage every step of coffee bean roasting.",
+    "quick_access": "Quick Access",
+    "bean_management_btn": "☕ Go to Bean Management",
+    "blend_management_btn": "🎨 Go to Blend Management",
+    "analysis_btn": "📊 Go to Analysis",
+    "inventory_btn": "📦 Go to Inventory Management",
+    "dashboard_btn": "📊 Go to Dashboard",
+    "features": "Key Features",
+    "feature_1_title": "Bean Management",
+    "feature_1_desc": "Register and manage information about various coffee beans.",
+    "feature_2_title": "Blend Recipes",
+    "feature_2_desc": "Save and compare your unique blend recipes.",
+    "feature_3_title": "Roasting Records",
+    "feature_3_desc": "Record daily roasting operations and analyze them.",
+    "feature_4_title": "Cost Tracking",
+    "feature_4_desc": "Track bean purchase prices and roasting costs.",
+    "feature_5_title": "Sales Management",
+    "feature_5_desc": "Record sales information and calculate revenue.",
+    "feature_6_title": "Data Analysis",
+    "feature_6_desc": "Gain insights from sales trends and cost analysis."
+  },
+  "common": {
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "search": "Search",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "no_data": "No data available",
+    "required": "This field is required"
+  },
+  "bean_management": {
+    "title": "Bean Management",
+    "description": "Register, edit, and delete bean information.",
+    "bean_name": "Bean Name",
+    "country": "Origin Country",
+    "roast_level": "Roast Level",
+    "cost_per_kg": "Bean Price (₩/kg)",
+    "weight_per_kg": "Package Weight (kg)",
+    "notes": "Notes",
+    "add_bean": "Add Bean",
+    "edit_bean": "Edit Bean",
+    "delete_bean": "Delete Bean",
+    "bean_list": "Bean List"
+  },
+  "blend_management": {
+    "title": "Blend Management",
+    "description": "Manage blend recipes.",
+    "blend_name": "Blend Name",
+    "composition": "Composition",
+    "recipe": "Recipe",
+    "add_blend": "Add Blend",
+    "edit_blend": "Edit Blend",
+    "delete_blend": "Delete Blend",
+    "blend_list": "Blend List"
+  },
+  "roasting": {
+    "title": "Roasting Records",
+    "date": "Date",
+    "bean_type": "Bean Type",
+    "quantity": "Quantity (g)",
+    "roast_time": "Roasting Time (min)",
+    "roast_level": "Roast Level",
+    "temperature": "Temperature (°C)",
+    "notes": "Notes",
+    "add_record": "Add Record",
+    "roasting_log": "Roasting Log"
+  },
+  "inventory": {
+    "title": "Inventory Management",
+    "bean_name": "Bean Name",
+    "current_stock": "Current Stock (kg)",
+    "minimum_stock": "Minimum Stock (kg)",
+    "last_updated": "Last Updated",
+    "update_inventory": "Update Inventory",
+    "low_stock_warning": "Low Stock Warning"
+  },
+  "sales": {
+    "title": "Sales Management",
+    "date": "Sale Date",
+    "product": "Product",
+    "quantity": "Quantity",
+    "price_per_unit": "Unit Price",
+    "total_price": "Total Price",
+    "customer_name": "Customer Name",
+    "add_sale": "Add Sale Record",
+    "sales_history": "Sales History"
+  },
+  "analysis": {
+    "title": "Analysis",
+    "daily_sales": "Daily Sales",
+    "monthly_revenue": "Monthly Revenue",
+    "cost_breakdown": "Cost Breakdown",
+    "top_products": "Top Products",
+    "bean_usage": "Bean Usage",
+    "sales_trend": "Sales Trend"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "total_sales": "Total Sales",
+    "total_revenue": "Total Revenue",
+    "total_cost": "Total Cost",
+    "profit": "Profit",
+    "this_month": "This Month",
+    "today": "Today",
+    "recent_sales": "Recent Sales",
+    "inventory_status": "Inventory Status"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "database": "Database",
+    "backup": "Backup",
+    "restore": "Restore",
+    "about": "About"
+  },
+  "messages": {
+    "save_success": "Saved successfully.",
+    "delete_success": "Deleted successfully.",
+    "delete_confirm": "Are you sure you want to delete?",
+    "error_occurred": "An error occurred.",
+    "please_fill_required": "Please fill in all required fields.",
+    "no_data_found": "No data found.",
+    "loading_data": "Loading data..."
+  }
+}
