@@ -27,6 +27,9 @@ translator = st.session_state.translator
 page_title = translator.get("menu.settings.page_title", "설정")
 st.set_page_config(page_title=page_title, page_icon="⚙️", layout="wide")
 
+# 현재 페이지 저장 (사이드바 활성 표시)
+st.session_state["current_page"] = "Settings"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # 세션 상태 초기화
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -26,6 +26,9 @@ translator = st.session_state.translator
 page_title = translator.get("menu.bean_management.page_title", "원두관리")
 st.set_page_config(page_title=page_title, page_icon="☕", layout="wide")
 
+# 현재 페이지 저장 (사이드바 활성 표시)
+st.session_state["current_page"] = "BeanManagement"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # 세션 상태 초기화
 # ═══════════════════════════════════════════════════════════════════════════════

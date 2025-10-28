@@ -281,49 +281,115 @@ def render_sidebar():
         st.divider()
 
         # ═══════════════════════════════════════════════════════════
-        # 3️⃣ 핵심 기능
+        # 3️⃣ 핵심 기능 (현재 페이지 자동 감지)
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📌 핵심 기능")
 
-        if st.button("🏠 홈", use_container_width=True, key="nav_home"):
+        # 현재 페이지 감지
+        current_page = st.session_state.get("current_page", "home")
+
+        # 홈
+        if st.button(
+            "🏠 홈",
+            type="primary" if current_page == "home" else "secondary",
+            use_container_width=True,
+            key="nav_home"
+        ):
+            st.session_state["current_page"] = "home"
             st.switch_page("app.py")
 
-        if st.button("☕ 원두관리", use_container_width=True, key="nav_bean"):
+        # 원두관리
+        if st.button(
+            "☕ 원두관리",
+            type="primary" if current_page == "BeanManagement" else "secondary",
+            use_container_width=True,
+            key="nav_bean"
+        ):
+            st.session_state["current_page"] = "BeanManagement"
             st.switch_page("pages/BeanManagement.py")
 
-        if st.button("🎨 블렌딩관리", use_container_width=True, key="nav_blend"):
+        # 블렌딩관리
+        if st.button(
+            "🎨 블렌딩관리",
+            type="primary" if current_page == "BlendManagement" else "secondary",
+            use_container_width=True,
+            key="nav_blend"
+        ):
+            st.session_state["current_page"] = "BlendManagement"
             st.switch_page("pages/BlendManagement.py")
 
-        if st.button("📊 분석", use_container_width=True, key="nav_analysis"):
+        # 분석
+        if st.button(
+            "📊 분석",
+            type="primary" if current_page == "Analysis" else "secondary",
+            use_container_width=True,
+            key="nav_analysis"
+        ):
+            st.session_state["current_page"] = "Analysis"
             st.switch_page("pages/Analysis.py")
 
         st.divider()
 
         # ═══════════════════════════════════════════════════════════
-        # 4️⃣ 운영 관리
+        # 4️⃣ 운영 관리 (현재 페이지 자동 감지)
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📦 운영 관리")
 
-        if st.button("📦 재고관리", use_container_width=True, key="nav_inventory"):
+        # 재고관리
+        if st.button(
+            "📦 재고관리",
+            type="primary" if current_page == "InventoryManagement" else "secondary",
+            use_container_width=True,
+            key="nav_inventory"
+        ):
+            st.session_state["current_page"] = "InventoryManagement"
             st.switch_page("pages/InventoryManagement.py")
 
-        if st.button("📋 보고서", use_container_width=True, key="nav_report"):
+        # 보고서
+        if st.button(
+            "📋 보고서",
+            type="primary" if current_page == "Report" else "secondary",
+            use_container_width=True,
+            key="nav_report"
+        ):
+            st.session_state["current_page"] = "Report"
             st.switch_page("pages/Report.py")
 
-        if st.button("📑 Excel동기화", use_container_width=True, key="nav_excel"):
+        # Excel동기화
+        if st.button(
+            "📑 Excel동기화",
+            type="primary" if current_page == "ExcelSync" else "secondary",
+            use_container_width=True,
+            key="nav_excel"
+        ):
+            st.session_state["current_page"] = "ExcelSync"
             st.switch_page("pages/ExcelSync.py")
 
         st.divider()
 
         # ═══════════════════════════════════════════════════════════
-        # 5️⃣ 고급 기능
+        # 5️⃣ 고급 기능 (현재 페이지 자동 감지)
         # ═══════════════════════════════════════════════════════════
         st.markdown("### ⭐ 고급 기능")
 
-        if st.button("🔬 고급분석", use_container_width=True, key="nav_advanced"):
+        # 고급분석
+        if st.button(
+            "🔬 고급분석",
+            type="primary" if current_page == "AdvancedAnalysis" else "secondary",
+            use_container_width=True,
+            key="nav_advanced"
+        ):
+            st.session_state["current_page"] = "AdvancedAnalysis"
             st.switch_page("pages/AdvancedAnalysis.py")
 
-        if st.button("⚙️ 설정", use_container_width=True, key="nav_settings"):
+        # 설정
+        if st.button(
+            "⚙️ 설정",
+            type="primary" if current_page == "Settings" else "secondary",
+            use_container_width=True,
+            key="nav_settings"
+        ):
+            st.session_state["current_page"] = "Settings"
             st.switch_page("pages/Settings.py")
 
         st.divider()
@@ -382,6 +448,9 @@ def render_sidebar():
 
 def render_home():
     """홈 페이지"""
+    # 현재 페이지 저장 (사이드바 활성 표시)
+    st.session_state["current_page"] = "home"
+
     render_header()
 
     st.divider()
