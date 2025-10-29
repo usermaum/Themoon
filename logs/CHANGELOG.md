@@ -11,6 +11,24 @@
 
 ---
 
+## [0.2.1] - 2025-10-29
+
+### 🐛 패치 (Bug Fix): test_data.py 현재 데이터베이스 스키마에 맞게 수정
+
+#### 📝 변경사항
+1. **app/test_data.py** - 데이터베이스 스키마 업데이트
+   - 이전 sqlite3 직접 사용 → SQLAlchemy ORM 사용으로 변경
+   - bean_prices 테이블 참조 제거 (Bean 모델의 price_per_kg 사용)
+   - roasting_logs 테이블 → transactions 테이블로 변경
+   - 모델 import 경로 수정 (models.models → models)
+   - Bean 상태값 "활성" → "active"로 수정
+
+#### 📊 결과
+- ✅ 60개의 테스트 거래 데이터 생성 완료
+  - 입고 거래: 30개
+  - 출고 거래: 30개
+  - 마지막 30일 거래 기록 생성
+
 ## [0.2.0] - 2025-10-29
 
 ### ✨ 마이너 업데이트 (Minor Update): 3가지 기능 개선 적용
