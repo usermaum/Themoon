@@ -4,7 +4,7 @@ SQLAlchemy ORM 기반 DB 관리
 """
 
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -154,6 +154,28 @@ class CostSetting(Base):
 
     def __repr__(self):
         return f"<CostSetting({self.parameter_name}={self.value})>"
+
+
+class RoastingLog(Base):
+    """로스팅 기록"""
+    __tablename__ = "roasting_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    raw_weight_kg = Column(Float, nullable=False)  # 생두 투입량
+    roasted_weight_kg = Column(Float, nullable=False)  # 로스팅 후 무게
+    loss_rate_percent = Column(Float, nullable=False)  # 손실률 (자동 계산)
+    expected_loss_rate_percent = Column(Float, default=17.0)  # 예상 손실률
+    loss_variance_percent = Column(Float, nullable=True)  # 손실률 편차
+
+    roasting_date = Column(Date, nullable=False)  # 로스팅 날짜
+    roasting_month = Column(String(7), nullable=True)  # YYYY-MM
+
+    notes = Column(Text, nullable=True)  # 로스팅 노트
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<RoastingLog(date={self.roasting_date}, raw={self.raw_weight_kg}kg, loss={self.loss_rate_percent}%)>"
 
 
 # ═══════════════════════════════════════════════════════════════
