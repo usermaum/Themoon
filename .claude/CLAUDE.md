@@ -125,6 +125,21 @@ git commit -m "type: 한글 설명"
 git log --oneline -1
 ```
 
+### ⚠️ README.md 버전 동기화 (매 세션 종료 시 필수!)
+
+```bash
+# 현재 버전 확인
+CURRENT_VERSION=$(cat logs/VERSION)
+
+# README.md의 모든 버전 정보를 logs/VERSION과 일치시킬 것!
+# - Line 3: v1.2.0 → v$CURRENT_VERSION (타이틀)
+# - Line 7: v1.2.0 → v$CURRENT_VERSION (프로젝트 상태)
+# - Line 11, 67, 492, 503, 537: 모든 버전 표기
+# - Line 501: 최근 커밋 해시 업데이트
+```
+
+**💡 중요**: README.md의 버전이 logs/VERSION과 다르면 안 됩니다!
+
 **커밋 타입**:
 - `feat`: 새로운 기능
 - `fix`: 버그 수정
