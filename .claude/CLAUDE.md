@@ -147,6 +147,31 @@ CURRENT_VERSION=$(cat logs/VERSION)
 - `docs`: 문서 작성/수정
 - `chore`: 설정 변경, 패키지 업데이트
 
+### 📌 버전 업데이트 규칙 (명시적)
+
+**각 작업 완료 후:**
+```bash
+# ✅ 커밋만 한다 (버전 업데이트 ❌)
+git add .
+git commit -m "type: 설명"
+```
+
+**세션 종료 시 (최종 1회만):**
+```bash
+# ✅ 이번 세션의 모든 변경사항을 합쳐서 버전 한 번에 업데이트
+# logs/VERSION_MANAGEMENT.md 참조하여 적절한 타입 선택 (patch/minor/major)
+
+./venv/bin/python logs/update_version.py \
+  --type patch \
+  --summary "이번 세션의 작업 요약"
+
+# 그 후 README.md의 버전 동기화
+```
+
+**⚠️ 중요**:
+- 작업마다 → **커밋만**
+- 세션 종료 → **버전 업데이트** (logs/VERSION_MANAGEMENT.md 참조)
+
 ---
 
 ### 세션 종료 (매번 필수)
