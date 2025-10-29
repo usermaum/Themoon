@@ -192,12 +192,23 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 git status
 ```
 
-### 버전 관리 규칙
+### 버전 관리 규칙 (핵심 3가지)
 
 모든 버전 업데이트는 다음 파일을 따릅니다:
-- **logs/VERSION_MANAGEMENT.md** - 공식 버전 관리 가이드
+- **logs/VERSION_STRATEGY.md** - 📌 효율적인 버전관리 전략 (우선 읽기!)
+- **logs/VERSION_MANAGEMENT.md** - 공식 버전 관리 가이드 사용법
 - **logs/CHANGELOG.md** - 변경 로그 기록
 - **logs/VERSION** - 현재 버전 저장
+
+**버전 올리기 기준** (필수 암기):
+```
+PATCH: 버그 3개 이상 OR 문서 5개 이상 누적 (주 1~3회)
+MINOR: 새 기능 3~4개 이상 추가 (월 1회)
+MAJOR: 호환성 변경 (년 1~2회)
+```
+
+**⚠️ 주의**: 작은 변경사항으로 매번 버전 올리지 말 것!
+→ 누적 기준 만족 시에만 버전 올림
 
 ---
 
