@@ -13,7 +13,7 @@ def render_sidebar():
         # 1️⃣ 로고 영역
         # ═══════════════════════════════════════════════════════════
         st.markdown("""
-        <div style='text-align: center; padding: 1.5rem 0 2rem 0;'>
+        <div style='text-align: center; padding: 1rem 0 1.5rem 0;'>
             <h2 style='margin: 0; color: #1F4E78; font-size: 28px;'>☕ The Moon</h2>
             <p style='margin: 4px 0 0 0; font-size: 12px; color: #999;'>Drip BAR Roasting System</p>
         </div>
@@ -202,11 +202,11 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### ℹ️ 정보")
         st.caption(f"""
-        **{UI_CONFIG["app_title"]}** v1.5.0
+        **{UI_CONFIG["app_title"]}** v0.1.0
 
         🚀 Claude Desktop Style UI
-        📅 업데이트: 2025-10-28
-        🎯 상태: 운영 중
+        📅 업데이트: 2025-10-29
+        🎯 상태: 개발 중
 
         **현재 데이터:**
         - 원두: {len(beans)}종

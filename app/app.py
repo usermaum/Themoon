@@ -88,8 +88,8 @@ st.markdown("""
         text-transform: uppercase;
         color: var(--text-muted);
         letter-spacing: 0.5px;
-        margin-top: 1.5rem;
-        margin-bottom: 0.5rem;
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
         padding-left: 0.5rem;
     }
 
@@ -102,7 +102,7 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton > button {
         width: 100%;
         text-align: left;
-        padding: 12px 16px;
+        padding: 10px 16px;
         border-radius: 8px;
         border: none;
         background-color: transparent !important;
@@ -110,7 +110,7 @@ st.markdown("""
         font-size: 14px;
         font-weight: 400;
         transition: all 0.2s ease;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         cursor: pointer;
         border-left: 4px solid transparent;
     }
@@ -123,16 +123,23 @@ st.markdown("""
     }
 
     /* 사이드바 버튼 활성 (primary type) */
-    [data-testid="stSidebar"] .stButton[role="button"] > button {
+    [data-testid="stSidebar"] [role="button"] > button[kind="primary"] {
         background-color: var(--secondary) !important;
         color: white !important;
         font-weight: 600;
-        border-left: 4px solid var(--primary) !important;
+        border-left-color: var(--primary) !important;
+    }
+
+    /* Primary 버튼 추가 스타일 */
+    [data-testid="stSidebar"] button[kind="primary"] {
+        background-color: var(--secondary) !important;
+        color: white !important;
+        font-weight: 600;
     }
 
     /* Divider 스타일 */
     [data-testid="stSidebar"] hr {
-        margin: 1rem 0;
+        margin: 0.75rem 0;
         border: none;
         border-top: 1px solid var(--divider-color);
         opacity: 0.5;
