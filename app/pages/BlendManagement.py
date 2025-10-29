@@ -452,7 +452,72 @@ with tab4:
                     df_recipes = pd.DataFrame(recipe_data)
                     st.dataframe(df_recipes, use_container_width=True, hide_index=True)
 
-                    st.warning("레시피 수정은 UI에서 직접 지원하지 않습니다. 필요한 경우 원두를 삭제하고 새로 추가하세요.")
+                    st.divider()
+                    st.markdown("#### ✏️ 레시피 수정")
+
+                    # 수정할 레시피 선택
+                    recipe_names = [f"{r['원두']} ({r['포션']}포션)" for r in recipe_data]
+                    selected_recipe_idx = st.selectbox(
+                        "수정할 레시피 선택",
+                        range(len(recipe_data)),
+                        format_func=lambda i: recipe_names[i],
+                        key="recipe_edit_select"
+                    )
+
+                    selected_recipe = recipes[selected_recipe_idx]
+                    selected_bean = bean_service.get_bean_by_id(selected_recipe.bean_id)
+
+                    # 수정 폼
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        # 새로운 원두 선택
+                        available_beans = bean_service.get_active_beans()
+                        bean_options = {bean.id: f"{bean.name} ({bean.country_code})" for bean in available_beans}
+                        new_bean_id = st.selectbox(
+                            "원두 변경",
+                            options=list(bean_options.keys()),
+                            format_func=lambda bid: bean_options[bid],
+                            index=list(bean_options.keys()).index(selected_bean.id) if selected_bean.id in bean_options else 0,
+                            key="recipe_bean_select"
+                        )
+
+                    with col2:
+                        # 포션 수 수정
+                        new_portion = st.number_input(
+                            "포션 개수",
+                            min_value=1,
+                            max_value=20,
+                            value=selected_recipe.portion_count,
+                            step=1,
+                            key="recipe_portion_input"
+                        )
+
+                    # 저장 버튼
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        if st.button("💾 레시피 수정 저장", use_container_width=True, type="primary", key="save_recipe_edit"):
+                            try:
+                                # 기존 레시피 삭제
+                                blend_service.remove_recipe_from_blend(selected_blend.id, selected_recipe.bean_id)
+
+                                # 새로운 레시피 추가
+                                blend_service.add_recipe_to_blend(selected_blend.id, new_bean_id, new_portion)
+
+                                st.success(f"✅ 레시피가 수정되었습니다!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ 오류: {str(e)}")
+
+                    with col2:
+                        if st.button("🗑️ 레시피 삭제", use_container_width=True, type="secondary", key="delete_recipe"):
+                            try:
+                                blend_service.remove_recipe_from_blend(selected_blend.id, selected_recipe.bean_id)
+                                st.success("✅ 레시피가 삭제되었습니다!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ 오류: {str(e)}")
 
             else:
                 st.warning("현재 이 블렌드에 레시피가 없습니다.")

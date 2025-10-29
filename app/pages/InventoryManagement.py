@@ -247,6 +247,28 @@ with tab3:
                 price_per_unit = st.number_input("단가 (원/kg)", min_value=0, value=0, step=1000)
                 description = st.text_input("설명", "")
 
+            st.divider()
+            st.caption("⚙️ 재고 범위 설정 (첫 입고 시에만 필요)")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                min_qty = st.number_input(
+                    "최소 재고 (kg)",
+                    min_value=0.5,
+                    step=0.5,
+                    value=5.0,
+                    help="이 값 이하면 저재고 경고"
+                )
+
+            with col2:
+                max_qty = st.number_input(
+                    "최대 재고 (kg)",
+                    min_value=1.0,
+                    step=1.0,
+                    value=50.0,
+                    help="이 값 이상이면 과재고 경고"
+                )
+
             if st.form_submit_button("✅ 입고 기록", use_container_width=True):
                 bean = next((b for b in beans if b.name == bean_name), None)
 
@@ -260,8 +282,8 @@ with tab3:
                             inventory = Inventory(
                                 bean_id=bean.id,
                                 quantity_kg=quantity,
-                                min_quantity_kg=5.0,
-                                max_quantity_kg=50.0
+                                min_quantity_kg=min_qty,
+                                max_quantity_kg=max_qty
                             )
                             db.add(inventory)
 

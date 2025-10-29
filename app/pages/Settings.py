@@ -464,24 +464,47 @@ with tab3:
     with col2:
         st.markdown("**🔄 데이터 초기화**")
 
-        if st.button("⚠️ 데이터 초기화 (위험)", use_container_width=True, type="secondary"):
+        # 초기화 확인 상태 초기화
+        if "confirm_reset" not in st.session_state:
+            st.session_state.confirm_reset = False
+
+        if not st.session_state.confirm_reset:
+            if st.button("⚠️ 데이터 초기화 (위험)", use_container_width=True, type="secondary", key="btn_reset_init"):
+                st.session_state.confirm_reset = True
+                st.rerun()
+        else:
             st.warning("""
-            이 작업은 모든 데이터를 초기화합니다.
-            취소하려면 페이지를 새로고침하세요.
+            ⚠️ **경고**: 이 작업은 **모든 데이터를 영구적으로 삭제**합니다.
+            - 원두 정보
+            - 블렌드 정보
+            - 재고 데이터
+            - 거래 기록
+
+            이 작업은 **취소할 수 없습니다**!
             """)
 
-            if st.button("✅ 정말로 초기화하시겠습니까?", type="primary"):
-                try:
-                    # 모든 데이터 삭제
-                    db.query(Bean).delete()
-                    db.query(Blend).delete()
-                    db.query(Inventory).delete()
-                    db.query(CostSetting).delete()
-                    db.commit()
+            col_reset1, col_reset2 = st.columns(2)
 
-                    st.success("✅ 데이터가 초기화되었습니다.")
-                except Exception as e:
-                    st.error(f"❌ 초기화 오류: {str(e)}")
+            with col_reset1:
+                if st.button("✅ 모두 삭제 (돌이킬 수 없음)", use_container_width=True, type="primary", key="btn_confirm_reset"):
+                    try:
+                        # 모든 데이터 삭제
+                        db.query(Bean).delete()
+                        db.query(Blend).delete()
+                        db.query(Inventory).delete()
+                        db.query(CostSetting).delete()
+                        db.commit()
+
+                        st.session_state.confirm_reset = False
+                        st.success("✅ 데이터가 초기화되었습니다.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ 초기화 오류: {str(e)}")
+
+            with col_reset2:
+                if st.button("❌ 취소", use_container_width=True, type="secondary", key="btn_cancel_reset"):
+                    st.session_state.confirm_reset = False
+                    st.rerun()
 
     st.divider()
 
