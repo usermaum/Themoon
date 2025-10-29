@@ -174,6 +174,9 @@ class RoastingLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # 관계
+    warnings = relationship("LossRateWarning", back_populates="roasting_log", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<RoastingLog(date={self.roasting_date}, raw={self.raw_weight_kg}kg, loss={self.loss_rate_percent}%)>"
 
@@ -278,6 +281,9 @@ class LossRateWarning(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
+
+    # 관계
+    roasting_log = relationship("RoastingLog", back_populates="warnings")
 
     def __repr__(self):
         return f"<LossRateWarning(log_id={self.roasting_log_id}, severity={self.severity})>"
