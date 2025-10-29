@@ -110,6 +110,30 @@ ls -lt Documents/Progress/SESSION_SUMMARY_*.md | head -1
 cat logs/VERSION_MANAGEMENT.md | head -50
 ```
 
+### 작업 완료 후 처리 (각 작업마다)
+
+```bash
+# ⚡ 빠른 처리 (1분)
+# 1단계: 변경사항 확인
+git status
+
+# 2단계: 변경사항 커밋
+git add .
+git commit -m "type: 한글 설명"
+
+# 3단계: 최종 확인
+git log --oneline -1
+```
+
+**커밋 타입**:
+- `feat`: 새로운 기능
+- `fix`: 버그 수정
+- `refactor`: 코드 정리/리팩토링
+- `docs`: 문서 작성/수정
+- `chore`: 설정 변경, 패키지 업데이트
+
+---
+
 ### 세션 종료 (매번 필수)
 
 ```bash
