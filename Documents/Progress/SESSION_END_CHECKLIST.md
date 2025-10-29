@@ -175,7 +175,7 @@ git log --oneline -3
 
 ### 5️⃣ 최종 확인
 
-#### Step 5-1: README 업데이트 (⚠️ 매우 중요)
+#### Step 5-1: 모든 문서의 버전 동기화 (⚠️ 매우 중요)
 ```bash
 # 1️⃣ 현재 버전 확인
 CURRENT_VERSION=$(cat logs/VERSION)
@@ -187,24 +187,31 @@ echo "📦 현재 버전: $CURRENT_VERSION"
 # - Line 7: v1.2.0 → v$CURRENT_VERSION
 # - Line 11, 67, 492, 503, 537 등 모든 버전 표기
 # - Line 501: 마지막 커밋 해시 업데이트
-# - Line 495: 현재 버전 업데이트
 
-# 3️⃣ 최근 커밋 확인
+# 3️⃣ .claude/CLAUDE.md의 버전도 동기화
+# - Line 4: 버전: 1.2.0 → 버전: $CURRENT_VERSION
+
+# 4️⃣ 최근 커밋 확인
 git log --oneline -1
 
-# 4️⃣ git status로 README.md 변경사항 확인
+# 5️⃣ git status로 변경사항 확인
 git status
 ```
 
 **⚠️ 필수 업데이트 항목** (모두 확인!):
-- [ ] **버전 번호**: `v1.2.0` → `v$(cat logs/VERSION)` (README 모든 위치)
+
+📄 **README.md**:
+- [ ] **버전 번호**: `v1.2.0` → `v$(cat logs/VERSION)` (모든 위치)
 - [ ] **라인 3**: 타이틀의 버전
 - [ ] **라인 7**: 프로젝트 상태 라인의 버전
 - [ ] **라인 492-502**: "프로젝트 정보" 섹션의 버전
 - [ ] **라인 501**: "최종 커밋" 해시값 업데이트
 - [ ] **라인 637-645**: 마지막 요약 라인들
 
-**💡 팁**: 에디터의 "모두 바꾸기" 기능(Ctrl+H)으로 `v1.2.0` → `v[최신버전]` 일괄 변경 가능
+📄 **.claude/CLAUDE.md**:
+- [ ] **라인 4**: `버전: 1.2.0` → `버전: $(cat logs/VERSION)`
+
+**💡 팁**: 에디터의 "모두 바꾸기" 기능(Ctrl+H)으로 `1.2.0` → `[최신버전]` 일괄 변경 가능
 
 #### Step 5-2: 문서 정리 확인
 ```bash
