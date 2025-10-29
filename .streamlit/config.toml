@@ -11,10 +11,14 @@ secondaryBackgroundColor = "#161B22"
 textColor = "#FFFFFF"
 font = "sans serif"
 
+[server]
+# 서버 설정 (Streamlit Cloud 자동 설정)
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+
 [browser]
 # 브라우저 설정
-serverAddress = "localhost"
-serverPort = 8501
 gatherUsageStats = false
 
 [logger]

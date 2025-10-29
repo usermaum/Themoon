@@ -12,7 +12,14 @@ import sys
 
 # 프로젝트 루트 경로
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATABASE_PATH = os.path.join(PROJECT_ROOT, "Data", "roasting_data.db")
+DATA_DIR = os.path.join(PROJECT_ROOT, "Data")
+
+# Data 디렉토리가 없으면 생성 (Streamlit Cloud 대응)
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    print(f"✅ Data 디렉토리 생성: {DATA_DIR}")
+
+DATABASE_PATH = os.path.join(DATA_DIR, "roasting_data.db")
 
 # 데이터베이스 URL
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
