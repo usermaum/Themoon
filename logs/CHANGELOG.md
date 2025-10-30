@@ -11,6 +11,211 @@
 
 ---
 
+## [0.8.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-7 ExcelSyncService 개발 (Excel 동기화 및 마이그레이션)
+
+#### 📝 변경사항
+
+**ExcelSyncService 리팩토링**
+- 정적 메서드 기반 설계로 전환
+- 의존성 주입 패턴 적용
+- 코드 라인 수: 526줄 → 204줄 (322줄 감소, 61% 최적화)
+
+**주요 기능**
+
+1. **export_roasting_logs_to_excel()**: 월별 로스팅 기록 Excel 내보내기
+   - openpyxl을 사용한 프로페셔널 포맷팅
+   - 헤더 스타일링 (굵게, 배경색, 정렬)
+   - 컬럼 너비 자동 조정
+   - 자동 파일 경로 생성
+
+2. **validate_phase1_migration()**: Phase 1 마이그레이션 검증
+   - 무게 유효성 확인 (양수값, NULL 체크)
+   - 손실률 범위 검증 (0-50%)
+   - 날짜 검증 (유효한 날짜)
+   - 중복 데이터 탐지
+   - 상세한 오류 리포팅 시스템
+
+3. **get_migration_summary()**: 마이그레이션 요약 통계
+   - 전체 데이터 통계
+   - 총 무게 및 평균 손실률 계산
+   - 마이그레이션 상태 보고
+
+**특징**
+- 로깅을 통한 상세한 추적
+- 견고한 에러 핸들링
+- 통계 계산 기능
+- 유연한 파일 경로 관리
+
+**파일**
+- `app/services/excel_service.py`: 204 삽입(+), 322 삭제(-)
+
+## [0.7.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-6 LossRateAnalyzer 개발 (손실률 이상 탐지)
+
+#### 📝 변경사항
+
+**모델 개선**
+- `RoastingLog`에 `warnings` 관계 추가
+- `LossRateWarning`에 `roasting_log` 관계 추가
+- 경고에서 로스팅 정보 직접 접근 가능
+
+**LossRateAnalyzer 서비스 (310줄 신규 추가)**
+
+1. **손실률 트렌드 분석**
+   - `analyze_loss_rate_trend()`: 기간별 통계 분석
+   - 평균, 중앙값, 표준편차 계산
+   - 이상치 개수 및 비율 산출
+
+2. **경고 관리**
+   - `get_recent_warnings()`: 미해결 경고 조회
+   - `resolve_warning()`: 경고 해결 처리
+   - `detect_continuous_anomalies()`: 연속 이상 탐지
+
+3. **추가 분석 기능**
+   - `get_monthly_summary()`: 월별 요약
+   - `get_severity_distribution()`: 심각도별 분포
+
+**특징**
+- 3% 경고 임계값 (ATTENTION)
+- 5% 심각 임계값 (CRITICAL)
+- NORMAL/ATTENTION/CRITICAL 상태 자동 판단
+- 통계적 이상치 탐지
+- 상세 로깅 시스템
+
+**파일**
+- `app/models/database.py`: 6 삽입(+)
+- `app/services/loss_rate_analyzer.py`: 310 삽입(+) (신규)
+
+## [0.6.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-5 AuthService 개발 (인증 및 권한 관리)
+
+#### 📝 변경사항
+
+**AuthService 구현 (398줄 신규 추가)**
+
+1. **사용자 인증 및 관리**
+   - `create_user()`: 새 사용자 생성 + 기본 권한 자동 설정
+   - `authenticate()`: 사용자 인증 (bcrypt 해시 검증)
+   - `change_password()`: 비밀번호 변경 (보안 검증)
+   - `deactivate_user()`: 사용자 비활성화
+
+2. **권한 관리**
+   - `grant_permission()`: 사용자에게 권한 부여
+   - `revoke_permission()`: 사용자 권한 취소
+   - `has_permission()`: 사용자 권한 확인
+   - `get_user_permissions()`: 사용자의 모든 권한 조회
+
+3. **사용자 조회**
+   - `get_user_by_username()`: 사용자명으로 조회
+   - `get_user_by_id()`: ID로 조회
+   - `list_all_users()`: 모든 사용자 조회
+
+**특징**
+- bcrypt 해시 기반 보안 시스템
+- Admin/Editor/Viewer 역할 기반 접근 제어 (RBAC)
+- 마지막 로그인 자동 추적
+- 기본 권한 자동 설정
+- 상세한 감사 로그
+
+**의존성 추가**
+- `passlib==1.7.4`: 비밀번호 해싱
+- `bcrypt==4.1.2`: 암호화
+
+**파일**
+- `app/services/auth_service.py`: 398 삽입(+) (신규)
+- `requirements.txt`: 6 삽입(+), 1 삭제(-)
+
+## [0.5.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-4 CostService 개발 (핵심 비즈니스 로직)
+
+#### 📝 변경사항
+
+**CostService 구현 (277줄 신규 추가)**
+
+1. **블렌드 원가 계산**
+   - `get_blend_cost()`: 최종 원가 계산 (손실률 17% 반영)
+   - 공식: `Final Cost = (Σ(Bean Cost × Ratio%)) / (1 - Loss Rate)`
+   - 실제 비즈니스 로직 구현
+
+2. **가격 관리**
+   - `update_bean_price()`: 원두 가격 업데이트
+   - 가격 이력 자동 저장 (BeanPriceHistory)
+   - 타임스탬프 기반 가격 추적
+
+3. **일괄 계산**
+   - `batch_calculate_all_blends()`: 모든 블렌드 일괄 계산
+   - 대량 처리 최적화
+   - 계산 결과 요약 제공
+
+4. **비용 설정 관리**
+   - `get_cost_setting()`: 비용 설정값 조회
+   - `update_cost_setting()`: 비용 설정값 업데이트
+   - 손실률, 마진율 등 설정 관리
+
+5. **상세 분석**
+   - `calculate_blend_cost_with_components()`: 상세 원가 분석
+   - 원두별 기여도 계산
+   - 단위별 원가 (kg, cup)
+   - 마진율 자동 계산
+
+**특징**
+- 17% 표준 손실률 적용
+- 정확한 원가 계산 로직
+- 상세 로깅 시스템
+- 에러 핸들링
+
+**파일**
+- `app/services/cost_service.py`: 277 삽입(+) (신규)
+
+## [0.4.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 2 T2-1, T2-2 완료 - DB 스키마 확장 및 모델 정의
+
+#### 📝 변경사항
+
+**T2-1: DB 스키마 설계 및 생성 ✅**
+
+5개 새 테이블 생성 (직접 SQL 실행):
+- `blend_recipes_history` (13 컬럼) - 레시피 버전 관리
+- `users` (11 컬럼) - 사용자 관리
+- `user_permissions` (6 컬럼) - 권한 관리
+- `audit_logs` (10 컬럼) - 감사 로그
+- `loss_rate_warnings` (10 컬럼) - 손실률 이상 경고
+
+**DB 확장**: 8개 테이블 → 13개 테이블
+
+**T2-2: SQLAlchemy 모델 추가 ✅**
+
+6개 새 SQLAlchemy 모델 클래스 추가:
+- `RoastingLog` (11 컬럼): 로스팅 기록
+- `BlendRecipesHistory` (13 컬럼): 레시피 버전 이력
+- `User` (11 컬럼): 사용자
+- `UserPermission` (6 컬럼): 사용자 권한
+- `AuditLog` (10 컬럼): 감사 로그
+- `LossRateWarning` (10 컬럼): 손실률 경고
+
+**모델 확장**: 6개 → 11개
+
+**추가 수정**
+- Boolean import 추가 (SQLAlchemy 타입 오류 해결)
+- 관계(relationship) 설정
+- 백업 생성: `backups/roasting_data_before_migration.db`
+
+**진행율**
+- Phase 2: 22% 완료 (2/9 태스크)
+- 전체 프로젝트: 48% 완료
+
+**파일**
+- `Data/roasting_data.db`: 90KB → 139KB (54% 증가)
+- `app/models/database.py`: 107 삽입(+)
+- `Documents/Progress/Phase2진행상황_2025-10-29.md`: 339 삽입(+) (신규)
+- `backups/`: 백업 파일 및 로스팅 메모 이미지 추가
+
 ## [0.3.0] - 2025-10-29
 
 ### ✨ 마이너 업데이트 (Minor Update): Phase 1 완료 - 데이터 기초 구축 (v1.6.0)
