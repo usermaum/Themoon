@@ -22,9 +22,7 @@ class RoastingService:
         raw_weight_kg: float,
         roasted_weight_kg: float,
         roasting_date: date,
-        blend_recipe_version_id: int = None,
         notes: str = None,
-        operator_id: int = None,
         expected_loss_rate: float = 17.0
     ) -> RoastingLog:
         """로스팅 기록 생성
@@ -34,9 +32,7 @@ class RoastingService:
             raw_weight_kg: 생두 투입량 (kg)
             roasted_weight_kg: 로스팅 후 무게 (kg)
             roasting_date: 로스팅 날짜
-            blend_recipe_version_id: 블렌드 레시피 버전 ID (선택)
             notes: 로스팅 노트 (선택)
-            operator_id: 담당자 ID (선택)
             expected_loss_rate: 예상 손실률 (기본값: 17.0%)
 
         Returns:
@@ -55,9 +51,7 @@ class RoastingService:
             loss_variance_percent=round(loss_variance, 2),
             roasting_date=roasting_date,
             roasting_month=roasting_date.strftime('%Y-%m'),
-            blend_recipe_version_id=blend_recipe_version_id,
-            notes=notes,
-            operator_id=operator_id
+            notes=notes
         )
 
         db.add(roasting_log)
