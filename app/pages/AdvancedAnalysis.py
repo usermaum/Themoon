@@ -14,8 +14,26 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import SessionLocal
 from services.analytics_service import AnalyticsService
+from i18n import Translator, LanguageManager
+from components.sidebar import render_sidebar
 
-st.set_page_config(page_title="고급분석", page_icon="📈", layout="wide")
+# 다중 언어 지원 초기화
+if "translator" not in st.session_state:
+    st.session_state.translator = Translator(default_language="ko")
+
+if "language_manager" not in st.session_state:
+    st.session_state.language_manager = LanguageManager(st.session_state.translator)
+
+# 페이지 설정 (다중 언어 지원)
+translator = st.session_state.translator
+page_title = translator.get("menu.advanced_analysis.page_title", "고급분석")
+st.set_page_config(page_title=page_title, page_icon="📈", layout="wide")
+
+# 현재 페이지 저장 (사이드바 활성 표시)
+st.session_state["current_page"] = "AdvancedAnalysis"
+
+# 사이드바 렌더링
+render_sidebar()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 세션 상태 초기화

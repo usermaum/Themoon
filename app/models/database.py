@@ -4,7 +4,7 @@ SQLAlchemy ORM 기반 DB 관리
 """
 
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text, Date, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -161,6 +161,139 @@ class CostSetting(Base):
 
     def __repr__(self):
         return f"<CostSetting({self.parameter_name}={self.value})>"
+
+
+class RoastingLog(Base):
+    """로스팅 기록"""
+    __tablename__ = "roasting_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    raw_weight_kg = Column(Float, nullable=False)  # 생두 투입량
+    roasted_weight_kg = Column(Float, nullable=False)  # 로스팅 후 무게
+    loss_rate_percent = Column(Float, nullable=False)  # 손실률 (자동 계산)
+    expected_loss_rate_percent = Column(Float, default=17.0)  # 예상 손실률
+    loss_variance_percent = Column(Float, nullable=True)  # 손실률 편차
+
+    roasting_date = Column(Date, nullable=False)  # 로스팅 날짜
+    roasting_month = Column(String(7), nullable=True)  # YYYY-MM
+
+    notes = Column(Text, nullable=True)  # 로스팅 노트
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # 관계
+    warnings = relationship("LossRateWarning", back_populates="roasting_log", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<RoastingLog(date={self.roasting_date}, raw={self.raw_weight_kg}kg, loss={self.loss_rate_percent}%)>"
+
+
+class BlendRecipesHistory(Base):
+    """블렌드 레시피 버전 관리"""
+    __tablename__ = "blend_recipes_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    blend_id = Column(Integer, ForeignKey("blends.id"), nullable=False)
+    version = Column(Integer, nullable=False)
+    blending_ratio_percent = Column(Float, nullable=False)
+    effective_date = Column(Date, nullable=False)
+    obsolete_date = Column(Date, nullable=True)
+    is_current = Column(Boolean, default=True)
+
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=False)
+    bean_name = Column(String(255), nullable=True)
+    change_reason = Column(Text, nullable=True)
+    changed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<BlendRecipesHistory(blend_id={self.blend_id}, version={self.version}, ratio={self.blending_ratio_percent}%)>"
+
+
+class User(Base):
+    """사용자 관리"""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    email = Column(String(255), unique=True, nullable=True)
+
+    full_name = Column(String(255), nullable=True)
+    role = Column(String(50), default='viewer')  # viewer, editor, admin
+    department = Column(String(255), nullable=True)
+
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<User(username={self.username}, role={self.role})>"
+
+
+class UserPermission(Base):
+    """사용자 권한"""
+    __tablename__ = "user_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    resource = Column(String(255), nullable=False)
+    action = Column(String(50), nullable=False)
+
+    granted_date = Column(DateTime, default=datetime.utcnow)
+    granted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    def __repr__(self):
+        return f"<UserPermission(user_id={self.user_id}, resource={self.resource}, action={self.action})>"
+
+
+class AuditLog(Base):
+    """감사 로그"""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    action_type = Column(String(50), nullable=False)  # CREATE, UPDATE, DELETE, EXPORT
+    resource_type = Column(String(255), nullable=False)
+    resource_id = Column(Integer, nullable=True)
+
+    old_values = Column(Text, nullable=True)  # JSON
+    new_values = Column(Text, nullable=True)  # JSON
+    description = Column(Text, nullable=True)
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<AuditLog(action={self.action_type}, resource={self.resource_type}, id={self.resource_id})>"
+
+
+class LossRateWarning(Base):
+    """손실률 이상 경고"""
+    __tablename__ = "loss_rate_warnings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    roasting_log_id = Column(Integer, ForeignKey("roasting_logs.id"), nullable=False)
+    warning_type = Column(String(50), nullable=True)  # HIGH, LOW, TREND
+    severity = Column(String(50), nullable=True)  # INFO, WARNING, CRITICAL
+
+    variance_from_expected = Column(Float, nullable=True)
+    consecutive_occurrences = Column(Integer, default=1)
+
+    is_resolved = Column(Boolean, default=False)
+    resolution_notes = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+
+    # 관계
+    roasting_log = relationship("RoastingLog", back_populates="warnings")
+
+    def __repr__(self):
+        return f"<LossRateWarning(log_id={self.roasting_log_id}, severity={self.severity})>"
 
 
 # ═══════════════════════════════════════════════════════════════

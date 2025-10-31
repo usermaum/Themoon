@@ -1,333 +1,215 @@
 """
-Excel 동기화 서비스
-Excel 파일에서 데이터 임포트/엑스포트
+ExcelSyncService: Excel 동기화 및 마이그레이션 서비스
+
+로스팅 데이터를 Excel로 내보내고 마이그레이션을 검증합니다.
 """
 
-import pandas as pd
-from io import BytesIO
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from app.models.database import RoastingLog, Bean, Blend, BlendRecipe
 from datetime import datetime
-from models.database import SessionLocal, Bean, Blend, BlendRecipe, Inventory, Transaction, CostSetting
-from services.bean_service import BeanService
-from services.blend_service import BlendService
+import logging
+import os
+
+logger = logging.getLogger(__name__)
 
 
-class ExcelService:
-    """Excel 동기화 서비스"""
+class ExcelSyncService:
+    """Excel 동기화 및 마이그레이션 서비스"""
 
-    def __init__(self, db):
-        """초기화"""
-        self.db = db
-        self.bean_service = BeanService(db)
-        self.blend_service = BlendService(db)
+    @staticmethod
+    def export_roasting_logs_to_excel(
+        db: Session,
+        month: str,
+        output_path: str = None
+    ) -> str:
+        """
+        월별 로스팅 기록을 Excel로 내보내기
 
-    def import_beans_from_excel(self, file_data: bytes):
-        """Excel에서 원두 데이터 임포트"""
+        Args:
+            db: SQLAlchemy 세션
+            month: 조회 월 (YYYY-MM 형식)
+            output_path: 저장 경로 (기본값: Data/{month}_로스팅.xlsx)
+
+        Returns:
+            저장된 파일 경로
+        """
+
         try:
-            # Excel 읽기
-            df = pd.read_excel(file_data, sheet_name=0)
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill, Alignment
+        except ImportError:
+            logger.error("❌ openpyxl이 설치되지 않았습니다")
+            raise ImportError("openpyxl이 필요합니다. pip install openpyxl을 실행하세요")
 
-            # 필수 컬럼 확인
-            required_columns = ['원두명', '로스팅', '가격/kg']
-            for col in required_columns:
-                if col not in df.columns:
-                    return {"success": False, "error": f"필수 컬럼 '{col}'이 없습니다."}
+        # 로스팅 기록 조회
+        logs = db.query(RoastingLog).filter(
+            RoastingLog.roasting_month == month
+        ).order_by(RoastingLog.roasting_date).all()
 
-            # 데이터 임포트
-            imported_count = 0
-            error_count = 0
-            errors = []
+        if not logs:
+            logger.warning(f"⚠️ {month}의 로스팅 데이터가 없습니다")
+            return None
 
-            for idx, row in df.iterrows():
-                try:
-                    # 이미 존재하는 원두 확인
-                    bean_name = str(row['원두명']).strip()
-                    existing = self.db.query(Bean).filter(Bean.name == bean_name).first()
+        # 파일 경로 설정
+        if not output_path:
+            os.makedirs("Data", exist_ok=True)
+            output_path = f"Data/{month}_로스팅.xlsx"
 
-                    if existing:
-                        # 기존 원두 업데이트
-                        existing.roast_level = str(row['로스팅']).strip()
-                        existing.price_per_kg = float(row['가격/kg'])
-                        existing.updated_at = datetime.utcnow()
-                    else:
-                        # 새 원두 추가
-                        bean = Bean(
-                            no=int(row.get('No', 0)) if pd.notna(row.get('No')) else 0,
-                            name=bean_name,
-                            country_code=str(row.get('국가', '')).strip() if pd.notna(row.get('국가')) else None,
-                            roast_level=str(row['로스팅']).strip(),
-                            price_per_kg=float(row['가격/kg']),
-                            description=str(row.get('설명', '')).strip() if pd.notna(row.get('설명')) else None,
-                            status="active"
-                        )
-                        self.db.add(bean)
+        # Workbook 생성
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"{month}_로스팅"
 
-                    imported_count += 1
+        # 헤더 설정
+        headers = ['날짜', '생두투입(kg)', '로스팅량(kg)', '손실률(%)', '예상손실률(%)', '편차(%)', '비고']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True, color="FFFFFF", size=12)
+            cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
 
-                except Exception as e:
-                    error_count += 1
-                    errors.append(f"행 {idx + 1}: {str(e)}")
+        # 데이터 입력
+        for row, log in enumerate(logs, 2):
+            ws.cell(row=row, column=1, value=log.roasting_date.strftime('%Y-%m-%d'))
+            ws.cell(row=row, column=2, value=round(log.raw_weight_kg, 1))
+            ws.cell(row=row, column=3, value=round(log.roasted_weight_kg, 1))
+            ws.cell(row=row, column=4, value=round(log.loss_rate_percent, 2))
+            ws.cell(row=row, column=5, value=round(log.expected_loss_rate_percent, 2))
+            ws.cell(row=row, column=6, value=round(log.loss_variance_percent, 2) if log.loss_variance_percent else 0)
+            ws.cell(row=row, column=7, value=log.notes or '')
 
-            self.db.commit()
+        # 컬럼 너비 조정
+        ws.column_dimensions['A'].width = 12
+        ws.column_dimensions['B'].width = 15
+        ws.column_dimensions['C'].width = 15
+        ws.column_dimensions['D'].width = 12
+        ws.column_dimensions['E'].width = 14
+        ws.column_dimensions['F'].width = 12
+        ws.column_dimensions['G'].width = 25
 
-            return {
-                "success": True,
-                "imported_count": imported_count,
-                "error_count": error_count,
-                "errors": errors
-            }
+        # 파일 저장
+        wb.save(output_path)
+        logger.info(f"✓ 로스팅 기록 내보내기: {output_path} ({len(logs)}건)")
 
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        return output_path
 
-    def import_blends_from_excel(self, file_data: bytes):
-        """Excel에서 블렌드 데이터 임포트"""
-        try:
-            # Excel 읽기
-            df = pd.read_excel(file_data, sheet_name=0)
+    @staticmethod
+    def validate_phase1_migration(db: Session) -> dict:
+        """
+        Phase 1 마이그레이션 검증
 
-            # 필수 컬럼 확인
-            required_columns = ['블렌드명', '타입']
-            for col in required_columns:
-                if col not in df.columns:
-                    return {"success": False, "error": f"필수 컬럼 '{col}'이 없습니다."}
+        Args:
+            db: SQLAlchemy 세션
 
-            # 데이터 임포트
-            imported_count = 0
-            error_count = 0
-            errors = []
+        Returns:
+            검증 결과 딕셔너리
+        """
 
-            for idx, row in df.iterrows():
-                try:
-                    # 이미 존재하는 블렌드 확인
-                    blend_name = str(row['블렌드명']).strip()
-                    existing = self.db.query(Blend).filter(Blend.name == blend_name).first()
+        # RoastingLog 데이터 조회
+        logs = db.query(RoastingLog).all()
 
-                    if existing:
-                        # 기존 블렌드 업데이트
-                        existing.blend_type = str(row['타입']).strip()
-                        existing.description = str(row.get('설명', '')).strip() if pd.notna(row.get('설명')) else None
-                        existing.updated_at = datetime.utcnow()
-                    else:
-                        # 새 블렌드 추가
-                        blend = Blend(
-                            name=blend_name,
-                            blend_type=str(row['타입']).strip(),
-                            description=str(row.get('설명', '')).strip() if pd.notna(row.get('설명')) else None,
-                            total_portion=int(row.get('포션', 0)) if pd.notna(row.get('포션')) else 0,
-                            status="active"
-                        )
-                        self.db.add(blend)
+        validations = {
+            'total_logs': len(logs),
+            'checks': {
+                'raw_weight_valid': 0,
+                'roasted_weight_valid': 0,
+                'loss_rate_valid': 0,
+                'no_null_dates': 0,
+                'no_duplicates': 0
+            },
+            'errors': []
+        }
 
-                    imported_count += 1
+        if not logs:
+            logger.warning("⚠️ 검증할 로스팅 기록이 없습니다")
+            return validations
 
-                except Exception as e:
-                    error_count += 1
-                    errors.append(f"행 {idx + 1}: {str(e)}")
+        # 1. 무게 유효성 확인
+        for log in logs:
+            # 생두 투입량과 로스팅량이 모두 양수인지 확인
+            if log.raw_weight_kg > 0 and log.roasted_weight_kg > 0:
+                validations['checks']['raw_weight_valid'] += 1
 
-            self.db.commit()
+            # 로스팅량 <= 생두 투입량 확인 (손실 발생)
+            if log.roasted_weight_kg <= log.raw_weight_kg:
+                validations['checks']['roasted_weight_valid'] += 1
+            else:
+                validations['errors'].append(
+                    f"로그 {log.id}: 로스팅량({log.roasted_weight_kg}kg) > "
+                    f"생두투입량({log.raw_weight_kg}kg)"
+                )
 
-            return {
-                "success": True,
-                "imported_count": imported_count,
-                "error_count": error_count,
-                "errors": errors
-            }
+            # 2. 손실률 검증 (0~50% 범위)
+            if 0 <= log.loss_rate_percent <= 50:
+                validations['checks']['loss_rate_valid'] += 1
+            else:
+                validations['errors'].append(
+                    f"로그 {log.id}: 손실률 이상 ({log.loss_rate_percent}%)"
+                )
 
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+            # 3. 날짜 검증
+            if log.roasting_date:
+                validations['checks']['no_null_dates'] += 1
 
-    def export_beans_to_excel(self):
-        """원두 데이터를 Excel로 내보내기"""
-        beans = self.db.query(Bean).all()
-
-        data = []
-        for bean in beans:
-            data.append({
-                "No": bean.no,
-                "원두명": bean.name,
-                "국가": bean.country_code or "-",
-                "로스팅": bean.roast_level,
-                "가격/kg": bean.price_per_kg,
-                "상태": bean.status,
-                "설명": bean.description or ""
-            })
-
-        df = pd.DataFrame(data)
-
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name="원두", index=False)
-
-        output.seek(0)
-        return output
-
-    def export_blends_to_excel(self):
-        """블렌드 데이터를 Excel로 내보내기"""
-        blends = self.db.query(Blend).all()
-
-        data = []
-        for blend in blends:
-            recipes = self.db.query(BlendRecipe).filter(BlendRecipe.blend_id == blend.id).all()
-            recipe_str = ", ".join([f"{self.db.query(Bean).filter(Bean.id == r.bean_id).first().name}({r.portion_count})"
-                                   for r in recipes])
-
-            data.append({
-                "블렌드명": blend.name,
-                "타입": blend.blend_type,
-                "포션": blend.total_portion,
-                "레시피": recipe_str,
-                "상태": blend.status,
-                "설명": blend.description or ""
-            })
-
-        df = pd.DataFrame(data)
-
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name="블렌드", index=False)
-
-        output.seek(0)
-        return output
-
-    def export_inventory_to_excel(self):
-        """재고 데이터를 Excel로 내보내기"""
-        inventory = self.db.query(Inventory).all()
-
-        data = []
-        for inv in inventory:
-            bean = self.db.query(Bean).filter(Bean.id == inv.bean_id).first()
-
-            if bean:
-                data.append({
-                    "원두명": bean.name,
-                    "현재재고": inv.quantity_kg,
-                    "최소": inv.min_quantity_kg,
-                    "최대": inv.max_quantity_kg,
-                    "가격/kg": bean.price_per_kg,
-                    "총가치": inv.quantity_kg * bean.price_per_kg
-                })
-
-        df = pd.DataFrame(data)
-
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name="재고", index=False)
-
-        output.seek(0)
-        return output
-
-    def export_transactions_to_excel(self, days: int = 30):
-        """거래 데이터를 Excel로 내보내기"""
-        from datetime import timedelta
-
-        start_date = datetime.now() - timedelta(days=days)
-        transactions = self.db.query(Transaction).filter(
-            Transaction.created_at >= start_date
+        # 4. 중복 검증 (같은 날짜의 여러 기록)
+        duplicates = db.query(
+            RoastingLog.roasting_date,
+            func.count().label('count')
+        ).group_by(RoastingLog.roasting_date).having(
+            func.count() > 1
         ).all()
 
-        data = []
-        for trans in transactions:
-            bean = self.db.query(Bean).filter(Bean.id == trans.bean_id).first()
+        if duplicates:
+            validations['errors'].append(f"중복 날짜 {len(duplicates)}개 발견")
+            for dup in duplicates:
+                validations['errors'].append(f"  • {dup[0]}: {dup[1]}건")
+        else:
+            validations['checks']['no_duplicates'] = len(logs)
 
-            if bean:
-                data.append({
-                    "날짜": trans.created_at.strftime("%Y-%m-%d %H:%M"),
-                    "거래유형": trans.transaction_type,
-                    "원두명": bean.name,
-                    "수량": trans.quantity_kg,
-                    "단가": trans.price_per_unit,
-                    "합계": trans.total_amount,
-                    "설명": trans.description or ""
-                })
+        # 최종 검증 결과
+        validations['validation_passed'] = len(validations['errors']) == 0
 
-        df = pd.DataFrame(data)
+        # 로깅
+        if validations['validation_passed']:
+            logger.info(f"✓ Phase 1 마이그레이션 검증 통과: {len(logs)}건 모두 유효")
+        else:
+            logger.warning(f"⚠️ Phase 1 마이그레이션 검증 실패: {len(validations['errors'])}개 오류")
 
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name="거래기록", index=False)
+        return validations
 
-        output.seek(0)
-        return output
+    @staticmethod
+    def get_migration_summary(db: Session) -> dict:
+        """
+        마이그레이션 요약 정보 반환
 
-    def export_all_to_excel(self):
-        """모든 데이터를 Excel로 내보내기"""
-        output = BytesIO()
+        Args:
+            db: SQLAlchemy 세션
 
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            # 원두 데이터
-            beans = self.db.query(Bean).all()
-            bean_data = []
-            for bean in beans:
-                bean_data.append({
-                    "No": bean.no,
-                    "원두명": bean.name,
-                    "국가": bean.country_code or "-",
-                    "로스팅": bean.roast_level,
-                    "가격/kg": bean.price_per_kg,
-                    "상태": bean.status
-                })
-            df_beans = pd.DataFrame(bean_data)
-            df_beans.to_excel(writer, sheet_name="원두", index=False)
+        Returns:
+            마이그레이션 요약 정보
+        """
 
-            # 블렌드 데이터
-            blends = self.db.query(Blend).all()
-            blend_data = []
-            for blend in blends:
-                recipes = self.db.query(BlendRecipe).filter(BlendRecipe.blend_id == blend.id).all()
-                recipe_str = ", ".join([f"{self.db.query(Bean).filter(Bean.id == r.bean_id).first().name}({r.portion_count})"
-                                       for r in recipes])
-                blend_data.append({
-                    "블렌드명": blend.name,
-                    "타입": blend.blend_type,
-                    "포션": blend.total_portion,
-                    "레시피": recipe_str,
-                    "상태": blend.status
-                })
-            df_blends = pd.DataFrame(blend_data)
-            df_blends.to_excel(writer, sheet_name="블렌드", index=False)
+        logs = db.query(RoastingLog).all()
+        beans = db.query(Bean).all()
+        blends = db.query(Blend).all()
+        recipes = db.query(BlendRecipe).all()
 
-            # 재고 데이터
-            inventory = self.db.query(Inventory).all()
-            inv_data = []
-            for inv in inventory:
-                bean = self.db.query(Bean).filter(Bean.id == inv.bean_id).first()
-                if bean:
-                    inv_data.append({
-                        "원두명": bean.name,
-                        "현재": inv.quantity_kg,
-                        "최소": inv.min_quantity_kg,
-                        "최대": inv.max_quantity_kg
-                    })
-            df_inventory = pd.DataFrame(inv_data)
-            df_inventory.to_excel(writer, sheet_name="재고", index=False)
+        if logs:
+            total_raw = sum(log.raw_weight_kg for log in logs)
+            total_roasted = sum(log.roasted_weight_kg for log in logs)
+            avg_loss = (total_raw - total_roasted) / total_raw * 100 if total_raw > 0 else 0
+        else:
+            total_raw = total_roasted = avg_loss = 0
 
-        output.seek(0)
-        return output
-
-    def create_import_template(self):
-        """임포트 템플릿 생성"""
-        output = BytesIO()
-
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            # 원두 임포트 템플릿
-            bean_template = pd.DataFrame({
-                "No": [1, 2],
-                "원두명": ["에티오피아", "케냐"],
-                "국가": ["Eth", "K"],
-                "로스팅": ["W", "N"],
-                "가격/kg": [25000, 30000],
-                "설명": ["설명 입력", "설명 입력"]
-            })
-            bean_template.to_excel(writer, sheet_name="원두_템플릿", index=False)
-
-            # 블렌드 임포트 템플릿
-            blend_template = pd.DataFrame({
-                "블렌드명": ["풀문 블렌드", "뉴문 블렌딩"],
-                "타입": ["풀문", "뉴문"],
-                "포션": [4, 3],
-                "설명": ["설명 입력", "설명 입력"]
-            })
-            blend_template.to_excel(writer, sheet_name="블렌드_템플릿", index=False)
-
-        output.seek(0)
-        return output
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'roasting_logs': len(logs),
+            'beans': len(beans),
+            'blends': len(blends),
+            'recipes': len(recipes),
+            'total_raw_weight_kg': round(total_raw, 2),
+            'total_roasted_weight_kg': round(total_roasted, 2),
+            'avg_loss_rate_percent': round(avg_loss, 2),
+            'status': '✓ 마이그레이션 완료' if logs else '⏳ 데이터 없음'
+        }

@@ -11,185 +11,291 @@
 
 ---
 
-## [1.2.0] - 2025-10-27
+## [0.8.0] - 2025-10-29
 
-### ✨ 마이너 업데이트 (Minor Update): 세션 관리 시스템 구축 - SESSION 체크리스트 및 요약 파일 완성
+### ✨ 마이너 업데이트 (Minor Update): T2-7 ExcelSyncService 개발 (Excel 동기화 및 마이그레이션)
+
+#### 📝 변경사항
+
+**ExcelSyncService 리팩토링**
+- 정적 메서드 기반 설계로 전환
+- 의존성 주입 패턴 적용
+- 코드 라인 수: 526줄 → 204줄 (322줄 감소, 61% 최적화)
+
+**주요 기능**
+
+1. **export_roasting_logs_to_excel()**: 월별 로스팅 기록 Excel 내보내기
+   - openpyxl을 사용한 프로페셔널 포맷팅
+   - 헤더 스타일링 (굵게, 배경색, 정렬)
+   - 컬럼 너비 자동 조정
+   - 자동 파일 경로 생성
+
+2. **validate_phase1_migration()**: Phase 1 마이그레이션 검증
+   - 무게 유효성 확인 (양수값, NULL 체크)
+   - 손실률 범위 검증 (0-50%)
+   - 날짜 검증 (유효한 날짜)
+   - 중복 데이터 탐지
+   - 상세한 오류 리포팅 시스템
+
+3. **get_migration_summary()**: 마이그레이션 요약 통계
+   - 전체 데이터 통계
+   - 총 무게 및 평균 손실률 계산
+   - 마이그레이션 상태 보고
+
+**특징**
+- 로깅을 통한 상세한 추적
+- 견고한 에러 핸들링
+- 통계 계산 기능
+- 유연한 파일 경로 관리
+
+**파일**
+- `app/services/excel_service.py`: 204 삽입(+), 322 삭제(-)
+
+## [0.7.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-6 LossRateAnalyzer 개발 (손실률 이상 탐지)
+
+#### 📝 변경사항
+
+**모델 개선**
+- `RoastingLog`에 `warnings` 관계 추가
+- `LossRateWarning`에 `roasting_log` 관계 추가
+- 경고에서 로스팅 정보 직접 접근 가능
+
+**LossRateAnalyzer 서비스 (310줄 신규 추가)**
+
+1. **손실률 트렌드 분석**
+   - `analyze_loss_rate_trend()`: 기간별 통계 분석
+   - 평균, 중앙값, 표준편차 계산
+   - 이상치 개수 및 비율 산출
+
+2. **경고 관리**
+   - `get_recent_warnings()`: 미해결 경고 조회
+   - `resolve_warning()`: 경고 해결 처리
+   - `detect_continuous_anomalies()`: 연속 이상 탐지
+
+3. **추가 분석 기능**
+   - `get_monthly_summary()`: 월별 요약
+   - `get_severity_distribution()`: 심각도별 분포
+
+**특징**
+- 3% 경고 임계값 (ATTENTION)
+- 5% 심각 임계값 (CRITICAL)
+- NORMAL/ATTENTION/CRITICAL 상태 자동 판단
+- 통계적 이상치 탐지
+- 상세 로깅 시스템
+
+**파일**
+- `app/models/database.py`: 6 삽입(+)
+- `app/services/loss_rate_analyzer.py`: 310 삽입(+) (신규)
+
+## [0.6.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-5 AuthService 개발 (인증 및 권한 관리)
+
+#### 📝 변경사항
+
+**AuthService 구현 (398줄 신규 추가)**
+
+1. **사용자 인증 및 관리**
+   - `create_user()`: 새 사용자 생성 + 기본 권한 자동 설정
+   - `authenticate()`: 사용자 인증 (bcrypt 해시 검증)
+   - `change_password()`: 비밀번호 변경 (보안 검증)
+   - `deactivate_user()`: 사용자 비활성화
+
+2. **권한 관리**
+   - `grant_permission()`: 사용자에게 권한 부여
+   - `revoke_permission()`: 사용자 권한 취소
+   - `has_permission()`: 사용자 권한 확인
+   - `get_user_permissions()`: 사용자의 모든 권한 조회
+
+3. **사용자 조회**
+   - `get_user_by_username()`: 사용자명으로 조회
+   - `get_user_by_id()`: ID로 조회
+   - `list_all_users()`: 모든 사용자 조회
+
+**특징**
+- bcrypt 해시 기반 보안 시스템
+- Admin/Editor/Viewer 역할 기반 접근 제어 (RBAC)
+- 마지막 로그인 자동 추적
+- 기본 권한 자동 설정
+- 상세한 감사 로그
+
+**의존성 추가**
+- `passlib==1.7.4`: 비밀번호 해싱
+- `bcrypt==4.1.2`: 암호화
+
+**파일**
+- `app/services/auth_service.py`: 398 삽입(+) (신규)
+- `requirements.txt`: 6 삽입(+), 1 삭제(-)
+
+## [0.5.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): T2-4 CostService 개발 (핵심 비즈니스 로직)
+
+#### 📝 변경사항
+
+**CostService 구현 (277줄 신규 추가)**
+
+1. **블렌드 원가 계산**
+   - `get_blend_cost()`: 최종 원가 계산 (손실률 17% 반영)
+   - 공식: `Final Cost = (Σ(Bean Cost × Ratio%)) / (1 - Loss Rate)`
+   - 실제 비즈니스 로직 구현
+
+2. **가격 관리**
+   - `update_bean_price()`: 원두 가격 업데이트
+   - 가격 이력 자동 저장 (BeanPriceHistory)
+   - 타임스탬프 기반 가격 추적
+
+3. **일괄 계산**
+   - `batch_calculate_all_blends()`: 모든 블렌드 일괄 계산
+   - 대량 처리 최적화
+   - 계산 결과 요약 제공
+
+4. **비용 설정 관리**
+   - `get_cost_setting()`: 비용 설정값 조회
+   - `update_cost_setting()`: 비용 설정값 업데이트
+   - 손실률, 마진율 등 설정 관리
+
+5. **상세 분석**
+   - `calculate_blend_cost_with_components()`: 상세 원가 분석
+   - 원두별 기여도 계산
+   - 단위별 원가 (kg, cup)
+   - 마진율 자동 계산
+
+**특징**
+- 17% 표준 손실률 적용
+- 정확한 원가 계산 로직
+- 상세 로깅 시스템
+- 에러 핸들링
+
+**파일**
+- `app/services/cost_service.py`: 277 삽입(+) (신규)
+
+## [0.4.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 2 T2-1, T2-2 완료 - DB 스키마 확장 및 모델 정의
+
+#### 📝 변경사항
+
+**T2-1: DB 스키마 설계 및 생성 ✅**
+
+5개 새 테이블 생성 (직접 SQL 실행):
+- `blend_recipes_history` (13 컬럼) - 레시피 버전 관리
+- `users` (11 컬럼) - 사용자 관리
+- `user_permissions` (6 컬럼) - 권한 관리
+- `audit_logs` (10 컬럼) - 감사 로그
+- `loss_rate_warnings` (10 컬럼) - 손실률 이상 경고
+
+**DB 확장**: 8개 테이블 → 13개 테이블
+
+**T2-2: SQLAlchemy 모델 추가 ✅**
+
+6개 새 SQLAlchemy 모델 클래스 추가:
+- `RoastingLog` (11 컬럼): 로스팅 기록
+- `BlendRecipesHistory` (13 컬럼): 레시피 버전 이력
+- `User` (11 컬럼): 사용자
+- `UserPermission` (6 컬럼): 사용자 권한
+- `AuditLog` (10 컬럼): 감사 로그
+- `LossRateWarning` (10 컬럼): 손실률 경고
+
+**모델 확장**: 6개 → 11개
+
+**추가 수정**
+- Boolean import 추가 (SQLAlchemy 타입 오류 해결)
+- 관계(relationship) 설정
+- 백업 생성: `backups/roasting_data_before_migration.db`
+
+**진행율**
+- Phase 2: 22% 완료 (2/9 태스크)
+- 전체 프로젝트: 48% 완료
+
+**파일**
+- `Data/roasting_data.db`: 90KB → 139KB (54% 증가)
+- `app/models/database.py`: 107 삽입(+)
+- `Documents/Progress/Phase2진행상황_2025-10-29.md`: 339 삽입(+) (신규)
+- `backups/`: 백업 파일 및 로스팅 메모 이미지 추가
+
+## [0.3.0] - 2025-10-29
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 1 완료 - 데이터 기초 구축 (v1.6.0)
 
 #### 📝 변경사항
 - 변경사항 상세 기록 필요
 
-## [1.1.1] - 2025-10-27
+## [0.2.1] - 2025-10-29
 
-### 🐛 패치 (Bug Fix): docs: 버전 관리 시스템의 모든 예시를 한글로 명확하게 수정
-
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
-
-## [1.1.0] - 2025-10-27
-
-### ✨ 마이너 업데이트 (Minor Update): Implement comprehensive reusable component system with 15+ components
+### 🐛 패치 (Bug Fix): test_data.py 현재 데이터베이스 스키마에 맞게 수정
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+1. **app/test_data.py** - 데이터베이스 스키마 업데이트
+   - 이전 sqlite3 직접 사용 → SQLAlchemy ORM 사용으로 변경
+   - bean_prices 테이블 참조 제거 (Bean 모델의 price_per_kg 사용)
+   - roasting_logs 테이블 → transactions 테이블로 변경
+   - 모델 import 경로 수정 (models.models → models)
+   - Bean 상태값 "활성" → "active"로 수정
 
-## [1.0.0] - 2025-10-27
+#### 📊 결과
+- ✅ 60개의 테스트 거래 데이터 생성 완료
+  - 입고 거래: 30개
+  - 출고 거래: 30개
+  - 마지막 30일 거래 기록 생성
 
-### 🚀 주요 버전 (Major Release): docs: Add comprehensive reusable component architecture design
+## [0.2.0] - 2025-10-29
 
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
-
-## [0.1.3] - 2025-10-27
-
-### 🐛 패치 (Bug Fix): docs: Add comprehensive version management documentation to CLAUDE.md
-
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
-
-## [0.1.2] - 2025-10-27
-
-### 🐛 패치 (Bug Fix): Remove unsupported Streamlit config options
+### ✨ 마이너 업데이트 (Minor Update): 3가지 기능 개선 적용
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+1. **BlendManagement.py** - 레시피 편집 UI 추가
+   - 기존 블렌드의 레시피 선택 및 수정 기능 추가 (Lines 455-520)
+   - 원두와 포션 개수 수정 가능
+   - 저장 및 삭제 버튼으로 레시피 관리 개선
 
-## [0.1.1] - 2025-10-27
+2. **InventoryManagement.py** - 재고 범위 설정 커스터마이징
+   - 최소/최대 재고량을 원두별로 설정 가능 (Lines 250-270)
+   - 기본값 유지 (최소: 5.0kg, 최대: 50.0kg)
+   - 입고 시 사용자 정의 범위 적용 (Lines 285-286)
 
-### 🐛 패치 (Bug Fix): feat: Implement comprehensive version management and fix multiple bugs
+3. **Settings.py** - 데이터 초기화 확인 로직 개선
+   - 두 단계 확인 프로세스로 실수 방지 (Lines 467-507)
+   - st.session_state를 통한 상태 관리
+   - 명확한 경고 메시지와 취소 버튼 제공
+
+## [0.1.0] - 2025-10-29
+
+### 🎯 초기 버전
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+- 프로젝트 시작: 버전 리셋 및 새로운 버전 관리 시스템 도입
+- 효율적인 버전관리 전략 수립 (logs/VERSION_STRATEGY.md)
+- 세션 관리 시스템 완성 (SESSION_START_CHECKLIST, SESSION_END_CHECKLIST)
+- 작업 완료 후 처리 프로세스 명시
 
-## [0.1.0] - 2025-10-27
+#### 🔄 버전 관리 개선
+- PATCH/MINOR/MAJOR 누적 기준 명확화
+- 모든 문서(README.md, CLAUDE.md) 버전 동기화 규칙 추가
+- 버전 올리는 기준: PATCH(버그 3개+), MINOR(기능 3~4개+), MAJOR(호환성 변경)
 
-### 🎯 주요 작업: 데이터베이스 모델 개선 및 UI 오류 수정
-
-#### ✨ 추가 (Added)
-- `.streamlit/config.toml` 설정 파일 추가
-  - 사이드바 네비게이션 강제 활성화
-  - 다크 테마 설정
-- `Transaction` 모델에 `bean_id` 필드 추가
-  - 원두별 거래 추적 기능 개선
-- `Transaction` 모델에 `description` 필드 추가
-  - 거래 상세 정보 기록 가능
-
-#### 🐛 수정 (Fixed)
-1. **FormMixin.form_submit_button() 오류 해결**
-   - 파일: `app/pages/InventoryManagement.py:286`
-   - 문제: `key` 파라미터는 form_submit_button()이 지원하지 않음
-   - 해결: `key="btn_outflow"` 파라미터 제거
-
-2. **Excel 내보내기 오류 해결**
-   - 파일: `app/services/report_service.py`
-   - 문제: "At least one sheet must be visible" 오류
-   - 해결: 데이터가 없을 때도 빈 시트를 생성하도록 예외 처리 추가
-   - 변경사항:
-     - `export_to_excel()` 함수: 시트 생성 추적 및 빈 시트 생성 로직
-     - `_create_summary_sheet()`: try-except 블록 추가
-     - `_create_cost_sheet()`: 데이터 존재 여부 확인 로직
-     - `_create_bean_usage_sheet()`: 데이터 존재 여부 확인 로직
-     - `_create_blend_sheet()`: 데이터 존재 여부 확인 로직
-
-3. **st.number_input() 타입 불일치 오류 해결**
-   - 파일: `app/pages/Settings.py:184, 114`
-   - 문제: min_value(float), value(int), step(float) 타입 불일치
-   - 해결: 모든 파라미터를 float으로 통일
-   ```python
-   # 수정 전
-   current_time = float(roasting_time.value) if roasting_time else 2
-   current_roasting = float(roasting_cost.value) if roasting_cost else 2000
-
-   # 수정 후
-   current_time = float(roasting_time.value) if roasting_time else 2.0
-   current_roasting = float(roasting_cost.value) if roasting_cost else 2000.0
-   ```
-
-4. **데이터베이스 스키마 오류 해결**
-   - 문제: 변경된 Transaction 모델이 기존 DB와 불일치
-   - 해결: 데이터베이스 재초기화 및 테이블 재생성
-   - 결과: 모든 테이블 정상 생성 (6개 테이블)
-
-#### 🔧 개선 (Improved)
-1. **페이지 파일명 국제화**
-   - 한글 파일명 → 영문으로 변경
-   - Streamlit 호환성 및 크로스 플랫폼 호환성 개선
-   - 파일명 변경 목록:
-     - `1_대시보드.py` → `Dashboard.py`
-     - `2_원두관리.py` → `BeanManagement.py`
-     - `3_블렌딩관리.py` → `BlendManagement.py`
-     - `4_분석.py` → `Analysis.py`
-     - `5_재고관리.py` → `InventoryManagement.py`
-     - `6_보고서.py` → `Report.py`
-     - `7_설정.py` → `Settings.py`
-     - `8_Excel동기화.py` → `ExcelSync.py`
-     - `9_고급분석.py` → `AdvancedAnalysis.py`
-
-2. **파일명 구조 단순화**
-   - 숫자 접두사 제거 (1_, 2_ 등)
-   - 이유: 더 깔끔한 파일명 구조 및 직관적인 네비게이션
-   - 영향: 9개 페이지 파일명, st.switch_page() 참조 12개 업데이트
-
-3. **코드 참조 업데이트**
-   - 파일: `app/app.py`, `app/pages/Dashboard.py`
-   - 변경: 모든 `st.switch_page()` 호출을 새로운 파일명으로 업데이트
-
-#### 📝 문서화 (Documentation)
-- VERSION 파일 추가 (현재 버전: 0.1.0)
-- CHANGELOG.md 파일 생성
-
-#### 🔍 테스트 (Testing)
-- ✅ Streamlit 웹서버 정상 작동 확인
-- ✅ 데이터베이스 연결 및 쿼리 정상 작동 확인
-- ✅ 사이드바 네비게이션 정상 표시 확인
-- ✅ 모든 페이지 링크 정상 작동 확인
-
-### 📊 통계
-- 수정된 파일: 5개
-- 추가된 파일: 2개
-- 생성된 버그 수정: 4개
-- 구현된 개선사항: 3개
+#### 📚 문서화 완성
+- logs/VERSION_STRATEGY.md 생성
+- Documents/Progress/SESSION_SUMMARY_2025-10-29.md 생성
+- CLAUDE.md에 "⚡ 빠른 버전 관리 참고" 섹션 추가
+- SESSION_END_CHECKLIST.md 상세화
 
 ---
 
-## 버전 관리 가이드
+## 🎯 향후 버전 계획
 
-### 새로운 작업 추가 방법
-
-1. 작업 완료 후 이 파일에 변경사항 기록
-2. 버전 번호 결정:
-   - 버그 수정 → PATCH 증가 (0.1.0 → 0.1.1)
-   - 새 기능 → MINOR 증가 (0.1.0 → 0.2.0)
-   - 대규모 변경 → MAJOR 증가 (0.1.0 → 1.0.0)
-3. VERSION 파일 업데이트
-4. 변경사항을 아래 섹션 중 하나에 추가:
-   - **✨ Added** - 새로운 기능
-   - **🐛 Fixed** - 버그 수정
-   - **🔧 Improved** - 기존 기능 개선
-   - **🗑️ Removed** - 제거된 기능
-   - **⚠️ Deprecated** - 곧 제거될 기능
-   - **📝 Documentation** - 문서 업데이트
-   - **🔍 Testing** - 테스트 추가
-
-### 버전 번호 선택 기준
-
-| 변경 유형 | 버전 증가 | 예시 |
-|---------|---------|------|
-| 버그 수정 | PATCH | 0.1.0 → 0.1.1 |
-| 새 기능 추가 | MINOR | 0.1.0 → 0.2.0 |
-| 호환성 깨지는 변경 | MAJOR | 0.1.0 → 1.0.0 |
-| 여러 작업 묶음 | MINOR | 0.1.0 → 0.2.0 |
+```
+현재: 0.1.0 (초기 버전)
+  ↓
+2주 후: 0.1.1 (버그 수정 3개)
+4주 후: 0.1.2 (문서 개선 5개)
+6주 후: 0.2.0 (새 기능 3~4개) ← MINOR
+8주 후: 0.2.1 (버그 수정 2개)
+12주 후: 1.0.0 (프로덕션 배포) ← MAJOR
+```
 
 ---
 
-## 향후 계획
-
-### v0.2.0 예정 기능
-- [ ] 사용자 인증 시스템
-- [ ] 실시간 데이터 동기화
-- [ ] 고급 분석 기능 강화
-
-### v1.0.0 목표
-- [ ] 안정적인 프로덕션 배포
-- [ ] 완전한 테스트 커버리지
-- [ ] 완전한 사용자 문서
-
+**마지막 업데이트**: 2025-10-29

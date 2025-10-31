@@ -1,0 +1,203 @@
+{
+  "app": {
+    "title": "더문드립바",
+    "subtitle": "The Moon Drip BAR - 로스팅 관리 시스템",
+    "page_icon": "☕"
+  },
+  "menu": {
+    "home": {
+      "name": "홈",
+      "icon": "🏠",
+      "page_title": "홈"
+    },
+    "bean_management": {
+      "name": "원두관리",
+      "icon": "☕",
+      "page_title": "원두관리"
+    },
+    "blend_management": {
+      "name": "블렌딩관리",
+      "icon": "🎨",
+      "page_title": "블렌딩관리"
+    },
+    "analysis": {
+      "name": "분석",
+      "icon": "📊",
+      "page_title": "분석"
+    },
+    "inventory_management": {
+      "name": "재고관리",
+      "icon": "📦",
+      "page_title": "재고관리"
+    },
+    "dashboard": {
+      "name": "대시보드",
+      "icon": "📊",
+      "page_title": "대시보드"
+    },
+    "settings": {
+      "name": "설정",
+      "icon": "⚙️",
+      "page_title": "설정"
+    },
+    "report": {
+      "name": "보고서",
+      "icon": "📄",
+      "page_title": "보고서"
+    },
+    "excel_sync": {
+      "name": "Excel동기화",
+      "icon": "📊",
+      "page_title": "Excel동기화"
+    },
+    "advanced_analysis": {
+      "name": "고급분석",
+      "icon": "📈",
+      "page_title": "고급분석"
+    }
+  },
+  "sidebar": {
+    "navigation_title": "🔗 네비게이션",
+    "language_label": "언어 선택",
+    "language_korean": "🇰🇷 한글",
+    "language_english": "🇬🇧 English",
+    "info_message": "좌측 상단의 ☰ 메뉴를 통해 페이지를 이동합니다:"
+  },
+  "home": {
+    "title": "☕ 더문드립바",
+    "subtitle": "로스팅 비용 관리 시스템에 오신 것을 환영합니다!",
+    "main_title": "The Moon Drip BAR - 로스팅 비용 계산기",
+    "description": "원두 로스팅의 모든 과정을 체계적으로 관리하세요.",
+    "quick_access": "빠른 접근",
+    "bean_management_btn": "☕ 원두관리로 이동",
+    "blend_management_btn": "🎨 블렌딩관리로 이동",
+    "analysis_btn": "📊 분석으로 이동",
+    "inventory_btn": "📦 재고관리로 이동",
+    "dashboard_btn": "📊 대시보드로 이동",
+    "features": "주요 기능",
+    "feature_1_title": "원두 관리",
+    "feature_1_desc": "다양한 원두의 정보를 등록하고 관리합니다.",
+    "feature_2_title": "블렌드 레시피",
+    "feature_2_desc": "고유한 블렌드 레시피를 저장하고 비교합니다.",
+    "feature_3_title": "로스팅 기록",
+    "feature_3_desc": "매일의 로스팅 작업을 기록하고 분석합니다.",
+    "feature_4_title": "비용 추적",
+    "feature_4_desc": "원두 구매 가격과 로스팅 비용을 추적합니다.",
+    "feature_5_title": "판매 관리",
+    "feature_5_desc": "판매 정보를 기록하고 수익을 계산합니다.",
+    "feature_6_title": "데이터 분석",
+    "feature_6_desc": "판매 트렌드와 비용 분석으로 인사이트를 얻습니다."
+  },
+  "common": {
+    "save": "저장",
+    "delete": "삭제",
+    "cancel": "취소",
+    "search": "검색",
+    "edit": "수정",
+    "add": "추가",
+    "close": "닫기",
+    "confirm": "확인",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "warning": "경고",
+    "no_data": "데이터가 없습니다",
+    "required": "필수 항목입니다"
+  },
+  "bean_management": {
+    "title": "원두 관리",
+    "description": "원두의 정보를 등록, 수정, 삭제합니다.",
+    "bean_name": "원두 이름",
+    "country": "생산국",
+    "roast_level": "로스팅 수준",
+    "cost_per_kg": "원두 가격 (원/kg)",
+    "weight_per_kg": "포장 무게 (kg)",
+    "notes": "설명",
+    "add_bean": "원두 추가",
+    "edit_bean": "원두 수정",
+    "delete_bean": "원두 삭제",
+    "bean_list": "원두 목록"
+  },
+  "blend_management": {
+    "title": "블렌드 관리",
+    "description": "블렌드 레시피를 관리합니다.",
+    "blend_name": "블렌드 이름",
+    "composition": "구성",
+    "recipe": "레시피",
+    "add_blend": "블렌드 추가",
+    "edit_blend": "블렌드 수정",
+    "delete_blend": "블렌드 삭제",
+    "blend_list": "블렌드 목록"
+  },
+  "roasting": {
+    "title": "로스팅 기록",
+    "date": "날짜",
+    "bean_type": "원두 종류",
+    "quantity": "수량 (g)",
+    "roast_time": "로스팅 시간 (분)",
+    "roast_level": "로스팅 수준",
+    "temperature": "온도 (°C)",
+    "notes": "메모",
+    "add_record": "기록 추가",
+    "roasting_log": "로스팅 일지"
+  },
+  "inventory": {
+    "title": "재고 관리",
+    "bean_name": "원두 이름",
+    "current_stock": "현재 재고 (kg)",
+    "minimum_stock": "최소 재고 (kg)",
+    "last_updated": "마지막 업데이트",
+    "update_inventory": "재고 업데이트",
+    "low_stock_warning": "재고 부족 경고"
+  },
+  "sales": {
+    "title": "판매 관리",
+    "date": "판매 날짜",
+    "product": "상품",
+    "quantity": "수량",
+    "price_per_unit": "단가",
+    "total_price": "총액",
+    "customer_name": "고객명",
+    "add_sale": "판매 기록 추가",
+    "sales_history": "판매 이력"
+  },
+  "analysis": {
+    "title": "분석",
+    "daily_sales": "일일 판매량",
+    "monthly_revenue": "월간 수익",
+    "cost_breakdown": "비용 분석",
+    "top_products": "인기 상품",
+    "bean_usage": "원두 사용량",
+    "sales_trend": "판매 추이"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "total_sales": "총 판매액",
+    "total_revenue": "총 수익",
+    "total_cost": "총 비용",
+    "profit": "이익",
+    "this_month": "이번 달",
+    "today": "오늘",
+    "recent_sales": "최근 판매",
+    "inventory_status": "재고 현황"
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "theme": "테마",
+    "notifications": "알림",
+    "database": "데이터베이스",
+    "backup": "백업",
+    "restore": "복구",
+    "about": "정보"
+  },
+  "messages": {
+    "save_success": "저장되었습니다.",
+    "delete_success": "삭제되었습니다.",
+    "delete_confirm": "정말로 삭제하시겠습니까?",
+    "error_occurred": "오류가 발생했습니다.",
+    "please_fill_required": "필수 항목을 모두 입력해주세요.",
+    "no_data_found": "데이터를 찾을 수 없습니다.",
+    "loading_data": "데이터를 불러오는 중입니다..."
+  }
+}

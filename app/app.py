@@ -16,6 +16,8 @@ from models import SessionLocal, init_db
 from services.bean_service import BeanService
 from services.blend_service import BlendService
 from utils.constants import UI_CONFIG
+from i18n import Translator, LanguageManager
+from components.sidebar import render_sidebar
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🎨 페이지 설정
@@ -34,42 +36,169 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* 주요 컬러 */
+    /* ═══════════════════════════════════════════════════════════
+       주요 컬러 변수
+       ═══════════════════════════════════════════════════════════ */
     :root {
         --primary: #1F4E78;
         --secondary: #4472C4;
         --success: #70AD47;
         --danger: #C41E3A;
+        --sidebar-bg: #0E1117;           /* 페이지 배경색과 동일 */
+        --hover-bg: #161B22;             /* 다크 테마 hover 배경 */
+        --text-muted: #999;              /* 다크 테마 텍스트 */
+        --divider-color: #444444;        /* 다크 테마 구분선 */
     }
 
-    /* 메인 헤더 */
+    /* ═══════════════════════════════════════════════════════════
+       메인 헤더
+       ═══════════════════════════════════════════════════════════ */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
-        color: #1F4E78;
+        color: var(--primary);
         margin-bottom: 0.5rem;
     }
 
     .sub-header {
         font-size: 1.1rem;
-        color: #666;
+        color: var(--text-muted);
         margin-bottom: 1.5rem;
     }
 
-    /* 사이드바 */
+    /* ═══════════════════════════════════════════════════════════
+       Claude Desktop 스타일 사이드바
+       ═══════════════════════════════════════════════════════════ */
+
+    /* 사이드바 배경 */
     [data-testid="stSidebar"] {
-        background-color: #f8f9fa;
+        background-color: #0E1117 !important;
+        padding: 1rem 0.5rem;
     }
 
-    /* 버튼 */
+    /* 사이드바 내부 배경 추가 */
+    [data-testid="stSidebar"] section {
+        background-color: #0E1117 !important;
+    }
+
+    /* 사이드바 섹션 헤더 */
+    [data-testid="stSidebar"] h3 {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+    }
+
+    /* 사이드바 첫 번째 h3는 margin-top 제거 */
+    [data-testid="stSidebar"] h3:first-of-type {
+        margin-top: 0;
+    }
+
+    /* 메뉴 버튼 기본 스타일 */
+    [data-testid="stSidebar"] .stButton > button {
+        width: 100%;
+        text-align: left;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: none;
+        background-color: transparent !important;
+        color: var(--text-muted) !important;
+        font-size: 14px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        margin-bottom: 6px;
+        cursor: pointer;
+        border-left: 4px solid transparent;
+    }
+
+    /* 사이드바 버튼 호버 효과 */
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background-color: var(--hover-bg) !important;
+        color: var(--primary) !important;
+        border-left-color: transparent;
+    }
+
+    /* 사이드바 버튼 활성 (primary type) */
+    [data-testid="stSidebar"] [role="button"] > button[kind="primary"] {
+        background-color: var(--secondary) !important;
+        color: white !important;
+        font-weight: 600;
+        border-left-color: var(--primary) !important;
+    }
+
+    /* Primary 버튼 추가 스타일 */
+    [data-testid="stSidebar"] button[kind="primary"] {
+        background-color: var(--secondary) !important;
+        color: white !important;
+        font-weight: 600;
+    }
+
+    /* Divider 스타일 */
+    [data-testid="stSidebar"] hr {
+        margin: 0.75rem 0;
+        border: none;
+        border-top: 1px solid var(--divider-color);
+        opacity: 0.5;
+    }
+
+    /* 메트릭 카드 (사이드바) */
+    [data-testid="stSidebar"] [data-testid="stMetric"] {
+        background-color: #161B22;
+        padding: 8px 12px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        margin-bottom: 8px;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stMetric"] label {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    [data-testid="stSidebar"] [data-testid="stMetric"] [data-testid="stMetricValue"] {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    /* 사이드바 아이콘 크기 */
+    [data-testid="stSidebar"] .stButton > button span {
+        font-size: 18px;
+    }
+
+    /* Info/Alert Box (사이드바) */
+    [data-testid="stSidebar"] .stAlert {
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    /* Caption 텍스트 (사이드바) */
+    [data-testid="stSidebar"] .stCaption {
+        font-size: 11px;
+        color: #999;
+        line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       메인 콘텐츠 버튼
+       ═══════════════════════════════════════════════════════════ */
+
+    /* 메인 영역 버튼 */
     .stButton > button {
-        background-color: #4472C4 !important;
+        background-color: var(--secondary) !important;
         color: white !important;
         border: none !important;
+        transition: background-color 0.2s ease;
+        border-radius: 6px;
     }
 
     .stButton > button:hover {
-        background-color: #1F4E78 !important;
+        background-color: var(--primary) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -88,6 +217,13 @@ def init_session_state():
 
     if "blend_service" not in st.session_state:
         st.session_state.blend_service = BlendService(st.session_state.db)
+
+    # 다중 언어 지원 초기화
+    if "translator" not in st.session_state:
+        st.session_state.translator = Translator(default_language="ko")
+
+    if "language_manager" not in st.session_state:
+        st.session_state.language_manager = LanguageManager(st.session_state.translator)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -110,71 +246,15 @@ def render_header():
         st.metric("현재시간", datetime.now().strftime("%H:%M"))
 
 
-def render_sidebar():
-    """사이드바 렌더링"""
-    with st.sidebar:
-        st.markdown("### 🔗 네비게이션")
-
-        st.info("""
-        좌측 상단의 ☰ 메뉴를 통해 페이지를 이동합니다:
-
-        - 🏠 **홈** (현재)
-        - 🎨 **블렌딩관리**
-        - ☕ **원두관리**
-        - 📊 **분석**
-        - 📦 **재고관리**
-        """)
-
-        st.divider()
-
-        # 빠른 통계
-        st.markdown("### 📊 현황")
-
-        db = st.session_state.db
-        bean_service = st.session_state.bean_service
-        blend_service = st.session_state.blend_service
-
-        beans = bean_service.get_active_beans()
-        blends = blend_service.get_active_blends()
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("☕ 원두", len(beans))
-        with col2:
-            st.metric("🎨 블렌드", len(blends))
-
-        st.divider()
-
-        # 도구
-        st.markdown("### ⚙️ 도구")
-
-        if st.button("🔄 새로고침", use_container_width=True):
-            st.rerun()
-
-        st.divider()
-
-        # 정보
-        st.markdown("### ℹ️ 정보")
-        st.caption(f"""
-        **{UI_CONFIG["app_title"]}**
-
-        🚀 버전: 2.0.0
-        📅 시작: 2025-10-24
-        🎯 상태: Phase 2
-
-        **데이터:**
-        - 원두: {len(beans)}종
-        - 블렌드: {len(blends)}개
-        - 포션: 20개
-        """)
-
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🏠 홈 페이지
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def render_home():
     """홈 페이지"""
+    # 현재 페이지 저장 (사이드바 활성 표시)
+    st.session_state["current_page"] = "home"
+
     render_header()
 
     st.divider()
