@@ -129,21 +129,25 @@ def sample_blend(db_session, sample_beans):
         BlendRecipe(
             blend_id=blend.id,
             bean_id=sample_beans[0].id,
+            portion_count=4,
             ratio=40
         ),
         BlendRecipe(
             blend_id=blend.id,
             bean_id=sample_beans[1].id,
+            portion_count=4,
             ratio=40
         ),
         BlendRecipe(
             blend_id=blend.id,
             bean_id=sample_beans[2].id,
+            portion_count=1,
             ratio=10
         ),
         BlendRecipe(
             blend_id=blend.id,
             bean_id=sample_beans[3].id,
+            portion_count=1,
             ratio=10
         ),
     ]
@@ -162,19 +166,27 @@ def sample_cost_setting(db_session):
 
     - 손실률: 17%
     - 마진율: 2.5배
+    - 로스팅 비용: 500원/kg
+    - 인건비: 15,000원/시간
+    - 전기료: 1,000원/시간
     """
-    cost_setting = CostSetting(
-        loss_rate=17.0,
-        margin_multiplier=2.5,
-        roasting_cost_per_kg=500,
-        labor_cost_per_hour=15000,
-        electricity_cost_per_hour=1000
-    )
-    db_session.add(cost_setting)
-    db_session.commit()
-    db_session.refresh(cost_setting)
+    cost_settings = [
+        CostSetting(parameter_name='loss_rate', value=17.0, description='표준 손실률 (%)'),
+        CostSetting(parameter_name='margin_multiplier', value=2.5, description='마진율 (배수)'),
+        CostSetting(parameter_name='roasting_cost_per_kg', value=500, description='로스팅 비용 (원/kg)'),
+        CostSetting(parameter_name='labor_cost_per_hour', value=15000, description='인건비 (원/시간)'),
+        CostSetting(parameter_name='electricity_cost_per_hour', value=1000, description='전기료 (원/시간)'),
+    ]
 
-    return cost_setting
+    for setting in cost_settings:
+        db_session.add(setting)
+    db_session.commit()
+
+    # 첫 번째 설정 (loss_rate)을 반환
+    for setting in cost_settings:
+        db_session.refresh(setting)
+
+    return cost_settings
 
 
 @pytest.fixture

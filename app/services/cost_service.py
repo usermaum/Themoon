@@ -140,7 +140,13 @@ class CostService:
 
         Returns:
             업데이트된 Bean 객체
+
+        Raises:
+            ValueError: 원두를 찾을 수 없거나 가격이 0 이하인 경우
         """
+        if new_price <= 0:
+            raise ValueError(f"가격은 0보다 커야 합니다: {new_price}")
+
         bean = db.query(Bean).filter(Bean.id == bean_id).first()
         if not bean:
             raise ValueError(f"원두를 찾을 수 없습니다: {bean_id}")
