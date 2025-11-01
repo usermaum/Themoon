@@ -148,12 +148,13 @@ class BlendService:
             ratio=ratio
         )
         self.db.add(recipe)
+        self.db.commit()
 
         # 블렌드 포션 총합 업데이트
         total = self.db.query(BlendRecipe).filter(
             BlendRecipe.blend_id == blend_id
         ).count()
-        blend.total_portion = total + 1
+        blend.total_portion = total
 
         self.db.commit()
         self.db.refresh(recipe)

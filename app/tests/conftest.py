@@ -118,7 +118,8 @@ def sample_blend(db_session, sample_beans):
         name='풀문',
         blend_type='풀문',
         description='풀문 블렌드',
-        status='active'
+        status='active',
+        total_portion=10  # 4+4+1+1=10
     )
     db_session.add(blend)
     db_session.commit()
