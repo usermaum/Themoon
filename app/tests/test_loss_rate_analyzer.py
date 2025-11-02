@@ -244,13 +244,16 @@ class TestLossRateAnalyzerIntegration:
 
     def test_analysis_workflow(self, db_session):
         """분석 워크플로우 통합 테스트"""
-        # 1. 정상 + 이상 데이터 혼합 생성
+        # 고정된 테스트 날짜 사용 (월 중간으로 설정하여 모든 데이터가 같은 달에 있도록 함)
+        test_date = date(2025, 11, 15)
+
+        # 1. 정상 + 이상 데이터 혼합 생성 (모두 같은 달에)
         for i in range(5):
             RoastingService.create_roasting_log(
                 db=db_session,
                 raw_weight_kg=10.0,
                 roasted_weight_kg=8.3,  # 정상
-                roasting_date=date.today() - timedelta(days=i)
+                roasting_date=test_date - timedelta(days=i)
             )
 
         for i in range(3):
@@ -258,7 +261,7 @@ class TestLossRateAnalyzerIntegration:
                 db=db_session,
                 raw_weight_kg=10.0,
                 roasted_weight_kg=7.0,  # 이상
-                roasting_date=date.today() - timedelta(days=i+10),
+                roasting_date=test_date - timedelta(days=i+5),  # 같은 달 내에 생성
                 expected_loss_rate=17.0
             )
 
@@ -271,10 +274,10 @@ class TestLossRateAnalyzerIntegration:
         warnings = LossRateAnalyzer.get_recent_warnings(db_session)
         assert len(warnings) >= 3
 
-        # 4. 월별 요약
-        month = date.today().strftime('%Y-%m')
+        # 4. 월별 요약 (테스트 날짜 기준 달 사용)
+        month = test_date.strftime('%Y-%m')
         summary = LossRateAnalyzer.get_monthly_summary(db_session, month)
-        assert summary['data_count'] >= 5
+        assert summary['data_count'] >= 5  # 8개 모두 같은 달(11월)에 있음
 
     def test_warning_lifecycle(self, db_session):
         """경고 생명주기 테스트"""
