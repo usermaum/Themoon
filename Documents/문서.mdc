@@ -1,0 +1,41 @@
+---
+alwaysApply: false
+---
+
+### SpecKit의 체계적 접근 - Spec-Driven Development: ###
+
+### 체계적인 적근 방법 순서 도
+1. Constitution (원칙) - 프로젝트 기본 원칙 설정
+2. Specify (명세) - 무엇을 만들지 상세하게 정의
+3. Clarify (명확화) - 불분명한 부분을 질문으로 해소
+4. Plan (계획) - 기술 스택과 아키텍처 결정
+5. Tasks (작업 분해) - 실행 가능한 단위로 쪼개기 
+6. Implement (구현) - 자동으로 코드 생성
+7. Analyze (검증) - 명세와 코드 일치 확인
+
+
+
+ 에대한 충분한 Plan (계획) 작성하고,Tasks (작업 분해)
+  하여,Implement (구현)하고, Analyze (검증) 해줘
+
+
+## 가상 서버 실행
+./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
+
+## git 저장 ##
+git add .
+git commit -m "버전 V.0.3 2025-10-19:pm 3:03"
+git push origin web_modules
+
+
+## git 내려받기 @@
+git checkout main
+git pull origin main
+
+
+claude --dangerously-skip-permissions
+
+
+## wsl 클로드업데이트 혹은 설치.
+curl -fsSL https://claude.ai/install.sh | bash
+출처: https://couplewith.tistory.com/837 [AgileBus - IT 기술자를 위한 최신 기술 Trends:티스토리]
