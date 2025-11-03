@@ -118,6 +118,16 @@ def render_sidebar():
             st.session_state["current_page"] = "RoastingRecord"
             st.switch_page("pages/RoastingRecord.py")
 
+        # 로스팅 일괄입력
+        if st.button(
+            "📝 로스팅 일괄입력",
+            type="primary" if current_page == "RoastingReceipt" else "secondary",
+            use_container_width=True,
+            key="nav_receipt"
+        ):
+            st.session_state["current_page"] = "RoastingReceipt"
+            st.switch_page("pages/RoastingReceipt.py")
+
         # 재고관리
         if st.button(
             "📦 재고관리",
