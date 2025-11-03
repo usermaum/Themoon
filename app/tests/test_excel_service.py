@@ -19,8 +19,10 @@ def sample_roasting_data(db_session):
     """
     # 원두 생성
     bean = Bean(
+        no=1,
         name="테스트원두",
         country_code="KR",
+        roast_level="medium",
         price_per_kg=5000,
         status="active"
     )
@@ -89,13 +91,8 @@ class TestExcelExport:
             output_path=output_file
         )
 
-        # Then
-        assert result_path == output_file
-        # 빈 파일도 생성되어야 함 (헤더만)
-        assert os.path.exists(result_path)
-
-        # 파일 정리
-        os.remove(result_path)
+        # Then - 데이터가 없으면 None 반환
+        assert result_path is None
 
     def test_export_invalid_month_format(self, db_session, tmp_path):
         """
@@ -106,17 +103,15 @@ class TestExcelExport:
         output_file = str(tmp_path / "invalid.xlsx")
 
         # When/Then
-        # 잘못된 형식이지만 쿼리는 실행됨 (결과 없음)
+        # 잘못된 형식이지만 쿼리는 실행됨 (결과 없음 → None 반환)
         result_path = ExcelSyncService.export_roasting_logs_to_excel(
             db=db_session,
             month=invalid_month,
             output_path=output_file
         )
 
-        assert os.path.exists(result_path)
-
-        # 파일 정리
-        os.remove(result_path)
+        # 데이터가 없으므로 None 반환
+        assert result_path is None
 
 
 class TestExcelDataValidation:
@@ -250,8 +245,10 @@ class TestExcelEdgeCases:
         """
         # Given
         bean = Bean(
+            no=99,
             name="특수!@#$%원두",
             country_code="한국",
+            roast_level="dark",
             price_per_kg=5000,
             status="active"
         )
@@ -302,6 +299,100 @@ class TestExcelEdgeCases:
             assert 'Data/' in result_path or month in result_path
             # 파일 정리
             os.remove(result_path)
+
+
+class TestExcelValidation:
+    """Excel 검증 기능 테스트"""
+
+    def test_validate_phase1_migration_success(self, db_session, sample_roasting_data):
+        """
+        Phase 1 마이그레이션 검증 성공
+        """
+        # Given - sample_roasting_data에 이미 3개 로그 존재
+
+        # When
+        result = ExcelSyncService.validate_phase1_migration(db_session)
+
+        # Then
+        assert result['total_logs'] == 3
+        assert result['validation_passed'] is True
+        assert result['checks']['raw_weight_valid'] == 3
+        assert result['checks']['roasted_weight_valid'] == 3
+        assert result['checks']['loss_rate_valid'] == 3
+        assert result['checks']['no_null_dates'] == 3
+        assert len(result['errors']) == 0
+
+    def test_validate_phase1_migration_empty(self, db_session):
+        """
+        마이그레이션 검증 - 데이터 없음
+        """
+        # Given - 빈 데이터베이스
+
+        # When
+        result = ExcelSyncService.validate_phase1_migration(db_session)
+
+        # Then
+        assert result['total_logs'] == 0
+        assert result['checks']['raw_weight_valid'] == 0
+
+    def test_validate_phase1_migration_invalid_data(self, db_session):
+        """
+        마이그레이션 검증 - 잘못된 데이터 감지
+        """
+        # Given - 잘못된 손실률 (음수)
+        invalid_log = RoastingLog(
+            raw_weight_kg=100.0,
+            roasted_weight_kg=120.0,  # 로스팅량 > 생두량 (비정상)
+            roasting_date=date(2025, 10, 15),
+            roasting_month='2025-10',
+            loss_rate_percent=-20.0,  # 음수 (비정상)
+            expected_loss_rate_percent=17.0,
+            loss_variance_percent=0.0
+        )
+        db_session.add(invalid_log)
+        db_session.commit()
+
+        # When
+        result = ExcelSyncService.validate_phase1_migration(db_session)
+
+        # Then
+        assert result['total_logs'] == 1
+        assert result['validation_passed'] is False
+        assert len(result['errors']) > 0  # 오류 발견
+
+    def test_get_migration_summary_with_data(self, db_session, sample_roasting_data):
+        """
+        마이그레이션 요약 - 데이터 있음
+        """
+        # Given - sample_roasting_data에 3개 로그 존재
+
+        # When
+        summary = ExcelSyncService.get_migration_summary(db_session)
+
+        # Then
+        assert summary['roasting_logs'] == 3
+        assert summary['beans'] >= 1  # 최소 1개 원두
+        assert summary['total_raw_weight_kg'] > 0
+        assert summary['total_roasted_weight_kg'] > 0
+        assert summary['avg_loss_rate_percent'] > 0
+        assert '✓ 마이그레이션 완료' in summary['status']
+
+    def test_get_migration_summary_empty(self, db_session):
+        """
+        마이그레이션 요약 - 데이터 없음
+        """
+        # Given - 빈 데이터베이스
+
+        # When
+        summary = ExcelSyncService.get_migration_summary(db_session)
+
+        # Then
+        assert summary['roasting_logs'] == 0
+        assert summary['beans'] == 0
+        assert summary['total_raw_weight_kg'] == 0
+        assert summary['total_roasted_weight_kg'] == 0
+        assert summary['avg_loss_rate_percent'] == 0
+        assert '⏳ 데이터 없음' in summary['status']
 
 
 class TestExcelIntegration:
