@@ -11,6 +11,52 @@
 
 ---
 
+## [0.10.0] - 2025-11-03
+
+### ✨ 테스트: ExcelService 테스트 개선 (93% 커버리지 달성)
+
+#### 📝 변경사항
+
+**ExcelService 테스트 완성 (0% → 93%)**:
+- 총 14개 테스트 작성 (9개 기본 + 5개 검증)
+- Bean 모델 필수 필드 추가 (no, roast_level)
+- 빈 데이터 처리 테스트 수정 (None 반환 예상)
+- validate_phase1_migration() 검증 테스트 추가
+- get_migration_summary() 요약 테스트 추가
+
+**전체 테스트 통계**:
+- 총 테스트: 188개 → 202개 (+14개)
+- 전체 커버리지: 84% → 92% (+8%p)
+- ExcelService 커버리지: 0% → 93% (85/91 lines)
+- 통과율: 100% (202/202)
+
+**서비스별 커버리지**:
+- RoastingService: 100% ✅
+- LossRateAnalyzer: 100% ✅
+- AnalyticsService: 99% ✅
+- AuthService: 96% ✅
+- ExcelService: 93% ✅ (NEW!)
+- BlendService: 92% ✅
+- BeanService: 91% ✅
+- CostService: 90% ✅
+- ReportService: 78% ⚠️
+
+**수정된 버그**:
+1. Bean 모델 필수 필드 누락 (no, roast_level)
+2. 빈 데이터 처리 assertion 불일치
+
+**생성된 파일**:
+- app/tests/test_excel_service.py (14개 테스트)
+
+**문서 업데이트**:
+- README.md: v0.10.0 동기화 (9곳)
+- .claude/CLAUDE.md: v0.10.0 동기화
+- SESSION_SUMMARY_2025-11-03.md: 신규 생성
+
+**이전 세션 (2025-11-02)**:
+- 데이터 검증 스크립트 및 리포트 생성
+- ExcelService 기본 테스트 작성 (54% 커버리지)
+
 ## [0.9.1] - 2025-11-02
 
 ### 🐛 패치 (Bug Fix): test_analysis_workflow 테스트 수정 - 월초 날짜 문제 해결
