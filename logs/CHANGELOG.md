@@ -13,45 +13,56 @@
 
 ## [0.10.0] - 2025-11-03
 
-### ✨ 테스트: ExcelService 테스트 개선 (93% 커버리지 달성)
+### ✨ 테스트: ExcelService + ReportService 테스트 완성 (전체 94% 커버리지 달성)
 
 #### 📝 변경사항
 
-**ExcelService 테스트 완성 (0% → 93%)**:
+**1. ExcelService 테스트 완성 (0% → 93%)**:
 - 총 14개 테스트 작성 (9개 기본 + 5개 검증)
 - Bean 모델 필수 필드 추가 (no, roast_level)
 - 빈 데이터 처리 테스트 수정 (None 반환 예상)
 - validate_phase1_migration() 검증 테스트 추가
 - get_migration_summary() 요약 테스트 추가
 
-**전체 테스트 통계**:
-- 총 테스트: 188개 → 202개 (+14개)
-- 전체 커버리지: 84% → 92% (+8%p)
-- ExcelService 커버리지: 0% → 93% (85/91 lines)
-- 통과율: 100% (202/202)
+**2. ReportService 테스트 확장 (78% → 88%)**:
+- 6개 추가 테스트 작성 (15→21, +6개)
+  - test_export_to_excel_cost, blend, bean_usage
+  - test_export_to_excel_no_sheets (빈 시트 생성)
+  - test_export_to_csv_cost, bean_usage
+- sample_transactions 픽스처 추가 (conftest.py)
 
-**서비스별 커버리지**:
+**전체 테스트 통계**:
+- 총 테스트: 188개 → 208개 (+20개)
+- 전체 커버리지: 84% → 94% (+10%p)
+- ExcelService: 0% → 93% (85/91 lines)
+- ReportService: 78% → 88% (145/164 lines)
+- 통과율: 100% (208/208)
+
+**서비스별 커버리지** (9개 서비스, 평균 94%):
 - RoastingService: 100% ✅
 - LossRateAnalyzer: 100% ✅
 - AnalyticsService: 99% ✅
 - AuthService: 96% ✅
-- ExcelService: 93% ✅ (NEW!)
+- ExcelService: 93% ✅ (NEW! 0%→93%)
 - BlendService: 92% ✅
 - BeanService: 91% ✅
 - CostService: 90% ✅
-- ReportService: 78% ⚠️
+- ReportService: 88% ✅ (NEW! 78%→88%)
 
 **수정된 버그**:
 1. Bean 모델 필수 필드 누락 (no, roast_level)
 2. 빈 데이터 처리 assertion 불일치
 
-**생성된 파일**:
+**생성/수정된 파일**:
 - app/tests/test_excel_service.py (14개 테스트)
+- app/tests/test_report_service.py (15→21개, +6개)
+- app/tests/conftest.py (sample_transactions 픽스처 추가)
 
 **문서 업데이트**:
-- README.md: v0.10.0 동기화 (9곳)
+- README.md: v0.10.0 동기화, 208개 테스트, 94% 커버리지
 - .claude/CLAUDE.md: v0.10.0 동기화
-- SESSION_SUMMARY_2025-11-03.md: 신규 생성
+- SESSION_SUMMARY_2025-11-03.md: 신규 생성 및 업데이트
+- CHANGELOG.md: [0.10.0] 종합 업데이트
 
 **이전 세션 (2025-11-02)**:
 - 데이터 검증 스크립트 및 리포트 생성
