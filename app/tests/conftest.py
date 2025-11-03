@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from app.models.database import (
     Base, Bean, Blend, BlendRecipe, CostSetting,
-    User, UserPermission, RoastingLog, LossRateWarning
+    User, UserPermission, RoastingLog, LossRateWarning, Transaction
 )
 
 
@@ -188,6 +188,55 @@ def sample_cost_setting(db_session):
         db_session.refresh(setting)
 
     return cost_settings
+
+
+@pytest.fixture
+def sample_transactions(db_session, sample_beans, sample_blend):
+    """
+    샘플 거래 데이터 (원두 입고/사용)
+
+    - 원두 입고 2건
+    - 원두 사용 2건
+    """
+    transactions = [
+        Transaction(
+            bean_id=sample_beans[0].id,
+            transaction_type='입고',
+            quantity_kg=10.0,
+            total_amount=55000,  # 10kg * 5500원
+            description='예가체프 입고'
+        ),
+        Transaction(
+            bean_id=sample_beans[1].id,
+            transaction_type='입고',
+            quantity_kg=5.0,
+            total_amount=30000,  # 5kg * 6000원
+            description='안티구아 입고'
+        ),
+        Transaction(
+            bean_id=sample_beans[0].id,
+            transaction_type='사용',
+            quantity_kg=3.0,
+            total_amount=16500,  # 3kg * 5500원
+            description='예가체프 사용'
+        ),
+        Transaction(
+            bean_id=sample_beans[1].id,
+            transaction_type='사용',
+            quantity_kg=2.0,
+            total_amount=12000,  # 2kg * 6000원
+            description='안티구아 사용'
+        ),
+    ]
+
+    for txn in transactions:
+        db_session.add(txn)
+    db_session.commit()
+
+    for txn in transactions:
+        db_session.refresh(txn)
+
+    return transactions
 
 
 @pytest.fixture

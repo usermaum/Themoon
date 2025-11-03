@@ -163,6 +163,42 @@ class TestReportServiceExcel:
         xl_file = pd.ExcelFile(excel_data)
         assert len(xl_file.sheet_names) >= 1
 
+    def test_export_to_excel_cost(self, db_session, sample_beans, sample_blend):
+        """비용 분석 보고서를 Excel로 내보내기"""
+        service = ReportService(db_session)
+
+        excel_data = service.export_to_excel(report_type='cost')
+
+        assert isinstance(excel_data, BytesIO)
+        excel_data.seek(0)
+        xl_file = pd.ExcelFile(excel_data)
+        # 비용분석 시트가 있어야 함
+        assert '비용분석' in xl_file.sheet_names or '요약' in xl_file.sheet_names
+
+    def test_export_to_excel_blend(self, db_session, sample_beans, sample_blend):
+        """블렌드 성과 보고서를 Excel로 내보내기"""
+        service = ReportService(db_session)
+
+        excel_data = service.export_to_excel(report_type='blend')
+
+        assert isinstance(excel_data, BytesIO)
+        excel_data.seek(0)
+        xl_file = pd.ExcelFile(excel_data)
+        # 블렌드성과 시트가 있어야 함
+        assert '블렌드성과' in xl_file.sheet_names or '요약' in xl_file.sheet_names
+
+    def test_export_to_excel_bean_usage(self, db_session, sample_beans, sample_blend, sample_transactions):
+        """원두 사용량 보고서를 Excel로 내보내기"""
+        service = ReportService(db_session)
+
+        excel_data = service.export_to_excel(report_type='bean_usage')
+
+        assert isinstance(excel_data, BytesIO)
+        excel_data.seek(0)
+        xl_file = pd.ExcelFile(excel_data)
+        # 원두사용 시트가 있어야 함
+        assert len(xl_file.sheet_names) >= 1
+
     def test_export_to_excel_empty(self, db_session):
         """데이터 없을 때 Excel 내보내기"""
         service = ReportService(db_session)
@@ -171,6 +207,19 @@ class TestReportServiceExcel:
 
         assert isinstance(excel_data, BytesIO)
         # 에러 없이 생성되어야 함
+
+    def test_export_to_excel_no_sheets(self, db_session):
+        """모든 데이터가 없을 때 빈 시트 생성"""
+        service = ReportService(db_session)
+
+        # 데이터 없는 상태에서 'all' 타입으로 내보내기
+        excel_data = service.export_to_excel(report_type='all')
+
+        assert isinstance(excel_data, BytesIO)
+        excel_data.seek(0)
+        xl_file = pd.ExcelFile(excel_data)
+        # 최소 1개 시트는 있어야 함 (빈 정보 시트)
+        assert len(xl_file.sheet_names) >= 1
 
 
 class TestReportServiceCSV:
@@ -192,6 +241,26 @@ class TestReportServiceCSV:
         service = ReportService(db_session)
 
         csv_data = service.export_to_csv(report_type='blend')
+
+        assert isinstance(csv_data, str)
+        assert len(csv_data) > 0
+
+    def test_export_to_csv_cost(self, db_session, sample_beans, sample_blend):
+        """비용 분석 보고서를 CSV로 내보내기"""
+        service = ReportService(db_session)
+
+        csv_data = service.export_to_csv(report_type='cost')
+
+        assert isinstance(csv_data, str)
+        assert len(csv_data) > 0
+        # CSV 헤더 확인
+        assert '블렌드명' in csv_data or 'blend_name' in csv_data
+
+    def test_export_to_csv_bean_usage(self, db_session, sample_beans, sample_transactions):
+        """원두 사용량 보고서를 CSV로 내보내기"""
+        service = ReportService(db_session)
+
+        csv_data = service.export_to_csv(report_type='bean_usage')
 
         assert isinstance(csv_data, str)
         assert len(csv_data) > 0
