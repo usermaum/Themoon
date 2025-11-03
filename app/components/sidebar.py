@@ -108,6 +108,16 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📦 운영 관리")
 
+        # 로스팅 기록
+        if st.button(
+            "📊 로스팅 기록",
+            type="primary" if current_page == "RoastingRecord" else "secondary",
+            use_container_width=True,
+            key="nav_roasting"
+        ):
+            st.session_state["current_page"] = "RoastingRecord"
+            st.switch_page("pages/RoastingRecord.py")
+
         # 재고관리
         if st.button(
             "📦 재고관리",
