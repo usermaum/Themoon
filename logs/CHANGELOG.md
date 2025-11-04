@@ -11,6 +11,132 @@
 
 ---
 
+## [0.13.7] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): 날짜 형식 변환 오류 수정
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingReceipt.py` - calculate_results() 함수
+- **문제**: `AttributeError: 'str' object has no attribute 'strftime'`
+- **원인**: st.data_editor가 날짜를 str 또는 datetime 객체로 반환 (컨텍스트에 따라 다름)
+- **해결**: 타입 체크 추가
+  ```python
+  # OLD:
+  "날짜": row["날짜"].strftime("%Y-%m-%d") if not pd.isna(row["날짜"]) else ""
+
+  # NEW:
+  if pd.isna(row["날짜"]):
+      date_str = ""
+  elif isinstance(row["날짜"], str):
+      date_str = row["날짜"]
+  else:
+      date_str = row["날짜"].strftime("%Y-%m-%d")
+  ```
+
+## [0.13.6] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): 상태 판정 로직 수정 및 예상 손실률 자동 계산 기능 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingReceipt.py`
+
+**1️⃣ 상태 판정 로직 수정** (calculate_results 함수):
+- **문제**: `abs(variance)` 사용으로 방향 무시 → -12% (예상보다 손실률 낮음 = 좋음)가 "🔴 위험"으로 표시됨
+- **해결**: variance 방향을 고려한 로직으로 수정
+  - `variance ≤ 0`: 예상보다 손실률 낮음 = 🟢 정상
+  - `0 < variance ≤ 3%`: 🟢 정상
+  - `3% < variance ≤ 5%`: 🟡 주의
+  - `variance > 5%`: 🔴 위험
+
+**2️⃣ 예상 손실률 자동 계산 기능 추가**:
+- "🔢 예상 손실률 자동 계산" 버튼 추가 (데이터 입력 테이블 하단)
+- 입력된 생두 무게와 로스팅 후 무게를 기반으로 실제 손실률 계산
+- 계산된 값을 "예상손실률(%)" 컬럼에 자동으로 채워넣음
+- 사용자가 수동으로 손실률을 계산할 필요 없이 버튼 클릭만으로 처리 가능
+
+## [0.13.5] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): number_input max_value를 100.0에서 10000.0으로 확대
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py` (Tab 2, Tab 3), `app/pages/RoastingReceipt.py` (column_config)
+- **문제**: `StreamlitAPIException: default_value 481.93 must be less than or equal to max_value 100.0`
+- **원인**: 데이터베이스에 481.93kg 같은 대량 로스팅 기록 존재, 기존 max_value=100.0으로는 표시 불가
+- **해결**:
+  - 생두 무게(kg) 필드: max_value를 100.0 → 10000.0 (10톤)으로 확대
+  - 로스팅 후 무게(kg) 필드: max_value를 100.0 → 10000.0 (10톤)으로 확대
+  - 다양한 규모의 로스팅 작업 지원 가능
+
+## [0.13.4] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): get_db() generator 대신 SessionLocal() 직접 사용
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: 'generator' object has no attribute 'query'`
+- **원인**:
+  - `get_db()`는 FastAPI 의존성 주입용 generator (yield 사용)
+  - Streamlit에서는 generator가 아닌 직접 인스턴스화된 세션 필요
+- **해결**:
+  ```python
+  # OLD:
+  if 'db' not in st.session_state:
+      st.session_state.db = get_db()  # Generator 반환 (❌)
+
+  # NEW:
+  if 'db' not in st.session_state:
+      st.session_state.db = SessionLocal()  # Session 직접 생성 (✅)
+  ```
+
+## [0.13.3] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): bean_service 및 blend_service 초기화 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: st.session_state has no attribute 'bean_service'`
+- **원인**: sidebar.py의 통계 섹션 (line 196-197)이 bean_service와 blend_service를 요구
+- **해결**: Session state에 BeanService 및 BlendService 초기화 추가
+  ```python
+  if 'bean_service' not in st.session_state:
+      st.session_state.bean_service = BeanService(st.session_state.db)
+  if 'blend_service' not in st.session_state:
+      st.session_state.blend_service = BlendService(st.session_state.db)
+  ```
+
+## [0.13.2] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): language_manager 초기화 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: st.session_state has no attribute 'language_manager'`
+- **원인**: sidebar.py가 language_manager를 요구하지만 로스팅 페이지에 초기화 코드 누락
+- **해결**: BeanManagement.py 패턴을 따라 Translator 및 LanguageManager 초기화 추가
+  ```python
+  if "translator" not in st.session_state:
+      st.session_state.translator = Translator(default_language="ko")
+  if "language_manager" not in st.session_state:
+      st.session_state.language_manager = LanguageManager(st.session_state.translator)
+  ```
+
+## [0.13.1] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): database import 경로 수정 (app.utils → app.models)
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `ModuleNotFoundError: No module named 'app.utils.database'`
+- **원인**: database.py가 app/models/에 위치하는데 app/utils/database에서 import 시도
+- **해결**:
+  ```python
+  # OLD:
+  from app.utils.database import get_db
+
+  # NEW:
+  from app.models import SessionLocal
+  ```
+
 ## [0.13.0] - 2025-11-03
 
 ### ✨ 마이너 업데이트 (Minor Update): 로스팅 일괄 입력 페이지 구현 (RoastingReceipt.py)
