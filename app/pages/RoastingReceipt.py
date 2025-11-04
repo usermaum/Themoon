@@ -117,9 +117,17 @@ def calculate_results(df):
                 # 예상보다 5% 이상 높으면 위험
                 status = "🔴 위험"
 
+            # 날짜 형식 처리 (datetime 객체 또는 문자열)
+            if pd.isna(row["날짜"]):
+                date_str = ""
+            elif isinstance(row["날짜"], str):
+                date_str = row["날짜"]
+            else:
+                date_str = row["날짜"].strftime("%Y-%m-%d")
+
             results.append({
                 "행번호": idx + 1,
-                "날짜": row["날짜"].strftime("%Y-%m-%d") if not pd.isna(row["날짜"]) else "",
+                "날짜": date_str,
                 "생두(kg)": f"{raw_weight:.2f}",
                 "로스팅후(kg)": f"{roasted_weight:.2f}",
                 "실제손실률(%)": f"{actual_loss:.2f}%",
