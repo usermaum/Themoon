@@ -17,7 +17,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from app.services.roasting_service import RoastingService
-from app.utils.database import get_db
+from app.models.database import get_db
 from app.components.sidebar import render_sidebar
 
 # ═══════════════════════════════════════════════════════════════════════════════
