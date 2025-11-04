@@ -19,10 +19,18 @@ if project_root not in sys.path:
 from app.services.roasting_service import RoastingService
 from app.models.database import get_db
 from app.components.sidebar import render_sidebar
+from app.i18n import Translator, LanguageManager
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Session State 초기화
 # ═══════════════════════════════════════════════════════════════════════════════
+
+# 다중 언어 지원 초기화
+if "translator" not in st.session_state:
+    st.session_state.translator = Translator(default_language="ko")
+
+if "language_manager" not in st.session_state:
+    st.session_state.language_manager = LanguageManager(st.session_state.translator)
 
 if 'db' not in st.session_state:
     st.session_state.db = get_db()
