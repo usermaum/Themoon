@@ -207,9 +207,9 @@ edited_df = st.data_editor(
         ),
         "생두(kg)": st.column_config.NumberColumn(
             "생두 무게 (kg)",
-            help="투입한 생두의 무게 (0.1 ~ 100kg)",
+            help="투입한 생두의 무게 (0.1 ~ 10000kg)",
             min_value=0.0,
-            max_value=100.0,
+            max_value=10000.0,
             step=0.1,
             format="%.2f",
             required=True
@@ -218,7 +218,7 @@ edited_df = st.data_editor(
             "로스팅 후 무게 (kg)",
             help="로스팅 후 무게 (생두보다 작아야 함)",
             min_value=0.0,
-            max_value=100.0,
+            max_value=10000.0,
             step=0.1,
             format="%.2f",
             required=True

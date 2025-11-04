@@ -215,7 +215,7 @@ with tab2:
             raw_weight_kg = st.number_input(
                 "⚖️ 생두 무게 (kg)",
                 min_value=0.1,
-                max_value=100.0,
+                max_value=10000.0,
                 value=10.0,
                 step=0.1,
                 format="%.2f"
@@ -224,7 +224,7 @@ with tab2:
             roasted_weight_kg = st.number_input(
                 "⚖️ 로스팅 후 무게 (kg)",
                 min_value=0.1,
-                max_value=100.0,
+                max_value=10000.0,
                 value=8.3,
                 step=0.1,
                 format="%.2f"
@@ -382,7 +382,7 @@ with tab3:
                         new_raw_weight_kg = st.number_input(
                             "⚖️ 생두 무게 (kg)",
                             min_value=0.1,
-                            max_value=100.0,
+                            max_value=10000.0,
                             value=float(selected_log.raw_weight_kg),
                             step=0.1,
                             format="%.2f"
@@ -391,7 +391,7 @@ with tab3:
                         new_roasted_weight_kg = st.number_input(
                             "⚖️ 로스팅 후 무게 (kg)",
                             min_value=0.1,
-                            max_value=100.0,
+                            max_value=10000.0,
                             value=float(selected_log.roasted_weight_kg),
                             step=0.1,
                             format="%.2f"
