@@ -51,6 +51,10 @@ if 'roasting_service' not in st.session_state:
 if 'receipt_template' not in st.session_state:
     st.session_state.receipt_template = None
 
+# 에디터 key 관리 (템플릿 변경 시 에디터 재생성)
+if 'editor_key' not in st.session_state:
+    st.session_state.editor_key = 0
+
 db = st.session_state.db
 roasting_service = st.session_state.roasting_service
 
@@ -195,6 +199,7 @@ with col2:
     st.write("")
     if st.button("📋 템플릿 생성", use_container_width=True, type="primary"):
         st.session_state.receipt_template = create_template(num_rows)
+        st.session_state.editor_key += 1  # 에디터 재생성
         st.success(f"✅ {num_rows}개 행 템플릿이 생성되었습니다!")
         st.rerun()
 
@@ -255,7 +260,7 @@ edited_df = st.data_editor(
     num_rows="dynamic",
     hide_index=True,
     use_container_width=True,
-    key="roasting_editor"
+    key=f"roasting_editor_{st.session_state.editor_key}"
 )
 
 # 편집된 DataFrame을 session state에 저장
@@ -281,6 +286,7 @@ if st.button("🔢 예상 손실률 자동 계산", help="생두와 로스팅 �
             edited_df.at[idx, "예상손실률(%)"] = round(actual_loss, 1)
 
     st.session_state.receipt_template = edited_df
+    st.session_state.editor_key += 1  # 에디터 재생성
     st.success("✅ 예상 손실률이 자동으로 계산되었습니다!")
     st.rerun()
 
@@ -341,6 +347,7 @@ with col1:
 with col2:
     if st.button("🔄 초기화", use_container_width=True):
         st.session_state.receipt_template = None
+        st.session_state.editor_key += 1  # 에디터 재생성
         st.rerun()
 
 # 저장 처리 (All or Nothing)
@@ -372,6 +379,7 @@ if save_button:
 
                 # 템플릿 초기화
                 st.session_state.receipt_template = None
+                st.session_state.editor_key += 1  # 에디터 재생성
                 st.balloons()
                 st.rerun()
             else:
