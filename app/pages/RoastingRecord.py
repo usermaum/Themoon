@@ -19,7 +19,7 @@ if project_root not in sys.path:
 from app.services.roasting_service import RoastingService
 from app.services.bean_service import BeanService
 from app.services.blend_service import BlendService
-from app.models.database import get_db
+from app.models import SessionLocal
 from app.components.sidebar import render_sidebar
 from app.i18n import Translator, LanguageManager
 
@@ -36,7 +36,7 @@ if "language_manager" not in st.session_state:
 
 # 데이터베이스 및 서비스 초기화
 if 'db' not in st.session_state:
-    st.session_state.db = get_db()
+    st.session_state.db = SessionLocal()
 
 if 'bean_service' not in st.session_state:
     st.session_state.bean_service = BeanService(st.session_state.db)
