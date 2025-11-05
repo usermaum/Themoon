@@ -1,6 +1,6 @@
 # ☕ 더문드립바 로스팅 비용 계산 시스템
 
-**The Moon Drip BAR - Roasting Cost Calculator v0.13.7**
+**The Moon Drip BAR - Roasting Cost Calculator v0.14.0**
 
 프리미엄 스페셜티 커피 로스팅 사업을 위한 **완전 통합형 원가 분석 및 수익성 계산 플랫폼**
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 주요 기능 (v0.13.7)
+## 🎯 주요 기능 (v0.14.0)
 
 ### 📊 원가 관리 시스템
 - ✅ **로스팅 기록 관리**: 일일 로스팅 데이터 저장 및 실시간 추적
@@ -64,7 +64,7 @@
 
 ---
 
-## 📁 프로젝트 구조 (v0.13.7)
+## 📁 프로젝트 구조 (v0.14.0)
 
 ```
 TheMoon_Project/
@@ -77,11 +77,12 @@ TheMoon_Project/
 │   ├── test_data.py                   # 테스트 데이터 생성
 │   ├── test_*.py                      # 테스트 파일 (211개 테스트, 100% 통과) ✅
 │   │
-│   ├── pages/                         # 9개 Streamlit 페이지 ✅ (영문 파일명)
+│   ├── pages/                         # 10개 Streamlit 페이지 ✅ (영문 파일명)
 │   │   ├── Dashboard.py               # 홈 대시보드 (440줄)
 │   │   ├── BeanManagement.py          # 원두 CRUD (293줄)
 │   │   ├── BlendManagement.py         # 블렌드 관리 (488줄)
 │   │   ├── Analysis.py                # 상세 분석 (594줄)
+│   │   ├── CostCalculation.py         # 원가 계산 (547줄) ⭐ NEW
 │   │   ├── InventoryManagement.py     # 재고 추적 (483줄)
 │   │   ├── Report.py                  # 보고서 생성 (588줄)
 │   │   ├── Settings.py                # 시스템 설정 (502줄)
@@ -489,27 +490,27 @@ git push origin main
 
 ---
 
-## 📊 프로젝트 정보 (v0.13.7)
+## 📊 프로젝트 정보 (v0.14.0)
 
 | 항목 | 정보 |
 |------|------|
 | **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v0.13.7 (2025-11-03) |
+| **현재 버전** | v0.14.0 (2025-11-05) |
 | **프로젝트 상태** | ✅ Phase 2 완료 / 🚀 211개 테스트 완성 / 🎯 95% 커버리지 |
 | **라이선스** | MIT |
 | **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | cb3ab4b1 - test: ReportService 예외 처리 테스트 추가 (93% 커버리지 달성) |
+| **최종 커밋** | b1f8e5ef - feat: 원가계산(CostCalculation) 페이지 구현 |
 
-### 프로젝트 통계 (v0.13.7)
-- **총 코드**: 9,500+줄 (9 pages + 9 services + 6 utils + models)
+### 프로젝트 통계 (v0.14.0)
+- **총 코드**: 10,100+줄 (10 pages + 9 services + 6 utils + models)
 - **총 문서**: 5,500+줄 (30+ 분류별 체계적 문서)
 - **아키텍처 문서**: 2,000+줄 (전문 문서)
-- **총 라인**: 15,000+줄
+- **총 라인**: 15,600+줄
 - **테스트**: 211/211 통과 (100% ✅) | 전체 커버리지: 95%
-- **시각화**: 35+ 인터랙티브 차트
+- **시각화**: 37+ 인터랙티브 차트
 - **원두**: 13종
 - **블렌드**: 7개 프리미엄 블렌드
-- **페이지**: 9개 (모든 기능 완성)
+- **페이지**: 10개 (모든 기능 완성)
 - **세션 관리**: SESSION_SUMMARY, 체크리스트 시스템
 
 ### Phase별 완료 현황
