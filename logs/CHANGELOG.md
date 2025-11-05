@@ -11,6 +11,54 @@
 
 ---
 
+## [Unreleased] - 2025-11-05
+
+### ✅ 테스트 개선: ReportService 예외 처리 테스트 추가
+
+#### 📝 변경사항
+- **파일**: `app/tests/test_report_service.py`
+- **목표**: 전체 커버리지 95% 달성
+
+#### 🎯 주요 성과
+- ✅ ReportService 커버리지: 88% → 93% (+5%p)
+- ✅ 전체 커버리지: 94% → 95% (+1%p, 목표 달성!)
+- ✅ 테스트 개수: 208개 → 211개 (+3개)
+- ✅ 통과율: 100% 유지
+
+#### 추가된 테스트 (3개)
+1. **test_export_excel_exception_in_summary_sheet**
+   - _create_summary_sheet에서 예외 발생 시 오류 시트 생성 테스트
+   - bean_service.get_beans_summary() 예외 처리 경로 커버
+
+2. **test_export_excel_exception_in_cost_sheet**
+   - _create_cost_sheet에서 예외 발생 시 오류 시트 생성 테스트
+   - DataFrame.to_excel() 예외 처리 경로 커버
+
+3. **test_export_excel_all_sheets_empty_creates_default_sheet**
+   - sheets_created == 0일 때 기본 "정보" 시트 생성 테스트
+   - 모든 데이터가 비어있을 때 안전한 Excel 생성 확인
+
+#### 최종 서비스별 커버리지
+| 서비스 | 커버리지 | 상태 |
+|--------|----------|------|
+| LossRateAnalyzer | 100% | ✅ |
+| RoastingService | 100% | ✅ |
+| AnalyticsService | 99% | ✅ |
+| AuthService | 96% | ✅ |
+| **ReportService** | **93%** | ✅ **+5%p** |
+| ExcelService | 93% | ✅ |
+| BlendService | 92% | ✅ |
+| BeanService | 91% | ✅ |
+| CostService | 90% | ✅ |
+
+#### 기술적 세부사항
+- **Mock 전략**: unittest.mock.patch를 사용한 예외 주입
+- **테스트 격리**: 각 테스트는 독립적으로 실행
+- **예외 처리 검증**: 예외 발생 시에도 Excel 파일 생성 확인
+- **데이터 검증**: 오류 메시지가 Excel 시트에 포함되는지 확인
+
+---
+
 ## [0.13.7] - 2025-11-04
 
 ### 🐛 패치 (Bug Fix): 날짜 형식 변환 오류 수정
