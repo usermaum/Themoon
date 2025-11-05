@@ -14,6 +14,7 @@ from datetime import datetime
 from app.services.report_service import ReportService
 from io import BytesIO
 import pandas as pd
+from unittest.mock import patch, MagicMock
 
 
 class TestReportServiceSummary:
@@ -289,3 +290,70 @@ class TestReportServiceEdgeCases:
 
         # 음수 일수가 나올 수 있음
         assert analysis['period_days'] < 0
+
+
+class TestReportServiceExceptionHandling:
+    """예외 처리 테스트 (커버리지 95%+ 목표)"""
+
+    def test_export_excel_exception_in_summary_sheet(self, db_session, sample_beans, sample_blend):
+        """_create_summary_sheet에서 예외 발생 시 처리"""
+        service = ReportService(db_session)
+
+        # bean_service.get_beans_summary()에서 예외 발생
+        with patch.object(service.bean_service, 'get_beans_summary', side_effect=Exception("Test exception")):
+            excel_data = service.export_to_excel(report_type='summary')
+
+            # 예외가 발생해도 Excel 파일은 생성되어야 함
+            assert isinstance(excel_data, BytesIO)
+            excel_data.seek(0)
+            xl_file = pd.ExcelFile(excel_data)
+            # 요약 시트는 있어야 함 (오류 메시지 포함)
+            assert '요약' in xl_file.sheet_names
+
+            # 오류 메시지가 포함되어 있는지 확인
+            df = pd.read_excel(excel_data, sheet_name='요약')
+            assert '오류' in df.columns or 'Test exception' in str(df.values)
+
+    def test_export_excel_exception_in_cost_sheet(self, db_session, sample_beans, sample_blend):
+        """_create_cost_sheet에서 예외 발생 시 처리"""
+        service = ReportService(db_session)
+
+        # to_excel 메서드에서 예외 발생시키기
+        original_to_excel = pd.DataFrame.to_excel
+        call_count = [0]
+
+        def side_effect_to_excel(self, *args, **kwargs):
+            call_count[0] += 1
+            # 비용분석 시트 작성 시도 시 예외 발생
+            if call_count[0] == 1 and 'sheet_name' in kwargs and kwargs['sheet_name'] == '비용분석':
+                raise Exception("Cost sheet error")
+            return original_to_excel(self, *args, **kwargs)
+
+        with patch.object(pd.DataFrame, 'to_excel', side_effect_to_excel):
+            excel_data = service.export_to_excel(report_type='cost')
+
+            # 예외가 발생해도 Excel 파일은 생성되어야 함
+            assert isinstance(excel_data, BytesIO)
+            excel_data.seek(0)
+            xl_file = pd.ExcelFile(excel_data)
+            # 최소 1개 시트는 있어야 함 (오류가 있더라도 오류 시트)
+            assert len(xl_file.sheet_names) >= 1
+
+
+    def test_export_excel_all_sheets_empty_creates_default_sheet(self, db_session):
+        """모든 데이터가 비어있어 sheets_created == 0일 때 기본 시트 생성"""
+        service = ReportService(db_session)
+
+        # 모든 get_* 메서드가 빈 데이터 반환하도록 mock
+        with patch.object(service, 'get_cost_analysis', return_value={'cost_analysis': []}), \
+             patch.object(service, 'get_bean_usage_analysis', return_value={'usage_analysis': []}), \
+             patch.object(service, 'get_blend_performance', return_value={'performance': []}):
+
+            excel_data = service.export_to_excel(report_type='all')
+
+            # Excel 파일은 생성되어야 함
+            assert isinstance(excel_data, BytesIO)
+            excel_data.seek(0)
+            xl_file = pd.ExcelFile(excel_data)
+            # 최소 1개 시트는 있어야 함 (요약 또는 정보 시트)
+            assert len(xl_file.sheet_names) >= 1
