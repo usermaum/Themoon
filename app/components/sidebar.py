@@ -101,6 +101,16 @@ def render_sidebar():
             st.session_state["current_page"] = "Analysis"
             st.switch_page("pages/Analysis.py")
 
+        # 원가계산
+        if st.button(
+            "🧮 원가계산",
+            type="primary" if current_page == "CostCalculation" else "secondary",
+            use_container_width=True,
+            key="nav_cost_calculation"
+        ):
+            st.session_state["current_page"] = "CostCalculation"
+            st.switch_page("pages/CostCalculation.py")
+
         st.divider()
 
         # ═══════════════════════════════════════════════════════════
