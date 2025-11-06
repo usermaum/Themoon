@@ -215,6 +215,12 @@ st.divider()
 
 st.markdown("### 📝 데이터 입력")
 
+# 날짜 컬럼을 date 타입으로 보장 (세션 상태 직렬화 시 문자열로 변환될 수 있음)
+if "날짜" in st.session_state.receipt_template.columns:
+    st.session_state.receipt_template["날짜"] = pd.to_datetime(
+        st.session_state.receipt_template["날짜"]
+    ).dt.date
+
 edited_df = st.data_editor(
     st.session_state.receipt_template,
     column_config={

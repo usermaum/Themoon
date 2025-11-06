@@ -6,7 +6,7 @@ ExcelSyncService: Excel 동기화 및 마이그레이션 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.database import RoastingLog, Bean, Blend, BlendRecipe
+from models.database import RoastingLog, Bean, Blend, BlendRecipe
 from datetime import datetime
 import logging
 import os

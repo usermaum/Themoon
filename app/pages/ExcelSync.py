@@ -13,9 +13,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models import SessionLocal
 from services.bean_service import BeanService
 from services.blend_service import BlendService
-from services.excel_service import ExcelService
+from services.excel_service import ExcelSyncService
 from i18n import Translator, LanguageManager
 from components.sidebar import render_sidebar
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 세션 상태 초기화 (사이드바보다 먼저!)
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # 다중 언어 지원 초기화
 if "translator" not in st.session_state:
@@ -23,6 +27,16 @@ if "translator" not in st.session_state:
 
 if "language_manager" not in st.session_state:
     st.session_state.language_manager = LanguageManager(st.session_state.translator)
+
+# 데이터베이스 및 서비스 초기화
+if "db" not in st.session_state:
+    st.session_state.db = SessionLocal()
+
+if "bean_service" not in st.session_state:
+    st.session_state.bean_service = BeanService(st.session_state.db)
+
+if "blend_service" not in st.session_state:
+    st.session_state.blend_service = BlendService(st.session_state.db)
 
 # 페이지 설정 (다중 언어 지원)
 translator = st.session_state.translator
@@ -35,26 +49,11 @@ st.session_state["current_page"] = "ExcelSync"
 # 사이드바 렌더링
 render_sidebar()
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 세션 상태 초기화
-# ═══════════════════════════════════════════════════════════════════════════════
-
-if "db" not in st.session_state:
-    st.session_state.db = SessionLocal()
-
-if "bean_service" not in st.session_state:
-    st.session_state.bean_service = BeanService(st.session_state.db)
-
-if "blend_service" not in st.session_state:
-    st.session_state.blend_service = BlendService(st.session_state.db)
-
-if "excel_service" not in st.session_state:
-    st.session_state.excel_service = ExcelService(st.session_state.db)
-
 db = st.session_state.db
 bean_service = st.session_state.bean_service
 blend_service = st.session_state.blend_service
-excel_service = st.session_state.excel_service
+# ExcelSyncService는 static 메서드만 있으므로 인스턴스화 불필요
+excel_service = ExcelSyncService
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 헤더
