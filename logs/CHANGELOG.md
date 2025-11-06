@@ -11,6 +11,108 @@
 
 ---
 
+## [0.16.0] - 2025-11-06
+
+### ✨ 마이너 업데이트 (Minor Update): CostCalculation Tab 4 - CostSetting 모델 완전 연동
+
+#### 📝 변경사항
+- **수정**: `app/pages/CostCalculation.py` - Tab 4 UI 활성화 및 CostSetting 연동 (+100, -26)
+
+#### 🎯 주요 기능
+
+**Tab 4: 비용 설정 - 완전 활성화**
+- **현재 설정 표시 개선**
+  - 4개 Metric 카드: 손실률, 로스팅 비용, 인건비, 전기료
+  - CostSetting 테이블에서 실시간 데이터 불러오기
+  - 설정값 없을 경우 기본값 사용 (fallback 로직)
+
+- **비용 파라미터 설정 폼**
+  - 손실률 슬라이더 (0~50%, 기본 17%)
+  - 로스팅 비용 (원/kg, 기본 500원)
+  - 인건비 (원/batch, 기본 10,000원)
+  - 전기료 (원/batch, 기본 3,000원)
+  - 기타 비용 (원/kg, 기본 200원)
+  - 모든 컨트롤 활성화 (disabled 제거)
+
+- **설정 저장/복원 기능**
+  - 💾 설정 저장: CostService.update_cost_setting() 호출
+  - ↺ 기본값 복원: 모든 설정을 기본값으로 초기화
+  - 저장 후 st.rerun()으로 UI 자동 갱신
+  - 성공/실패 메시지 표시
+
+- **설정 정보 Expander**
+  - 각 비용 파라미터에 대한 상세 설명
+  - 손실률, 로스팅 비용, 인건비, 전기료, 기타 비용 안내
+
+#### 🔧 기술 구현
+- **CostService 연동**
+  - `get_cost_setting(db, parameter_name)`: 설정값 조회
+  - `update_cost_setting(db, parameter_name, value, description)`: 설정값 저장
+- **Streamlit Form**: 일괄 입력 및 제출
+- **st.metric()**: 현재 설정 시각화
+- **예외 처리**: try-except로 안전한 에러 핸들링
+
+#### 🧪 검증
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ 설정 불러오기 정상 작동
+- ✅ 설정 저장 정상 작동 (예상)
+
+## [0.15.0] - 2025-11-06
+
+### ✨ 마이너 업데이트 (Minor Update): 원두 가격 변경 이력 추적 시스템 구현 (Tab 3)
+
+#### 📝 변경사항
+- **신규 모델**: `app/models/database.py` - BeanPriceHistory 모델 추가
+- **마이그레이션**: `migrations/add_bean_price_history.py` - bean_price_history 테이블 생성
+- **수정**: `app/services/cost_service.py` - update_bean_price, get_bean_price_history 메서드 추가 (+54줄)
+- **수정**: `app/pages/CostCalculation.py` - Tab 3 UI 업데이트 (+100줄)
+
+#### 🎯 주요 기능
+
+**1. 데이터베이스 (BeanPriceHistory 모델)**
+- bean_id: 원두 ID (FK)
+- old_price: 이전 가격
+- new_price: 새 가격
+- change_reason: 변경 사유 (선택사항)
+- created_at: 변경 일시
+- Bean 모델에 price_history relationship 추가
+
+**2. 비즈니스 로직 (CostService)**
+- **update_bean_price 개선**
+  - change_reason 파라미터 추가 (선택사항)
+  - 가격 변경 시 자동으로 BeanPriceHistory에 이력 기록
+  - 가격이 동일하면 이력 기록 안 함 (중복 방지)
+
+- **get_bean_price_history 신규**
+  - 원두별 가격 변경 이력 조회 (최신순)
+  - limit 파라미터로 조회 개수 제어 (기본 10개, 최대 100개)
+  - 변동액, 변동률 자동 계산
+  - 반환값: 이력 리스트 (id, bean_name, old/new_price, change, created_at)
+
+**3. UI 개선 (CostCalculation Tab 3)**
+- **가격 변경 폼 개선**
+  - 변경 사유 입력 필드 추가 (선택사항)
+  - Placeholder: "예: 생두 가격 인상, 환율 변동, 품질 향상 등"
+
+- **가격 변경 이력 표시**
+  - 원두 선택 + 조회 개수 설정 (5~100개, 기본 10개)
+  - 이력 테이블: 변경일시, 이전/새 가격, 변동액, 변동률, 변경 사유
+  - Plotly 타임라인 차트: 가격 변동 추이 시각화
+  - 📈 상승, 📉 하락, ➡️ 동일 아이콘 표시
+  - hover 템플릿으로 상세 정보 표시
+
+#### 🔧 기술 구현
+- **SQLAlchemy ORM**: BeanPriceHistory 모델
+- **마이그레이션**: bean_price_history 테이블 생성 (checkfirst=True)
+- **Plotly Scatter Chart**: mode='lines+markers', 타임라인 시각화
+- **변동률 계산**: (new_price - old_price) / old_price * 100
+- **시간순 정렬**: order_by(desc(created_at)).limit(n)
+
+#### 🧪 검증
+- ✅ 마이그레이션 성공 (bean_price_history 테이블 생성)
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ import 오류 없음
+
 ## [0.14.1] - 2025-11-06
 
 ### 🐛 패치 (Bug Fix): ExcelSync 페이지 세션 상태 초기화 순서 버그 수정

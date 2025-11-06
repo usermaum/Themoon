@@ -1,6 +1,6 @@
 # ☕ 더문드립바 로스팅 비용 계산 시스템
 
-**The Moon Drip BAR - Roasting Cost Calculator v0.14.1**
+**The Moon Drip BAR - Roasting Cost Calculator v0.16.0**
 
 프리미엄 스페셜티 커피 로스팅 사업을 위한 **완전 통합형 원가 분석 및 수익성 계산 플랫폼**
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 주요 기능 (v0.14.1)
+## 🎯 주요 기능 (v0.16.0)
 
 ### 📊 원가 관리 시스템
 - ✅ **로스팅 기록 관리**: 일일 로스팅 데이터 저장 및 실시간 추적
@@ -64,7 +64,7 @@
 
 ---
 
-## 📁 프로젝트 구조 (v0.14.1)
+## 📁 프로젝트 구조 (v0.16.0)
 
 ```
 TheMoon_Project/
@@ -490,18 +490,18 @@ git push origin main
 
 ---
 
-## 📊 프로젝트 정보 (v0.14.1)
+## 📊 프로젝트 정보 (v0.16.0)
 
 | 항목 | 정보 |
 |------|------|
 | **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v0.14.1 (2025-11-06) |
+| **현재 버전** | v0.16.0 (2025-11-06) |
 | **프로젝트 상태** | ✅ Phase 2 완료 / 🚀 211개 테스트 완성 / 🎯 95% 커버리지 |
 | **라이선스** | MIT |
 | **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | 08f7852c - fix: ExcelSync 페이지 세션 상태 초기화 순서 버그 수정 |
+| **최종 커밋** | 71a64443 - feat: CostCalculation Tab 4 - CostSetting 모델 완전 연동 |
 
-### 프로젝트 통계 (v0.14.1)
+### 프로젝트 통계 (v0.16.0)
 - **총 코드**: 10,100+줄 (10 pages + 9 services + 6 utils + models)
 - **총 문서**: 5,500+줄 (30+ 분류별 체계적 문서)
 - **아키텍처 문서**: 2,000+줄 (전문 문서)
