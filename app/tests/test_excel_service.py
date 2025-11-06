@@ -394,6 +394,38 @@ class TestExcelValidation:
         assert summary['avg_loss_rate_percent'] == 0
         assert '⏳ 데이터 없음' in summary['status']
 
+    def test_validate_phase1_migration_duplicate_dates(self, db_session):
+        """
+        마이그레이션 검증 - 중복 날짜 감지
+        """
+        # Given - 같은 날짜에 2개의 로그 생성
+        test_date = date(2025, 10, 15)
+
+        for i in range(2):
+            log = RoastingLog(
+                raw_weight_kg=100.0 + i * 10,
+                roasted_weight_kg=83.0,
+                roasting_date=test_date,  # 동일한 날짜
+                roasting_month='2025-10',
+                loss_rate_percent=17.0,
+                expected_loss_rate_percent=17.0,
+                loss_variance_percent=0.0
+            )
+            db_session.add(log)
+
+        db_session.commit()
+
+        # When
+        result = ExcelSyncService.validate_phase1_migration(db_session)
+
+        # Then
+        assert result['total_logs'] == 2
+        assert len(result['errors']) > 0  # 중복 날짜 에러 발견
+
+        # 중복 날짜 메시지 확인
+        error_messages = ' '.join(result['errors'])
+        assert '중복 날짜' in error_messages or '2025-10-15' in error_messages
+
 
 class TestExcelIntegration:
     """Excel 서비스 통합 테스트"""

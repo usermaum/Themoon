@@ -6,7 +6,7 @@ test_cost_service.py: CostService 테스트
 
 import pytest
 from app.services.cost_service import CostService
-from app.models.database import Bean, Blend, BlendRecipe, CostSetting
+from app.models.database import Bean, Blend, BlendRecipe, CostSetting, BeanPriceHistory
 
 
 class TestCostService:
@@ -271,6 +271,214 @@ class TestCostService:
         final_cost = result['final_cost_per_kg']
         expected_final = blend_cost / (1 - 0.17)
         assert abs(final_cost - expected_final) < 1
+
+
+    def test_get_bean_price_history(self, db_session, sample_beans):
+        """원두 가격 변경 이력 조회"""
+        bean = sample_beans[0]
+
+        # 가격 변경 1차
+        CostService.update_bean_price(
+            db=db_session,
+            bean_id=bean.id,
+            new_price=6000,
+            change_reason="환율 상승"
+        )
+
+        # 가격 변경 2차
+        CostService.update_bean_price(
+            db=db_session,
+            bean_id=bean.id,
+            new_price=6500,
+            change_reason="원두 품질 향상"
+        )
+
+        # 이력 조회
+        history = CostService.get_bean_price_history(
+            db=db_session,
+            bean_id=bean.id,
+            limit=10
+        )
+
+        assert history is not None
+        assert len(history) == 2
+
+        # 최신 이력이 첫 번째
+        assert history[0]['new_price'] == 6500
+        assert history[0]['old_price'] == 6000
+        assert history[0]['change_reason'] == "원두 품질 향상"
+        assert history[0]['price_change'] == 500
+        assert abs(history[0]['price_change_percent'] - 8.3) < 0.1
+
+        # 이전 이력이 두 번째
+        assert history[1]['new_price'] == 6000
+        assert history[1]['old_price'] == 5500  # 초기 가격
+        assert history[1]['change_reason'] == "환율 상승"
+
+    def test_get_bean_price_history_invalid_bean(self, db_session):
+        """존재하지 않는 원두의 가격 이력 조회 - 예외 처리"""
+        with pytest.raises(ValueError) as exc_info:
+            CostService.get_bean_price_history(
+                db=db_session,
+                bean_id=999,
+                limit=10
+            )
+
+        assert "원두를 찾을 수 없습니다" in str(exc_info.value)
+
+    def test_get_bean_price_history_no_changes(self, db_session, sample_beans):
+        """가격 변경 이력이 없는 경우"""
+        bean = sample_beans[0]
+
+        # 가격 변경하지 않음
+        history = CostService.get_bean_price_history(
+            db=db_session,
+            bean_id=bean.id,
+            limit=10
+        )
+
+        assert history is not None
+        assert len(history) == 0
+
+    def test_update_bean_price_no_change(self, db_session, sample_beans):
+        """가격이 동일할 때 - 이력 기록하지 않음"""
+        bean = sample_beans[0]
+        old_price = bean.price_per_kg
+
+        # 동일한 가격으로 업데이트
+        updated_bean = CostService.update_bean_price(
+            db=db_session,
+            bean_id=bean.id,
+            new_price=old_price
+        )
+
+        assert updated_bean is not None
+        assert updated_bean.price_per_kg == old_price
+
+        # 이력이 기록되지 않았는지 확인
+        history = CostService.get_bean_price_history(
+            db=db_session,
+            bean_id=bean.id
+        )
+        assert len(history) == 0
+
+    def test_update_cost_setting_new_parameter(self, db_session):
+        """새로운 비용 설정 추가 (insert)"""
+        new_param_name = "packaging_cost_per_kg"
+        new_value = 300.0
+        new_description = "포장 비용 (원/kg)"
+
+        # 새 설정 추가
+        setting = CostService.update_cost_setting(
+            db=db_session,
+            parameter_name=new_param_name,
+            value=new_value,
+            description=new_description
+        )
+
+        assert setting is not None
+        assert setting.parameter_name == new_param_name
+        assert setting.value == new_value
+        assert setting.description == new_description
+
+        # 데이터베이스에서 조회 확인
+        retrieved_value = CostService.get_cost_setting(
+            db=db_session,
+            parameter_name=new_param_name
+        )
+        assert retrieved_value == new_value
+
+    def test_get_blend_cost_with_selling_price(self, db_session, sample_blend, sample_beans, sample_cost_setting):
+        """판매 가격이 있을 때 마진 계산"""
+        # 판매 가격 설정
+        sample_blend.suggested_price = 10000
+        db_session.commit()
+
+        result = CostService.get_blend_cost(
+            db=db_session,
+            blend_id=sample_blend.id
+        )
+
+        assert result is not None
+        assert result['selling_price'] == 10000
+        assert result['margin_percent'] is not None
+
+        # 마진율 계산 검증
+        final_cost = result['final_cost_per_kg']
+        selling_price = result['selling_price']
+        expected_margin = ((selling_price - final_cost) / selling_price * 100)
+        assert abs(result['margin_percent'] - expected_margin) < 0.1
+
+    def test_get_blend_cost_missing_bean_in_recipe(self, db_session, sample_beans, sample_cost_setting):
+        """레시피가 참조하는 원두가 없을 때 - 해당 레시피 건너뛰기"""
+        # 블렌드 생성
+        blend = Blend(name='문제 블렌드', blend_type='기타', status='active')
+        db_session.add(blend)
+        db_session.commit()
+        db_session.refresh(blend)
+
+        # 정상 레시피
+        recipe1 = BlendRecipe(
+            blend_id=blend.id,
+            bean_id=sample_beans[0].id,
+            portion_count=5,
+            ratio=50
+        )
+        db_session.add(recipe1)
+
+        # 존재하지 않는 원두를 참조하는 레시피
+        recipe2 = BlendRecipe(
+            blend_id=blend.id,
+            bean_id=999,  # 존재하지 않는 ID
+            portion_count=5,
+            ratio=50
+        )
+        db_session.add(recipe2)
+        db_session.commit()
+
+        # 계산 시도 - 에러 없이 건너뛰어야 함
+        result = CostService.get_blend_cost(
+            db=db_session,
+            blend_id=blend.id
+        )
+
+        assert result is not None
+        # 정상 레시피만 포함
+        assert len(result['component_costs']) == 1
+        assert result['component_costs'][0]['bean_name'] == sample_beans[0].name
+
+    def test_batch_calculate_with_error(self, db_session, sample_beans, sample_cost_setting):
+        """일괄 계산 중 에러 발생 - 에러 처리"""
+        # 정상 블렌드
+        blend1 = Blend(name='정상 블렌드', blend_type='기타', status='active')
+        db_session.add(blend1)
+
+        # 문제 블렌드 (레시피 없음 but 처리 가능)
+        blend2 = Blend(name='빈 블렌드', blend_type='기타', status='active')
+        db_session.add(blend2)
+
+        db_session.commit()
+        db_session.refresh(blend1)
+        db_session.refresh(blend2)
+
+        # blend1에 레시피 추가
+        recipe = BlendRecipe(
+            blend_id=blend1.id,
+            bean_id=sample_beans[0].id,
+            portion_count=10,
+            ratio=100
+        )
+        db_session.add(recipe)
+        db_session.commit()
+
+        # 일괄 계산
+        results = CostService.batch_calculate_all_blends(db=db_session)
+
+        assert results is not None
+        assert len(results) == 2
+
+        # 두 블렌드 모두 결과 반환 (빈 블렌드도 cost=0으로 처리)
+        assert all('blend_name' in r for r in results)
 
 
 @pytest.mark.integration
