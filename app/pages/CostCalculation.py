@@ -400,7 +400,7 @@ with tab3:
         st.markdown("#### ✏️ 가격 수정")
 
         with st.form("bean_price_update_form"):
-            col1, col2, col3 = st.columns([2, 2, 1])
+            col1, col2 = st.columns([2, 2])
 
             with col1:
                 bean_options = {b.name: b.id for b in beans}
@@ -422,22 +422,120 @@ with tab3:
                     key="bean_new_price"
                 )
 
-            with col3:
-                st.write("")  # 공백
-                st.write("")  # 공백
-                submit_btn = st.form_submit_button("💾 가격 업데이트", use_container_width=True)
+            # 변경 사유 (선택사항)
+            change_reason = st.text_input(
+                "변경 사유 (선택사항)",
+                placeholder="예: 생두 가격 인상, 환율 변동, 품질 향상 등",
+                key="bean_price_change_reason"
+            )
+
+            submit_btn = st.form_submit_button("💾 가격 업데이트", use_container_width=True)
 
             if submit_btn:
                 try:
-                    updated_bean = CostService.update_bean_price(db, selected_bean_id, new_price)
+                    reason = change_reason if change_reason.strip() else None
+                    updated_bean = CostService.update_bean_price(db, selected_bean_id, new_price, reason)
                     st.success(f"✅ {updated_bean.name}의 가격이 {new_price:,.0f}원/kg로 업데이트되었습니다.")
                     st.rerun()
                 except Exception as e:
                     st.error(f"❌ 가격 업데이트 실패: {str(e)}")
 
-        # 히스토리는 추후 추가 (간소화)
-        with st.expander("💡 가격 변경 히스토리 (향후 추가 예정)"):
-            st.info("가격 변경 이력 추적 기능은 향후 업데이트 예정입니다.")
+        st.divider()
+
+        # 가격 변경 이력
+        st.markdown("#### 📜 가격 변경 이력")
+
+        # 이력 조회 설정
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            history_bean_name = st.selectbox(
+                "이력 조회할 원두 선택",
+                options=list(bean_options.keys()),
+                key="history_bean_select"
+            )
+            history_bean_id = bean_options[history_bean_name]
+
+        with col2:
+            history_limit = st.number_input(
+                "조회 개수",
+                min_value=5,
+                max_value=100,
+                value=10,
+                step=5,
+                key="history_limit"
+            )
+
+        try:
+            history = CostService.get_bean_price_history(db, history_bean_id, int(history_limit))
+
+            if not history:
+                st.info(f"ℹ️ {history_bean_name}의 가격 변경 이력이 없습니다.")
+            else:
+                # 이력 테이블
+                st.markdown(f"**총 {len(history)}개의 변경 이력**")
+
+                df_history = pd.DataFrame([{
+                    '변경일시': h['created_at'].strftime('%Y-%m-%d %H:%M'),
+                    '이전 가격': f"{h['old_price']:,.0f}원",
+                    '새 가격': f"{h['new_price']:,.0f}원",
+                    '변동액': f"{h['price_change']:+,.0f}원",
+                    '변동률': f"{h['price_change_percent']:+.1f}%",
+                    '변경 사유': h['change_reason'] or "-"
+                } for h in history])
+
+                st.dataframe(df_history, use_container_width=True, hide_index=True)
+
+                st.divider()
+
+                # 가격 변동 타임라인 차트
+                st.markdown("**📊 가격 변동 추이**")
+
+                # 차트 데이터 준비 (시간순 정렬 - 오래된 것부터)
+                chart_data = sorted(history, key=lambda x: x['created_at'])
+
+                # 가격 변동 포인트 (old_price와 new_price 모두 표시)
+                dates = []
+                prices = []
+                labels = []
+
+                for h in chart_data:
+                    # old_price 포인트
+                    dates.append(h['created_at'])
+                    prices.append(h['old_price'])
+                    labels.append(f"변경 전: {h['old_price']:,.0f}원")
+
+                    # new_price 포인트
+                    dates.append(h['created_at'])
+                    prices.append(h['new_price'])
+                    change_icon = "📈" if h['price_change'] > 0 else "📉" if h['price_change'] < 0 else "➡️"
+                    labels.append(f"변경 후: {h['new_price']:,.0f}원 {change_icon}")
+
+                # Plotly 라인 차트
+                fig = go.Figure()
+
+                fig.add_trace(go.Scatter(
+                    x=dates,
+                    y=prices,
+                    mode='lines+markers',
+                    name='가격',
+                    line=dict(color='#1f77b4', width=2),
+                    marker=dict(size=8, color='#1f77b4'),
+                    text=labels,
+                    hovertemplate='%{text}<br>%{x|%Y-%m-%d %H:%M}<extra></extra>'
+                ))
+
+                fig.update_layout(
+                    title=f"{history_bean_name} 가격 변동 추이",
+                    xaxis_title="변경일시",
+                    yaxis_title="가격 (원/kg)",
+                    hovermode='closest',
+                    height=400
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"❌ 이력 조회 실패: {str(e)}")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tab 4: 비용 설정

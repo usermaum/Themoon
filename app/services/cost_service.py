@@ -6,8 +6,8 @@ CostService: 원가 계산 서비스
 """
 
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from app.models.database import Bean, Blend, BlendRecipe, CostSetting
+from sqlalchemy import and_, desc
+from app.models.database import Bean, Blend, BlendRecipe, CostSetting, BeanPriceHistory
 from datetime import datetime
 import logging
 
@@ -130,13 +130,14 @@ class CostService:
         }
 
     @staticmethod
-    def update_bean_price(db: Session, bean_id: int, new_price: float):
-        """원두 가격 업데이트
+    def update_bean_price(db: Session, bean_id: int, new_price: float, change_reason: str = None):
+        """원두 가격 업데이트 (이력 자동 기록)
 
         Args:
             db: SQLAlchemy 세션
             bean_id: 원두 ID
             new_price: 새 가격 (원/kg)
+            change_reason: 변경 사유 (선택사항)
 
         Returns:
             업데이트된 Bean 객체
@@ -152,12 +153,28 @@ class CostService:
             raise ValueError(f"원두를 찾을 수 없습니다: {bean_id}")
 
         old_price = bean.price_per_kg
-        bean.price_per_kg = new_price
-        bean.updated_at = datetime.utcnow()
-        db.commit()
-        db.refresh(bean)
 
-        logger.info(f"✓ 원두 가격 업데이트: {bean.name} ({old_price:.0f}원 → {new_price:.0f}원/kg)")
+        # 가격이 실제로 변경된 경우에만 이력 기록
+        if old_price != new_price:
+            # 가격 변경 이력 저장
+            price_history = BeanPriceHistory(
+                bean_id=bean_id,
+                old_price=old_price,
+                new_price=new_price,
+                change_reason=change_reason
+            )
+            db.add(price_history)
+
+            # 원두 가격 업데이트
+            bean.price_per_kg = new_price
+            bean.updated_at = datetime.utcnow()
+
+            db.commit()
+            db.refresh(bean)
+
+            logger.info(f"✓ 원두 가격 업데이트: {bean.name} ({old_price:.0f}원 → {new_price:.0f}원/kg)")
+        else:
+            logger.info(f"ℹ️ 가격 변경 없음: {bean.name} ({old_price:.0f}원/kg)")
 
         return bean
 
@@ -281,3 +298,56 @@ class CostService:
             **base_result,
             'component_costs': components_with_final
         }
+
+    @staticmethod
+    def get_bean_price_history(db: Session, bean_id: int, limit: int = 10) -> list:
+        """원두 가격 변경 이력 조회
+
+        Args:
+            db: SQLAlchemy 세션
+            bean_id: 원두 ID
+            limit: 조회할 이력 개수 (기본 10개)
+
+        Returns:
+            가격 변경 이력 리스트 (최신순)
+            [
+                {
+                    'id': int,
+                    'bean_id': int,
+                    'bean_name': str,
+                    'old_price': float,
+                    'new_price': float,
+                    'price_change': float,  # 변동액
+                    'price_change_percent': float,  # 변동률 (%)
+                    'change_reason': str,
+                    'created_at': datetime
+                },
+                ...
+            ]
+        """
+        bean = db.query(Bean).filter(Bean.id == bean_id).first()
+        if not bean:
+            raise ValueError(f"원두를 찾을 수 없습니다: {bean_id}")
+
+        history_records = db.query(BeanPriceHistory).filter(
+            BeanPriceHistory.bean_id == bean_id
+        ).order_by(desc(BeanPriceHistory.created_at)).limit(limit).all()
+
+        result = []
+        for record in history_records:
+            price_change = record.new_price - record.old_price
+            price_change_percent = (price_change / record.old_price * 100) if record.old_price > 0 else 0
+
+            result.append({
+                'id': record.id,
+                'bean_id': record.bean_id,
+                'bean_name': bean.name,
+                'old_price': record.old_price,
+                'new_price': record.new_price,
+                'price_change': price_change,
+                'price_change_percent': round(price_change_percent, 1),
+                'change_reason': record.change_reason,
+                'created_at': record.created_at
+            })
+
+        return result
