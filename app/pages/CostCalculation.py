@@ -545,43 +545,69 @@ with tab4:
     st.markdown("### ⚙️ 비용 설정")
     st.markdown("손실률 및 각종 비용 파라미터를 설정합니다.")
 
-    st.info("ℹ️ 현재 CostService의 STANDARD_LOSS_RATE (17%)가 사용됩니다. 사용자 정의 설정은 향후 CostSetting 테이블 연동을 통해 제공됩니다.")
+    # 현재 설정값 불러오기
+    try:
+        current_loss_rate = CostService.get_cost_setting(db, "loss_rate_percent") or (CostService.STANDARD_LOSS_RATE * 100)
+        current_roasting_cost = CostService.get_cost_setting(db, "roasting_cost_per_kg") or 500
+        current_labor_cost = CostService.get_cost_setting(db, "labor_cost_per_batch") or 10000
+        current_electric_cost = CostService.get_cost_setting(db, "electric_cost_per_batch") or 3000
+        current_misc_cost = CostService.get_cost_setting(db, "misc_cost_per_kg") or 200
+    except Exception as e:
+        st.error(f"❌ 설정값 불러오기 실패: {str(e)}")
+        current_loss_rate = 17.0
+        current_roasting_cost = 500
+        current_labor_cost = 10000
+        current_electric_cost = 3000
+        current_misc_cost = 200
 
     # 현재 설정 표시
     st.markdown("#### 📊 현재 적용 중인 설정")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.metric(
             label="손실률",
-            value=f"{CostService.STANDARD_LOSS_RATE * 100:.1f}%",
-            help="로스팅 과정에서의 표준 손실률"
+            value=f"{current_loss_rate:.1f}%",
+            help="로스팅 과정에서의 손실률"
         )
 
     with col2:
         st.metric(
-            label="적용 대상",
-            value="모든 블렌드",
-            help="현재 모든 블렌드에 동일한 손실률이 적용됩니다"
+            label="로스팅 비용",
+            value=f"{current_roasting_cost:,.0f}원/kg",
+            help="로스팅 작업 비용"
+        )
+
+    with col3:
+        st.metric(
+            label="인건비",
+            value=f"{current_labor_cost:,.0f}원",
+            help="배치당 인건비"
+        )
+
+    with col4:
+        st.metric(
+            label="전기료",
+            value=f"{current_electric_cost:,.0f}원",
+            help="배치당 전기료"
         )
 
     st.divider()
 
-    st.markdown("#### ⚙️ 비용 파라미터 설정 (향후 추가)")
+    st.markdown("#### ⚙️ 비용 파라미터 설정")
 
-    # 간소화된 설정 UI (향후 확장)
+    # 설정 UI
     with st.form("cost_settings_form"):
-        st.markdown("##### 🔧 고급 설정 (향후 구현)")
+        st.markdown("##### 🔧 비용 설정 변경")
 
         loss_rate = st.slider(
             "손실률 (%)",
             min_value=0.0,
             max_value=50.0,
-            value=17.0,
+            value=float(current_loss_rate),
             step=0.1,
-            help="로스팅 시 발생하는 무게 손실률",
-            disabled=True  # 현재는 비활성화
+            help="로스팅 시 발생하는 무게 손실률 (일반적으로 15~20%)"
         )
 
         col1, col2 = st.columns(2)
@@ -591,18 +617,18 @@ with tab4:
                 "로스팅 비용 (원/kg)",
                 min_value=0,
                 max_value=10000,
-                value=500,
+                value=int(current_roasting_cost),
                 step=100,
-                disabled=True  # 현재는 비활성화
+                help="kg당 로스팅 작업 비용"
             )
 
             labor_cost = st.number_input(
                 "인건비 (원/batch)",
                 min_value=0,
                 max_value=100000,
-                value=10000,
+                value=int(current_labor_cost),
                 step=1000,
-                disabled=True  # 현재는 비활성화
+                help="로스팅 배치당 인건비"
             )
 
         with col2:
@@ -610,18 +636,18 @@ with tab4:
                 "전기료 (원/batch)",
                 min_value=0,
                 max_value=50000,
-                value=3000,
+                value=int(current_electric_cost),
                 step=500,
-                disabled=True  # 현재는 비활성화
+                help="로스팅 배치당 전기료"
             )
 
             misc_cost = st.number_input(
                 "기타 비용 (원/kg)",
                 min_value=0,
                 max_value=5000,
-                value=200,
+                value=int(current_misc_cost),
                 step=100,
-                disabled=True  # 현재는 비활성화
+                help="포장비, 소모품 등 기타 비용"
             )
 
         st.divider()
@@ -629,16 +655,64 @@ with tab4:
         col1, col2, col3 = st.columns([1, 1, 2])
 
         with col1:
-            save_btn = st.form_submit_button("💾 설정 저장", disabled=True)
+            save_btn = st.form_submit_button("💾 설정 저장", use_container_width=True)
 
         with col2:
-            reset_btn = st.form_submit_button("↺ 기본값 복원", disabled=True)
+            reset_btn = st.form_submit_button("↺ 기본값 복원", use_container_width=True)
 
         if save_btn:
-            st.warning("⚠️ 설정 저장 기능은 향후 업데이트 예정입니다.")
+            try:
+                # 설정값 저장
+                CostService.update_cost_setting(db, "loss_rate_percent", loss_rate, "로스팅 손실률 (%)")
+                CostService.update_cost_setting(db, "roasting_cost_per_kg", roasting_cost, "kg당 로스팅 비용 (원)")
+                CostService.update_cost_setting(db, "labor_cost_per_batch", labor_cost, "배치당 인건비 (원)")
+                CostService.update_cost_setting(db, "electric_cost_per_batch", electric_cost, "배치당 전기료 (원)")
+                CostService.update_cost_setting(db, "misc_cost_per_kg", misc_cost, "kg당 기타 비용 (원)")
+
+                st.success("✅ 비용 설정이 성공적으로 저장되었습니다.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ 설정 저장 실패: {str(e)}")
 
         if reset_btn:
-            st.info("ℹ️ 기본값 복원 기능은 향후 업데이트 예정입니다.")
+            try:
+                # 기본값으로 복원
+                CostService.update_cost_setting(db, "loss_rate_percent", 17.0, "로스팅 손실률 (%)")
+                CostService.update_cost_setting(db, "roasting_cost_per_kg", 500, "kg당 로스팅 비용 (원)")
+                CostService.update_cost_setting(db, "labor_cost_per_batch", 10000, "배치당 인건비 (원)")
+                CostService.update_cost_setting(db, "electric_cost_per_batch", 3000, "배치당 전기료 (원)")
+                CostService.update_cost_setting(db, "misc_cost_per_kg", 200, "kg당 기타 비용 (원)")
+
+                st.success("✅ 기본값으로 복원되었습니다.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ 기본값 복원 실패: {str(e)}")
 
     st.markdown("---")
-    st.caption("💡 **참고**: 고급 비용 설정 기능은 CostSetting 모델 연동 후 활성화됩니다.")
+
+    # 설정 정보
+    with st.expander("ℹ️ 비용 설정 안내"):
+        st.markdown("""
+        **손실률 (Loss Rate)**
+        - 로스팅 과정에서 생두의 수분이 증발하여 발생하는 무게 감소
+        - 일반적으로 15~20% 범위
+        - 높을수록 최종 원가가 상승
+
+        **로스팅 비용**
+        - 로스터 기계 운영 및 유지보수 비용
+        - kg당 비용으로 계산
+
+        **인건비**
+        - 로스팅 작업자 인건비
+        - 배치(batch)당 비용으로 계산
+
+        **전기료**
+        - 로스터 기계 전력 소비 비용
+        - 배치당 비용으로 계산
+
+        **기타 비용**
+        - 포장재, 소모품, 운송비 등
+        - kg당 비용으로 계산
+        """)
+
+    st.caption("💡 **참고**: 설정값은 CostSetting 테이블에 저장되며, 원가 계산 시 참고 자료로 활용됩니다.")
