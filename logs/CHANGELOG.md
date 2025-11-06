@@ -11,6 +11,41 @@
 
 ---
 
+## [0.14.1] - 2025-11-06
+
+### 🐛 패치 (Bug Fix): ExcelSync 페이지 세션 상태 초기화 순서 버그 수정
+
+#### 📝 변경사항
+- **수정**: `app/pages/ExcelSync.py` - 세션 상태 초기화 순서 변경
+- **수정**: `app/pages/RoastingReceipt.py` - 날짜 타입 변환 버그 수정
+- **수정**: `app/services/excel_service.py` - import 경로 수정
+- **업데이트**: `logs/VERSION` - 0.14.0 → 0.14.1
+
+#### 🐛 버그 수정 상세
+
+**1. ExcelSync 페이지 세션 상태 초기화 순서 버그**
+- **문제**: `render_sidebar()` 호출 시 `st.session_state.db`가 초기화되지 않아 `AttributeError` 발생
+- **원인**: 세션 상태 초기화가 `render_sidebar()` 호출 이후에 실행됨
+- **해결**: 세션 상태 초기화 블록을 `render_sidebar()` 호출 전으로 이동
+- **영향**: ExcelSync 페이지 새로고침 시 정상 작동
+
+**2. ExcelService → ExcelSyncService 이름 변경**
+- ExcelSync 페이지에서 사용하는 서비스 이름을 명확히 함
+- Static 메서드만 사용하므로 인스턴스화 불필요
+
+**3. Import 경로 일관성 개선**
+- `app.models.database` → `models.database` (프로젝트 표준에 맞춤)
+
+**4. RoastingReceipt 날짜 타입 변환 버그 수정**
+- **문제**: 세션 상태 직렬화 시 날짜가 문자열로 변환됨
+- **해결**: `st.data_editor` 호출 전 날짜 컬럼을 `date` 타입으로 보장
+- **영향**: 날짜 입력 필드가 항상 올바른 타입으로 표시됨
+
+#### 🧪 검증
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ ExcelSync 페이지 접근 가능
+- ✅ 세션 상태 초기화 오류 해결
+
 ## [0.14.0] - 2025-11-05
 
 ### ✨ 마이너 업데이트 (Minor Update): 원가계산(CostCalculation) 페이지 구현
