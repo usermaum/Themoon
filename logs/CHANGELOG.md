@@ -13,6 +13,41 @@
 
 ## [0.16.0] - 2025-11-06
 
+### 🧪 테스트 개선 (Test Coverage: 94% → 96%)
+
+#### 📝 변경사항
+- **추가**: `app/tests/test_cost_service.py` - CostService 테스트 8개 추가 (+185)
+- **추가**: `app/tests/test_excel_service.py` - ExcelService 중복 날짜 테스트 추가 (+31)
+
+#### 🎯 주요 개선사항
+
+**테스트 커버리지 향상**
+- **전체 커버리지**: 94% → 96% (목표 초과 달성!)
+- **cost_service.py**: 82% → 96% (14% 향상)
+- **excel_service.py**: 93% → 97% (4% 향상)
+- **전체 테스트**: 211개 → 220개 (9개 추가)
+- **Missing lines**: 65 → 46 (19 lines 커버)
+
+**CostService 테스트 추가**
+1. `test_get_bean_price_history` - 가격 변경 이력 조회 (26 lines 커버)
+2. `test_get_bean_price_history_invalid_bean` - 없는 원두 예외 처리
+3. `test_get_bean_price_history_no_changes` - 이력 없을 때 빈 리스트 반환
+4. `test_update_bean_price_no_change` - 가격 동일 시 이력 미기록
+5. `test_update_cost_setting_new_parameter` - 신규 설정 추가 (insert)
+6. `test_get_blend_cost_with_selling_price` - 판매가 있을 때 마진 계산
+7. `test_get_blend_cost_missing_bean_in_recipe` - 원두 누락 시 건너뛰기
+8. `test_batch_calculate_with_error` - 일괄 계산 중 에러 처리
+
+**ExcelService 테스트 추가**
+1. `test_validate_phase1_migration_duplicate_dates` - 중복 날짜 감지 (3 lines 커버)
+
+#### 🔧 기술 구현
+- **BeanPriceHistory 모델 테스트**: 가격 변경 이력 CRUD 전체 커버
+- **예외 처리 테스트**: ValueError, 데이터 누락, 중복 검증
+- **엣지 케이스 커버**: 가격 변경 없음, 빈 블렌드, 잘못된 참조
+
+---
+
 ### ✨ 마이너 업데이트 (Minor Update): CostCalculation Tab 4 - CostSetting 모델 완전 연동
 
 #### 📝 변경사항
