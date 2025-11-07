@@ -481,6 +481,47 @@ class TestCostService:
         assert all('blend_name' in r for r in results)
 
 
+    def test_batch_calculate_with_exception(self, db_session, sample_beans, sample_cost_setting, monkeypatch):
+        """일괄 계산 중 get_blend_cost 예외 발생 처리"""
+        # 정상 블렌드 생성
+        blend1 = Blend(name='정상 블렌드', blend_type='기타', status='active')
+        db_session.add(blend1)
+        db_session.commit()
+        db_session.refresh(blend1)
+
+        # 레시피 추가
+        recipe = BlendRecipe(
+            blend_id=blend1.id,
+            bean_id=sample_beans[0].id,
+            portion_count=10,
+            ratio=100
+        )
+        db_session.add(recipe)
+        db_session.commit()
+
+        # get_blend_cost를 모킹하여 예외 발생시키기
+        original_method = CostService.get_blend_cost
+        call_count = [0]
+
+        def mock_get_blend_cost(db, blend_id, unit='kg'):
+            call_count[0] += 1
+            # 첫 호출 시 예외 발생
+            if call_count[0] == 1:
+                raise Exception("계산 중 오류 발생")
+            return original_method(db, blend_id, unit)
+
+        monkeypatch.setattr(CostService, 'get_blend_cost', staticmethod(mock_get_blend_cost))
+
+        # 일괄 계산 - 예외가 발생해도 계속 진행
+        results = CostService.batch_calculate_all_blends(db=db_session)
+
+        assert results is not None
+        assert len(results) == 1  # 1개 블렌드
+        # 예외 발생 시 error 키가 있어야 함
+        assert 'error' in results[0]
+        assert '계산 중 오류 발생' in str(results[0]['error'])
+
+
 @pytest.mark.integration
 class TestCostServiceIntegration:
     """CostService 통합 테스트"""

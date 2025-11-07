@@ -427,6 +427,37 @@ class TestExcelValidation:
         assert '중복 날짜' in error_messages or '2025-10-15' in error_messages
 
 
+class TestExcelDependencies:
+    """Excel 서비스 의존성 테스트"""
+
+    def test_export_without_openpyxl(self, db_session, sample_roasting_data, tmp_path, monkeypatch):
+        """
+        openpyxl이 없을 때 ImportError 처리
+        """
+        # Given
+        month = sample_roasting_data['month']
+        output_file = str(tmp_path / f"{month}_no_openpyxl.xlsx")
+
+        # Mock openpyxl import to fail
+        import builtins
+        real_import = builtins.__import__
+
+        def mock_import(name, *args, **kwargs):
+            if name == 'openpyxl':
+                raise ImportError("No module named 'openpyxl'")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, '__import__', mock_import)
+
+        # When/Then - ImportError 발생 예상
+        with pytest.raises(ImportError, match="openpyxl이 필요합니다"):
+            ExcelSyncService.export_roasting_logs_to_excel(
+                db=db_session,
+                month=month,
+                output_path=output_file
+            )
+
+
 class TestExcelIntegration:
     """Excel 서비스 통합 테스트"""
 
