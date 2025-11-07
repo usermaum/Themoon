@@ -162,6 +162,7 @@ class RoastingLog(Base):
     __tablename__ = "roasting_logs"
 
     id = Column(Integer, primary_key=True, index=True)
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=True)  # 원두 ID (마스터플랜 v2)
     raw_weight_kg = Column(Float, nullable=False)  # 생두 투입량
     roasted_weight_kg = Column(Float, nullable=False)  # 로스팅 후 무게
     loss_rate_percent = Column(Float, nullable=False)  # 손실률 (자동 계산)
@@ -176,6 +177,7 @@ class RoastingLog(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # 관계
+    bean = relationship("Bean", backref="roasting_logs")
     warnings = relationship("LossRateWarning", back_populates="roasting_log", cascade="all, delete-orphan")
 
     def __repr__(self):
