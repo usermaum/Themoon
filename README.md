@@ -171,11 +171,11 @@ TheMoon_Project/
 
 📊 총 통계:
 ├── 파일: 50+개
-├── 코드: 9,500+줄 (9 pages + 9 services + 6 utils + models)
-├── 문서: 5,500+줄 (28개 분류별 체계적 문서)
+├── 코드: 10,100+줄 (10 pages + 6 services + 6 utils + models)
+├── 문서: 5,500+줄 (30+ 분류별 체계적 문서)
 ├── 아키텍처 문서: 2,000+줄 (전문 문서)
 ├── 테스트: 220개 (100% 통과율, 96% 커버리지)
-└── 시각화: 35+ 인터랙티브 차트
+└── 시각화: 37+ 인터랙티브 차트
 ```
 
 ---
@@ -316,7 +316,7 @@ conn.close()
 
 ---
 
-## 🎯 9개 페이지 상세 설명 (v0.13.7)
+## 🎯 10개 페이지 상세 설명 (v0.16.0)
 
 ### 1️⃣ 대시보드 (Dashboard) 🏠
 **홈 페이지 - 핵심 메트릭 및 개요**
@@ -432,7 +432,7 @@ git push origin main
 
 ---
 
-## 📚 참고 문서 (v0.13.7)
+## 📚 참고 문서 (v0.16.0)
 
 ### 🏗️ 아키텍처 & 설계 - 신규 5개 전문 문서 추가 (Documents/Architecture/)
 
@@ -452,7 +452,7 @@ git push origin main
 
 ### 📖 사용자 가이드 (Documents/Guides/)
 - **배포가이드.md** - Docker, Nginx, SSL, 스케일링, 롤백 절차 (600+줄)
-- **사용자가이드.md** - 9개 페이지 상세 사용 방법, FAQ, 문제 해결 (800+줄)
+- **사용자가이드.md** - 10개 페이지 상세 사용 방법, FAQ, 문제 해결 (800+줄)
 - **성능최적화_가이드.md** - 성능 측정, 최적화 권장사항, 병목 지점 분석 (220줄)
 
 ### 📋 진행 상황 & 세션 관리 (Documents/Progress/)
@@ -535,7 +535,7 @@ Phase 4: 테스트/최적화/배포        [████████████
 
 ---
 
-## 🚀 배포 가이드 (v0.13.7)
+## 🚀 배포 가이드 (v0.16.0)
 
 ### 로컬 실행
 ```bash
@@ -549,8 +549,8 @@ cd TheMoon_Project
 ### Docker 배포 (권장)
 ```bash
 # 빌드 및 실행
-docker build -t themoon-roasting:v0.2.0 .
-docker run -d -p 8501:8501 -v $(pwd)/Data:/app/Data themoon-roasting:v0.2.0
+docker build -t themoon-roasting:v0.16.0 .
+docker run -d -p 8501:8501 -v $(pwd)/Data:/app/Data themoon-roasting:v0.16.0
 
 # 또는 Docker Compose
 docker-compose up -d
@@ -591,7 +591,7 @@ docker-compose up -d
 
 ### 🔒 보안 & 성능
 - 프로덕션 준비 완료 (Docker, Nginx, SSL)
-- 188개 테스트 (100% 통과, 평균 커버리지 93%)
+- 220개 테스트 (100% 통과, 전체 커버리지 96%)
 - 페이지 로드 < 2초, 쿼리 < 500ms
 
 ---
@@ -633,7 +633,7 @@ in the Software without restriction...
 
 ---
 
-**☕ The Moon Drip BAR | Roasting Cost Calculator v0.2.0**
+**☕ The Moon Drip BAR | Roasting Cost Calculator v0.16.0**
 
 **Made with ❤️ using Streamlit, SQLite, Pandas, NumPy, and Plotly**
 
@@ -643,4 +643,4 @@ in the Software without restriction...
 - 🎯 토큰 효율성 최적화 (Claude Code 전용)
 - 🔄 세션 관리 시스템
 
-**🎉 프로젝트 100% 완료 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
+**🎉 프로젝트 100% 완료 | 테스트 96% 커버리지 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
