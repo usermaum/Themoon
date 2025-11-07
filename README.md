@@ -1,6 +1,6 @@
 # ☕ 더문드립바 로스팅 비용 계산 시스템
 
-**The Moon Drip BAR - Roasting Cost Calculator v0.16.0**
+**The Moon Drip BAR - Roasting Cost Calculator v0.19.0**
 
 프리미엄 스페셜티 커피 로스팅 사업을 위한 **완전 통합형 원가 분석 및 수익성 계산 플랫폼**
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 주요 기능 (v0.16.0)
+## 🎯 주요 기능 (v0.19.0)
 
 ### 📊 원가 관리 시스템
 - ✅ **로스팅 기록 관리**: 일일 로스팅 데이터 저장 및 실시간 추적
@@ -64,7 +64,7 @@
 
 ---
 
-## 📁 프로젝트 구조 (v0.16.0)
+## 📁 프로젝트 구조 (v0.19.0)
 
 ```
 TheMoon_Project/
@@ -75,7 +75,7 @@ TheMoon_Project/
 │   ├── init_data.py                   # 데이터 초기화 (138줄)
 │   ├── run_app.py                     # 대체 런처
 │   ├── test_data.py                   # 테스트 데이터 생성
-│   ├── test_*.py                      # 테스트 파일 (220개 테스트, 100% 통과) ✅
+│   ├── test_*.py                      # 테스트 파일 (226개 테스트, 100% 통과) ✅
 │   │
 │   ├── pages/                         # 10개 Streamlit 페이지 ✅ (영문 파일명)
 │   │   ├── Dashboard.py               # 홈 대시보드 (440줄)
@@ -174,7 +174,7 @@ TheMoon_Project/
 ├── 코드: 10,100+줄 (10 pages + 6 services + 6 utils + models)
 ├── 문서: 5,500+줄 (30+ 분류별 체계적 문서)
 ├── 아키텍처 문서: 2,000+줄 (전문 문서)
-├── 테스트: 220개 (100% 통과율, 96% 커버리지)
+├── 테스트: 220개 (100% 통과율, 97% 커버리지)
 └── 시각화: 37+ 인터랙티브 차트
 ```
 
@@ -316,7 +316,7 @@ conn.close()
 
 ---
 
-## 🎯 10개 페이지 상세 설명 (v0.16.0)
+## 🎯 10개 페이지 상세 설명 (v0.19.0)
 
 ### 1️⃣ 대시보드 (Dashboard) 🏠
 **홈 페이지 - 핵심 메트릭 및 개요**
@@ -432,7 +432,7 @@ git push origin main
 
 ---
 
-## 📚 참고 문서 (v0.16.0)
+## 📚 참고 문서 (v0.19.0)
 
 ### 🏗️ 아키텍처 & 설계 - 신규 5개 전문 문서 추가 (Documents/Architecture/)
 
@@ -490,23 +490,23 @@ git push origin main
 
 ---
 
-## 📊 프로젝트 정보 (v0.16.0)
+## 📊 프로젝트 정보 (v0.19.0)
 
 | 항목 | 정보 |
 |------|------|
 | **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v0.16.0 (2025-11-06) |
-| **프로젝트 상태** | ✅ Phase 2 완료 / 🚀 220개 테스트 완성 / 🎯 96% 커버리지 |
+| **현재 버전** | v0.19.0 (2025-11-07) |
+| **프로젝트 상태** | ✅ 마스터플랜 v2 Phase 1 완료 / 🚀 226개 테스트 완성 / 🎯 97% 커버리지 |
 | **라이선스** | MIT |
 | **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | 2883bbc5 - test: 테스트 커버리지 94% → 96% 개선 |
+| **최종 커밋** | 865adc50 - test: 테스트 커버리지 96% → 97% 개선 (+6개 테스트) |
 
-### 프로젝트 통계 (v0.16.0)
+### 프로젝트 통계 (v0.19.0)
 - **총 코드**: 10,100+줄 (10 pages + 9 services + 6 utils + models)
 - **총 문서**: 5,500+줄 (30+ 분류별 체계적 문서)
 - **아키텍처 문서**: 2,000+줄 (전문 문서)
 - **총 라인**: 15,600+줄
-- **테스트**: 220/220 통과 (100% ✅) | 전체 커버리지: 96%
+- **테스트**: 226/226 통과 (100% ✅) | 전체 커버리지: 96%
 - **시각화**: 37+ 인터랙티브 차트
 - **원두**: 13종
 - **블렌드**: 7개 프리미엄 블렌드
@@ -535,7 +535,7 @@ Phase 4: 테스트/최적화/배포        [████████████
 
 ---
 
-## 🚀 배포 가이드 (v0.16.0)
+## 🚀 배포 가이드 (v0.19.0)
 
 ### 로컬 실행
 ```bash
@@ -549,8 +549,8 @@ cd TheMoon_Project
 ### Docker 배포 (권장)
 ```bash
 # 빌드 및 실행
-docker build -t themoon-roasting:v0.16.0 .
-docker run -d -p 8501:8501 -v $(pwd)/Data:/app/Data themoon-roasting:v0.16.0
+docker build -t themoon-roasting:v0.19.0 .
+docker run -d -p 8501:8501 -v $(pwd)/Data:/app/Data themoon-roasting:v0.19.0
 
 # 또는 Docker Compose
 docker-compose up -d
@@ -591,7 +591,7 @@ docker-compose up -d
 
 ### 🔒 보안 & 성능
 - 프로덕션 준비 완료 (Docker, Nginx, SSL)
-- 220개 테스트 (100% 통과, 전체 커버리지 96%)
+- 226개 테스트 (100% 통과, 전체 커버리지 96%)
 - 페이지 로드 < 2초, 쿼리 < 500ms
 
 ---
@@ -633,7 +633,7 @@ in the Software without restriction...
 
 ---
 
-**☕ The Moon Drip BAR | Roasting Cost Calculator v0.16.0**
+**☕ The Moon Drip BAR | Roasting Cost Calculator v0.19.0**
 
 **Made with ❤️ using Streamlit, SQLite, Pandas, NumPy, and Plotly**
 
@@ -643,4 +643,4 @@ in the Software without restriction...
 - 🎯 토큰 효율성 최적화 (Claude Code 전용)
 - 🔄 세션 관리 시스템
 
-**🎉 프로젝트 100% 완료 | 테스트 96% 커버리지 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
+**🎉 프로젝트 100% 완료 | 테스트 97% 커버리지 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
