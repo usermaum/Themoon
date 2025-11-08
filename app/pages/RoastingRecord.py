@@ -255,14 +255,21 @@ with tab2:
             expected_loss_rate = 17.0  # 기본 예상 손실률
             loss_variance = actual_loss_rate - expected_loss_rate
 
-            # 상태 판정
-            if abs(loss_variance) <= 3.0:
+            # 상태 판정 (손실률이 낮을수록 좋음)
+            if loss_variance <= 0:
+                # 기준보다 낮음 (좋음)
+                status_color = "🟢"
+                status_text = "우수"
+            elif loss_variance <= 3.0:
+                # 기준 대비 +3% 이내 (정상)
                 status_color = "🟢"
                 status_text = "정상"
-            elif abs(loss_variance) <= 5.0:
+            elif loss_variance <= 5.0:
+                # 기준 대비 +5% 이내 (주의)
                 status_color = "🟡"
                 status_text = "주의"
             else:
+                # 기준 대비 +5% 초과 (위험)
                 status_color = "🔴"
                 status_text = "위험"
 
@@ -425,14 +432,21 @@ with tab3:
                         new_actual_loss_rate = ((new_raw_weight_kg - new_roasted_weight_kg) / new_raw_weight_kg) * 100
                         new_loss_variance = new_actual_loss_rate - new_expected_loss_rate
 
-                        # 상태 판정
-                        if abs(new_loss_variance) <= 3.0:
+                        # 상태 판정 (손실률이 낮을수록 좋음)
+                        if new_loss_variance <= 0:
+                            # 기준보다 낮음 (좋음)
+                            status_color = "🟢"
+                            status_text = "우수"
+                        elif new_loss_variance <= 3.0:
+                            # 기준 대비 +3% 이내 (정상)
                             status_color = "🟢"
                             status_text = "정상"
-                        elif abs(new_loss_variance) <= 5.0:
+                        elif new_loss_variance <= 5.0:
+                            # 기준 대비 +5% 이내 (주의)
                             status_color = "🟡"
                             status_text = "주의"
                         else:
+                            # 기준 대비 +5% 초과 (위험)
                             status_color = "🔴"
                             status_text = "위험"
 
