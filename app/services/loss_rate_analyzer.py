@@ -5,7 +5,8 @@ LossRateAnalyzer: 손실률 이상 탐지 및 분석 서비스
 """
 
 from sqlalchemy.orm import Session
-from app.models.database import RoastingLog, LossRateWarning
+from sqlalchemy import func
+from app.models.database import RoastingLog, LossRateWarning, Bean
 from datetime import datetime, timedelta
 import statistics
 import logging
@@ -175,21 +176,97 @@ class LossRateAnalyzer:
         return warning
 
     @staticmethod
-    def get_loss_rate_by_bean(db: Session, days: int = 30) -> dict:
+    def get_loss_rate_by_bean(db: Session, days: int = 30) -> list:
         """
-        최근 로스팅의 원두별 손실률 분석 (미구현)
+        최근 로스팅의 원두별 손실률 분석
 
         Args:
             db: SQLAlchemy 세션
             days: 분석 기간 (일 단위)
 
         Returns:
-            원두별 손실률 통계
+            원두별 손실률 통계 리스트
+            [
+                {
+                    'bean_id': int,
+                    'bean_name': str,
+                    'roast_count': int,
+                    'avg_loss_rate': float,
+                    'std_deviation': float,
+                    'min_loss': float,
+                    'max_loss': float,
+                    'variance_from_global': float,
+                    'status': str ('NORMAL' | 'ATTENTION' | 'CRITICAL')
+                },
+                ...
+            ]
         """
-        # 이 메서드는 BlendRecipesHistory와 RoastingLog의 관계가 필요합니다.
-        # 현재 구현 시점에서는 제한적이므로 향후 개선 예정입니다.
-        logger.info("ℹ️ get_loss_rate_by_bean는 향후 개선 예정입니다")
-        return {}
+        # 조회 기간 계산
+        start_date = datetime.now().date() - timedelta(days=days)
+
+        # 전체 로스팅 로그 조회 (원두별 통계를 Python에서 계산)
+        logs = db.query(
+            RoastingLog.bean_id,
+            RoastingLog.loss_rate_percent
+        ).filter(
+            RoastingLog.roasting_date >= start_date
+        ).all()
+
+        if not logs:
+            logger.warning(f"⚠️ {days}일 기간의 로스팅 데이터가 없습니다")
+            return []
+
+        # 전체 평균 손실률 계산
+        all_loss_rates = [log.loss_rate_percent for log in logs]
+        global_avg = statistics.mean(all_loss_rates)
+
+        # 원두별 그룹화
+        bean_data = {}
+        for log in logs:
+            bean_id = log.bean_id
+            if bean_id not in bean_data:
+                bean_data[bean_id] = []
+            bean_data[bean_id].append(log.loss_rate_percent)
+
+        # 원두별 통계 계산
+        bean_stats = []
+        for bean_id, loss_rates in bean_data.items():
+            # Bean 정보 조회
+            bean = db.query(Bean).filter(Bean.id == bean_id).first()
+            if not bean:
+                continue
+
+            # 통계 계산
+            avg_loss = statistics.mean(loss_rates)
+            std_loss = statistics.stdev(loss_rates) if len(loss_rates) > 1 else 0.0
+            min_loss = min(loss_rates)
+            max_loss = max(loss_rates)
+            variance = avg_loss - global_avg
+
+            # 상태 판단
+            if abs(variance) > 3:
+                status = "CRITICAL"
+            elif abs(variance) > 2:
+                status = "ATTENTION"
+            else:
+                status = "NORMAL"
+
+            bean_stats.append({
+                "bean_id": bean.id,
+                "bean_name": bean.name,
+                "roast_count": len(loss_rates),
+                "avg_loss_rate": round(avg_loss, 2),
+                "std_deviation": round(std_loss, 2),
+                "min_loss": round(min_loss, 2),
+                "max_loss": round(max_loss, 2),
+                "variance_from_global": round(variance, 2),
+                "status": status
+            })
+
+        logger.info(f"✓ 원두별 손실률 분석 완료: {len(bean_stats)}종 원두")
+
+        # 손실률 높은 순으로 정렬
+        return sorted(bean_stats, key=lambda x: x['avg_loss_rate'], reverse=True)
 
     @staticmethod
     def get_monthly_summary(db: Session, month: str) -> dict:
