@@ -225,5 +225,140 @@ SEASONAL_PATTERN = {
 - [ ] Streamlit 차트 라이브러리 확인 (Plotly vs Altair)
 - [ ] Dashboard 위젯 UI 디자인 스케치
 
-**세션 종료**: 2025-11-08 22:00
-**상태**: ✅ 부분 완료 (Phase 1-2 완료, Phase 3-4 남음)
+---
+
+## ✅ 추가 완료된 작업 (Phase 3-4)
+
+### Phase 3: 계절성 예측 모델 (1.5시간) ✅
+
+**목표**: 이동평균 + 계절성을 활용한 손실률 예측 모델 구현
+
+**작업 내용:**
+- `app/services/loss_analytics_service.py` 생성 (81 lines)
+- LossAnalyticsService 클래스 구현
+
+**주요 메서드:**
+1. `calculate_seasonal_index()`
+   - 월별 계절 지수 계산 (월별 평균 / 전체 평균)
+   - 24시간 캐시 기능
+
+2. `predict_loss_rate()`
+   - 최근 30개 데이터의 이동평균 계산
+   - 계절 지수 적용
+   - 95% 신뢰구간 (±2σ) 제공
+
+3. `get_monthly_forecast()`
+   - 향후 N개월 예측
+   - 3개월 예측 지원
+
+**테스트 결과:**
+- 8개 테스트 케이스 모두 통과 ✅
+- 커버리지: 90% (81 lines 중 73 lines)
+
+**커밋**: `24c243f` - feat: 손실률 예측 및 계절성 분석 서비스 구현
+
+---
+
+### Phase 4: Dashboard 위젯 (1시간) ✅
+
+**목표**: Dashboard에 손실률 분석 시각화 위젯 추가
+
+**작업 내용:**
+- `app/components/loss_widgets.py` 생성 (339 lines)
+- `app/pages/Dashboard.py` 수정 (손실률 분석 섹션 추가)
+
+**구현된 위젯 4개:**
+1. `render_loss_trend_chart()`
+   - 손실률 트렌드 라인 차트
+   - ±3σ 범위 음영 표시
+   - 예상 손실률(17%) 점선
+   - Plotly 인터랙티브 차트
+
+2. `render_bean_comparison()`
+   - 원두별 평균 손실률 막대 그래프
+   - 표준편차 에러바
+   - 상태별 색상 구분 (초록/주황/빨강)
+
+3. `render_warning_card()`
+   - 미해결 경고 테이블
+   - 일괄 해결 버튼
+   - 심각도/편차/연속발생 표시
+
+4. `render_seasonal_prediction()`
+   - 향후 3개월 예측 차트
+   - 95% 신뢰구간 음영
+   - 예측 상세 정보 (확장 가능)
+
+**Dashboard 통합:**
+- 4개 탭으로 구성 (트렌드/비교/경고/예측)
+- 기간 선택 기능 (7/14/30/60/90일)
+- 실시간 통계 표시
+
+**테스트:**
+- Streamlit 앱 실행 성공 ✅
+- 모든 위젯 정상 동작 확인
+
+**커밋**: `b31fc02` - feat: Dashboard 손실률 분석 위젯 추가
+
+---
+
+## 📊 최종 세션 통계 (전체)
+
+### 커밋 이력 (6개)
+```
+b31fc02 - feat: Dashboard 손실률 분석 위젯 추가 (Phase 4)
+24c243f - feat: 손실률 예측 및 계절성 분석 서비스 구현 (Phase 3)
+144a89e - docs: 문서 4종 세트 업데이트 (2025-11-08 세션)
+ae6ef04 - test: get_loss_rate_by_bean() 테스트 케이스 3개 추가
+b5c7398 - feat: 원두별 손실률 분석 기능 구현
+e14e28e - data: 계절성 패턴 테스트 데이터 100개 추가
+```
+
+### 파일 변경 (전체)
+- **신규 파일**: 4개
+  - `app/scripts/generate_test_roasting_data.py` (268 lines)
+  - `app/services/loss_analytics_service.py` (81 lines)
+  - `app/components/loss_widgets.py` (339 lines)
+  - `app/tests/test_loss_analytics_service.py` (8개 테스트)
+
+- **수정 파일**: 3개
+  - `app/services/loss_rate_analyzer.py` (+91 lines)
+  - `app/tests/test_loss_rate_analyzer.py` (+135 lines)
+  - `app/pages/Dashboard.py` (+47 lines)
+  - `Data/roasting_data.db` (+100 records)
+
+### 코드 통계 (최종)
+- **추가된 코드**: ~1,400 lines
+- **테스트**: 11개 추가 (모두 통과)
+  - test_loss_rate_analyzer.py: 3개
+  - test_loss_analytics_service.py: 8개
+- **테스트 커버리지**: LossAnalyticsService 90%
+- **작업 시간**: ~4시간
+
+---
+
+## 🎯 최종 주요 성과
+
+1. **완전한 손실률 분석 시스템**
+   - 원두별 통계 분석
+   - 계절성 예측 모델
+   - Dashboard 시각화
+
+2. **예측 모델 구현**
+   - 이동평균 + 계절성 모델
+   - 95% 신뢰구간
+   - 향후 3개월 예측
+
+3. **사용자 친화적 Dashboard**
+   - 4개 인터랙티브 위젯
+   - Plotly 차트
+   - 실시간 분석
+
+4. **완전한 테스트 커버리지**
+   - 11개 테스트 (모두 통과)
+   - 90% 커버리지
+
+---
+
+**세션 종료**: 2025-11-08 23:30
+**상태**: ✅ 완료 (T2-1 Phase 1-4 모두 완료)

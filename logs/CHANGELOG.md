@@ -48,29 +48,52 @@
 
 ## [Unreleased]
 
-### 🚀 Phase 2 T2-1 손실률 분석 시스템 강화 (진행 중)
+### 🚀 Phase 2 T2-1 손실률 분석 시스템 강화 (완료 ✅)
 
 #### 📝 변경사항 (2025-11-08)
 - **추가**: `app/scripts/generate_test_roasting_data.py` - 계절성 패턴 테스트 데이터 생성 스크립트 (268 lines)
-- **추가**: `LossRateAnalyzer.get_loss_rate_by_bean()` - 원두별 손실률 분석 기능 (app/services/loss_rate_analyzer.py:178-269)
-- **추가**: `test_loss_rate_analyzer.py` - get_loss_rate_by_bean() 테스트 3개 추가
+- **추가**: `app/services/loss_analytics_service.py` - 손실률 예측 및 계절성 분석 서비스 (81 lines)
+- **추가**: `app/components/loss_widgets.py` - Dashboard 손실률 분석 위젯 4개 (339 lines)
+- **추가**: `LossRateAnalyzer.get_loss_rate_by_bean()` - 원두별 손실률 분석 기능 (91 lines)
+- **수정**: `app/pages/Dashboard.py` - 손실률 분석 섹션 추가 (4개 탭)
 - **추가**: 계절성 패턴이 반영된 100개 테스트 로스팅 데이터 (2024-01-01 ~ 2025-11-08)
+- **추가**: 테스트 코드 11개 (loss_rate_analyzer 3개 + loss_analytics_service 8개)
 
 #### 🎯 주요 기능
-- **계절성 패턴**: 여름 +3.5%, 겨울 -1.5% 손실률 조정
-- **원두별 통계**: 17종 원두에 대한 손실률 분석 (평균, 표준편차, min/max, 글로벌 대비 편차)
-- **상태 판단**: NORMAL/ATTENTION/CRITICAL 자동 분류
-- **SQLite 호환**: Python statistics 모듈 사용 (stddev 함수 대체)
-- **테스트 커버리지**: get_loss_rate_by_bean() 정상/부족/없음 3개 케이스
+
+**1. 원두별 손실률 분석**
+- 17종 원두에 대한 통계 분석 (평균, 표준편차, min/max, 글로벌 대비 편차)
+- 상태 자동 판단: NORMAL/ATTENTION/CRITICAL
+- SQLite 호환: Python statistics 모듈 사용
+
+**2. 계절성 예측 모델**
+- 월별 계절 지수 계산 (여름 +15%, 겨울 -15% 등)
+- 이동평균 + 계절성 예측 모델
+- 95% 신뢰구간 제공
+- 24시간 캐시 기능
+
+**3. Dashboard 위젯**
+- 📈 손실률 트렌드 차트 (±3σ 범위 표시)
+- 🌾 원두별 손실률 비교 (막대 그래프)
+- ⚠️ 경고 알림 카드 (미해결 경고 관리)
+- 🔮 계절성 예측 (향후 3개월)
 
 #### ✅ 완료된 작업 (T2-1)
 - [x] Phase 1: 테스트 데이터 생성 (30분)
 - [x] Task 2.1: get_loss_rate_by_bean() 구현 (1시간)
 - [x] Task 2.2: 테스트 코드 작성 (20분)
+- [x] Phase 3: 계절성 예측 모델 (1.5시간)
+- [x] Task 3.1: LossAnalyticsService 클래스 생성
+- [x] Task 3.2: 테스트 코드 8개 작성
+- [x] Phase 4: Dashboard 위젯 (1시간)
+- [x] Task 4.1: loss_widgets.py 4개 위젯 작성
+- [x] Task 4.2: Dashboard.py 통합
 
-#### 📋 남은 작업 (T2-1)
-- [ ] Phase 3: 계절성 예측 모델 (1.5시간)
-- [ ] Phase 4: Dashboard 위젯 (1시간)
+#### 📊 통계
+- **추가 코드**: ~1,400 lines
+- **테스트**: 11개 추가 (모두 통과)
+- **커버리지**: LossAnalyticsService 90%
+- **커밋**: 6개
 
 ---
 
