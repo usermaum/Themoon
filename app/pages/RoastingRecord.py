@@ -214,31 +214,33 @@ with tab2:
 
             raw_weight_kg = st.number_input(
                 "⚖️ 생두 무게 (kg)",
-                min_value=0.1,
+                min_value=0.0,
                 max_value=10000.0,
-                value=10.0,
+                value=0.0,
                 step=0.1,
-                format="%.2f"
+                format="%.2f",
+                help="생두 투입 무게를 입력하세요"
             )
 
             roasted_weight_kg = st.number_input(
                 "⚖️ 로스팅 후 무게 (kg)",
-                min_value=0.1,
+                min_value=0.0,
                 max_value=10000.0,
-                value=8.3,
+                value=0.0,
                 step=0.1,
-                format="%.2f"
+                format="%.2f",
+                help="로스팅 후 무게를 입력하세요"
             )
 
         with col2:
-            expected_loss_rate = st.number_input(
-                "📊 예상 손실률 (%)",
-                min_value=0.0,
-                max_value=50.0,
-                value=17.0,
-                step=0.1,
-                format="%.1f"
-            )
+            # 손실률 자동 계산 및 표시
+            if raw_weight_kg > 0 and roasted_weight_kg > 0:
+                calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+            else:
+                calculated_loss_rate = 0.0
+
+            st.info(f"📊 **손실률 (자동 계산):** {calculated_loss_rate:.2f}%")
+            st.caption("생두 무게와 로스팅 후 무게를 입력하면 자동으로 계산됩니다.")
 
             notes = st.text_area(
                 "📝 메모 (선택)",
@@ -248,8 +250,9 @@ with tab2:
             )
 
         # 실시간 계산 결과 표시
-        if raw_weight_kg > 0:
+        if raw_weight_kg > 0 and roasted_weight_kg > 0:
             actual_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+            expected_loss_rate = 17.0  # 기본 예상 손실률
             loss_variance = actual_loss_rate - expected_loss_rate
 
             # 상태 판정
@@ -264,13 +267,13 @@ with tab2:
                 status_text = "위험"
 
             st.divider()
-            st.markdown("#### 💡 실시간 계산 결과")
+            st.markdown("#### 💡 손실률 분석")
 
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("실제 손실률", f"{actual_loss_rate:.2f}%")
+                st.metric("계산된 손실률", f"{actual_loss_rate:.2f}%")
             with col2:
-                st.metric("손실률 차이", f"{loss_variance:+.2f}%")
+                st.metric("기준 대비 (17%)", f"{loss_variance:+.2f}%")
             with col3:
                 st.metric("상태", f"{status_color} {status_text}")
 
@@ -306,6 +309,9 @@ with tab2:
                 for error in errors:
                     st.error(error)
             else:
+                # 손실률 계산
+                calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+
                 # 저장
                 try:
                     log = roasting_service.create_roasting_log(
@@ -314,7 +320,7 @@ with tab2:
                         roasted_weight_kg=roasted_weight_kg,
                         roasting_date=roasting_date,
                         notes=notes if notes else None,
-                        expected_loss_rate=expected_loss_rate
+                        expected_loss_rate=17.0  # 기본 예상 손실률
                     )
 
                     st.success(f"✅ 로스팅 기록이 저장되었습니다! (ID: {log.id})")
@@ -530,7 +536,7 @@ with tab4:
     # 월별 통계 조회
     monthly_stats = roasting_service.get_monthly_statistics(db, selected_month)
 
-    if monthly_stats['status'] == "데이터 없음":
+    if not monthly_stats or monthly_stats.get('status') == "데이터 없음" or monthly_stats.get('total_logs', 0) == 0:
         st.info(f"{selected_month}에 로스팅 기록이 없습니다.")
     else:
         # 통계 카드
