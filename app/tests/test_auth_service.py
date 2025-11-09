@@ -233,6 +233,45 @@ class TestAuthService:
 
         assert has_perm is True
 
+    def test_has_permission_inactive_user(self, db_session):
+        """비활성화된 사용자의 권한 확인 - False 반환"""
+        # Admin 생성 (권한 부여자)
+        admin = AuthService.create_user(
+            db=db_session,
+            username='admin',
+            password='password123',
+            role='admin'
+        )
+
+        # 일반 사용자 생성
+        user = AuthService.create_user(
+            db=db_session,
+            username='testuser',
+            password='password123'
+        )
+
+        # 권한 부여
+        AuthService.grant_permission(
+            db=db_session,
+            user_id=user.id,
+            resource='beans',
+            action='read',
+            granted_by=admin.id
+        )
+
+        # 사용자 비활성화
+        AuthService.deactivate_user(db=db_session, user_id=user.id)
+
+        # 비활성화된 사용자는 권한이 있어도 False 반환
+        has_perm = AuthService.has_permission(
+            db=db_session,
+            user_id=user.id,
+            resource='beans',
+            action='read'
+        )
+
+        assert has_perm is False
+
     def test_revoke_permission(self, db_session):
         """권한 취소"""
         user = AuthService.create_user(
@@ -353,6 +392,17 @@ class TestAuthService:
 
         assert result is False
 
+    def test_change_password_nonexistent_user(self, db_session):
+        """비밀번호 변경 실패 - 존재하지 않는 사용자"""
+        result = AuthService.change_password(
+            db=db_session,
+            user_id=999,  # 존재하지 않는 ID
+            old_password='oldpass',
+            new_password='newpass'
+        )
+
+        assert result is False
+
     def test_deactivate_user(self, db_session):
         """사용자 비활성화"""
         user = AuthService.create_user(
@@ -367,6 +417,11 @@ class TestAuthService:
         # 비활성화된 사용자 확인
         deactivated_user = AuthService.get_user_by_id(db=db_session, user_id=user.id)
         assert deactivated_user.is_active is False
+
+    def test_deactivate_nonexistent_user(self, db_session):
+        """사용자 비활성화 실패 - 존재하지 않는 사용자"""
+        result = AuthService.deactivate_user(db=db_session, user_id=999)
+        assert result is False
 
     def test_get_user_by_username(self, db_session):
         """사용자명으로 조회"""

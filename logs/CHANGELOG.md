@@ -11,6 +11,835 @@
 
 ---
 
+## [0.22.0] - 2025-11-09
+
+### ✨ 마이너 업데이트 (Minor Update): T2-1 손실률 분석 시스템 강화 완료
+
+#### 📝 변경사항
+- **개선**: 로스팅 후 무게 입력 시 포커스 아웃으로도 손실률 자동 계산 지원
+  - 기록 추가 탭: `st.form` 제거, `session_state`로 실시간 업데이트
+  - 기록 편집 탭: `st.form` 제거, `session_state`로 실시간 업데이트
+  - `number_input`에서 엔터 또는 포커스 아웃 시 손실률 자동 계산
+  - 입력 필드 헬프 텍스트 추가로 사용법 안내
+
+#### 🎯 주요 개선사항
+- **UX 개선**: 엔터 입력 없이도 포커스 이동만으로 손실률 자동 계산
+- **실시간 피드백**: 입력 즉시 손실률 상태 표시 (🟢우수/정상, 🟡주의, 🔴위험)
+- **사용성 향상**: form 제거로 더 직관적인 입력 경험 제공
+
+## [0.21.0] - 2025-11-07
+
+### ✨ 마이너 업데이트 (Minor Update): 전체 17종 원두 정보 검증 및 완성
+
+#### 📝 변경사항
+- **추가**: 디카페 3종 가격 설정 (SDM ₩7,500, SM ₩8,000, 스위스워터 ₩7,000)
+- **추가**: 14종 원두 상세 설명 추가 (특징, 향미, 용도)
+- **검증**: 모든 원두 정보 완벽 검증 완료 (17/17 ✅)
+- **추가**: Phase 2 계획 문서 작성 (`MASTER_PLAN_v2_Phase2.md`)
+
+#### 🎯 주요 개선사항
+- **원두 정보 완성도**: 100% (17/17 완벽)
+- **디카페 3종**: 가격 0원 → 정상 설정
+- **Phase 2 계획**: 5개 작업 정의 (T2-1 ~ T2-5)
+- **로드맵 확보**: v0.22.0 ~ v0.30.0 방향성 명확
+
+#### 원두 목록
+- 에티오피아 5종, 케냐 3종, 콜롬비아 2종
+- 과테말라 1종, 코스타리카 1종, 브라질 2종
+- 디카페 3종
+
+## [0.20.0] - 2025-11-07
+
+### ✨ 마이너 업데이트 (Minor Update): 뉴문 블렌딩 판매가 조정
+
+#### 📝 변경사항
+- **추가**: `app/update_newmoon_price.py` - 판매가 업데이트 스크립트 (146 lines)
+- **수정**: 뉴문 블렌딩 판매가 ₩4,000 → ₩15,000 (+275%)
+- **개선**: 마진 -56.3% → 58.3% (수익 구조 정상화)
+
+#### 🎯 주요 개선사항
+- **마진 개선**: -56.3% → +58.3% (손실 제거)
+- **마진액**: ₩8,747/kg
+- **사용자 수정 가능**: BlendManagement 페이지에서 자유 수정
+
+## [Unreleased]
+
+### 🚀 Phase 2 T2-1 손실률 분석 시스템 강화 (완료 ✅)
+
+#### 📝 변경사항 (2025-11-08)
+- **추가**: `app/scripts/generate_test_roasting_data.py` - 계절성 패턴 테스트 데이터 생성 스크립트 (268 lines)
+- **추가**: `app/services/loss_analytics_service.py` - 손실률 예측 및 계절성 분석 서비스 (81 lines)
+- **추가**: `app/components/loss_widgets.py` - Dashboard 손실률 분석 위젯 4개 (339 lines)
+- **추가**: `LossRateAnalyzer.get_loss_rate_by_bean()` - 원두별 손실률 분석 기능 (91 lines)
+- **수정**: `app/pages/Dashboard.py` - 손실률 분석 섹션 추가 (4개 탭)
+- **추가**: 계절성 패턴이 반영된 100개 테스트 로스팅 데이터 (2024-01-01 ~ 2025-11-08)
+- **추가**: 테스트 코드 11개 (loss_rate_analyzer 3개 + loss_analytics_service 8개)
+
+#### 🎯 주요 기능
+
+**1. 원두별 손실률 분석**
+- 17종 원두에 대한 통계 분석 (평균, 표준편차, min/max, 글로벌 대비 편차)
+- 상태 자동 판단: NORMAL/ATTENTION/CRITICAL
+- SQLite 호환: Python statistics 모듈 사용
+
+**2. 계절성 예측 모델**
+- 월별 계절 지수 계산 (여름 +15%, 겨울 -15% 등)
+- 이동평균 + 계절성 예측 모델
+- 95% 신뢰구간 제공
+- 24시간 캐시 기능
+
+**3. Dashboard 위젯**
+- 📈 손실률 트렌드 차트 (±3σ 범위 표시)
+- 🌾 원두별 손실률 비교 (막대 그래프)
+- ⚠️ 경고 알림 카드 (미해결 경고 관리)
+- 🔮 계절성 예측 (향후 3개월)
+
+#### ✅ 완료된 작업 (T2-1)
+- [x] Phase 1: 테스트 데이터 생성 (30분)
+- [x] Task 2.1: get_loss_rate_by_bean() 구현 (1시간)
+- [x] Task 2.2: 테스트 코드 작성 (20분)
+- [x] Phase 3: 계절성 예측 모델 (1.5시간)
+- [x] Task 3.1: LossAnalyticsService 클래스 생성
+- [x] Task 3.2: 테스트 코드 8개 작성
+- [x] Phase 4: Dashboard 위젯 (1시간)
+- [x] Task 4.1: loss_widgets.py 4개 위젯 작성
+- [x] Task 4.2: Dashboard.py 통합
+
+#### 📊 통계
+- **추가 코드**: ~1,400 lines
+- **테스트**: 11개 추가 (모두 통과)
+- **커버리지**: LossAnalyticsService 90%
+- **커밋**: 6개
+
+---
+
+### 🧪 테스트 커버리지 개선 (96% → 97%)
+
+#### 📝 변경사항
+- **추가**: `test_analytics_service.py` - 12월 처리 분기 테스트 (+1)
+- **추가**: `test_excel_service.py` - openpyxl ImportError 처리 테스트 (+1)
+- **추가**: `test_cost_service.py` - 일괄 계산 예외 처리 테스트 (+1)
+- **추가**: `test_auth_service.py` - 비활성화/존재하지 않는 사용자 테스트 (+3)
+
+#### 🎯 주요 개선사항
+- **전체 커버리지**: 96% → 97% (목표 달성!)
+- **100% 달성 서비스**: 6개
+  - analytics_service.py: 99% → 100%
+  - auth_service.py: 96% → 100%
+  - cost_service.py: 96% → 100%
+  - excel_service.py: 97% → 100%
+  - loss_rate_analyzer.py: 100% (유지)
+  - roasting_service.py: 100% (유지)
+- **전체 테스트**: 220개 → 226개 (6개 추가)
+
+## [0.19.0] - 2025-11-07
+
+### ✨ 마이너 업데이트 (Minor Update): 마스터플랜 v2 Phase 1 T1-3 완료
+
+#### 📝 변경사항
+- **추가**: `app/update_blend_recipes.py` - 블렌드 레시피 업데이트 스크립트 (229 lines)
+- **수정**: 풀문 블렌드 레시피 업데이트 (마사이 40% + 안티구아 40% + 모모라 10% + g4 10%)
+- **수정**: 뉴문 블렌딩 레시피 업데이트 (브라질 60% + 콜롬비아 30% + g4 10%)
+
+#### 🎯 주요 기능
+- **블렌드 원가 계산**: 손실률 17% 반영 공식 적용
+  - 풀문: ₩6,566/kg → ₩22,000 판매 (마진 70.2%)
+  - 뉴문: ₩6,253/kg → ₩4,000 판매 (마진 -56.3%, 가격 조정 필요)
+- **레시피 검증**: 비율 합계 100% 자동 검증
+
+## [0.18.0] - 2025-11-07
+
+### ✨ 마이너 업데이트 (Minor Update): 마스터플랜 v2 Phase 1 T1-2 완료
+
+#### 📝 변경사항
+- **추가**: `app/update_bean_master_data.py` - 원두 마스터 데이터 업데이트 스크립트 (174 lines)
+- **수정**: 4개 원두 정보 업데이트 (마사이, g4, 브라질, 콜롬비아)
+- **검증**: 6개 필수 원두 확인 (마사이, 안티구아, 모모라, g4, 브라질, 콜롬비아)
+
+#### 🎯 주요 기능
+- **원두 정보**: 국가명, 로스팅 레벨, 가격/kg, 설명 자동 설정
+- **가격 책정**: 에티오피아 ₩5,000, 케냐 ₩6,000, 브라질 ₩4,700, 콜롬비아 ₩5,900
+
+## [0.17.0] - 2025-11-07
+
+### ✨ 마이너 업데이트 (Minor Update): 마스터플랜 v2 Phase 1 T1-1 완료
+
+#### 📝 변경사항
+- **추가**: `app/migrate_roasting_data.py` - 로스팅 데이터 마이그레이션 스크립트 (327 lines)
+- **수정**: `app/models/database.py` - RoastingLog 모델에 bean_id 추가
+- **수정**: `app/models/__init__.py` - RoastingLog export 추가
+
+#### 🎯 주요 기능
+- **데이터 마이그레이션**: 2개월(2025-09, 2025-10) 테스트 데이터 생성
+  - 14개 로스팅 기록
+  - 생두량: 33,975.88kg
+  - 로스팅량: 28,200kg
+  - 손실률: 17% (목표 일치)
+- **원두 자동 생성**: 마사이, 안티구아, 모모라, g4, 브라질, 콜롬비아 (6종)
+- **데이터 검증**: 손실률, 날짜, 무게 자동 검증
+
+## [0.16.0] - 2025-11-06
+
+### 🧪 테스트 개선 (Test Coverage: 94% → 96%)
+
+#### 📝 변경사항
+- **추가**: `app/tests/test_cost_service.py` - CostService 테스트 8개 추가 (+185)
+- **추가**: `app/tests/test_excel_service.py` - ExcelService 중복 날짜 테스트 추가 (+31)
+
+#### 🎯 주요 개선사항
+
+**테스트 커버리지 향상**
+- **전체 커버리지**: 94% → 96% (목표 초과 달성!)
+- **cost_service.py**: 82% → 96% (14% 향상)
+- **excel_service.py**: 93% → 97% (4% 향상)
+- **전체 테스트**: 211개 → 220개 (9개 추가)
+- **Missing lines**: 65 → 46 (19 lines 커버)
+
+**CostService 테스트 추가**
+1. `test_get_bean_price_history` - 가격 변경 이력 조회 (26 lines 커버)
+2. `test_get_bean_price_history_invalid_bean` - 없는 원두 예외 처리
+3. `test_get_bean_price_history_no_changes` - 이력 없을 때 빈 리스트 반환
+4. `test_update_bean_price_no_change` - 가격 동일 시 이력 미기록
+5. `test_update_cost_setting_new_parameter` - 신규 설정 추가 (insert)
+6. `test_get_blend_cost_with_selling_price` - 판매가 있을 때 마진 계산
+7. `test_get_blend_cost_missing_bean_in_recipe` - 원두 누락 시 건너뛰기
+8. `test_batch_calculate_with_error` - 일괄 계산 중 에러 처리
+
+**ExcelService 테스트 추가**
+1. `test_validate_phase1_migration_duplicate_dates` - 중복 날짜 감지 (3 lines 커버)
+
+#### 🔧 기술 구현
+- **BeanPriceHistory 모델 테스트**: 가격 변경 이력 CRUD 전체 커버
+- **예외 처리 테스트**: ValueError, 데이터 누락, 중복 검증
+- **엣지 케이스 커버**: 가격 변경 없음, 빈 블렌드, 잘못된 참조
+
+---
+
+### ✨ 마이너 업데이트 (Minor Update): CostCalculation Tab 4 - CostSetting 모델 완전 연동
+
+#### 📝 변경사항
+- **수정**: `app/pages/CostCalculation.py` - Tab 4 UI 활성화 및 CostSetting 연동 (+100, -26)
+
+#### 🎯 주요 기능
+
+**Tab 4: 비용 설정 - 완전 활성화**
+- **현재 설정 표시 개선**
+  - 4개 Metric 카드: 손실률, 로스팅 비용, 인건비, 전기료
+  - CostSetting 테이블에서 실시간 데이터 불러오기
+  - 설정값 없을 경우 기본값 사용 (fallback 로직)
+
+- **비용 파라미터 설정 폼**
+  - 손실률 슬라이더 (0~50%, 기본 17%)
+  - 로스팅 비용 (원/kg, 기본 500원)
+  - 인건비 (원/batch, 기본 10,000원)
+  - 전기료 (원/batch, 기본 3,000원)
+  - 기타 비용 (원/kg, 기본 200원)
+  - 모든 컨트롤 활성화 (disabled 제거)
+
+- **설정 저장/복원 기능**
+  - 💾 설정 저장: CostService.update_cost_setting() 호출
+  - ↺ 기본값 복원: 모든 설정을 기본값으로 초기화
+  - 저장 후 st.rerun()으로 UI 자동 갱신
+  - 성공/실패 메시지 표시
+
+- **설정 정보 Expander**
+  - 각 비용 파라미터에 대한 상세 설명
+  - 손실률, 로스팅 비용, 인건비, 전기료, 기타 비용 안내
+
+#### 🔧 기술 구현
+- **CostService 연동**
+  - `get_cost_setting(db, parameter_name)`: 설정값 조회
+  - `update_cost_setting(db, parameter_name, value, description)`: 설정값 저장
+- **Streamlit Form**: 일괄 입력 및 제출
+- **st.metric()**: 현재 설정 시각화
+- **예외 처리**: try-except로 안전한 에러 핸들링
+
+#### 🧪 검증
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ 설정 불러오기 정상 작동
+- ✅ 설정 저장 정상 작동 (예상)
+
+## [0.15.0] - 2025-11-06
+
+### ✨ 마이너 업데이트 (Minor Update): 원두 가격 변경 이력 추적 시스템 구현 (Tab 3)
+
+#### 📝 변경사항
+- **신규 모델**: `app/models/database.py` - BeanPriceHistory 모델 추가
+- **마이그레이션**: `migrations/add_bean_price_history.py` - bean_price_history 테이블 생성
+- **수정**: `app/services/cost_service.py` - update_bean_price, get_bean_price_history 메서드 추가 (+54줄)
+- **수정**: `app/pages/CostCalculation.py` - Tab 3 UI 업데이트 (+100줄)
+
+#### 🎯 주요 기능
+
+**1. 데이터베이스 (BeanPriceHistory 모델)**
+- bean_id: 원두 ID (FK)
+- old_price: 이전 가격
+- new_price: 새 가격
+- change_reason: 변경 사유 (선택사항)
+- created_at: 변경 일시
+- Bean 모델에 price_history relationship 추가
+
+**2. 비즈니스 로직 (CostService)**
+- **update_bean_price 개선**
+  - change_reason 파라미터 추가 (선택사항)
+  - 가격 변경 시 자동으로 BeanPriceHistory에 이력 기록
+  - 가격이 동일하면 이력 기록 안 함 (중복 방지)
+
+- **get_bean_price_history 신규**
+  - 원두별 가격 변경 이력 조회 (최신순)
+  - limit 파라미터로 조회 개수 제어 (기본 10개, 최대 100개)
+  - 변동액, 변동률 자동 계산
+  - 반환값: 이력 리스트 (id, bean_name, old/new_price, change, created_at)
+
+**3. UI 개선 (CostCalculation Tab 3)**
+- **가격 변경 폼 개선**
+  - 변경 사유 입력 필드 추가 (선택사항)
+  - Placeholder: "예: 생두 가격 인상, 환율 변동, 품질 향상 등"
+
+- **가격 변경 이력 표시**
+  - 원두 선택 + 조회 개수 설정 (5~100개, 기본 10개)
+  - 이력 테이블: 변경일시, 이전/새 가격, 변동액, 변동률, 변경 사유
+  - Plotly 타임라인 차트: 가격 변동 추이 시각화
+  - 📈 상승, 📉 하락, ➡️ 동일 아이콘 표시
+  - hover 템플릿으로 상세 정보 표시
+
+#### 🔧 기술 구현
+- **SQLAlchemy ORM**: BeanPriceHistory 모델
+- **마이그레이션**: bean_price_history 테이블 생성 (checkfirst=True)
+- **Plotly Scatter Chart**: mode='lines+markers', 타임라인 시각화
+- **변동률 계산**: (new_price - old_price) / old_price * 100
+- **시간순 정렬**: order_by(desc(created_at)).limit(n)
+
+#### 🧪 검증
+- ✅ 마이그레이션 성공 (bean_price_history 테이블 생성)
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ import 오류 없음
+
+## [0.14.1] - 2025-11-06
+
+### 🐛 패치 (Bug Fix): ExcelSync 페이지 세션 상태 초기화 순서 버그 수정
+
+#### 📝 변경사항
+- **수정**: `app/pages/ExcelSync.py` - 세션 상태 초기화 순서 변경
+- **수정**: `app/pages/RoastingReceipt.py` - 날짜 타입 변환 버그 수정
+- **수정**: `app/services/excel_service.py` - import 경로 수정
+- **업데이트**: `logs/VERSION` - 0.14.0 → 0.14.1
+
+#### 🐛 버그 수정 상세
+
+**1. ExcelSync 페이지 세션 상태 초기화 순서 버그**
+- **문제**: `render_sidebar()` 호출 시 `st.session_state.db`가 초기화되지 않아 `AttributeError` 발생
+- **원인**: 세션 상태 초기화가 `render_sidebar()` 호출 이후에 실행됨
+- **해결**: 세션 상태 초기화 블록을 `render_sidebar()` 호출 전으로 이동
+- **영향**: ExcelSync 페이지 새로고침 시 정상 작동
+
+**2. ExcelService → ExcelSyncService 이름 변경**
+- ExcelSync 페이지에서 사용하는 서비스 이름을 명확히 함
+- Static 메서드만 사용하므로 인스턴스화 불필요
+
+**3. Import 경로 일관성 개선**
+- `app.models.database` → `models.database` (프로젝트 표준에 맞춤)
+
+**4. RoastingReceipt 날짜 타입 변환 버그 수정**
+- **문제**: 세션 상태 직렬화 시 날짜가 문자열로 변환됨
+- **해결**: `st.data_editor` 호출 전 날짜 컬럼을 `date` 타입으로 보장
+- **영향**: 날짜 입력 필드가 항상 올바른 타입으로 표시됨
+
+#### 🧪 검증
+- ✅ Streamlit 앱 정상 실행 확인
+- ✅ ExcelSync 페이지 접근 가능
+- ✅ 세션 상태 초기화 오류 해결
+
+## [0.14.0] - 2025-11-05
+
+### ✨ 마이너 업데이트 (Minor Update): 원가계산(CostCalculation) 페이지 구현
+
+#### 📝 변경사항
+- **신규 페이지**: `app/pages/CostCalculation.py` (547줄)
+- **수정**: `app/components/sidebar.py` (+9줄, "🧮 원가계산" 메뉴 추가)
+
+#### 🎯 주요 기능 (4개 탭)
+
+**Tab 1: 블렌드별 원가 계산**
+- 블렌드 선택 및 계산 단위 선택 (kg/cup)
+- 실시간 원가 계산 (혼합원가, 최종원가, 제안판매가, 마진율)
+- 구성 원두 상세 테이블 (최종 기여도 포함)
+- 계산 공식 설명 (Expander)
+
+**Tab 2: 전체 블렌드 일괄 비교**
+- 모든 활성 블렌드 원가 일괄 계산
+- 정렬 가능한 비교 테이블
+- Plotly 차트 2개:
+  - 손실 전/후 원가 비교 (막대 그래프)
+  - 블렌드별 마진율 비교 (색상 코딩)
+
+**Tab 3: 원두 가격 관리**
+- 활성 원두 목록 및 현재 가격 표시
+- 원두 가격 업데이트 폼
+- 가격 변경 기록 (향후 추가 예정)
+
+**Tab 4: 원가 설정**
+- 현재 설정값 표시 (손실률, 비용 구조)
+- 고급 설정 UI (향후 CostSetting 모델 연동 예정)
+- 모든 컨트롤 disabled 상태 (미래 확장 대비)
+
+#### 🔧 기술 구현
+- **7단계 방법론** 적용: Constitution → Specify → Clarify → Plan → Tasks → Implement → Analyze
+- **CostService** 연동: `get_blend_cost()`, `batch_calculate_all_blends()`, `update_bean_price()`
+- **Plotly Express** 시각화: 비용 비교 및 마진 분석 차트
+- **Streamlit 폼** 검증: 안전한 입력 처리
+
+#### 📊 프로젝트 통계 업데이트
+- 페이지: 9개 → 10개
+- 총 코드: 9,500+줄 → 10,100+줄 (+600줄)
+- 시각화: 35+ → 37+ 차트 (+2개)
+
+## [Unreleased] - 2025-11-05
+
+### ✅ 테스트 개선: ReportService 예외 처리 테스트 추가
+
+#### 📝 변경사항
+- **파일**: `app/tests/test_report_service.py`
+- **목표**: 전체 커버리지 95% 달성
+
+#### 🎯 주요 성과
+- ✅ ReportService 커버리지: 88% → 93% (+5%p)
+- ✅ 전체 커버리지: 94% → 95% (+1%p, 목표 달성!)
+- ✅ 테스트 개수: 208개 → 211개 (+3개)
+- ✅ 통과율: 100% 유지
+
+#### 추가된 테스트 (3개)
+1. **test_export_excel_exception_in_summary_sheet**
+   - _create_summary_sheet에서 예외 발생 시 오류 시트 생성 테스트
+   - bean_service.get_beans_summary() 예외 처리 경로 커버
+
+2. **test_export_excel_exception_in_cost_sheet**
+   - _create_cost_sheet에서 예외 발생 시 오류 시트 생성 테스트
+   - DataFrame.to_excel() 예외 처리 경로 커버
+
+3. **test_export_excel_all_sheets_empty_creates_default_sheet**
+   - sheets_created == 0일 때 기본 "정보" 시트 생성 테스트
+   - 모든 데이터가 비어있을 때 안전한 Excel 생성 확인
+
+#### 최종 서비스별 커버리지
+| 서비스 | 커버리지 | 상태 |
+|--------|----------|------|
+| LossRateAnalyzer | 100% | ✅ |
+| RoastingService | 100% | ✅ |
+| AnalyticsService | 99% | ✅ |
+| AuthService | 96% | ✅ |
+| **ReportService** | **93%** | ✅ **+5%p** |
+| ExcelService | 93% | ✅ |
+| BlendService | 92% | ✅ |
+| BeanService | 91% | ✅ |
+| CostService | 90% | ✅ |
+
+#### 기술적 세부사항
+- **Mock 전략**: unittest.mock.patch를 사용한 예외 주입
+- **테스트 격리**: 각 테스트는 독립적으로 실행
+- **예외 처리 검증**: 예외 발생 시에도 Excel 파일 생성 확인
+- **데이터 검증**: 오류 메시지가 Excel 시트에 포함되는지 확인
+
+---
+
+## [0.13.7] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): 날짜 형식 변환 오류 수정
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingReceipt.py` - calculate_results() 함수
+- **문제**: `AttributeError: 'str' object has no attribute 'strftime'`
+- **원인**: st.data_editor가 날짜를 str 또는 datetime 객체로 반환 (컨텍스트에 따라 다름)
+- **해결**: 타입 체크 추가
+  ```python
+  # OLD:
+  "날짜": row["날짜"].strftime("%Y-%m-%d") if not pd.isna(row["날짜"]) else ""
+
+  # NEW:
+  if pd.isna(row["날짜"]):
+      date_str = ""
+  elif isinstance(row["날짜"], str):
+      date_str = row["날짜"]
+  else:
+      date_str = row["날짜"].strftime("%Y-%m-%d")
+  ```
+
+## [0.13.6] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): 상태 판정 로직 수정 및 예상 손실률 자동 계산 기능 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingReceipt.py`
+
+**1️⃣ 상태 판정 로직 수정** (calculate_results 함수):
+- **문제**: `abs(variance)` 사용으로 방향 무시 → -12% (예상보다 손실률 낮음 = 좋음)가 "🔴 위험"으로 표시됨
+- **해결**: variance 방향을 고려한 로직으로 수정
+  - `variance ≤ 0`: 예상보다 손실률 낮음 = 🟢 정상
+  - `0 < variance ≤ 3%`: 🟢 정상
+  - `3% < variance ≤ 5%`: 🟡 주의
+  - `variance > 5%`: 🔴 위험
+
+**2️⃣ 예상 손실률 자동 계산 기능 추가**:
+- "🔢 예상 손실률 자동 계산" 버튼 추가 (데이터 입력 테이블 하단)
+- 입력된 생두 무게와 로스팅 후 무게를 기반으로 실제 손실률 계산
+- 계산된 값을 "예상손실률(%)" 컬럼에 자동으로 채워넣음
+- 사용자가 수동으로 손실률을 계산할 필요 없이 버튼 클릭만으로 처리 가능
+
+## [0.13.5] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): number_input max_value를 100.0에서 10000.0으로 확대
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py` (Tab 2, Tab 3), `app/pages/RoastingReceipt.py` (column_config)
+- **문제**: `StreamlitAPIException: default_value 481.93 must be less than or equal to max_value 100.0`
+- **원인**: 데이터베이스에 481.93kg 같은 대량 로스팅 기록 존재, 기존 max_value=100.0으로는 표시 불가
+- **해결**:
+  - 생두 무게(kg) 필드: max_value를 100.0 → 10000.0 (10톤)으로 확대
+  - 로스팅 후 무게(kg) 필드: max_value를 100.0 → 10000.0 (10톤)으로 확대
+  - 다양한 규모의 로스팅 작업 지원 가능
+
+## [0.13.4] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): get_db() generator 대신 SessionLocal() 직접 사용
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: 'generator' object has no attribute 'query'`
+- **원인**:
+  - `get_db()`는 FastAPI 의존성 주입용 generator (yield 사용)
+  - Streamlit에서는 generator가 아닌 직접 인스턴스화된 세션 필요
+- **해결**:
+  ```python
+  # OLD:
+  if 'db' not in st.session_state:
+      st.session_state.db = get_db()  # Generator 반환 (❌)
+
+  # NEW:
+  if 'db' not in st.session_state:
+      st.session_state.db = SessionLocal()  # Session 직접 생성 (✅)
+  ```
+
+## [0.13.3] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): bean_service 및 blend_service 초기화 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: st.session_state has no attribute 'bean_service'`
+- **원인**: sidebar.py의 통계 섹션 (line 196-197)이 bean_service와 blend_service를 요구
+- **해결**: Session state에 BeanService 및 BlendService 초기화 추가
+  ```python
+  if 'bean_service' not in st.session_state:
+      st.session_state.bean_service = BeanService(st.session_state.db)
+  if 'blend_service' not in st.session_state:
+      st.session_state.blend_service = BlendService(st.session_state.db)
+  ```
+
+## [0.13.2] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): language_manager 초기화 추가
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `AttributeError: st.session_state has no attribute 'language_manager'`
+- **원인**: sidebar.py가 language_manager를 요구하지만 로스팅 페이지에 초기화 코드 누락
+- **해결**: BeanManagement.py 패턴을 따라 Translator 및 LanguageManager 초기화 추가
+  ```python
+  if "translator" not in st.session_state:
+      st.session_state.translator = Translator(default_language="ko")
+  if "language_manager" not in st.session_state:
+      st.session_state.language_manager = LanguageManager(st.session_state.translator)
+  ```
+
+## [0.13.1] - 2025-11-04
+
+### 🐛 패치 (Bug Fix): database import 경로 수정 (app.utils → app.models)
+
+#### 📝 변경사항
+- **파일**: `app/pages/RoastingRecord.py`, `app/pages/RoastingReceipt.py`
+- **문제**: `ModuleNotFoundError: No module named 'app.utils.database'`
+- **원인**: database.py가 app/models/에 위치하는데 app/utils/database에서 import 시도
+- **해결**:
+  ```python
+  # OLD:
+  from app.utils.database import get_db
+
+  # NEW:
+  from app.models import SessionLocal
+  ```
+
+## [0.13.0] - 2025-11-03
+
+### ✨ 마이너 업데이트 (Minor Update): 로스팅 일괄 입력 페이지 구현 (RoastingReceipt.py)
+
+#### 📝 변경사항
+
+**새로운 페이지 추가 - RoastingReceipt.py** (335줄):
+- `st.data_editor`를 활용한 Excel 스타일 그리드 입력 인터페이스
+- 템플릿 생성 기능: 기본 10개 행, 사용자 지정 가능 (1~100)
+- 동적 행 추가/삭제 (`num_rows="dynamic"`)
+- 5개 입력 컬럼 with 타입 검증:
+  - 날짜: `DateColumn` (미래 날짜 차단, 기본값 오늘)
+  - 생두(kg): `NumberColumn` (0.0~100.0, 0.1 단위)
+  - 로스팅후(kg): `NumberColumn` (0.0~100.0, 0.1 단위)
+  - 예상손실률(%): `NumberColumn` (0.0~50.0, 0.1 단위, 기본값 17.0)
+  - 메모: `TextColumn` (최대 500자)
+
+**실시간 계산 및 검증**:
+- `calculate_results()`: 실제손실률, 차이(%), 상태 표시
+- 상태 판정 로직: 🟢 정상(±3%), 🟡 주의(±5%), 🔴 위험(±5% 초과)
+- 별도 테이블로 계산 결과 실시간 표시
+- `validate_all_rows()`: All or Nothing 검증 방식
+  - 6가지 검증 규칙 적용
+  - 빈 행 자동 건너뛰기
+  - 오류 발생 시 전체 배치 거부
+
+**배치 저장 기능**:
+- 기존 `RoastingService.create_roasting_log()` 재사용
+- 행별 개별 처리 with 실패 추적
+- 성공/실패 상세 리포트 제공
+- 저장 성공 시 템플릿 초기화 및 축하 애니메이션
+
+**사이드바 메뉴 통합**:
+- `sidebar.py`: "📝 로스팅 일괄입력" 버튼 추가
+- "📦 운영 관리" 섹션 내 배치
+- 페이지 활성 상태 표시 지원
+
+#### 🧪 테스트
+- Python 문법 검증 통과
+- Streamlit 앱 실행 확인 (포트 8501)
+- 메뉴 네비게이션 검증 완료
+
+#### 📊 통계
+- **파일**: 2개 수정 (1개 신규, 1개 업데이트)
+  - `app/pages/RoastingReceipt.py` ← 신규 (335줄)
+  - `app/components/sidebar.py` ← 메뉴 항목 추가
+- **코드**: +335줄 추가
+
+## [0.12.0] - 2025-11-03
+
+### ✨ 마이너 업데이트 (Minor Update): RoastingRecord 페이지를 사이드바 메뉴에 추가
+
+#### 📝 변경사항
+
+**사이드바 메뉴 통합**:
+- sidebar.py: "📦 운영 관리" 섹션에 "📊 로스팅 기록" 버튼 추가
+- RoastingRecord.py: sidebar 렌더링 및 current_page 설정 추가
+- 페이지 활성 상태 표시 기능 추가
+
+**접근성 개선**:
+- 사용자가 사이드바에서 직접 로스팅 기록 관리 페이지로 이동 가능
+- "운영 관리" 메뉴 구성: 로스팅 기록 → 재고관리 → 보고서 → Excel동기화
+
+**커밋**:
+- `1b1dda36` - feat: RoastingRecord 페이지를 사이드바 메뉴에 추가
+
+## [0.11.0] - 2025-11-03
+
+### ✨ 마이너 업데이트 (Minor Update): 로스팅 기록 관리 페이지 구현 (RoastingRecord.py)
+
+#### 📝 변경사항
+
+**신규 페이지 추가**:
+- 📊 **RoastingRecord.py** (598줄) - 로스팅 기록 관리 페이지
+  - Tab 1: 📋 목록 조회 (필터링, 정렬, 통계 카드)
+  - Tab 2: ➕ 기록 추가 (실시간 계산, 검증 로직)
+  - Tab 3: ✏️ 기록 편집 (수정/삭제 기능)
+  - Tab 4: 📊 통계 분석 (월별 통계, 추이 그래프)
+
+**주요 기능**:
+- ✅ 전체 CRUD 기능 (생성, 조회, 수정, 삭제)
+- ✅ 실시간 손실률 계산 및 상태 표시 (🟢🟡🔴)
+- ✅ 사용자 정의 필터링 (날짜, 개수, 정렬)
+- ✅ 월별 통계 및 추이 그래프
+- ✅ RoastingService 7개 메서드 완전 활용
+- ✅ 입력 검증 (4가지 규칙)
+
+**개발 방법론**:
+- 7단계 체계적 개발 방법론 적용 (Constitution → Analyze)
+- 명세 대비 100% 구현 달성
+
+**커밋**:
+- `df130207` - feat: 로스팅 기록 관리 페이지 구현
+
+## [0.10.0] - 2025-11-03
+
+### ✨ 테스트: ExcelService + ReportService 테스트 완성 (전체 94% 커버리지 달성)
+
+#### 📝 변경사항
+
+**1. ExcelService 테스트 완성 (0% → 93%)**:
+- 총 14개 테스트 작성 (9개 기본 + 5개 검증)
+- Bean 모델 필수 필드 추가 (no, roast_level)
+- 빈 데이터 처리 테스트 수정 (None 반환 예상)
+- validate_phase1_migration() 검증 테스트 추가
+- get_migration_summary() 요약 테스트 추가
+
+**2. ReportService 테스트 확장 (78% → 88%)**:
+- 6개 추가 테스트 작성 (15→21, +6개)
+  - test_export_to_excel_cost, blend, bean_usage
+  - test_export_to_excel_no_sheets (빈 시트 생성)
+  - test_export_to_csv_cost, bean_usage
+- sample_transactions 픽스처 추가 (conftest.py)
+
+**전체 테스트 통계**:
+- 총 테스트: 188개 → 208개 (+20개)
+- 전체 커버리지: 84% → 94% (+10%p)
+- ExcelService: 0% → 93% (85/91 lines)
+- ReportService: 78% → 88% (145/164 lines)
+- 통과율: 100% (208/208)
+
+**서비스별 커버리지** (9개 서비스, 평균 94%):
+- RoastingService: 100% ✅
+- LossRateAnalyzer: 100% ✅
+- AnalyticsService: 99% ✅
+- AuthService: 96% ✅
+- ExcelService: 93% ✅ (NEW! 0%→93%)
+- BlendService: 92% ✅
+- BeanService: 91% ✅
+- CostService: 90% ✅
+- ReportService: 88% ✅ (NEW! 78%→88%)
+
+**수정된 버그**:
+1. Bean 모델 필수 필드 누락 (no, roast_level)
+2. 빈 데이터 처리 assertion 불일치
+
+**생성/수정된 파일**:
+- app/tests/test_excel_service.py (14개 테스트)
+- app/tests/test_report_service.py (15→21개, +6개)
+- app/tests/conftest.py (sample_transactions 픽스처 추가)
+
+**문서 업데이트**:
+- README.md: v0.10.0 동기화, 208개 테스트, 94% 커버리지
+- .claude/CLAUDE.md: v0.10.0 동기화
+- SESSION_SUMMARY_2025-11-03.md: 신규 생성 및 업데이트
+- CHANGELOG.md: [0.10.0] 종합 업데이트
+
+**이전 세션 (2025-11-02)**:
+- 데이터 검증 스크립트 및 리포트 생성
+- ExcelService 기본 테스트 작성 (54% 커버리지)
+
+## [0.9.1] - 2025-11-02
+
+### 🐛 패치 (Bug Fix): test_analysis_workflow 테스트 수정 - 월초 날짜 문제 해결
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
+## [0.9.0] - 2025-11-01
+
+### ✨ 테스트: Phase 1 서비스 테스트 추가 - 103개 테스트 작성
+
+#### 📝 변경사항
+
+**전체 테스트 통계**
+- 총 103개 테스트 작성 (100% 통과율)
+- Phase 1 서비스 평균 커버리지: 90% (목표 88% 초과 달성)
+- 테스트 실행 시간: ~11초
+
+**Phase 1 서비스별 테스트 현황**
+
+1. **BeanService 테스트** (35개 테스트, 커버리지 91%)
+   - CRUD 작업 (생성, 조회, 수정, 삭제)
+   - 조회 메서드 (ID, No, Name, Country, RoastLevel 등)
+   - 비즈니스 로직 (재고 자동 생성, 소프트/하드 삭제)
+   - 분석 기능 (요약 통계, 자주 사용되는 원두)
+   - 초기화 및 내보내기
+
+2. **BlendService 테스트** (39개 테스트, 커버리지 92%)
+   - CRUD 작업 (블렌드 생성, 조회, 수정, 삭제)
+   - 레시피 관리 (원두 추가/제거, 비율 재계산)
+   - 원가 계산 (블렌드 원가, 제안 가격)
+   - 분석 기능 (요약 통계)
+   - 초기화 및 내보내기
+
+3. **AnalyticsService 테스트** (14개 테스트, 커버리지 99%)
+   - 트렌드 분석 (월별 거래 추이)
+   - 재고 예측 및 사용량 예측
+   - ROI 분석
+   - 성능 지표
+   - 원두별 효율성 분석
+   - 블렌드 간 비교 분석
+
+4. **ReportService 테스트** (15개 테스트, 커버리지 78%)
+   - 월별 요약 데이터
+   - 비용 분석
+   - 원두 사용량 분석
+   - 블렌드 성과 분석
+   - Excel/CSV 내보내기
+
+**수정된 버그 및 개선사항**
+
+1. **blend_service.py 수정**
+   - `add_recipe_to_blend()` 메서드의 `total_portion` 계산 로직 수정
+
+2. **conftest.py 픽스처 개선**
+   - `sample_blend`에 `total_portion` 명시적 설정 추가
+
+3. **test_analytics_service.py 수정**
+   - `Inventory` 픽스처에서 존재하지 않는 `location` 필드 제거
+
+**생성된 파일**
+- `app/tests/test_bean_service.py` (35개 테스트)
+- `app/tests/test_blend_service.py` (39개 테스트)
+- `app/tests/test_analytics_service.py` (14개 테스트)
+- `app/tests/test_report_service.py` (15개 테스트)
+
+**전체 프로젝트 테스트 현황**
+- Phase 2 서비스: 85개 테스트 (커버리지 96.5%)
+- Phase 1 서비스: 103개 테스트 (커버리지 90%)
+- **총 188개 테스트** (100% 통과율)
+
+### 📝 문서: 문서 업데이트 누락 방지 시스템 구축
+
+#### 문제 발견
+- 코드 작성 후 문서 업데이트를 반복적으로 누락하는 현상 발견
+- 사용자가 두 번 지적한 후에야 업데이트 수행
+- CHANGELOG, SESSION_SUMMARY, README 등 주요 문서 동기화 실패
+
+#### 해결책 구현
+- **.claude/CLAUDE.md**에 "3-단계 작업 완료 프로토콜" 추가
+- 코드 작성 → 커밋 → 문서 4종 세트 업데이트 강제화
+- 문서 4종 세트: CHANGELOG, SESSION_SUMMARY, README, CLAUDE.md
+
+#### 기대 효과
+- 문서 동기화 누락 방지
+- 프로젝트 문서 일관성 유지
+- 세션 간 연속성 보장
+
+**수정된 파일:**
+- `.claude/CLAUDE.md` - "🚨 작업 완료 = 3단계 필수" 규칙 추가
+
+**커밋:** fc4660a
+
+### 📝 문서: 7단계 체계적 개발 방법론 추가
+
+#### 추가 배경
+- 사용자 요청: 프로그래밍/플랜 작성 시 체계적 접근 방법 필요
+- 기존: DEVELOPMENT_GUIDE의 5단계 (구현 중심)
+- 신규: 상위 레벨 7단계 방법론 (프로젝트 전체)
+
+#### 7단계 구조
+1. **Constitution (원칙)** - 프로젝트 기본 원칙 수립
+2. **Specify (명세)** - 요구사항 상세 정의
+3. **Clarify (명확화)** - 불분명한 부분 질문으로 해소
+4. **Plan (계획)** - 기술 스택과 아키텍처 결정
+5. **Tasks (작업 분해)** - 실행 가능한 단위로 분해
+6. **Implement (구현)** - 코드 작성 및 테스트
+7. **Analyze (검증)** - 명세와 코드 일치 확인
+
+#### 적용 범위
+- 모든 프로그래밍 작업 시 필수 준수
+- 플랜 작성 시 필수 준수
+- TodoWrite와 AskUserQuestion 활용 강조
+
+**수정된 파일:**
+- `.claude/CLAUDE.md` - "🎯 7단계 체계적 개발 방법론" 섹션 추가 (52줄)
+
+**커밋:** fd30ee2
+
+---
+
 ## [0.9.0] - 2025-10-31
 
 ### ✨ 마이너 업데이트 (Minor Update): T2-8 Unit Tests 완료 - Phase 2 서비스 전체 테스트 구축

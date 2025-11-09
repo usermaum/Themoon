@@ -230,12 +230,147 @@ class TestLossRateAnalyzer:
         assert dist['total_warnings'] == 0
         assert dist['critical_ratio'] == 0
 
-    def test_get_loss_rate_by_bean(self, db_session):
-        """원두별 손실률 분석 (미구현 메서드)"""
+    def test_get_loss_rate_by_bean_normal(self, db_session):
+        """원두별 손실률 분석 - 정상 케이스 (충분한 데이터)"""
+        # Bean ID 1, 2, 3에 대해 각각 10개씩 로스팅 기록 생성
+        from app.models.database import RoastingLog, Bean
+
+        # Bean 레코드 먼저 생성
+        bean1 = Bean(id=1, no=1, name="테스트원두A", roast_level="MEDIUM", price_per_kg=20000)
+        bean2 = Bean(id=2, no=2, name="테스트원두B", roast_level="MEDIUM", price_per_kg=18000)
+        bean3 = Bean(id=3, no=3, name="테스트원두C", roast_level="DARK", price_per_kg=15000)
+        db_session.add_all([bean1, bean2, bean3])
+        db_session.commit()
+
+        # Bean 1: 평균 15% 손실률 (낮음)
+        for i in range(10):
+            log = RoastingLog(
+                bean_id=1,
+                raw_weight_kg=10.0,
+                roasted_weight_kg=8.5,  # 15% 손실
+                loss_rate_percent=15.0,
+                expected_loss_rate_percent=17.0,
+                loss_variance_percent=-2.0,
+                roasting_date=date.today() - timedelta(days=i),
+                roasting_month=date.today().strftime('%Y-%m')
+            )
+            db_session.add(log)
+
+        # Bean 2: 평균 17% 손실률 (정상)
+        for i in range(10):
+            log = RoastingLog(
+                bean_id=2,
+                raw_weight_kg=10.0,
+                roasted_weight_kg=8.3,  # 17% 손실
+                loss_rate_percent=17.0,
+                expected_loss_rate_percent=17.0,
+                loss_variance_percent=0.0,
+                roasting_date=date.today() - timedelta(days=i),
+                roasting_month=date.today().strftime('%Y-%m')
+            )
+            db_session.add(log)
+
+        # Bean 3: 평균 20% 손실률 (높음)
+        for i in range(10):
+            log = RoastingLog(
+                bean_id=3,
+                raw_weight_kg=10.0,
+                roasted_weight_kg=8.0,  # 20% 손실
+                loss_rate_percent=20.0,
+                expected_loss_rate_percent=17.0,
+                loss_variance_percent=3.0,
+                roasting_date=date.today() - timedelta(days=i),
+                roasting_month=date.today().strftime('%Y-%m')
+            )
+            db_session.add(log)
+
+        db_session.commit()
+
+        # 분석 실행
         result = LossRateAnalyzer.get_loss_rate_by_bean(db_session, days=30)
 
-        # 미구현이므로 빈 dict 반환
-        assert result == {}
+        # 검증
+        assert len(result) == 3  # 3개 원두
+        assert all(isinstance(r, dict) for r in result)
+
+        # 필드 검증
+        required_fields = ['bean_id', 'bean_name', 'roast_count', 'avg_loss_rate',
+                          'std_deviation', 'min_loss', 'max_loss',
+                          'variance_from_global', 'status']
+        for r in result:
+            for field in required_fields:
+                assert field in r
+
+        # 데이터 검증 (손실률 높은 순으로 정렬됨)
+        assert result[0]['avg_loss_rate'] == 20.0  # Bean 3
+        assert result[1]['avg_loss_rate'] == 17.0  # Bean 2
+        assert result[2]['avg_loss_rate'] == 15.0  # Bean 1
+
+        # 상태 검증
+        assert result[0]['status'] in ['ATTENTION', 'CRITICAL']  # 20% (높음)
+        assert result[2]['status'] in ['NORMAL', 'ATTENTION']    # 15% (낮음)
+
+    def test_get_loss_rate_by_bean_insufficient_data(self, db_session):
+        """원두별 손실률 분석 - 데이터 부족 (원두당 1-2개 레코드)"""
+        from app.models.database import RoastingLog, Bean
+
+        # Bean 레코드 먼저 생성
+        bean1 = Bean(id=1, no=1, name="테스트원두A", roast_level="MEDIUM", price_per_kg=20000)
+        bean2 = Bean(id=2, no=2, name="테스트원두B", roast_level="MEDIUM", price_per_kg=18000)
+        db_session.add_all([bean1, bean2])
+        db_session.commit()
+
+        # Bean 1: 1개 레코드 (표준편차 계산 불가)
+        log = RoastingLog(
+            bean_id=1,
+            raw_weight_kg=10.0,
+            roasted_weight_kg=8.3,
+            loss_rate_percent=17.0,
+            expected_loss_rate_percent=17.0,
+            loss_variance_percent=0.0,
+            roasting_date=date.today(),
+            roasting_month=date.today().strftime('%Y-%m')
+        )
+        db_session.add(log)
+
+        # Bean 2: 2개 레코드 (최소 표준편차 계산 가능)
+        for i in range(2):
+            log = RoastingLog(
+                bean_id=2,
+                raw_weight_kg=10.0,
+                roasted_weight_kg=8.3 if i == 0 else 8.2,
+                loss_rate_percent=17.0 if i == 0 else 18.0,
+                expected_loss_rate_percent=17.0,
+                loss_variance_percent=0.0 if i == 0 else 1.0,
+                roasting_date=date.today() - timedelta(days=i),
+                roasting_month=date.today().strftime('%Y-%m')
+            )
+            db_session.add(log)
+
+        db_session.commit()
+
+        # 분석 실행
+        result = LossRateAnalyzer.get_loss_rate_by_bean(db_session, days=30)
+
+        # 검증
+        assert len(result) == 2
+
+        # Bean 1 (1개 레코드) - 표준편차 0
+        bean1 = [r for r in result if r['roast_count'] == 1][0]
+        assert bean1['std_deviation'] == 0.0
+
+        # Bean 2 (2개 레코드) - 표준편차 계산됨
+        bean2 = [r for r in result if r['roast_count'] == 2][0]
+        assert bean2['std_deviation'] > 0.0
+
+    def test_get_loss_rate_by_bean_no_data(self, db_session):
+        """원두별 손실률 분석 - 데이터 없음"""
+        # 데이터 없이 실행
+        result = LossRateAnalyzer.get_loss_rate_by_bean(db_session, days=30)
+
+        # 빈 리스트 반환
+        assert result == []
+        assert isinstance(result, list)
 
 
 @pytest.mark.integration
@@ -244,13 +379,16 @@ class TestLossRateAnalyzerIntegration:
 
     def test_analysis_workflow(self, db_session):
         """분석 워크플로우 통합 테스트"""
-        # 1. 정상 + 이상 데이터 혼합 생성
+        # 고정된 테스트 날짜 사용 (월 중간으로 설정하여 모든 데이터가 같은 달에 있도록 함)
+        test_date = date(2025, 11, 15)
+
+        # 1. 정상 + 이상 데이터 혼합 생성 (모두 같은 달에)
         for i in range(5):
             RoastingService.create_roasting_log(
                 db=db_session,
                 raw_weight_kg=10.0,
                 roasted_weight_kg=8.3,  # 정상
-                roasting_date=date.today() - timedelta(days=i)
+                roasting_date=test_date - timedelta(days=i)
             )
 
         for i in range(3):
@@ -258,7 +396,7 @@ class TestLossRateAnalyzerIntegration:
                 db=db_session,
                 raw_weight_kg=10.0,
                 roasted_weight_kg=7.0,  # 이상
-                roasting_date=date.today() - timedelta(days=i+10),
+                roasting_date=test_date - timedelta(days=i+5),  # 같은 달 내에 생성
                 expected_loss_rate=17.0
             )
 
@@ -271,10 +409,10 @@ class TestLossRateAnalyzerIntegration:
         warnings = LossRateAnalyzer.get_recent_warnings(db_session)
         assert len(warnings) >= 3
 
-        # 4. 월별 요약
-        month = date.today().strftime('%Y-%m')
+        # 4. 월별 요약 (테스트 날짜 기준 달 사용)
+        month = test_date.strftime('%Y-%m')
         summary = LossRateAnalyzer.get_monthly_summary(db_session, month)
-        assert summary['data_count'] >= 5
+        assert summary['data_count'] >= 5  # 8개 모두 같은 달(11월)에 있음
 
     def test_warning_lifecycle(self, db_session):
         """경고 생명주기 테스트"""

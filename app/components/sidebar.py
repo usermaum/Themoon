@@ -101,12 +101,42 @@ def render_sidebar():
             st.session_state["current_page"] = "Analysis"
             st.switch_page("pages/Analysis.py")
 
+        # 원가계산
+        if st.button(
+            "🧮 원가계산",
+            type="primary" if current_page == "CostCalculation" else "secondary",
+            use_container_width=True,
+            key="nav_cost_calculation"
+        ):
+            st.session_state["current_page"] = "CostCalculation"
+            st.switch_page("pages/CostCalculation.py")
+
         st.divider()
 
         # ═══════════════════════════════════════════════════════════
         # 4️⃣ 운영 관리 (현재 페이지 자동 감지)
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📦 운영 관리")
+
+        # 로스팅 기록
+        if st.button(
+            "📊 로스팅 기록",
+            type="primary" if current_page == "RoastingRecord" else "secondary",
+            use_container_width=True,
+            key="nav_roasting"
+        ):
+            st.session_state["current_page"] = "RoastingRecord"
+            st.switch_page("pages/RoastingRecord.py")
+
+        # 로스팅 일괄입력
+        if st.button(
+            "📝 로스팅 일괄입력",
+            type="primary" if current_page == "RoastingReceipt" else "secondary",
+            use_container_width=True,
+            key="nav_receipt"
+        ):
+            st.session_state["current_page"] = "RoastingReceipt"
+            st.switch_page("pages/RoastingReceipt.py")
 
         # 재고관리
         if st.button(

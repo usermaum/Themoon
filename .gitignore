@@ -73,5 +73,10 @@ archive/
 *.temp
 *.log
 
+# Test Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
 # 개인 정보 파일
 documents/Usermaum_doc.mdc

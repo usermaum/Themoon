@@ -61,6 +61,7 @@ class Bean(Base):
     # 관계
     inventory = relationship("Inventory", back_populates="bean", cascade="all, delete-orphan")
     blend_recipes = relationship("BlendRecipe", back_populates="bean", cascade="all, delete-orphan")
+    price_history = relationship("BeanPriceHistory", back_populates="bean", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Bean(no={self.no}, name={self.name}, roast={self.roast_level})>"
@@ -168,6 +169,7 @@ class RoastingLog(Base):
     __tablename__ = "roasting_logs"
 
     id = Column(Integer, primary_key=True, index=True)
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=True)  # 원두 ID (마스터플랜 v2)
     raw_weight_kg = Column(Float, nullable=False)  # 생두 투입량
     roasted_weight_kg = Column(Float, nullable=False)  # 로스팅 후 무게
     loss_rate_percent = Column(Float, nullable=False)  # 손실률 (자동 계산)
@@ -182,6 +184,7 @@ class RoastingLog(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # 관계
+    bean = relationship("Bean", backref="roasting_logs")
     warnings = relationship("LossRateWarning", back_populates="roasting_log", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -294,6 +297,24 @@ class LossRateWarning(Base):
 
     def __repr__(self):
         return f"<LossRateWarning(log_id={self.roasting_log_id}, severity={self.severity})>"
+
+
+class BeanPriceHistory(Base):
+    """원두 가격 변경 이력"""
+    __tablename__ = "bean_price_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=False)
+    old_price = Column(Float, nullable=False)
+    new_price = Column(Float, nullable=False)
+    change_reason = Column(Text, nullable=True)  # 변경 사유 (선택사항)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # 관계
+    bean = relationship("Bean", back_populates="price_history")
+
+    def __repr__(self):
+        return f"<BeanPriceHistory(bean_id={self.bean_id}, {self.old_price}→{self.new_price})>"
 
 
 # ═══════════════════════════════════════════════════════════════
