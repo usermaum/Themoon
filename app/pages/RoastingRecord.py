@@ -202,148 +202,176 @@ with tab1:
 with tab2:
     st.markdown("### ➕ 새 로스팅 기록 추가")
 
-    with st.form("add_roasting_form"):
-        col1, col2 = st.columns(2)
+    # Session state 초기화
+    if 'add_roasting_date' not in st.session_state:
+        st.session_state.add_roasting_date = date.today()
+    if 'add_raw_weight' not in st.session_state:
+        st.session_state.add_raw_weight = 0.0
+    if 'add_roasted_weight' not in st.session_state:
+        st.session_state.add_roasted_weight = 0.0
+    if 'add_notes' not in st.session_state:
+        st.session_state.add_notes = ""
 
-        with col1:
-            roasting_date = st.date_input(
-                "📅 로스팅 날짜",
-                value=date.today(),
-                max_value=date.today()
-            )
+    col1, col2 = st.columns(2)
 
-            raw_weight_kg = st.number_input(
-                "⚖️ 생두 무게 (kg)",
-                min_value=0.0,
-                max_value=10000.0,
-                value=0.0,
-                step=0.1,
-                format="%.2f",
-                help="생두 투입 무게를 입력하세요"
-            )
+    with col1:
+        roasting_date = st.date_input(
+            "📅 로스팅 날짜",
+            value=st.session_state.add_roasting_date,
+            max_value=date.today(),
+            key="add_date_input"
+        )
+        st.session_state.add_roasting_date = roasting_date
 
-            roasted_weight_kg = st.number_input(
-                "⚖️ 로스팅 후 무게 (kg)",
-                min_value=0.0,
-                max_value=10000.0,
-                value=0.0,
-                step=0.1,
-                format="%.2f",
-                help="로스팅 후 무게를 입력하세요"
-            )
+        raw_weight_kg = st.number_input(
+            "⚖️ 생두 무게 (kg)",
+            min_value=0.0,
+            max_value=10000.0,
+            value=st.session_state.add_raw_weight,
+            step=0.1,
+            format="%.2f",
+            help="생두 투입 무게를 입력하세요 (엔터 또는 포커스 아웃 시 자동 계산)",
+            key="add_raw_weight_input"
+        )
+        st.session_state.add_raw_weight = raw_weight_kg
 
-        with col2:
-            # 손실률 자동 계산 및 표시
-            if raw_weight_kg > 0 and roasted_weight_kg > 0:
-                calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
-            else:
-                calculated_loss_rate = 0.0
+        roasted_weight_kg = st.number_input(
+            "⚖️ 로스팅 후 무게 (kg)",
+            min_value=0.0,
+            max_value=10000.0,
+            value=st.session_state.add_roasted_weight,
+            step=0.1,
+            format="%.2f",
+            help="로스팅 후 무게를 입력하세요 (엔터 또는 포커스 아웃 시 자동 계산)",
+            key="add_roasted_weight_input"
+        )
+        st.session_state.add_roasted_weight = roasted_weight_kg
 
-            st.info(f"📊 **손실률 (자동 계산):** {calculated_loss_rate:.2f}%")
-            st.caption("생두 무게와 로스팅 후 무게를 입력하면 자동으로 계산됩니다.")
-
-            notes = st.text_area(
-                "📝 메모 (선택)",
-                max_chars=500,
-                height=100,
-                placeholder="로스팅 관련 메모를 입력하세요..."
-            )
-
-        # 실시간 계산 결과 표시
+    with col2:
+        # 손실률 자동 계산 및 표시
         if raw_weight_kg > 0 and roasted_weight_kg > 0:
-            actual_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
-            expected_loss_rate = 17.0  # 기본 예상 손실률
-            loss_variance = actual_loss_rate - expected_loss_rate
+            calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+        else:
+            calculated_loss_rate = 0.0
 
-            # 상태 판정 (손실률이 낮을수록 좋음)
-            if loss_variance <= 0:
-                # 기준보다 낮음 (좋음)
-                status_color = "🟢"
-                status_text = "우수"
-            elif loss_variance <= 3.0:
-                # 기준 대비 +3% 이내 (정상)
-                status_color = "🟢"
-                status_text = "정상"
-            elif loss_variance <= 5.0:
-                # 기준 대비 +5% 이내 (주의)
-                status_color = "🟡"
-                status_text = "주의"
-            else:
-                # 기준 대비 +5% 초과 (위험)
-                status_color = "🔴"
-                status_text = "위험"
+        st.info(f"📊 **손실률 (자동 계산):** {calculated_loss_rate:.2f}%")
+        st.caption("생두 무게와 로스팅 후 무게를 입력하면 자동으로 계산됩니다.")
 
-            st.divider()
-            st.markdown("#### 💡 손실률 분석")
+        notes = st.text_area(
+            "📝 메모 (선택)",
+            value=st.session_state.add_notes,
+            max_chars=500,
+            height=100,
+            placeholder="로스팅 관련 메모를 입력하세요...",
+            key="add_notes_input"
+        )
+        st.session_state.add_notes = notes
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("계산된 손실률", f"{actual_loss_rate:.2f}%")
-            with col2:
-                st.metric("기준 대비 (17%)", f"{loss_variance:+.2f}%")
-            with col3:
-                st.metric("상태", f"{status_color} {status_text}")
+    # 실시간 계산 결과 표시
+    if raw_weight_kg > 0 and roasted_weight_kg > 0:
+        actual_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+        expected_loss_rate = 17.0  # 기본 예상 손실률
+        loss_variance = actual_loss_rate - expected_loss_rate
+
+        # 상태 판정 (손실률이 낮을수록 좋음)
+        if loss_variance <= 0:
+            # 기준보다 낮음 (좋음)
+            status_color = "🟢"
+            status_text = "우수"
+        elif loss_variance <= 3.0:
+            # 기준 대비 +3% 이내 (정상)
+            status_color = "🟢"
+            status_text = "정상"
+        elif loss_variance <= 5.0:
+            # 기준 대비 +5% 이내 (주의)
+            status_color = "🟡"
+            status_text = "주의"
+        else:
+            # 기준 대비 +5% 초과 (위험)
+            status_color = "🔴"
+            status_text = "위험"
 
         st.divider()
+        st.markdown("#### 💡 손실률 분석")
 
-        # 제출 버튼
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns(3)
         with col1:
-            submit = st.form_submit_button("✅ 기록 저장", use_container_width=True, type="primary")
+            st.metric("계산된 손실률", f"{actual_loss_rate:.2f}%")
         with col2:
-            if st.form_submit_button("🔄 초기화", use_container_width=True):
-                st.rerun()
+            st.metric("기준 대비 (17%)", f"{loss_variance:+.2f}%")
+        with col3:
+            st.metric("상태", f"{status_color} {status_text}")
 
-        # 저장 처리
-        if submit:
-            # 검증
-            errors = []
+    st.divider()
 
-            if roasted_weight_kg >= raw_weight_kg:
-                errors.append("⚠️ 로스팅 후 무게는 생두 무게보다 작아야 합니다.")
+    # 제출 버튼
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        submit = st.button("✅ 기록 저장", use_container_width=True, type="primary", key="add_submit_button")
+    with col2:
+        if st.button("🔄 초기화", use_container_width=True, key="add_reset_button"):
+            st.session_state.add_roasting_date = date.today()
+            st.session_state.add_raw_weight = 0.0
+            st.session_state.add_roasted_weight = 0.0
+            st.session_state.add_notes = ""
+            st.rerun()
 
-            if raw_weight_kg <= 0:
-                errors.append("⚠️ 생두 무게는 0보다 커야 합니다.")
+    # 저장 처리
+    if submit:
+        # 검증
+        errors = []
 
-            if roasted_weight_kg <= 0:
-                errors.append("⚠️ 로스팅 후 무게는 0보다 커야 합니다.")
+        if roasted_weight_kg >= raw_weight_kg:
+            errors.append("⚠️ 로스팅 후 무게는 생두 무게보다 작아야 합니다.")
 
-            if roasting_date > date.today():
-                errors.append("⚠️ 미래 날짜는 선택할 수 없습니다.")
+        if raw_weight_kg <= 0:
+            errors.append("⚠️ 생두 무게는 0보다 커야 합니다.")
 
-            # 오류가 있으면 표시
-            if errors:
-                for error in errors:
-                    st.error(error)
-            else:
-                # 손실률 계산
-                calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+        if roasted_weight_kg <= 0:
+            errors.append("⚠️ 로스팅 후 무게는 0보다 커야 합니다.")
 
-                # 저장
-                try:
-                    log = roasting_service.create_roasting_log(
-                        db=db,
-                        raw_weight_kg=raw_weight_kg,
-                        roasted_weight_kg=roasted_weight_kg,
-                        roasting_date=roasting_date,
-                        notes=notes if notes else None,
-                        expected_loss_rate=17.0  # 기본 예상 손실률
+        if roasting_date > date.today():
+            errors.append("⚠️ 미래 날짜는 선택할 수 없습니다.")
+
+        # 오류가 있으면 표시
+        if errors:
+            for error in errors:
+                st.error(error)
+        else:
+            # 손실률 계산
+            calculated_loss_rate = ((raw_weight_kg - roasted_weight_kg) / raw_weight_kg) * 100
+
+            # 저장
+            try:
+                log = roasting_service.create_roasting_log(
+                    db=db,
+                    raw_weight_kg=raw_weight_kg,
+                    roasted_weight_kg=roasted_weight_kg,
+                    roasting_date=roasting_date,
+                    notes=notes if notes else None,
+                    expected_loss_rate=17.0  # 기본 예상 손실률
+                )
+
+                st.success(f"✅ 로스팅 기록이 저장되었습니다! (ID: {log.id})")
+
+                # 손실률 경고 확인
+                if abs(log.loss_variance_percent) > 3.0:
+                    severity = "CRITICAL" if abs(log.loss_variance_percent) > 5.0 else "WARNING"
+                    st.warning(
+                        f"⚠️ 손실률이 예상보다 {abs(log.loss_variance_percent):.2f}% "
+                        f"{'높습니다' if log.loss_variance_percent > 0 else '낮습니다'} ({severity})"
                     )
 
-                    st.success(f"✅ 로스팅 기록이 저장되었습니다! (ID: {log.id})")
+                # 초기화
+                st.session_state.add_roasting_date = date.today()
+                st.session_state.add_raw_weight = 0.0
+                st.session_state.add_roasted_weight = 0.0
+                st.session_state.add_notes = ""
 
-                    # 손실률 경고 확인
-                    if abs(log.loss_variance_percent) > 3.0:
-                        severity = "CRITICAL" if abs(log.loss_variance_percent) > 5.0 else "WARNING"
-                        st.warning(
-                            f"⚠️ 손실률이 예상보다 {abs(log.loss_variance_percent):.2f}% "
-                            f"{'높습니다' if log.loss_variance_percent > 0 else '낮습니다'} ({severity})"
-                        )
+                st.rerun()
 
-                    st.rerun()
-
-                except Exception as e:
-                    st.error(f"❌ 저장 중 오류가 발생했습니다: {str(e)}")
+            except Exception as e:
+                st.error(f"❌ 저장 중 오류가 발생했습니다: {str(e)}")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tab 3: 기록 편집
@@ -381,134 +409,159 @@ with tab3:
 
                 st.divider()
 
+                # Session state 초기화 (선택된 로그가 변경되었을 때)
+                if 'edit_log_id' not in st.session_state or st.session_state.edit_log_id != selected_log.id:
+                    st.session_state.edit_log_id = selected_log.id
+                    st.session_state.edit_roasting_date = selected_log.roasting_date
+                    st.session_state.edit_raw_weight = float(selected_log.raw_weight_kg)
+                    st.session_state.edit_roasted_weight = float(selected_log.roasted_weight_kg)
+                    st.session_state.edit_expected_loss_rate = float(selected_log.expected_loss_rate_percent)
+                    st.session_state.edit_notes = selected_log.notes or ""
+
                 # 편집 폼
-                with st.form("edit_roasting_form"):
-                    col1, col2 = st.columns(2)
+                col1, col2 = st.columns(2)
 
-                    with col1:
-                        new_roasting_date = st.date_input(
-                            "📅 로스팅 날짜",
-                            value=selected_log.roasting_date,
-                            max_value=date.today()
-                        )
+                with col1:
+                    new_roasting_date = st.date_input(
+                        "📅 로스팅 날짜",
+                        value=st.session_state.edit_roasting_date,
+                        max_value=date.today(),
+                        key="edit_date_input"
+                    )
+                    st.session_state.edit_roasting_date = new_roasting_date
 
-                        new_raw_weight_kg = st.number_input(
-                            "⚖️ 생두 무게 (kg)",
-                            min_value=0.1,
-                            max_value=10000.0,
-                            value=float(selected_log.raw_weight_kg),
-                            step=0.1,
-                            format="%.2f"
-                        )
+                    new_raw_weight_kg = st.number_input(
+                        "⚖️ 생두 무게 (kg)",
+                        min_value=0.1,
+                        max_value=10000.0,
+                        value=st.session_state.edit_raw_weight,
+                        step=0.1,
+                        format="%.2f",
+                        help="생두 투입 무게를 입력하세요 (엔터 또는 포커스 아웃 시 자동 계산)",
+                        key="edit_raw_weight_input"
+                    )
+                    st.session_state.edit_raw_weight = new_raw_weight_kg
 
-                        new_roasted_weight_kg = st.number_input(
-                            "⚖️ 로스팅 후 무게 (kg)",
-                            min_value=0.1,
-                            max_value=10000.0,
-                            value=float(selected_log.roasted_weight_kg),
-                            step=0.1,
-                            format="%.2f"
-                        )
+                    new_roasted_weight_kg = st.number_input(
+                        "⚖️ 로스팅 후 무게 (kg)",
+                        min_value=0.1,
+                        max_value=10000.0,
+                        value=st.session_state.edit_roasted_weight,
+                        step=0.1,
+                        format="%.2f",
+                        help="로스팅 후 무게를 입력하세요 (엔터 또는 포커스 아웃 시 자동 계산)",
+                        key="edit_roasted_weight_input"
+                    )
+                    st.session_state.edit_roasted_weight = new_roasted_weight_kg
 
-                    with col2:
-                        new_expected_loss_rate = st.number_input(
-                            "📊 예상 손실률 (%)",
-                            min_value=0.0,
-                            max_value=50.0,
-                            value=float(selected_log.expected_loss_rate_percent),
-                            step=0.1,
-                            format="%.1f"
-                        )
+                with col2:
+                    new_expected_loss_rate = st.number_input(
+                        "📊 예상 손실률 (%)",
+                        min_value=0.0,
+                        max_value=50.0,
+                        value=st.session_state.edit_expected_loss_rate,
+                        step=0.1,
+                        format="%.1f",
+                        key="edit_expected_loss_rate_input"
+                    )
+                    st.session_state.edit_expected_loss_rate = new_expected_loss_rate
 
-                        new_notes = st.text_area(
-                            "📝 메모 (선택)",
-                            value=selected_log.notes or "",
-                            max_chars=500,
-                            height=100
-                        )
+                    new_notes = st.text_area(
+                        "📝 메모 (선택)",
+                        value=st.session_state.edit_notes,
+                        max_chars=500,
+                        height=100,
+                        key="edit_notes_input"
+                    )
+                    st.session_state.edit_notes = new_notes
 
-                    # 실시간 계산 결과
-                    if new_raw_weight_kg > 0:
-                        new_actual_loss_rate = ((new_raw_weight_kg - new_roasted_weight_kg) / new_raw_weight_kg) * 100
-                        new_loss_variance = new_actual_loss_rate - new_expected_loss_rate
+                # 실시간 계산 결과
+                if new_raw_weight_kg > 0:
+                    new_actual_loss_rate = ((new_raw_weight_kg - new_roasted_weight_kg) / new_raw_weight_kg) * 100
+                    new_loss_variance = new_actual_loss_rate - new_expected_loss_rate
 
-                        # 상태 판정 (손실률이 낮을수록 좋음)
-                        if new_loss_variance <= 0:
-                            # 기준보다 낮음 (좋음)
-                            status_color = "🟢"
-                            status_text = "우수"
-                        elif new_loss_variance <= 3.0:
-                            # 기준 대비 +3% 이내 (정상)
-                            status_color = "🟢"
-                            status_text = "정상"
-                        elif new_loss_variance <= 5.0:
-                            # 기준 대비 +5% 이내 (주의)
-                            status_color = "🟡"
-                            status_text = "주의"
-                        else:
-                            # 기준 대비 +5% 초과 (위험)
-                            status_color = "🔴"
-                            status_text = "위험"
-
-                        st.divider()
-                        st.markdown("#### 💡 수정 후 계산 결과")
-
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric("실제 손실률", f"{new_actual_loss_rate:.2f}%")
-                        with col2:
-                            st.metric("손실률 차이", f"{new_loss_variance:+.2f}%")
-                        with col3:
-                            st.metric("상태", f"{status_color} {status_text}")
+                    # 상태 판정 (손실률이 낮을수록 좋음)
+                    if new_loss_variance <= 0:
+                        # 기준보다 낮음 (좋음)
+                        status_color = "🟢"
+                        status_text = "우수"
+                    elif new_loss_variance <= 3.0:
+                        # 기준 대비 +3% 이내 (정상)
+                        status_color = "🟢"
+                        status_text = "정상"
+                    elif new_loss_variance <= 5.0:
+                        # 기준 대비 +5% 이내 (주의)
+                        status_color = "🟡"
+                        status_text = "주의"
+                    else:
+                        # 기준 대비 +5% 초과 (위험)
+                        status_color = "🔴"
+                        status_text = "위험"
 
                     st.divider()
+                    st.markdown("#### 💡 수정 후 계산 결과")
 
-                    # 저장 버튼
-                    if st.form_submit_button("✅ 저장", use_container_width=True, type="primary"):
-                        # 검증
-                        errors = []
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("실제 손실률", f"{new_actual_loss_rate:.2f}%")
+                    with col2:
+                        st.metric("손실률 차이", f"{new_loss_variance:+.2f}%")
+                    with col3:
+                        st.metric("상태", f"{status_color} {status_text}")
 
-                        if new_roasted_weight_kg >= new_raw_weight_kg:
-                            errors.append("⚠️ 로스팅 후 무게는 생두 무게보다 작아야 합니다.")
+                st.divider()
 
-                        if new_raw_weight_kg <= 0:
-                            errors.append("⚠️ 생두 무게는 0보다 커야 합니다.")
+                # 저장 버튼
+                if st.button("✅ 저장", use_container_width=True, type="primary", key="edit_submit_button"):
+                    # 검증
+                    errors = []
 
-                        if new_roasted_weight_kg <= 0:
-                            errors.append("⚠️ 로스팅 후 무게는 0보다 커야 합니다.")
+                    if new_roasted_weight_kg >= new_raw_weight_kg:
+                        errors.append("⚠️ 로스팅 후 무게는 생두 무게보다 작아야 합니다.")
 
-                        if new_roasting_date > date.today():
-                            errors.append("⚠️ 미래 날짜는 선택할 수 없습니다.")
+                    if new_raw_weight_kg <= 0:
+                        errors.append("⚠️ 생두 무게는 0보다 커야 합니다.")
 
-                        # 오류가 있으면 표시
-                        if errors:
-                            for error in errors:
-                                st.error(error)
-                        else:
-                            # 저장
-                            try:
-                                # 손실률 재계산
-                                new_loss_rate = ((new_raw_weight_kg - new_roasted_weight_kg) / new_raw_weight_kg) * 100
-                                new_variance = new_loss_rate - new_expected_loss_rate
+                    if new_roasted_weight_kg <= 0:
+                        errors.append("⚠️ 로스팅 후 무게는 0보다 커야 합니다.")
 
-                                roasting_service.update_roasting_log(
-                                    db=db,
-                                    log_id=selected_log.id,
-                                    raw_weight_kg=new_raw_weight_kg,
-                                    roasted_weight_kg=new_roasted_weight_kg,
-                                    loss_rate_percent=round(new_loss_rate, 2),
-                                    expected_loss_rate_percent=new_expected_loss_rate,
-                                    loss_variance_percent=round(new_variance, 2),
-                                    roasting_date=new_roasting_date,
-                                    roasting_month=new_roasting_date.strftime('%Y-%m'),
-                                    notes=new_notes if new_notes else None
-                                )
+                    if new_roasting_date > date.today():
+                        errors.append("⚠️ 미래 날짜는 선택할 수 없습니다.")
 
-                                st.success("✅ 로스팅 기록이 업데이트되었습니다!")
-                                st.rerun()
+                    # 오류가 있으면 표시
+                    if errors:
+                        for error in errors:
+                            st.error(error)
+                    else:
+                        # 저장
+                        try:
+                            # 손실률 재계산
+                            new_loss_rate = ((new_raw_weight_kg - new_roasted_weight_kg) / new_raw_weight_kg) * 100
+                            new_variance = new_loss_rate - new_expected_loss_rate
 
-                            except Exception as e:
-                                st.error(f"❌ 저장 중 오류가 발생했습니다: {str(e)}")
+                            roasting_service.update_roasting_log(
+                                db=db,
+                                log_id=selected_log.id,
+                                raw_weight_kg=new_raw_weight_kg,
+                                roasted_weight_kg=new_roasted_weight_kg,
+                                loss_rate_percent=round(new_loss_rate, 2),
+                                expected_loss_rate_percent=new_expected_loss_rate,
+                                loss_variance_percent=round(new_variance, 2),
+                                roasting_date=new_roasting_date,
+                                roasting_month=new_roasting_date.strftime('%Y-%m'),
+                                notes=new_notes if new_notes else None
+                            )
+
+                            st.success("✅ 로스팅 기록이 업데이트되었습니다!")
+
+                            # Session state 초기화
+                            if 'edit_log_id' in st.session_state:
+                                del st.session_state.edit_log_id
+
+                            st.rerun()
+
+                        except Exception as e:
+                            st.error(f"❌ 저장 중 오류가 발생했습니다: {str(e)}")
 
                 # 삭제 버튼 (form 외부)
                 st.divider()
