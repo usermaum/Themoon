@@ -495,11 +495,11 @@ git push origin main
 | 항목 | 정보 |
 |------|------|
 | **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v0.22.0 (2025-11-08) |
-| **프로젝트 상태** | ✅ Phase 2 T2-1 완료 / 🚀 237개 테스트 완성 / 🎯 손실률 분석 시스템 구축 |
+| **현재 버전** | v0.22.0 (2025-11-09) |
+| **프로젝트 상태** | ✅ Phase 2 T2-1 완료 / 🚀 모바일 최적화 완료 / 🎯 원가계산기 고도화 기획 완료 |
 | **라이선스** | MIT |
 | **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | aa3a858 - feat: 로스팅 후 무게 입력 시 포커스 아웃으로도 손실률 자동 계산 지원 |
+| **최종 커밋** | 06a708d - docs: 원가계산기 고도화 기획 문서 작성 |
 
 ### 프로젝트 통계 (v0.22.0)
 - **총 코드**: 10,100+줄 (10 pages + 9 services + 6 utils + models)
