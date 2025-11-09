@@ -96,11 +96,23 @@ with tab1:
     col1, col2, col3 = st.columns([3, 1, 1])
 
     with col1:
-        date_filter = st.date_input(
+        # 조회 기간 선택
+        period_option = st.selectbox(
             "조회 기간",
-            value=(date.today() - timedelta(days=30), date.today()),
-            max_value=date.today()
+            options=["전체", "날짜조회", "오늘", "1개월", "3개월", "6개월", "1년"],
+            key="period_selector"
         )
+
+        # "날짜조회" 선택 시에만 date_input 표시
+        if period_option == "날짜조회":
+            date_filter = st.date_input(
+                "날짜 범위 선택",
+                value=(date.today() - timedelta(days=30), date.today()),
+                max_value=date.today(),
+                key="custom_date_filter"
+            )
+        else:
+            date_filter = None
 
     with col2:
         sort_option = st.selectbox(
@@ -126,8 +138,54 @@ with tab1:
     all_logs = roasting_service.get_all_logs(db)
 
     # 날짜 필터링
-    if isinstance(date_filter, tuple) and len(date_filter) == 2:
-        start_date, end_date = date_filter
+    if period_option == "전체":
+        # 모든 데이터 표시
+        filtered_logs = all_logs
+    elif period_option == "날짜조회":
+        # 사용자가 선택한 날짜 범위
+        if isinstance(date_filter, tuple) and len(date_filter) == 2:
+            start_date, end_date = date_filter
+            filtered_logs = [
+                log for log in all_logs
+                if start_date <= log.roasting_date <= end_date
+            ]
+        else:
+            filtered_logs = all_logs
+    elif period_option == "오늘":
+        # 오늘 날짜만
+        today = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if log.roasting_date == today
+        ]
+    elif period_option == "1개월":
+        # 최근 1개월
+        start_date = date.today() - timedelta(days=30)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "3개월":
+        # 최근 3개월
+        start_date = date.today() - timedelta(days=90)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "6개월":
+        # 최근 6개월
+        start_date = date.today() - timedelta(days=180)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "1년":
+        # 최근 1년
+        start_date = date.today() - timedelta(days=365)
+        end_date = date.today()
         filtered_logs = [
             log for log in all_logs
             if start_date <= log.roasting_date <= end_date
