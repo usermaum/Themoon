@@ -290,7 +290,7 @@ with tab2:
     # 원두 선택 옵션 생성
     bean_options = {"선택 안함 (원두 미지정)": None}
     for bean in all_beans:
-        bean_options[f"{bean.name} ({bean.origin})"] = bean.id
+        bean_options[f"{bean.name} ({bean.country_name})"] = bean.id
 
     col1, col2 = st.columns(2)
 
@@ -497,7 +497,7 @@ with tab3:
                 if selected_log.bean_id:
                     bean = bean_service.get_bean_by_id(selected_log.bean_id)
                     if bean:
-                        bean_name = f" | 원두: {bean.name} ({bean.origin})"
+                        bean_name = f" | 원두: {bean.name} ({bean.country_name})"
 
                 # 현재 기록 정보 표시
                 st.info(
@@ -524,7 +524,7 @@ with tab3:
                 # 원두 선택 옵션 생성
                 bean_options = {"선택 안함 (원두 미지정)": None}
                 for bean in all_beans:
-                    bean_options[f"{bean.name} ({bean.origin})"] = bean.id
+                    bean_options[f"{bean.name} ({bean.country_name})"] = bean.id
 
                 # 현재 선택된 원두 찾기
                 current_bean_option = "선택 안함 (원두 미지정)"
