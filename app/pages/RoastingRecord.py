@@ -86,7 +86,7 @@ with tab1:
     st.markdown("### 📋 로스팅 기록 목록")
 
     # 필터 옵션
-    col1, col2, col3 = st.columns([2, 1, 1])
+    col1, col2 = st.columns([3, 1])
 
     with col1:
         date_filter = st.date_input(
@@ -96,26 +96,10 @@ with tab1:
         )
 
     with col2:
-        page_size = st.selectbox(
-            "페이지당 표시 개수",
-            options=[10, 30, 50, 100],
-            index=0
-        )
-
-    with col3:
         sort_option = st.selectbox(
             "정렬 기준",
             options=["최신순", "오래된순", "손실률 높은순", "손실률 낮은순"]
         )
-
-    # 필터 변경 감지 및 페이지 초기화
-    filter_key = f"{date_filter}_{page_size}_{sort_option}"
-    if 'last_filter_key' not in st.session_state:
-        st.session_state.last_filter_key = filter_key
-
-    if st.session_state.last_filter_key != filter_key:
-        st.session_state.roasting_page_number = 0
-        st.session_state.last_filter_key = filter_key
 
     st.divider()
 
@@ -193,55 +177,16 @@ with tab1:
 
         df = pd.DataFrame(data)
 
-        # 페이징 설정
-        if 'roasting_page_number' not in st.session_state:
-            st.session_state.roasting_page_number = 0
-
-        total_records = len(df)
-        total_pages = (total_records - 1) // page_size + 1 if total_records > 0 else 1
-
-        # 현재 페이지 범위 계산
-        start_idx = st.session_state.roasting_page_number * page_size
-        end_idx = min(start_idx + page_size, total_records)
-
-        # 현재 페이지 데이터만 표시
+        # Streamlit 기본 데이터프레임 (자동 스크롤 및 가상 페이징)
         st.dataframe(
-            df.iloc[start_idx:end_idx],
+            df,
             use_container_width=True,
-            hide_index=True
+            hide_index=True,
+            height=500  # 고정 높이로 자동 스크롤 활성화
         )
 
-        # 페이징 컨트롤
-        col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
-
-        with col1:
-            if st.button("⏮️ 처음", disabled=(st.session_state.roasting_page_number == 0)):
-                st.session_state.roasting_page_number = 0
-                st.rerun()
-
-        with col2:
-            if st.button("◀️ 이전", disabled=(st.session_state.roasting_page_number == 0)):
-                st.session_state.roasting_page_number -= 1
-                st.rerun()
-
-        with col3:
-            st.markdown(
-                f"<div style='text-align: center; padding-top: 5px;'>"
-                f"페이지 {st.session_state.roasting_page_number + 1} / {total_pages} "
-                f"(전체 {total_records}건 중 {start_idx + 1}-{end_idx}번째 표시)"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-
-        with col4:
-            if st.button("다음 ▶️", disabled=(st.session_state.roasting_page_number >= total_pages - 1)):
-                st.session_state.roasting_page_number += 1
-                st.rerun()
-
-        with col5:
-            if st.button("마지막 ⏭️", disabled=(st.session_state.roasting_page_number >= total_pages - 1)):
-                st.session_state.roasting_page_number = total_pages - 1
-                st.rerun()
+        # 총 건수 표시
+        st.caption(f"📊 총 {len(df)}건의 로스팅 기록")
 
         # 범례
         st.caption("🟢 정상 (±3% 이내) | 🟡 주의 (±3~5%) | 🔴 위험 (±5% 초과)")
