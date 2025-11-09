@@ -49,6 +49,7 @@ if 'roasting_service' not in st.session_state:
 
 db = st.session_state.db
 roasting_service = st.session_state.roasting_service
+bean_service = st.session_state.bean_service
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 사이드바 렌더링
@@ -284,7 +285,6 @@ with tab2:
         st.session_state.add_notes = ""
 
     # 원두 목록 조회
-    bean_service = st.session_state.bean_service
     all_beans = bean_service.get_all_beans(db)
 
     # 원두 선택 옵션 생성
