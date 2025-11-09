@@ -22,6 +22,7 @@ class RoastingService:
         raw_weight_kg: float,
         roasted_weight_kg: float,
         roasting_date: date,
+        bean_id: int = None,
         notes: str = None,
         expected_loss_rate: float = 17.0
     ) -> RoastingLog:
@@ -32,6 +33,7 @@ class RoastingService:
             raw_weight_kg: 생두 투입량 (kg)
             roasted_weight_kg: 로스팅 후 무게 (kg)
             roasting_date: 로스팅 날짜
+            bean_id: 원두 ID (선택)
             notes: 로스팅 노트 (선택)
             expected_loss_rate: 예상 손실률 (기본값: 17.0%)
 
@@ -44,6 +46,7 @@ class RoastingService:
         loss_variance = loss_rate - expected_loss_rate
 
         roasting_log = RoastingLog(
+            bean_id=bean_id,
             raw_weight_kg=round(raw_weight_kg, 2),
             roasted_weight_kg=round(roasted_weight_kg, 2),
             loss_rate_percent=round(loss_rate, 2),

@@ -173,6 +173,13 @@ with tab1:
         # DataFrame 생성 (전체 데이터)
         data = []
         for log in filtered_logs:
+            # 원두 이름 조회
+            bean_name = "-"
+            if log.bean_id:
+                bean = bean_service.get_bean_by_id(db, log.bean_id)
+                if bean:
+                    bean_name = f"{bean.name}"
+
             # 손실률 차이에 따른 상태 표시
             variance = log.loss_variance_percent
             if abs(variance) <= 3.0:
@@ -185,6 +192,7 @@ with tab1:
             data.append({
                 "ID": log.id,
                 "날짜": log.roasting_date.strftime("%Y-%m-%d"),
+                "원두": bean_name,
                 "생두(kg)": f"{log.raw_weight_kg:.2f}",
                 "로스팅후(kg)": f"{log.roasted_weight_kg:.2f}",
                 "손실률(%)": f"{log.loss_rate_percent:.2f}%",
@@ -266,12 +274,23 @@ with tab2:
     # Session state 초기화
     if 'add_roasting_date' not in st.session_state:
         st.session_state.add_roasting_date = date.today()
+    if 'add_bean_id' not in st.session_state:
+        st.session_state.add_bean_id = None
     if 'add_raw_weight' not in st.session_state:
         st.session_state.add_raw_weight = 0.0
     if 'add_roasted_weight' not in st.session_state:
         st.session_state.add_roasted_weight = 0.0
     if 'add_notes' not in st.session_state:
         st.session_state.add_notes = ""
+
+    # 원두 목록 조회
+    bean_service = st.session_state.bean_service
+    all_beans = bean_service.get_all_beans(db)
+
+    # 원두 선택 옵션 생성
+    bean_options = {"선택 안함 (원두 미지정)": None}
+    for bean in all_beans:
+        bean_options[f"{bean.name} ({bean.origin})"] = bean.id
 
     col1, col2 = st.columns(2)
 
@@ -283,6 +302,15 @@ with tab2:
             key="add_date_input"
         )
         st.session_state.add_roasting_date = roasting_date
+
+        # 원두 선택
+        selected_bean_option = st.selectbox(
+            "☕ 원두 선택",
+            options=list(bean_options.keys()),
+            help="로스팅할 원두를 선택하세요",
+            key="add_bean_select"
+        )
+        st.session_state.add_bean_id = bean_options[selected_bean_option]
 
         raw_weight_kg = st.number_input(
             "⚖️ 생두 무게 (kg)",
@@ -372,6 +400,7 @@ with tab2:
     with col2:
         if st.button("🔄 초기화", use_container_width=True, key="add_reset_button"):
             st.session_state.add_roasting_date = date.today()
+            st.session_state.add_bean_id = None
             st.session_state.add_raw_weight = 0.0
             st.session_state.add_roasted_weight = 0.0
             st.session_state.add_notes = ""
@@ -409,6 +438,7 @@ with tab2:
                     raw_weight_kg=raw_weight_kg,
                     roasted_weight_kg=roasted_weight_kg,
                     roasting_date=roasting_date,
+                    bean_id=st.session_state.add_bean_id,
                     notes=notes if notes else None,
                     expected_loss_rate=17.0  # 기본 예상 손실률
                 )
@@ -425,6 +455,7 @@ with tab2:
 
                 # 초기화
                 st.session_state.add_roasting_date = date.today()
+                st.session_state.add_bean_id = None
                 st.session_state.add_raw_weight = 0.0
                 st.session_state.add_roasted_weight = 0.0
                 st.session_state.add_notes = ""
@@ -461,9 +492,16 @@ with tab3:
             selected_log = roasting_service.get_roasting_log_by_id(db, selected_log_id)
 
             if selected_log:
+                # 원두 이름 표시 (있을 경우)
+                bean_name = ""
+                if selected_log.bean_id:
+                    bean = bean_service.get_bean_by_id(db, selected_log.bean_id)
+                    if bean:
+                        bean_name = f" | 원두: {bean.name} ({bean.origin})"
+
                 # 현재 기록 정보 표시
                 st.info(
-                    f"**현재 기록**: {selected_log.roasting_date.strftime('%Y-%m-%d')} | "
+                    f"**현재 기록**: {selected_log.roasting_date.strftime('%Y-%m-%d')}{bean_name} | "
                     f"생두: {selected_log.raw_weight_kg}kg → 로스팅후: {selected_log.roasted_weight_kg}kg | "
                     f"손실률: {selected_log.loss_rate_percent}% (예상: {selected_log.expected_loss_rate_percent}%)"
                 )
@@ -473,11 +511,28 @@ with tab3:
                 # Session state 초기화 (선택된 로그가 변경되었을 때)
                 if 'edit_log_id' not in st.session_state or st.session_state.edit_log_id != selected_log.id:
                     st.session_state.edit_log_id = selected_log.id
+                    st.session_state.edit_bean_id = selected_log.bean_id
                     st.session_state.edit_roasting_date = selected_log.roasting_date
                     st.session_state.edit_raw_weight = float(selected_log.raw_weight_kg)
                     st.session_state.edit_roasted_weight = float(selected_log.roasted_weight_kg)
                     st.session_state.edit_expected_loss_rate = float(selected_log.expected_loss_rate_percent)
                     st.session_state.edit_notes = selected_log.notes or ""
+
+                # 원두 목록 조회
+                all_beans = bean_service.get_all_beans(db)
+
+                # 원두 선택 옵션 생성
+                bean_options = {"선택 안함 (원두 미지정)": None}
+                for bean in all_beans:
+                    bean_options[f"{bean.name} ({bean.origin})"] = bean.id
+
+                # 현재 선택된 원두 찾기
+                current_bean_option = "선택 안함 (원두 미지정)"
+                if st.session_state.edit_bean_id:
+                    for option_text, bean_id in bean_options.items():
+                        if bean_id == st.session_state.edit_bean_id:
+                            current_bean_option = option_text
+                            break
 
                 # 편집 폼
                 col1, col2 = st.columns(2)
@@ -490,6 +545,16 @@ with tab3:
                         key="edit_date_input"
                     )
                     st.session_state.edit_roasting_date = new_roasting_date
+
+                    # 원두 선택
+                    selected_bean_option = st.selectbox(
+                        "☕ 원두 선택",
+                        options=list(bean_options.keys()),
+                        index=list(bean_options.keys()).index(current_bean_option),
+                        help="로스팅할 원두를 선택하세요",
+                        key="edit_bean_select"
+                    )
+                    st.session_state.edit_bean_id = bean_options[selected_bean_option]
 
                     new_raw_weight_kg = st.number_input(
                         "⚖️ 생두 무게 (kg)",
@@ -603,6 +668,7 @@ with tab3:
                             roasting_service.update_roasting_log(
                                 db=db,
                                 log_id=selected_log.id,
+                                bean_id=st.session_state.edit_bean_id,
                                 raw_weight_kg=new_raw_weight_kg,
                                 roasted_weight_kg=new_roasted_weight_kg,
                                 loss_rate_percent=round(new_loss_rate, 2),
