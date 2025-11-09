@@ -38,7 +38,7 @@ cp 분석결과.xlsx backups/migration_backup/분석결과_v1.xlsx
 cp 분석결과.xlsx backups/migration_backup/분석결과_v2.xlsx
 
 # 2. DB 스냅샷 생성
-cp Data/roasting_data.db Data/backups/roasting_data_before_migration_$(date +%Y%m%d_%H%M%S).db
+cp data/roasting_data.db data/backups/roasting_data_before_migration_$(date +%Y%m%d_%H%M%S).db
 ```
 
 #### Step 2: 환경 준비
@@ -55,7 +55,7 @@ ls -la app/services/
 
 ```bash
 # 테스트 DB 생성
-cp Data/roasting_data.db Data/test_roasting_data.db
+cp data/roasting_data.db data/test_roasting_data.db
 
 # 테스트용 Excel 파일 (샘플 몇 행만)
 # → 분석결과.xlsx에서 Sheet1의 첫 5행만 복사해서 test_분석결과.xlsx 생성
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     from app.models import create_engine, Base
     from sqlalchemy.orm import sessionmaker
 
-    engine = create_engine("sqlite:///Data/test_roasting_data.db")
+    engine = create_engine("sqlite:///data/test_roasting_data.db")
     Session = sessionmaker(bind=engine)
     session = Session()
 
@@ -342,7 +342,7 @@ print(f'경고: {result[\"warnings\"]}')
 #### Step 2: 검증 쿼리
 
 ```sql
--- Data/roasting_data.db에서 실행
+-- data/roasting_data.db에서 실행
 -- 테스트 DB 검증
 
 -- 행 수 검증
@@ -447,7 +447,7 @@ print(f'평균 손실률: {sum(log.loss_rate_percent for log in logs) / len(logs
 # 롤백 절차 (비상 시)
 
 ## 방법 1: DB 스냅샷 복원 (권장)
-1. 실행: `cp Data/backups/roasting_data_before_migration_*.db Data/roasting_data.db`
+1. 실행: `cp data/backups/roasting_data_before_migration_*.db data/roasting_data.db`
 2. 시간: 1분 내
 
 ## 방법 2: SQL 삭제 (추가 데이터 있을 경우)
@@ -455,7 +455,7 @@ print(f'평균 손실률: {sum(log.loss_rate_percent for log in logs) / len(logs
 2. 주의: 다른 로스팅 기록 확인
 
 ## 방법 3: Git 복원
-1. `git checkout HEAD -- Data/roasting_data.db`
+1. `git checkout HEAD -- data/roasting_data.db`
 2. 주의: 이전 Git 커밋에 DB가 있어야 함
 ```
 

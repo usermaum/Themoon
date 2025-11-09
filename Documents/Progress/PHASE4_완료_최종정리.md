@@ -477,7 +477,7 @@ TheMoon_Project/
 │   │
 │   └── test_integration.py         # 통합 테스트 (50개 케이스)
 │
-├── Data/
+├── data/
 │   ├── roasting_data.db            # SQLite 데이터베이스
 │   └── backups/                    # 자동 백업 디렉토리
 │

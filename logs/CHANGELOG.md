@@ -1176,7 +1176,7 @@
 - 전체 프로젝트: 48% 완료
 
 **파일**
-- `Data/roasting_data.db`: 90KB → 139KB (54% 증가)
+- `data/roasting_data.db`: 90KB → 139KB (54% 증가)
 - `app/models/database.py`: 107 삽입(+)
 - `Documents/Progress/Phase2진행상황_2025-10-29.md`: 339 삽입(+) (신규)
 - `backups/`: 백업 파일 및 로스팅 메모 이미지 추가

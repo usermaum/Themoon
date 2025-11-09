@@ -383,7 +383,7 @@ def main():
     init_session_state()
 
     # 데이터베이스 초기화 (필요 시)
-    if not os.path.exists("Data/roasting_data.db"):
+    if not os.path.exists("data/roasting_data.db"):
         with st.spinner("📊 데이터베이스 초기화 중..."):
             init_db()
             st.session_state.bean_service.init_default_beans()

@@ -492,7 +492,7 @@ with col2:
     st.markdown(f"""
     **데이터베이스**
     - 유형: SQLite
-    - 위치: Data/roasting_data.db
+    - 위치: data/roasting_data.db
     - 테이블: 6개
     """)
 

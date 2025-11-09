@@ -114,7 +114,7 @@ TheMoon_Project/
 │   │
 │   └── __init__.py
 │
-├── Data/
+├── data/
 │   ├── roasting_data.db               # SQLite 데이터베이스
 │   └── backups/                       # 자동 백업 디렉토리 (선택)
 │
@@ -248,7 +248,7 @@ http://localhost:8501
 # SQLite 데이터베이스 직접 확인
 ./venv/bin/python -c "
 import sqlite3
-conn = sqlite3.connect('Data/roasting_data.db')
+conn = sqlite3.connect('data/roasting_data.db')
 cursor = conn.cursor()
 cursor.execute('SELECT name FROM sqlite_master WHERE type=\"table\"')
 print(cursor.fetchall())
@@ -418,7 +418,7 @@ conn.close()
 ### 데이터베이스 수정
 - 스키마 변경: `app/app.py`의 `init_database()` 함수 수정
 - 마이그레이션: 현재 SQLite `CREATE TABLE IF NOT EXISTS` 패턴 사용
-- 백업: `Data/roasting_data.db`
+- 백업: `data/roasting_data.db`
 
 ### Git 워크플로우
 ```bash

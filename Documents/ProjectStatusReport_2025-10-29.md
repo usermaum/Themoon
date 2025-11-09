@@ -83,7 +83,7 @@
 ### A. DB 파일 상태
 
 ```bash
-위치: Data/roasting_data.db
+위치: data/roasting_data.db
 크기: 81,920 bytes
 생성일: Oct 29 19:54
 상태: ✅ 존재하며 사용 중
@@ -247,11 +247,11 @@ class Blend(Base):
 
 ```bash
 # 실행:
-sqlite3 Data/roasting_data.db ".tables"
-sqlite3 Data/roasting_data.db "SELECT COUNT(*) as count FROM beans;"
-sqlite3 Data/roasting_data.db "SELECT COUNT(*) as count FROM blends;"
-sqlite3 Data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
-sqlite3 Data/roasting_data.db "SELECT * FROM blends LIMIT 5;"
+sqlite3 data/roasting_data.db ".tables"
+sqlite3 data/roasting_data.db "SELECT COUNT(*) as count FROM beans;"
+sqlite3 data/roasting_data.db "SELECT COUNT(*) as count FROM blends;"
+sqlite3 data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
+sqlite3 data/roasting_data.db "SELECT * FROM blends LIMIT 5;"
 ```
 
 **2단계: 기존 코드 분석**

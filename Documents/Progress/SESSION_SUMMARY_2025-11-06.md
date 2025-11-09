@@ -62,7 +62,7 @@
 **발견한 변경사항**:
 ```bash
 Modified:
-├── Data/roasting_data.db           # 데이터베이스 (커밋 안 함)
+├── data/roasting_data.db           # 데이터베이스 (커밋 안 함)
 ├── app/pages/ExcelSync.py          # 세션 상태 초기화 순서 변경
 ├── app/pages/RoastingReceipt.py    # 날짜 타입 변환 버그 수정
 ├── app/services/excel_service.py   # import 경로 수정
@@ -354,7 +354,7 @@ if "날짜" in st.session_state.receipt_template.columns:
 ### 프로젝트 환경
 - Python 3.12.3
 - Streamlit 1.38.0
-- SQLite (Data/roasting_data.db)
+- SQLite (data/roasting_data.db)
 - venv 격리 환경
 
 ### 버전 관리

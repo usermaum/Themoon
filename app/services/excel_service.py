@@ -29,7 +29,7 @@ class ExcelSyncService:
         Args:
             db: SQLAlchemy 세션
             month: 조회 월 (YYYY-MM 형식)
-            output_path: 저장 경로 (기본값: Data/{month}_로스팅.xlsx)
+            output_path: 저장 경로 (기본값: data/{month}_로스팅.xlsx)
 
         Returns:
             저장된 파일 경로
@@ -53,8 +53,8 @@ class ExcelSyncService:
 
         # 파일 경로 설정
         if not output_path:
-            os.makedirs("Data", exist_ok=True)
-            output_path = f"Data/{month}_로스팅.xlsx"
+            os.makedirs("data", exist_ok=True)
+            output_path = f"data/{month}_로스팅.xlsx"
 
         # Workbook 생성
         wb = Workbook()

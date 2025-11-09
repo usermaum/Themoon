@@ -170,7 +170,7 @@ TheMoon_Project/
 │   ├── services/         # 6개 서비스 (비즈니스 로직)
 │   ├── models/           # SQLAlchemy 모델
 │   └── components/       # 15+ 재사용 컴포넌트
-├── Data/                  # SQLite 데이터베이스
+├── data/                  # SQLite 데이터베이스
 ├── Documents/            # 28개 분류별 문서
 └── logs/                 # 버전 관리 (VERSION, CHANGELOG.md)
 ```

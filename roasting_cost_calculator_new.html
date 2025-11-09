@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>더문드립바 로스팅 원가 계산기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🌙';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .date-section {
+            background: #ecf0f1;
+            padding: 15px 30px;
+            text-align: right;
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .main-table {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        th {
+            padding: 12px 8px;
+            font-weight: 600;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            min-width: 80px;
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, #e8f4fd 0%, #f0f8ff 100%);
+            transform: scale(1.01);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        td {
+            padding: 10px 8px;
+            text-align: center;
+            border-right: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        .bean-name {
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: left;
+            padding-left: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .sub-category {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            background: #f8f9fa;
+        }
+
+        .input-field:disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .summary-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .summary-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-item .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .summary-item .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        .cost-settings-section, .bean-price-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            border: 2px solid #dee2e6;
+        }
+
+        .cost-settings-section h2, .bean-price-section h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .cost-settings-grid, .bean-price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .cost-setting-item, .bean-price-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .cost-setting-item:hover, .bean-price-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .cost-setting-item label, .bean-price-item label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .cost-setting-item .input-field, .bean-price-item .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: #f8f9fa;
+        }
+
+        .cost-setting-item .input-field:focus, .bean-price-item .input-field:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            background: white;
+        }
+
+        .cost-breakdown {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .cost-breakdown h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .cost-breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .cost-breakdown-item {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .cost-breakdown-item .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .cost-breakdown-item .value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .detailed-cost-table {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .detailed-cost-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .detailed-cost-table th {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .detailed-cost-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detailed-cost-table tr:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 1200px) {
+            .main-table {
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+
+            .cost-settings-grid, .bean-price-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>더문드립바</h1>
+            <p>The Moon Drip BAR</p>
+        </div>
+        
+        <div class="date-section">
+            2025년 <input type="number" class="input-field" style="width: 60px; display: inline;" value="1">월 
+            <input type="number" class="input-field" style="width: 60px; display: inline;" value="1">일 일
+        </div>
+
+        <div class="main-table">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width: 120px;">원두명</th>
+                            <th rowspan="2" style="width: 60px;">코드</th>
+                            <th colspan="2">생두량 (g)</th>
+                            <th colspan="2">볶은량 (g)</th>
+                            <th rowspan="2" style="width: 80px;">싱글 재고</th>
+                            <th rowspan="2" style="width: 80px;">신/탄 재고</th>
+                            <th colspan="2">뉴문 블랜드</th>
+                            <th colspan="2">이클립스문 블랜드</th>
+                            <th rowspan="2" style="width: 80px;">아메리카노</th>
+                            <th rowspan="2" style="width: 80px;">예약 리스트</th>
+                            <th rowspan="2" style="width: 80px;">기타 재고</th>
+                            <th rowspan="2" style="width: 100px;">풀문 블랜드</th>
+                            <th rowspan="2" style="width: 80px;">비고</th>
+                        </tr>
+                        <tr>
+                            <th>신</th>
+                            <th>탄</th>
+                            <th>신</th>
+                            <th>탄</th>
+                            <th>생두량</th>
+                            <th>볶은량</th>
+                            <th>생두량</th>
+                            <th>볶은량</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 에티오피아 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">에티오피아 (Eth)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">예가체프</td>
+                            <td>W</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">모모라</td>
+                            <td>N</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">코케허니</td>
+                            <td>Pb</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">우라가</td>
+                            <td>Rh</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+
+                        <!-- 케냐 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">케냐 (K)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">AA FAQ</td>
+                            <td>SD</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">키린야가</td>
+                            <td>SC</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+
+                        <!-- 콜롬비아 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">콜롬비아 (Co)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">후일라</td>
+                            <td>W</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+
+                        <!-- 과테말라 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">과테말라 (Gu)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">안티구아</td>
+                            <td>W</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+
+                        <!-- 브라질 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">브라질 (Br)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">파젠다카르모</td>
+                            <td>N</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+
+                        <!-- 디카페인 카테고리 -->
+                        <tr class="category-header">
+                            <td colspan="17">디카페인 (Decaf)</td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">디카페 SDM</td>
+                            <td>SD</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">디카페 SM</td>
+                            <td>SC</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                        <tr>
+                            <td class="bean-name">스위스웨터</td>
+                            <td>SW</td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="number" class="input-field" value="0" step="0.1"></td>
+                            <td><input type="text" class="input-field" placeholder="비고"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 요약 정보 -->
+            <div class="summary-section">
+                <h2>📊 오늘의 로스팅 원가 요약</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="label">총 생두량 (신)</div>
+                        <div class="value" id="total-green-new">0 g</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">총 생두량 (탄)</div>
+                        <div class="value" id="total-green-old">0 g</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">총 볶은량 (신)</div>
+                        <div class="value" id="total-roasted-new">0 g</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">총 볶은량 (탄)</div>
+                        <div class="value" id="total-roasted-old">0 g</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">로스팅 감소율</div>
+                        <div class="value" id="loss-rate">0%</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">총 원가</div>
+                        <div class="value" id="total-cost">0원</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 원가 설정 섹션 -->
+            <div class="cost-settings-section">
+                <h2>💰 원가 설정</h2>
+                <div class="cost-settings-grid">
+                    <div class="cost-setting-item">
+                        <label>로스팅 감소율 (%)</label>
+                        <input type="number" id="roasting-loss-rate" class="input-field" value="16.7" step="0.1" min="0" max="50">
+                    </div>
+                    <div class="cost-setting-item">
+                        <label>kg당 로스팅 비용 (원)</label>
+                        <input type="number" id="roasting-cost-per-kg" class="input-field" value="2000" step="100">
+                    </div>
+                    <div class="cost-setting-item">
+                        <label>시간당 인건비 (원)</label>
+                        <input type="number" id="labor-cost-per-hour" class="input-field" value="15000" step="1000">
+                    </div>
+                    <div class="cost-setting-item">
+                        <label>로스팅 시간 (시간)</label>
+                        <input type="number" id="roasting-time" class="input-field" value="2" step="0.5">
+                    </div>
+                    <div class="cost-setting-item">
+                        <label>전기료 (원)</label>
+                        <input type="number" id="electricity-cost" class="input-field" value="5000" step="1000">
+                    </div>
+                    <div class="cost-setting-item">
+                        <label>기타 비용 (원)</label>
+                        <input type="number" id="other-costs" class="input-field" value="3000" step="1000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 원두별 단가 설정 -->
+            <div class="bean-price-section">
+                <h2>☕ 원두별 단가 설정 (kg당)</h2>
+                <div class="bean-price-grid">
+                    <div class="bean-price-item">
+                        <label>에티오피아 예가체프</label>
+                        <input type="number" id="price-ethiopia-yirgacheffe" class="input-field" value="25000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>에티오피아 모모라</label>
+                        <input type="number" id="price-ethiopia-momora" class="input-field" value="22000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>에티오피아 코케허니</label>
+                        <input type="number" id="price-ethiopia-koke" class="input-field" value="24000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>에티오피아 우라가</label>
+                        <input type="number" id="price-ethiopia-uraga" class="input-field" value="23000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>케냐 AA FAQ</label>
+                        <input type="number" id="price-kenya-aa" class="input-field" value="20000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>케냐 키린야가</label>
+                        <input type="number" id="price-kenya-kirin" class="input-field" value="21000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>콜롬비아 후일라</label>
+                        <input type="number" id="price-colombia-huila" class="input-field" value="18000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>과테말라 안티구아</label>
+                        <input type="number" id="price-guatemala-antigua" class="input-field" value="19000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>브라질 파젠다카르모</label>
+                        <input type="number" id="price-brazil-fazenda" class="input-field" value="15000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>디카페인 SDM</label>
+                        <input type="number" id="price-decaf-sdm" class="input-field" value="20000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>디카페인 SM</label>
+                        <input type="number" id="price-decaf-sm" class="input-field" value="19000" step="1000">
+                    </div>
+                    <div class="bean-price-item">
+                        <label>스위스웨터</label>
+                        <input type="number" id="price-swiss-water" class="input-field" value="22000" step="1000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 원가 계산 결과 -->
+            <div class="cost-breakdown" id="cost-breakdown" style="display: none;">
+                <h2>📊 상세 원가 분석</h2>
+                <div class="cost-breakdown-grid">
+                    <div class="cost-breakdown-item">
+                        <div class="label">총 생두 원가</div>
+                        <div class="value" id="total-bean-cost">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">로스팅 비용</div>
+                        <div class="value" id="roasting-cost">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">인건비</div>
+                        <div class="value" id="labor-cost">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">전기료</div>
+                        <div class="value" id="electricity-cost-display">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">기타 비용</div>
+                        <div class="value" id="other-costs-display">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">총 원가</div>
+                        <div class="value" id="total-cost-calculated">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">kg당 원가</div>
+                        <div class="value" id="cost-per-kg">0원</div>
+                    </div>
+                    <div class="cost-breakdown-item">
+                        <div class="label">마진율</div>
+                        <div class="value" id="margin-rate">0%</div>
+                    </div>
+                </div>
+
+                <!-- 상세 원두별 원가 테이블 -->
+                <div class="detailed-cost-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>원두명</th>
+                                <th>생두량(kg)</th>
+                                <th>볶은량(kg)</th>
+                                <th>생두 단가(원/kg)</th>
+                                <th>생두 원가(원)</th>
+                                <th>로스팅 비용(원)</th>
+                                <th>총 원가(원)</th>
+                                <th>kg당 원가(원)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailed-cost-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="saveData()">💾 데이터 저장</button>
+                <button class="btn btn-success" onclick="calculateCost()">🧮 원가 계산</button>
+                <button class="btn btn-warning" onclick="exportExcel()">📊 엑셀 내보내기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 실시간 계산 기능
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', calculateSummary);
+        });
+
+        // 원가 설정 입력값들에 이벤트 리스너 추가
+        document.querySelectorAll('#roasting-loss-rate, #roasting-cost-per-kg, #labor-cost-per-hour, #roasting-time, #electricity-cost, #other-costs').forEach(input => {
+            input.addEventListener('input', calculateSummary);
+        });
+
+        // 원두별 단가 입력값들에 이벤트 리스너 추가
+        document.querySelectorAll('[id^="price-"]').forEach(input => {
+            input.addEventListener('input', calculateSummary);
+        });
+
+        function calculateSummary() {
+            let totalGreenNew = 0;
+            let totalGreenOld = 0;
+            let totalRoastedNew = 0;
+            let totalRoastedOld = 0;
+            let totalCost = 0;
+
+            // 모든 행의 데이터 수집
+            document.querySelectorAll('tbody tr').forEach(row => {
+                if (row.classList.contains('category-header')) return;
+                
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 4) {
+                    totalGreenNew += parseFloat(inputs[0].value) || 0;
+                    totalGreenOld += parseFloat(inputs[1].value) || 0;
+                    totalRoastedNew += parseFloat(inputs[2].value) || 0;
+                    totalRoastedOld += parseFloat(inputs[3].value) || 0;
+                }
+            });
+
+            const totalGreen = totalGreenNew + totalGreenOld;
+            const totalRoasted = totalRoastedNew + totalRoastedOld;
+            const lossRate = totalGreen > 0 ? ((totalGreen - totalRoasted) / totalGreen * 100).toFixed(1) : 0;
+
+            // 요약 정보 업데이트
+            document.getElementById('total-green-new').textContent = totalGreenNew.toLocaleString() + ' g';
+            document.getElementById('total-green-old').textContent = totalGreenOld.toLocaleString() + ' g';
+            document.getElementById('total-roasted-new').textContent = totalRoastedNew.toLocaleString() + ' g';
+            document.getElementById('total-roasted-old').textContent = totalRoastedOld.toLocaleString() + ' g';
+            document.getElementById('loss-rate').textContent = lossRate + '%';
+            document.getElementById('total-cost').textContent = totalCost.toLocaleString() + '원';
+        }
+
+        function saveData() {
+            alert('데이터가 저장되었습니다!');
+            // 실제 구현에서는 서버로 데이터 전송
+        }
+
+        // 원두별 가격 매핑
+        const beanPriceMap = {
+            '예가체프': 'price-ethiopia-yirgacheffe',
+            '모모라': 'price-ethiopia-momora',
+            '코케허니': 'price-ethiopia-koke',
+            '우라가': 'price-ethiopia-uraga',
+            'AA FAQ': 'price-kenya-aa',
+            '키린야가': 'price-kenya-kirin',
+            '후일라': 'price-colombia-huila',
+            '안티구아': 'price-guatemala-antigua',
+            '파젠다카르모': 'price-brazil-fazenda',
+            '디카페 SDM': 'price-decaf-sdm',
+            '디카페 SM': 'price-decaf-sm',
+            '스위스웨터': 'price-swiss-water'
+        };
+
+        function calculateCost() {
+            // 설정값 가져오기
+            const roastingLossRate = parseFloat(document.getElementById('roasting-loss-rate').value) / 100;
+            const roastingCostPerKg = parseFloat(document.getElementById('roasting-cost-per-kg').value);
+            const laborCostPerHour = parseFloat(document.getElementById('labor-cost-per-hour').value);
+            const roastingTime = parseFloat(document.getElementById('roasting-time').value);
+            const electricityCost = parseFloat(document.getElementById('electricity-cost').value);
+            const otherCosts = parseFloat(document.getElementById('other-costs').value);
+
+            let totalBeanCost = 0;
+            let totalRoastedWeight = 0;
+            let totalGreenWeight = 0;
+            let detailedCosts = [];
+
+            // 각 원두별 원가 계산
+            document.querySelectorAll('tbody tr').forEach(row => {
+                if (row.classList.contains('category-header')) return;
+                
+                const beanNameCell = row.querySelector('.bean-name');
+                if (!beanNameCell) return;
+                
+                const beanName = beanNameCell.textContent.trim();
+                const priceId = beanPriceMap[beanName];
+                
+                if (!priceId) return;
+                
+                const beanPricePerKg = parseFloat(document.getElementById(priceId).value) || 0;
+                const inputs = row.querySelectorAll('input[type="number"]');
+                
+                if (inputs.length >= 4) {
+                    const greenNew = parseFloat(inputs[0].value) || 0;
+                    const greenOld = parseFloat(inputs[1].value) || 0;
+                    const roastedNew = parseFloat(inputs[2].value) || 0;
+                    const roastedOld = parseFloat(inputs[3].value) || 0;
+                    
+                    const totalGreen = greenNew + greenOld;
+                    const totalRoasted = roastedNew + roastedOld;
+                    
+                    if (totalGreen > 0) {
+                        const beanCost = totalGreen * beanPricePerKg;
+                        const roastingCost = totalRoasted * roastingCostPerKg;
+                        const totalCost = beanCost + roastingCost;
+                        const costPerKg = totalRoasted > 0 ? totalCost / totalRoasted : 0;
+                        
+                        totalBeanCost += beanCost;
+                        totalRoastedWeight += totalRoasted;
+                        totalGreenWeight += totalGreen;
+                        
+                        detailedCosts.push({
+                            name: beanName,
+                            greenWeight: totalGreen,
+                            roastedWeight: totalRoasted,
+                            beanPrice: beanPricePerKg,
+                            beanCost: beanCost,
+                            roastingCost: roastingCost,
+                            totalCost: totalCost,
+                            costPerKg: costPerKg
+                        });
+                    }
+                }
+            });
+
+            // 총 비용 계산
+            const laborCost = laborCostPerHour * roastingTime;
+            const totalCost = totalBeanCost + (totalRoastedWeight * roastingCostPerKg) + laborCost + electricityCost + otherCosts;
+            const costPerKg = totalRoastedWeight > 0 ? totalCost / totalRoastedWeight : 0;
+            const marginRate = 30; // 기본 마진율 30%
+
+            // 결과 표시
+            document.getElementById('total-bean-cost').textContent = totalBeanCost.toLocaleString() + '원';
+            document.getElementById('roasting-cost').textContent = (totalRoastedWeight * roastingCostPerKg).toLocaleString() + '원';
+            document.getElementById('labor-cost').textContent = laborCost.toLocaleString() + '원';
+            document.getElementById('electricity-cost-display').textContent = electricityCost.toLocaleString() + '원';
+            document.getElementById('other-costs-display').textContent = otherCosts.toLocaleString() + '원';
+            document.getElementById('total-cost-calculated').textContent = totalCost.toLocaleString() + '원';
+            document.getElementById('cost-per-kg').textContent = Math.round(costPerKg).toLocaleString() + '원';
+            document.getElementById('margin-rate').textContent = marginRate + '%';
+
+            // 상세 테이블 업데이트
+            const tbody = document.getElementById('detailed-cost-tbody');
+            tbody.innerHTML = '';
+            
+            detailedCosts.forEach(cost => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${cost.name}</td>
+                    <td>${cost.greenWeight.toFixed(2)}</td>
+                    <td>${cost.roastedWeight.toFixed(2)}</td>
+                    <td>${cost.beanPrice.toLocaleString()}</td>
+                    <td>${cost.beanCost.toLocaleString()}</td>
+                    <td>${cost.roastingCost.toLocaleString()}</td>
+                    <td>${cost.totalCost.toLocaleString()}</td>
+                    <td>${Math.round(cost.costPerKg).toLocaleString()}</td>
+                `;
+            });
+
+            // 원가 분석 섹션 표시
+            document.getElementById('cost-breakdown').style.display = 'block';
+            
+            // 요약 정보도 업데이트
+            document.getElementById('total-cost').textContent = totalCost.toLocaleString() + '원';
+            
+            alert(`원가 계산이 완료되었습니다!\n총 원가: ${totalCost.toLocaleString()}원\nkg당 원가: ${Math.round(costPerKg).toLocaleString()}원`);
+        }
+
+        function exportExcel() {
+            alert('엑셀 파일이 생성되었습니다!');
+            // 실제 구현에서는 엑셀 파일 생성
+        }
+
+        // 초기 계산
+        calculateSummary();
+    </script>
+</body>
+</html>

@@ -79,12 +79,12 @@ ls -la venv/bin/ | grep -E "python|streamlit"
 #### Step 2-3: 데이터베이스 상태 확인
 ```bash
 # DB 파일 존재 확인
-ls -lh Data/roasting_data.db
+ls -lh data/roasting_data.db
 
 # DB 테이블 확인
 ./venv/bin/python -c "
 import sqlite3
-conn = sqlite3.connect('Data/roasting_data.db')
+conn = sqlite3.connect('data/roasting_data.db')
 cursor = conn.cursor()
 cursor.execute('SELECT name FROM sqlite_master WHERE type=\"table\"')
 tables = cursor.fetchall()
