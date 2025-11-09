@@ -177,7 +177,7 @@ with tab1:
             # 원두 이름 조회
             bean_name = "-"
             if log.bean_id:
-                bean = bean_service.get_bean_by_id(db, log.bean_id)
+                bean = bean_service.get_bean_by_id(log.bean_id)
                 if bean:
                     bean_name = f"{bean.name}"
 
@@ -285,7 +285,7 @@ with tab2:
         st.session_state.add_notes = ""
 
     # 원두 목록 조회
-    all_beans = bean_service.get_all_beans(db)
+    all_beans = bean_service.get_all_beans()
 
     # 원두 선택 옵션 생성
     bean_options = {"선택 안함 (원두 미지정)": None}
@@ -495,7 +495,7 @@ with tab3:
                 # 원두 이름 표시 (있을 경우)
                 bean_name = ""
                 if selected_log.bean_id:
-                    bean = bean_service.get_bean_by_id(db, selected_log.bean_id)
+                    bean = bean_service.get_bean_by_id(selected_log.bean_id)
                     if bean:
                         bean_name = f" | 원두: {bean.name} ({bean.origin})"
 
@@ -519,7 +519,7 @@ with tab3:
                     st.session_state.edit_notes = selected_log.notes or ""
 
                 # 원두 목록 조회
-                all_beans = bean_service.get_all_beans(db)
+                all_beans = bean_service.get_all_beans()
 
                 # 원두 선택 옵션 생성
                 bean_options = {"선택 안함 (원두 미지정)": None}
