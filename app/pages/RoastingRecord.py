@@ -225,36 +225,36 @@ with tab1:
             height=400
         )
 
-        # 페이징 컨트롤
-        col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
+        # 페이징 컨트롤 (모바일 최적화)
+        # 페이지 정보 상단 표시
+        st.caption(f"📄 {st.session_state.roasting_page_number} / {total_pages} 페이지 (전체 {total_records}건)")
+
+        # 페이징 버튼 (3개 컬럼으로 간소화)
+        col1, col2, col3 = st.columns([1, 2, 1])
 
         with col1:
-            if st.button("⏮️ 처음", disabled=(st.session_state.roasting_page_number == 1), use_container_width=True):
-                st.session_state.roasting_page_number = 1
-                st.rerun()
-
-        with col2:
-            if st.button("◀️ 이전", disabled=(st.session_state.roasting_page_number == 1), use_container_width=True):
+            if st.button("◀️ 이전", disabled=(st.session_state.roasting_page_number == 1), use_container_width=True, key="prev_page"):
                 st.session_state.roasting_page_number -= 1
                 st.rerun()
 
-        with col3:
-            st.markdown(
-                f"<div style='text-align: center; padding-top: 10px;'>"
-                f"<strong>{st.session_state.roasting_page_number} / {total_pages}</strong> 페이지 "
-                f"(전체 {total_records}건)"
-                f"</div>",
-                unsafe_allow_html=True
+        with col2:
+            # 페이지 번호 직접 입력
+            new_page = st.number_input(
+                "페이지 이동",
+                min_value=1,
+                max_value=total_pages,
+                value=st.session_state.roasting_page_number,
+                step=1,
+                label_visibility="collapsed",
+                key="page_number_input"
             )
-
-        with col4:
-            if st.button("다음 ▶️", disabled=(st.session_state.roasting_page_number == total_pages), use_container_width=True):
-                st.session_state.roasting_page_number += 1
+            if new_page != st.session_state.roasting_page_number:
+                st.session_state.roasting_page_number = new_page
                 st.rerun()
 
-        with col5:
-            if st.button("마지막 ⏭️", disabled=(st.session_state.roasting_page_number == total_pages), use_container_width=True):
-                st.session_state.roasting_page_number = total_pages
+        with col3:
+            if st.button("다음 ▶️", disabled=(st.session_state.roasting_page_number == total_pages), use_container_width=True, key="next_page"):
+                st.session_state.roasting_page_number += 1
                 st.rerun()
 
         st.divider()
