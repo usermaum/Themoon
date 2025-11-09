@@ -183,11 +183,50 @@ with tab1:
             })
 
         df = pd.DataFrame(data)
+
+        # 페이징 설정
+        if 'roasting_page_number' not in st.session_state:
+            st.session_state.roasting_page_number = 0
+
+        page_size = 10  # 한 페이지당 표시할 항목 수
+        total_pages = (len(df) - 1) // page_size + 1 if len(df) > 0 else 1
+
+        # 페이지 범위 계산
+        start_idx = st.session_state.roasting_page_number * page_size
+        end_idx = min(start_idx + page_size, len(df))
+
+        # 현재 페이지 데이터 표시
         st.dataframe(
-            df,
+            df.iloc[start_idx:end_idx],
             use_container_width=True,
             hide_index=True
         )
+
+        # 페이징 컨트롤
+        col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 1, 1])
+
+        with col1:
+            if st.button("⏮️ 처음", disabled=(st.session_state.roasting_page_number == 0)):
+                st.session_state.roasting_page_number = 0
+                st.rerun()
+
+        with col2:
+            if st.button("◀️ 이전", disabled=(st.session_state.roasting_page_number == 0)):
+                st.session_state.roasting_page_number -= 1
+                st.rerun()
+
+        with col3:
+            st.markdown(f"<div style='text-align: center; padding-top: 5px;'>페이지 {st.session_state.roasting_page_number + 1} / {total_pages} (총 {len(df)}건)</div>", unsafe_allow_html=True)
+
+        with col4:
+            if st.button("다음 ▶️", disabled=(st.session_state.roasting_page_number >= total_pages - 1)):
+                st.session_state.roasting_page_number += 1
+                st.rerun()
+
+        with col5:
+            if st.button("마지막 ⏭️", disabled=(st.session_state.roasting_page_number >= total_pages - 1)):
+                st.session_state.roasting_page_number = total_pages - 1
+                st.rerun()
 
         # 범례
         st.caption("🟢 정상 (±3% 이내) | 🟡 주의 (±3~5%) | 🔴 위험 (±5% 초과)")
