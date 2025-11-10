@@ -429,3 +429,94 @@ class InventoryService:
             query = query.filter(Transaction.transaction_type == transaction_type)
 
         return query.order_by(Transaction.created_at.desc()).limit(limit).all()
+
+    def predict_stock_depletion(self, bean_id: int, inventory_type: str, days: int = 30) -> dict:
+        """재고 소진 예측
+
+        최근 N일간의 소비량을 기반으로 재고 소진 시점을 예측합니다.
+
+        Args:
+            bean_id: 원두 ID
+            inventory_type: 재고 유형
+            days: 분석 기간 (기본값: 30일)
+
+        Returns:
+            {
+                'current_qty': 현재 재고량,
+                'daily_consumption': 일평균 소비량,
+                'days_remaining': 남은 일수,
+                'depletion_date': 소진 예상 날짜,
+                'consumption_trend': 소비 추이 (increasing/stable/decreasing),
+                'sample_days': 실제 분석 일수
+            }
+        """
+        from datetime import datetime, timedelta
+
+        # 현재 재고 조회
+        inventory = self.get_inventory(bean_id, inventory_type)
+        if not inventory:
+            return {'error': '재고 정보를 찾을 수 없습니다'}
+
+        current_qty = inventory.quantity_kg
+
+        # 최근 N일간의 출고 거래 조회
+        start_date = datetime.now() - timedelta(days=days)
+
+        outbound_transactions = self.db.query(Transaction).filter(
+            Transaction.bean_id == bean_id,
+            Transaction.inventory_type == inventory_type,
+            Transaction.transaction_type.in_([TransactionType.SALES, TransactionType.ROASTING, TransactionType.WASTE]),
+            Transaction.created_at >= start_date
+        ).all()
+
+        if not outbound_transactions:
+            return {
+                'current_qty': current_qty,
+                'daily_consumption': 0,
+                'days_remaining': float('inf'),
+                'depletion_date': None,
+                'consumption_trend': 'no_data',
+                'sample_days': 0
+            }
+
+        # 총 소비량 계산
+        total_consumption = sum(abs(t.quantity_kg) for t in outbound_transactions)
+
+        # 실제 거래가 있는 일수 계산
+        transaction_dates = set(t.created_at.date() for t in outbound_transactions)
+        sample_days = len(transaction_dates)
+
+        # 일평균 소비량 (실제 거래 일수 기준)
+        daily_consumption = total_consumption / sample_days if sample_days > 0 else 0
+
+        # 남은 일수 계산
+        if daily_consumption > 0:
+            days_remaining = current_qty / daily_consumption
+            depletion_date = datetime.now() + timedelta(days=days_remaining)
+        else:
+            days_remaining = float('inf')
+            depletion_date = None
+
+        # 소비 추이 분석 (최근 절반 vs 이전 절반)
+        consumption_trend = 'stable'
+        if len(outbound_transactions) >= 4:
+            mid_point = len(outbound_transactions) // 2
+            recent_half = outbound_transactions[:mid_point]
+            older_half = outbound_transactions[mid_point:]
+
+            recent_consumption = sum(abs(t.quantity_kg) for t in recent_half)
+            older_consumption = sum(abs(t.quantity_kg) for t in older_half)
+
+            if recent_consumption > older_consumption * 1.2:
+                consumption_trend = 'increasing'
+            elif recent_consumption < older_consumption * 0.8:
+                consumption_trend = 'decreasing'
+
+        return {
+            'current_qty': current_qty,
+            'daily_consumption': daily_consumption,
+            'days_remaining': days_remaining,
+            'depletion_date': depletion_date,
+            'consumption_trend': consumption_trend,
+            'sample_days': sample_days
+        }

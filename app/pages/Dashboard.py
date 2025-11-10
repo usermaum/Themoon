@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models import SessionLocal, Inventory
 from services.bean_service import BeanService
 from services.blend_service import BlendService
+from services.inventory_service import InventoryService
 from i18n import Translator, LanguageManager
 from components.sidebar import render_sidebar
 
@@ -49,9 +50,13 @@ if "bean_service" not in st.session_state:
 if "blend_service" not in st.session_state:
     st.session_state.blend_service = BlendService(st.session_state.db)
 
+if "inventory_service" not in st.session_state:
+    st.session_state.inventory_service = InventoryService(st.session_state.db)
+
 db = st.session_state.db
 bean_service = st.session_state.bean_service
 blend_service = st.session_state.blend_service
+inventory_service = st.session_state.inventory_service
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 헤더
@@ -83,7 +88,27 @@ blend_summary = blend_service.get_blends_summary()
 beans = bean_service.get_active_beans()
 blends = blend_service.get_active_blends()
 
-col1, col2, col3, col4, col5 = st.columns(5)
+# 재고 가치 계산
+all_inventory = inventory_service.get_all_inventory()
+total_inventory_value = 0
+total_raw_value = 0
+total_roasted_value = 0
+
+for item in all_inventory:
+    bean = bean_service.get_bean_by_id(item['bean_id'])
+    if bean and bean.price_per_kg > 0:
+        raw_value = item['raw_bean_qty'] * bean.price_per_kg
+        roasted_value = item['roasted_bean_qty'] * bean.price_per_kg * (1 / (1 - (bean.avg_loss_rate or 17.0) / 100))
+        total_raw_value += raw_value
+        total_roasted_value += roasted_value
+
+total_inventory_value = total_raw_value + total_roasted_value
+
+# 저재고 원두 개수
+low_stock_items = inventory_service.get_low_stock_items()
+low_stock_count = len(low_stock_items)
+
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
     st.metric(
@@ -100,14 +125,23 @@ with col2:
     )
 
 with col3:
-    total_portions = sum(b.total_portion for b in blends)
     st.metric(
-        label="🔀 총 포션",
-        value=total_portions,
-        delta="개"
+        label="💎 재고 가치",
+        value=f"₩{total_inventory_value:,.0f}",
+        delta=None,
+        help="생두 + 원두 재고의 총 가치"
     )
 
 with col4:
+    st.metric(
+        label="⚠️ 저재고",
+        value=low_stock_count,
+        delta="개",
+        delta_color="inverse",
+        help="최소 재고량 미만인 원두"
+    )
+
+with col5:
     total_price = sum(b.price_per_kg for b in beans if b.price_per_kg > 0)
     st.metric(
         label="💰 원두 가격 합",
@@ -115,7 +149,7 @@ with col4:
         delta=None
     )
 
-with col5:
+with col6:
     blends_with_price = [b for b in blends if b.suggested_price]
     avg_price = sum(b.suggested_price for b in blends_with_price) / len(blends_with_price) if blends_with_price else 0
     st.metric(
@@ -125,6 +159,46 @@ with col5:
     )
 
 st.divider()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 저재고 알림
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if low_stock_count > 0:
+    st.markdown("## ⚠️ 저재고 알림")
+
+    st.warning(f"**{low_stock_count}개 원두**의 재고가 최소 재고량 미만입니다. 재입고가 필요합니다.")
+
+    # 저재고 테이블
+    low_stock_data = []
+    for item in low_stock_items:
+        bean = bean_service.get_bean_by_id(item['inventory'].bean_id)
+        if bean:
+            low_stock_data.append({
+                "원두명": bean.name,
+                "재고 유형": "생두" if item['inventory'].inventory_type == "RAW_BEAN" else "원두",
+                "현재 재고": f"{item['current_qty']:.2f}kg",
+                "최소 재고": f"{item['min_qty']:.2f}kg",
+                "부족량": f"{item['shortage']:.2f}kg",
+                "권장 주문량": f"{item['shortage'] * 2:.2f}kg"
+            })
+
+    if low_stock_data:
+        df_low_stock = pd.DataFrame(low_stock_data)
+        st.dataframe(df_low_stock, use_container_width=True, hide_index=True)
+
+        # 재입고 예상 비용
+        total_reorder_cost = 0
+        for item in low_stock_items:
+            bean = bean_service.get_bean_by_id(item['inventory'].bean_id)
+            if bean and bean.price_per_kg > 0:
+                reorder_qty = item['shortage'] * 2
+                total_reorder_cost += reorder_qty * bean.price_per_kg
+
+        if total_reorder_cost > 0:
+            st.info(f"💰 **재입고 예상 비용**: ₩{total_reorder_cost:,.0f}")
+
+    st.divider()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 원두 현황
