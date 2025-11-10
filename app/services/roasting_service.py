@@ -12,6 +12,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# 순환 import 방지를 위해 함수 내부에서 import
+def get_inventory_service(db: Session):
+    """InventoryService 인스턴스 반환 (순환 import 방지)"""
+    from app.services.inventory_service import InventoryService
+    return InventoryService(db)
+
+def get_cost_calculator_service(db: Session):
+    """CostCalculatorService 인스턴스 반환 (순환 import 방지)"""
+    from app.services.cost_calculator_service import CostCalculatorService
+    return CostCalculatorService(db)
+
 
 class RoastingService:
     """로스팅 기록 관리 서비스"""
@@ -24,7 +35,8 @@ class RoastingService:
         roasting_date: date,
         bean_id: int = None,
         notes: str = None,
-        expected_loss_rate: float = 17.0
+        expected_loss_rate: float = 17.0,
+        auto_inventory: bool = True
     ) -> RoastingLog:
         """로스팅 기록 생성
 
@@ -36,6 +48,7 @@ class RoastingService:
             bean_id: 원두 ID (선택)
             notes: 로스팅 노트 (선택)
             expected_loss_rate: 예상 손실률 (기본값: 17.0%)
+            auto_inventory: 재고 자동 연동 여부 (기본값: True)
 
         Returns:
             생성된 RoastingLog 객체
@@ -65,6 +78,31 @@ class RoastingService:
 
         # 이상 탐지
         RoastingService._check_loss_rate_anomaly(db, roasting_log)
+
+        # 재고 자동 연동 (bean_id가 있고 auto_inventory가 True일 때)
+        if bean_id and auto_inventory:
+            try:
+                inventory_service = get_inventory_service(db)
+                success, msg = inventory_service.process_roasting_transaction(
+                    bean_id=bean_id,
+                    raw_weight_kg=raw_weight_kg,
+                    roasted_weight_kg=roasted_weight_kg,
+                    roasting_log_id=roasting_log.id
+                )
+
+                if success:
+                    logger.info(f"✓ 재고 자동 연동 완료: {msg}")
+                else:
+                    logger.warning(f"⚠ 재고 연동 실패 (기록은 저장됨): {msg}")
+
+                # Bean 통계 업데이트
+                cost_calculator_service = get_cost_calculator_service(db)
+                cost_calculator_service.update_bean_statistics(bean_id)
+                logger.info(f"✓ Bean 통계 업데이트 완료")
+
+            except Exception as e:
+                logger.error(f"❌ 재고 연동/통계 업데이트 오류: {e}")
+                # 로스팅 기록은 유지하고 오류만 로깅
 
         return roasting_log
 
