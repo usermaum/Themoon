@@ -4,7 +4,7 @@ SQLAlchemy ORM 기반 DB 관리
 """
 
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text, Date, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey, Text, Date, Boolean, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -55,6 +55,14 @@ class Bean(Base):
     image_url = Column(String(255), nullable=True)
     price_per_kg = Column(Float, default=0.0)
     status = Column(String(20), default="active")  # active, inactive
+
+    # 로스팅 통계 필드 (고도화)
+    brand = Column(String(100), nullable=True)  # 브랜드 (예: "산타바바라", "스페셜티")
+    avg_loss_rate = Column(Float, nullable=True)  # 평균 손실률 (%) - 자동 계산
+    std_loss_rate = Column(Float, nullable=True)  # 손실률 표준편차 (%) - 자동 계산
+    total_roasted_count = Column(Integer, default=0)  # 총 로스팅 횟수
+    last_roasted_date = Column(Date, nullable=True)  # 마지막 로스팅 날짜
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -111,9 +119,15 @@ class BlendRecipe(Base):
 class Inventory(Base):
     """재고 관리"""
     __tablename__ = "inventory"
+    __table_args__ = (
+        # (bean_id, inventory_type) 조합을 unique로 설정
+        # 예: 에티오피아 예가체프 - 생두, 에티오피아 예가체프 - 원두 별도 관리
+        UniqueConstraint('bean_id', 'inventory_type', name='_bean_inventory_type_uc'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    bean_id = Column(Integer, ForeignKey("beans.id"), unique=True, nullable=False)
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=False)
+    inventory_type = Column(String(20), nullable=False, default="RAW_BEAN")  # RAW_BEAN(생두), ROASTED_BEAN(원두)
     quantity_kg = Column(Float, default=0.0)  # 현재 재고 (kg)
     min_quantity_kg = Column(Float, default=5.0)  # 최소 재고
     max_quantity_kg = Column(Float, default=50.0)  # 최대 재고
@@ -124,7 +138,7 @@ class Inventory(Base):
     bean = relationship("Bean", back_populates="inventory")
 
     def __repr__(self):
-        return f"<Inventory(bean_id={self.bean_id}, qty={self.quantity_kg}kg)>"
+        return f"<Inventory(bean_id={self.bean_id}, type={self.inventory_type}, qty={self.quantity_kg}kg)>"
 
 
 class Transaction(Base):
@@ -134,7 +148,12 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     blend_id = Column(Integer, ForeignKey("blends.id"), nullable=True)
     bean_id = Column(Integer, ForeignKey("beans.id"), nullable=True)
-    transaction_type = Column(String(20), nullable=False)  # 판매, 사용, 입고
+    transaction_type = Column(String(20), nullable=False)  # PURCHASE(입고), ROASTING(로스팅), PRODUCTION(생산), SALES(판매출고), GIFT(증정), WASTE(폐기), ADJUSTMENT(재고조정)
+
+    # 재고 관리 고도화 필드
+    inventory_type = Column(String(20), nullable=True)  # RAW_BEAN(생두), ROASTED_BEAN(원두) - 어떤 재고에 영향?
+    roasting_log_id = Column(Integer, ForeignKey("roasting_logs.id"), nullable=True)  # 로스팅 기록 연결
+
     quantity_kg = Column(Float, nullable=False)
     price_per_unit = Column(Float, default=0.0)
     total_amount = Column(Float, default=0.0)
