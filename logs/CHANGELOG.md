@@ -11,6 +11,67 @@
 
 ---
 
+## [0.29.0] - 2025-11-11
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 5 완료 - 보고서 및 분석 시스템
+
+#### 📝 변경사항
+
+**신규 페이지: 분석 보고서 (AnalysisReport.py)**
+- 3개 탭으로 구성된 종합 분석 페이지
+- Tab 1: 📈 월별 리포트 (최근 12개월 선택 가능)
+- Tab 2: 💰 수익성 분석 (원두별 수익률 계산)
+- Tab 3: 📥 데이터 다운로드 (Excel/CSV 내보내기)
+
+**Tab 1 - 월별 리포트 기능:**
+- 월별 요약 통계 4개 메트릭 (입고량, 출고량, 로스팅 횟수, 재고 증감)
+- Plotly 인터랙티브 라인 차트 (일별 추이: 입고/출고/로스팅)
+- Plotly 파이 차트 (거래 유형별 분포)
+- 월별 종합 리포트 Excel 다운로드 (4개 시트)
+
+**Tab 2 - 수익성 분석 기능:**
+- 기간 선택 (시작일 ~ 종료일)
+- 요약 메트릭 3개 (평균 손실률, 최고/최저 수익률 원두)
+- 원두별 상세 테이블 (손실률, 투입량, 산출량, 수익률)
+- 정렬 옵션 (수익률순/손실률순/투입량순)
+- Plotly 바 차트 (상위/하위 5개 원두 수익률 비교)
+- 수익성 분석 결과 CSV 다운로드
+
+**Tab 3 - 데이터 다운로드 기능:**
+- 로스팅 기록 (기간별 필터링, Excel/CSV)
+- 재고 현황 (현재 시점, Excel/CSV)
+- 거래 내역 (기간별 필터링, Excel/CSV)
+- 월별 종합 리포트 (4개 시트 Excel)
+
+**신규 유틸리티: export_utils.py (266 lines)**
+- `dataframe_to_excel()`: DataFrame을 Excel로 변환 (단일 시트)
+- `dataframe_to_csv()`: DataFrame을 CSV로 변환
+- `create_multi_sheet_excel()`: 여러 시트를 가진 Excel 생성
+- `create_monthly_report_excel()`: 월별 종합 리포트 Excel 생성
+- 자동 헤더 스타일링 (파란색 배경, 흰색 글자, 굵게)
+- 자동 컬럼 너비 조정
+- 숫자 포맷 적용 (#,##0.00)
+
+**ReportService 확장 (7개 메서드 추가):**
+- `get_monthly_transactions_report()`: 월별 거래 리포트 데이터 생성
+- `get_profitability_by_bean()`: 원두별 수익성 분석
+- `get_roasting_logs_dataframe()`: 로스팅 기록 DataFrame 조회
+- `get_inventory_dataframe()`: 재고 현황 DataFrame 조회
+- `get_transactions_dataframe()`: 거래 내역 DataFrame 조회
+- `generate_monthly_excel()`: 월별 종합 리포트 Excel 생성
+- `export_profitability_csv()`: 수익성 분석 CSV 생성
+
+**기술 스택 추가:**
+- xlsxwriter==3.2.0 (Excel 고급 기능 지원)
+- Plotly 차트 (Line, Pie, Bar)
+
+#### 🎯 주요 개선사항
+- **종합 분석**: 월별 로스팅 현황을 한눈에 파악
+- **수익성 평가**: 원두별 손실률 및 수익률 비교 분석
+- **데이터 추출**: 모든 핵심 데이터 Excel/CSV 내보내기 지원
+- **시각화 강화**: Plotly 인터랙티브 차트로 직관적 데이터 이해
+- **경영 의사결정**: 데이터 기반 원두 구매 및 재고 전략 수립
+
 ## [0.28.0] - 2025-11-10
 
 ### ✨ 마이너 업데이트 (Minor Update): Phase 4 핵심 기능 완료 - 대시보드 고급 기능
