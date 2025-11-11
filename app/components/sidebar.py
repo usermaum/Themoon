@@ -203,6 +203,16 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📊 현황")
 
+        # 세션 상태 초기화 확인
+        if "db" not in st.session_state:
+            from models.database import SessionLocal
+            from services.bean_service import BeanService
+            from services.blend_service import BlendService
+
+            st.session_state.db = SessionLocal()
+            st.session_state.bean_service = BeanService(st.session_state.db)
+            st.session_state.blend_service = BlendService(st.session_state.db)
+
         db = st.session_state.db
         bean_service = st.session_state.bean_service
         blend_service = st.session_state.blend_service
