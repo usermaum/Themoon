@@ -10,7 +10,7 @@
 
 from sqlalchemy.orm import Session
 from typing import Optional, Dict, List
-from app.models.database import Bean, RoastingLog
+from models.database import Bean, RoastingLog
 import math
 
 

@@ -12,7 +12,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
-from app.models.database import Inventory, Transaction, Bean, RoastingLog
+from models.database import Inventory, Transaction, Bean, RoastingLog
 
 
 class InventoryType:

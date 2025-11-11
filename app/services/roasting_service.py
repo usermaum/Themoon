@@ -6,7 +6,7 @@ RoastingService: 로스팅 기록 관리 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, between
-from app.models.database import RoastingLog, LossRateWarning
+from models.database import RoastingLog, LossRateWarning
 from datetime import datetime, date
 import logging
 
