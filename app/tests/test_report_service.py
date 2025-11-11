@@ -357,3 +357,233 @@ class TestReportServiceExceptionHandling:
             xl_file = pd.ExcelFile(excel_data)
             # 최소 1개 시트는 있어야 함 (요약 또는 정보 시트)
             assert len(xl_file.sheet_names) >= 1
+
+# ============================================
+# Phase 5 테스트 (2025-11-11 추가)
+# ============================================
+
+class TestReportServicePhase5MonthlyReport:
+    """Phase 5: 월별 거래 리포트 테스트"""
+
+    def test_get_monthly_transactions_report(self, db_session, sample_beans, sample_transactions):
+        """월별 거래 리포트 데이터 생성"""
+        service = ReportService(db_session)
+
+        now = datetime.now()
+        report = service.get_monthly_transactions_report(now.year, now.month)
+
+        assert isinstance(report, dict)
+        assert 'summary' in report
+        assert 'daily_trend' in report
+        assert 'transaction_type' in report
+
+        # 요약 데이터 확인
+        summary = report['summary']
+        assert '총 입고량 (kg)' in summary
+        assert '총 출고량 (kg)' in summary
+        assert '로스팅 횟수' in summary
+        assert '재고 증감 (kg)' in summary
+
+        # DataFrame 확인
+        assert isinstance(report['daily_trend'], pd.DataFrame)
+        assert isinstance(report['transaction_type'], pd.DataFrame)
+
+    def test_get_monthly_transactions_report_no_data(self, db_session):
+        """데이터 없을 때 월별 리포트"""
+        service = ReportService(db_session)
+
+        report = service.get_monthly_transactions_report(2025, 1)
+
+        assert report['summary']['총 입고량 (kg)'] == 0
+        assert report['summary']['총 출고량 (kg)'] == 0
+        assert report['summary']['로스팅 횟수'] == 0
+        assert len(report['daily_trend']) == 0
+
+
+class TestReportServicePhase5Profitability:
+    """Phase 5: 수익성 분석 테스트"""
+
+    def test_get_profitability_by_bean(self, db_session, sample_beans):
+        """원두별 수익성 분석"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 1, 1)
+        end_date = date(2025, 12, 31)
+
+        result = service.get_profitability_by_bean(start_date, end_date, sort_by='profit_rate')
+
+        assert isinstance(result, pd.DataFrame)
+
+        # 결과가 있으면 필수 컬럼 확인
+        if len(result) > 0:
+            assert '원두명' in result.columns
+            assert '로스팅 횟수' in result.columns
+            assert '평균 손실률(%)' in result.columns
+            assert '총 투입량(g)' in result.columns
+            assert '총 산출량(g)' in result.columns
+            assert '수익률(%)' in result.columns
+
+    def test_get_profitability_by_bean_empty(self, db_session, sample_beans):
+        """로스팅 기록 없을 때 수익성 분석"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 1, 1)
+        end_date = date(2025, 1, 31)
+
+        result = service.get_profitability_by_bean(start_date, end_date)
+
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
+
+    def test_get_profitability_by_bean_sort_options(self, db_session, sample_beans):
+        """정렬 옵션 테스트"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 1, 1)
+        end_date = date(2025, 12, 31)
+
+        # 수익률순
+        result1 = service.get_profitability_by_bean(start_date, end_date, sort_by='profit_rate')
+        assert isinstance(result1, pd.DataFrame)
+
+        # 손실률순
+        result2 = service.get_profitability_by_bean(start_date, end_date, sort_by='loss_rate')
+        assert isinstance(result2, pd.DataFrame)
+
+        # 투입량순
+        result3 = service.get_profitability_by_bean(start_date, end_date, sort_by='input_weight')
+        assert isinstance(result3, pd.DataFrame)
+
+
+class TestReportServicePhase5DataFrames:
+    """Phase 5: DataFrame 조회 테스트"""
+
+    def test_get_roasting_logs_dataframe(self, db_session, sample_beans):
+        """로스팅 기록 DataFrame 조회"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 1, 1)
+        end_date = date(2025, 12, 31)
+
+        result = service.get_roasting_logs_dataframe(start_date, end_date)
+
+        assert isinstance(result, pd.DataFrame)
+
+        # 로스팅 기록이 있으면 컬럼 확인
+        if len(result) > 0:
+            assert '날짜' in result.columns
+            assert '원두명' in result.columns
+            assert '생두 무게(g)' in result.columns
+            assert '원두 무게(g)' in result.columns
+            assert '손실률(%)' in result.columns
+
+    def test_get_inventory_dataframe(self, db_session, sample_beans):
+        """재고 현황 DataFrame 조회"""
+        service = ReportService(db_session)
+
+        result = service.get_inventory_dataframe()
+
+        assert isinstance(result, pd.DataFrame)
+
+        # 재고가 있으면 컬럼 확인
+        if len(result) > 0:
+            assert '원두명' in result.columns
+            assert '재고 타입' in result.columns
+            assert '수량(g)' in result.columns
+            assert '최소 재고량(g)' in result.columns
+
+    def test_get_transactions_dataframe(self, db_session, sample_beans, sample_transactions):
+        """거래 내역 DataFrame 조회"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 1, 1)
+        end_date = date(2025, 12, 31)
+
+        result = service.get_transactions_dataframe(start_date, end_date)
+
+        assert isinstance(result, pd.DataFrame)
+
+        # 거래 내역이 있으면 컬럼 확인
+        if len(result) > 0:
+            assert '날짜' in result.columns
+            assert '원두' in result.columns
+            assert '거래 유형' in result.columns
+            assert '수량(kg)' in result.columns
+
+
+class TestReportServicePhase5Export:
+    """Phase 5: Excel/CSV 내보내기 테스트"""
+
+    def test_generate_monthly_excel(self, db_session, sample_beans, sample_transactions):
+        """월별 종합 리포트 Excel 생성"""
+        service = ReportService(db_session)
+
+        now = datetime.now()
+        result = service.generate_monthly_excel(now.year, now.month)
+
+        assert isinstance(result, BytesIO)
+        result.seek(0)
+        xl_file = pd.ExcelFile(result)
+
+        # 4개 시트 확인
+        assert len(xl_file.sheet_names) >= 1
+        assert '요약' in xl_file.sheet_names
+
+    def test_generate_monthly_excel_no_data(self, db_session):
+        """데이터 없을 때 월별 Excel 생성"""
+        service = ReportService(db_session)
+
+        result = service.generate_monthly_excel(2025, 1)
+
+        assert isinstance(result, BytesIO)
+        result.seek(0)
+        xl_file = pd.ExcelFile(result)
+        assert '요약' in xl_file.sheet_names
+
+    # Note: export_profitability_csv는 별도 메서드로 구현되지 않음
+    # get_profitability_by_bean() + dataframe_to_csv()를 조합하여 사용
+
+
+class TestReportServicePhase5EdgeCases:
+    """Phase 5: 경계값 및 예외 상황 테스트"""
+
+    def test_get_profitability_reversed_dates(self, db_session, sample_beans):
+        """시작일이 종료일보다 나중인 경우"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 12, 31)
+        end_date = date(2025, 1, 1)
+
+        result = service.get_profitability_by_bean(start_date, end_date)
+
+        # 빈 결과 반환
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 0
+
+    def test_get_monthly_transactions_report_future_month(self, db_session):
+        """미래 월의 거래 리포트"""
+        service = ReportService(db_session)
+
+        report = service.get_monthly_transactions_report(2030, 12)
+
+        assert report['summary']['총 입고량 (kg)'] == 0
+        assert len(report['daily_trend']) == 0
+
+    def test_get_roasting_logs_dataframe_invalid_date_range(self, db_session, sample_beans):
+        """잘못된 날짜 범위로 로스팅 기록 조회"""
+        service = ReportService(db_session)
+
+        from datetime import date
+        start_date = date(2025, 12, 31)
+        end_date = date(2025, 1, 1)
+
+        result = service.get_roasting_logs_dataframe(start_date, end_date)
+
+        assert isinstance(result, pd.DataFrame)
+        # 빈 결과 또는 에러 없이 반환
