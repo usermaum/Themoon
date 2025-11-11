@@ -389,7 +389,7 @@ with tab2:
                 ```
                 마진율 = (판매가 - 최종원가) / 판매가 × 100
                       = ({cost_data['selling_price'] if cost_data['selling_price'] else 0:,.0f} - {cost_data['final_cost_per_kg']:,.0f}) / {cost_data['selling_price'] if cost_data['selling_price'] else 0:,.0f} × 100
-                      = {cost_data['margin_percent']:.1f}% if cost_data['margin_percent'] else 'N/A'
+                      = {f"{cost_data['margin_percent']:.1f}%" if cost_data['margin_percent'] is not None else 'N/A'}
                 ```
                 """)
 
