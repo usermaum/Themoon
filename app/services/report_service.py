@@ -1,10 +1,11 @@
 """
 보고서 생성 서비스
 PDF, Excel 형식의 다양한 보고서 생성
+Phase 5: 월별 리포트 및 수익성 분석 추가
 """
 
-from datetime import datetime, timedelta
-from models.database import SessionLocal, Bean, Blend, Inventory, Transaction
+from datetime import datetime, timedelta, date
+from models.database import SessionLocal, Bean, Blend, Inventory, Transaction, RoastingLog, CostSetting
 from services.bean_service import BeanService
 from services.blend_service import BlendService
 from reportlab.lib.pagesizes import letter, A4
@@ -15,6 +16,8 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import pandas as pd
 from io import BytesIO, StringIO
+from typing import Dict, List, Optional
+from app.utils.export_utils import create_monthly_report_excel
 
 
 class ReportService:
@@ -376,3 +379,292 @@ class ReportService:
 
         csv_string = df.to_csv(index=False, encoding="utf-8-sig")
         return csv_string
+
+    # ==================== Phase 5: 월별 리포트 및 수익성 분석 ====================
+
+    def get_monthly_transactions_report(self, year: int, month: int) -> Dict:
+        """
+        월별 거래 리포트 데이터 생성 (Phase 5)
+
+        Args:
+            year: 년도
+            month: 월 (1-12)
+
+        Returns:
+            {
+                'summary': Dict,  # 요약 통계
+                'daily_trend': pd.DataFrame,  # 일별 추이
+                'transaction_type': pd.DataFrame  # 거래 유형별
+            }
+        """
+        # 월의 첫날과 마지막 날
+        if month == 12:
+            start_date = date(year, month, 1)
+            end_date = date(year + 1, 1, 1)
+        else:
+            start_date = date(year, month, 1)
+            end_date = date(year, month + 1, 1)
+
+        # 거래 내역 조회
+        transactions = self.db.query(Transaction).filter(
+            Transaction.created_at >= datetime.combine(start_date, datetime.min.time()),
+            Transaction.created_at < datetime.combine(end_date, datetime.min.time())
+        ).all()
+
+        # 1. 요약 통계
+        total_in = sum(
+            abs(t.quantity_kg) for t in transactions
+            if t.transaction_type in ['PURCHASE', 'PRODUCTION'] or
+               (t.transaction_type == 'ADJUSTMENT' and t.quantity_kg > 0)
+        )
+
+        total_out = sum(
+            abs(t.quantity_kg) for t in transactions
+            if t.transaction_type in ['SALES', 'GIFT', 'WASTE'] or
+               (t.transaction_type == 'ADJUSTMENT' and t.quantity_kg < 0)
+        )
+
+        roasting_count = len([t for t in transactions if t.transaction_type == 'ROASTING'])
+
+        summary = {
+            '총 입고량 (kg)': round(total_in, 2),
+            '총 출고량 (kg)': round(total_out, 2),
+            '로스팅 횟수': roasting_count,
+            '재고 증감 (kg)': round(total_in - total_out, 2)
+        }
+
+        # 2. 일별 추이
+        daily_data = [
+            {
+                '날짜': t.created_at.date(),
+                '거래유형': t.transaction_type,
+                '수량(kg)': t.quantity_kg
+            }
+            for t in transactions
+        ]
+
+        if daily_data:
+            daily_df = pd.DataFrame(daily_data)
+            daily_trend = daily_df.groupby(['날짜', '거래유형'])['수량(kg)'].sum().reset_index()
+            daily_trend = daily_trend.pivot(index='날짜', columns='거래유형', values='수량(kg)').fillna(0).reset_index()
+        else:
+            daily_trend = pd.DataFrame(columns=['날짜'])
+
+        # 3. 거래 유형별 분류
+        type_data = {}
+        for t in transactions:
+            if t.transaction_type not in type_data:
+                type_data[t.transaction_type] = {'count': 0, 'quantity': 0.0}
+            type_data[t.transaction_type]['count'] += 1
+            type_data[t.transaction_type]['quantity'] += abs(t.quantity_kg)
+
+        total_quantity = sum(d['quantity'] for d in type_data.values())
+
+        transaction_type_list = [
+            {
+                '거래 유형': t_type,
+                '횟수': data['count'],
+                '수량(kg)': round(data['quantity'], 2),
+                '비율(%)': round(data['quantity'] / total_quantity * 100, 1) if total_quantity > 0 else 0.0
+            }
+            for t_type, data in sorted(type_data.items())
+        ]
+
+        transaction_type_df = pd.DataFrame(transaction_type_list) if transaction_type_list else pd.DataFrame()
+
+        return {
+            'summary': summary,
+            'daily_trend': daily_trend,
+            'transaction_type': transaction_type_df
+        }
+
+    def get_profitability_by_bean(
+        self,
+        start_date: date,
+        end_date: date,
+        sort_by: str = 'profit_rate'
+    ) -> pd.DataFrame:
+        """
+        원두별 수익성 분석 (Phase 5)
+
+        Args:
+            start_date: 시작일
+            end_date: 종료일
+            sort_by: 정렬 기준 ('profit_rate', 'total_cost', 'roasting_count')
+
+        Returns:
+            DataFrame
+        """
+        # 로스팅 기록 조회
+        roasting_logs = self.db.query(RoastingLog).filter(
+            RoastingLog.roasting_date >= start_date,
+            RoastingLog.roasting_date <= end_date,
+            RoastingLog.bean_id.isnot(None)
+        ).all()
+
+        if not roasting_logs:
+            return pd.DataFrame()
+
+        # 로스팅 비용 설정
+        roasting_cost_setting = self.db.query(CostSetting).filter(
+            CostSetting.parameter_name == 'roasting_cost_per_kg'
+        ).first()
+        roasting_cost_per_kg = roasting_cost_setting.value if roasting_cost_setting else 500.0
+
+        # 원두별 집계
+        bean_stats = {}
+        for log in roasting_logs:
+            bean = log.bean
+            if not bean:
+                continue
+
+            if bean.name not in bean_stats:
+                bean_stats[bean.name] = {
+                    'purchase_kg': 0.0,
+                    'purchase_cost': 0.0,
+                    'roasting_cost': 0.0,
+                    'output_kg': 0.0,
+                    'roasting_count': 0
+                }
+
+            bean_stats[bean.name]['purchase_kg'] += log.raw_weight_kg
+            bean_stats[bean.name]['purchase_cost'] += log.raw_weight_kg * bean.price_per_kg
+            bean_stats[bean.name]['roasting_cost'] += log.roasted_weight_kg * roasting_cost_per_kg
+            bean_stats[bean.name]['output_kg'] += log.roasted_weight_kg
+            bean_stats[bean.name]['roasting_count'] += 1
+
+        # DataFrame 생성
+        result_list = []
+        for bean_name, stats in bean_stats.items():
+            total_cost = stats['purchase_cost'] + stats['roasting_cost']
+
+            # 수익률 = (1 - 손실률) * 100 - 100 (간이 계산)
+            if stats['purchase_kg'] > 0:
+                loss_rate = (1 - stats['output_kg'] / stats['purchase_kg']) * 100
+                profit_rate = -loss_rate  # 손실이 적을수록 수익률 높음
+            else:
+                profit_rate = 0.0
+
+            result_list.append({
+                '원두명': bean_name,
+                '매입(kg)': round(stats['purchase_kg'], 2),
+                '매입비용(원)': int(stats['purchase_cost']),
+                '로스팅비용(원)': int(stats['roasting_cost']),
+                '산출(kg)': round(stats['output_kg'], 2),
+                '총비용(원)': int(total_cost),
+                '수익률(%)': round(profit_rate, 2),
+                '로스팅횟수': stats['roasting_count']
+            })
+
+        df = pd.DataFrame(result_list)
+
+        # 정렬
+        if sort_by == 'profit_rate':
+            df = df.sort_values('수익률(%)', ascending=False)
+        elif sort_by == 'total_cost':
+            df = df.sort_values('총비용(원)', ascending=False)
+        elif sort_by == 'roasting_count':
+            df = df.sort_values('로스팅횟수', ascending=False)
+
+        return df.reset_index(drop=True)
+
+    def get_roasting_logs_dataframe(
+        self,
+        start_date: date,
+        end_date: date
+    ) -> pd.DataFrame:
+        """로스팅 기록 DataFrame 조회 (다운로드용)"""
+        logs = self.db.query(RoastingLog).filter(
+            RoastingLog.roasting_date >= start_date,
+            RoastingLog.roasting_date <= end_date
+        ).order_by(RoastingLog.roasting_date.desc()).all()
+
+        return pd.DataFrame([
+            {
+                '날짜': log.roasting_date,
+                '원두': log.bean.name if log.bean else "-",
+                '생두(kg)': log.raw_weight_kg,
+                '원두(kg)': log.roasted_weight_kg,
+                '손실률(%)': log.loss_rate_percent,
+                '비고': log.notes or ""
+            }
+            for log in logs
+        ])
+
+    def get_inventory_dataframe(self) -> pd.DataFrame:
+        """현재 재고 DataFrame 조회 (다운로드용)"""
+        inventories = self.db.query(Inventory).all()
+
+        data = []
+        for inv in inventories:
+            bean = self.db.query(Bean).filter(Bean.id == inv.bean_id).first()
+            data.append({
+                '원두명': bean.name if bean else "-",
+                '재고 타입': inv.inventory_type,
+                '수량(kg)': inv.quantity_kg,
+                '최소 재고(kg)': inv.min_stock_kg,
+                '최대 재고(kg)': inv.max_stock_kg,
+                '마지막 업데이트': inv.last_updated
+            })
+
+        return pd.DataFrame(data)
+
+    def get_transactions_dataframe(
+        self,
+        start_date: date,
+        end_date: date,
+        transaction_types: Optional[List[str]] = None
+    ) -> pd.DataFrame:
+        """거래 내역 DataFrame 조회 (다운로드용)"""
+        query = self.db.query(Transaction).filter(
+            Transaction.created_at >= datetime.combine(start_date, datetime.min.time()),
+            Transaction.created_at < datetime.combine(end_date, datetime.max.time())
+        )
+
+        if transaction_types:
+            query = query.filter(Transaction.transaction_type.in_(transaction_types))
+
+        transactions = query.order_by(Transaction.created_at.desc()).all()
+
+        data = []
+        for t in transactions:
+            bean_name = "-"
+            if t.bean_id:
+                bean = self.db.query(Bean).filter(Bean.id == t.bean_id).first()
+                bean_name = bean.name if bean else "-"
+
+            data.append({
+                '날짜': t.created_at,
+                '거래 유형': t.transaction_type,
+                '원두': bean_name,
+                '재고 타입': t.inventory_type or "-",
+                '수량(kg)': t.quantity_kg,
+                '단가(원)': t.price_per_unit,
+                '금액(원)': t.total_amount,
+                '비고': t.notes or ""
+            })
+
+        return pd.DataFrame(data)
+
+    def generate_monthly_excel(self, year: int, month: int) -> BytesIO:
+        """월별 종합 리포트 Excel 생성"""
+        report_data = self.get_monthly_transactions_report(year, month)
+
+        # 거래 내역 조회
+        if month == 12:
+            start_date = date(year, month, 1)
+            end_date = date(year + 1, 1, 1)
+        else:
+            start_date = date(year, month, 1)
+            end_date = date(year, month + 1, 1)
+
+        transactions_df = self.get_transactions_dataframe(start_date, end_date)
+
+        return create_monthly_report_excel(
+            summary_data=report_data['summary'],
+            daily_trend_df=report_data['daily_trend'],
+            transaction_type_df=report_data['transaction_type'],
+            transactions_df=transactions_df,
+            year=year,
+            month=month
+        )
