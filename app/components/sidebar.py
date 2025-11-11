@@ -4,6 +4,7 @@
 
 import streamlit as st
 from utils.constants import UI_CONFIG
+from config import VERSION, UPDATE_DATE, PROJECT_STATUS, UI_STYLE
 
 
 def render_sidebar():
@@ -232,11 +233,11 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### ℹ️ 정보")
         st.caption(f"""
-        **{UI_CONFIG["app_title"]}** v0.1.0
+        **{UI_CONFIG["app_title"]}** v{VERSION}
 
-        🚀 Claude Desktop Style UI
-        📅 업데이트: 2025-10-29
-        🎯 상태: 개발 중
+        🚀 {UI_STYLE}
+        📅 업데이트: {UPDATE_DATE}
+        🎯 상태: {PROJECT_STATUS}
 
         **현재 데이터:**
         - 원두: {len(beans)}종
