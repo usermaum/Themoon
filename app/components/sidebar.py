@@ -252,5 +252,5 @@ def render_sidebar():
         **현재 데이터:**
         - 원두: {len(beans)}종
         - 블렌드: {len(blends)}개
-        - 포션: 20개
+        - 혼합 비율: 20개
         """)
