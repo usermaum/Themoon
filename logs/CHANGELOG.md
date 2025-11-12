@@ -11,11 +11,53 @@
 
 ---
 
-## [Unreleased] - 거래 명세서 이미지 자동 입고 기능 (v0.31.0 목표)
+## [0.31.0] - 2025-11-12
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 1 완료 - Invoice 데이터베이스 모델 구현
+
+#### 📝 변경사항
+
+**신규 파일: app/models/invoice.py (91 lines)**
+- `Invoice` 클래스: 거래 명세서 메타데이터
+  - 이미지 경로, 공급업체, 거래일자, 총액
+  - 상태(PENDING/COMPLETED/FAILED), 신뢰도, OCR 원본 텍스트
+- `InvoiceItem` 클래스: 명세서 항목 (다중 원두 지원)
+  - OCR 추출 원두명 (bean_name_raw), 매칭된 원두 (bean_id)
+  - 수량, 단가, 금액, 원산지, 비고
+  - 항목별 신뢰도
+- `InvoiceLearning` 클래스: 학습 데이터 (사용자 수정 내역)
+  - OCR 인식 텍스트, 사용자 수정 값, 필드명
+  - 향후 동일 오류 발생 시 자동 제안
+
+**신규 파일: migrations/add_invoice_tables.py (172 lines)**
+- 3개 테이블 생성 마이그레이션
+  - `invoices`: 거래 명세서 메타데이터
+  - `invoice_items`: 명세서 항목 (다중 원두)
+  - `invoice_learning`: 학습 데이터
+- DB 자동 백업 기능
+- `transactions` 테이블에 `invoice_item_id` 컬럼 추가
+- 테이블 존재 여부 검증 로직
+
+**수정 파일: app/models/database.py**
+- Invoice 모델 import 추가
+- Circular import 방지를 위한 상대 경로 사용
+
+**데이터 모델 관계:**
+- Invoice 1:N InvoiceItem
+- InvoiceItem 1:N InvoiceLearning
+- InvoiceItem N:1 Bean
+
+**마이그레이션 실행 결과:**
+- ✅ invoices 테이블 생성 완료
+- ✅ invoice_items 테이블 생성 완료
+- ✅ invoice_learning 테이블 생성 완료
+- ✅ transactions.invoice_item_id 컬럼 추가 완료
+
+## [Unreleased] - 거래 명세서 이미지 자동 입고 기능 (v0.31.0+)
 
 ### 🚧 진행 중 (Work In Progress)
 
-**Phase 0: 환경 설정 ✅ (2025-11-12)**
+**Phase 0: 환경 설정 ✅ (2025-11-12) - v0.31.0에 포함**
 - ✅ Unity Hub 패키지 문제 해결 (tesseract-ocr-kor 설치 차단 해제)
 - ✅ Tesseract OCR 한글 언어팩 설치 (`kor` 지원 확인)
 - ✅ 시스템 패키지 확인 (tesseract-ocr, poppler-utils)
@@ -29,13 +71,17 @@
 - ✅ 디렉토리 생성 (data/invoices/, data/invoices/temp/)
 - ✅ requirements.txt 업데이트
 
-**Phase 1: 데이터베이스 모델 (예정)**
-- Invoice 모델 (거래 명세서)
-- InvoiceItem 모델 (명세서 항목 - 다중 원두)
-- InvoiceLearning 모델 (학습 데이터)
-- 마이그레이션 스크립트
+**Phase 1: 데이터베이스 모델 ✅ (2025-11-12) - v0.31.0에 포함**
+- ✅ Invoice 모델 (거래 명세서)
+- ✅ InvoiceItem 모델 (명세서 항목 - 다중 원두)
+- ✅ InvoiceLearning 모델 (학습 데이터)
+- ✅ 마이그레이션 스크립트 작성 및 실행
 
-**Phase 2~6: (예정)**
+**Phase 2: 이미지 처리 유틸리티 (진행 예정)**
+- image_utils.py: 전처리, 회전, 대비 향상, 노이즈 제거
+- text_parser.py: 텍스트 파싱, 원두명/수량/가격/날짜 추출
+
+**Phase 3~6: (예정)**
 - Phase 2: 이미지 처리 유틸리티 (image_utils, text_parser)
 - Phase 3: 서비스 계층 (ocr_service, invoice_service, learning_service)
 - Phase 4: UI 구현 (ImageInvoiceUpload.py)

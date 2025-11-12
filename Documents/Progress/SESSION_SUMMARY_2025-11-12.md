@@ -97,13 +97,66 @@ mkdir -p data/invoices/temp
 
 ---
 
-## 📋 다음 작업 (진행 예정)
+### 3. Phase 1: 데이터베이스 모델 (2시간) ✅
 
-### Phase 1: 데이터베이스 모델 (2시간)
-- Invoice 모델 생성 (거래 명세서)
-- InvoiceItem 모델 생성 (명세서 항목 - 다중 원두)
-- InvoiceLearning 모델 생성 (학습 데이터)
-- 마이그레이션 스크립트 작성
+**목표**: Invoice 관련 데이터베이스 모델 및 마이그레이션 구현
+
+**작업 내용:**
+
+**Task 1-1: Invoice 모델 생성 (app/models/invoice.py)**
+- `Invoice` 클래스 (91 lines)
+  - 거래 명세서 메타데이터
+  - 필드: image_path, supplier, invoice_date, total_amount, status, confidence_score, ocr_raw_text
+  - 관계: Invoice 1:N InvoiceItem
+
+- `InvoiceItem` 클래스
+  - 명세서 항목 (다중 원두 지원)
+  - 필드: invoice_id, bean_id, bean_name_raw, quantity, unit_price, amount, origin, notes, confidence_score
+  - 관계: InvoiceItem N:1 Bean, InvoiceItem 1:N InvoiceLearning
+
+- `InvoiceLearning` 클래스
+  - 학습 데이터 (사용자 수정 내역 저장)
+  - 필드: invoice_item_id, ocr_text, corrected_value, field_name
+  - 목적: 향후 동일 오류 발생 시 자동 제안
+
+**Task 1-2: 마이그레이션 스크립트 (migrations/add_invoice_tables.py)**
+- 172 lines
+- 기능:
+  1. DB 자동 백업 (timestamp 포함)
+  2. 3개 테이블 생성 (invoices, invoice_items, invoice_learning)
+  3. `transactions` 테이블에 `invoice_item_id` 컬럼 추가
+  4. 테이블 존재 여부 검증
+
+- 실행 결과:
+  ```
+  ✅ invoices 테이블 생성 완료
+  ✅ invoice_items 테이블 생성 완료
+  ✅ invoice_learning 테이블 생성 완료
+  ✅ transactions.invoice_item_id 컬럼 추가 완료
+  ```
+
+**Task 1-3: database.py 업데이트**
+- Invoice 모델 import 추가
+- Circular import 방지를 위한 상대 경로 사용 (`.invoice`)
+
+**커밋:**
+```
+408d26ea feat: Phase 1 완료 - Invoice 데이터베이스 모델 구현
+```
+
+**검증 기준:**
+- ✅ 마이그레이션 스크립트 실행 성공
+- ✅ 3개 테이블 생성 확인
+- ✅ SQLAlchemy 모델로 CRUD 작동 확인 (예정)
+
+**결과:**
+- ✅ Phase 1 완료 (예상 시간: 2시간, 실제 시간: ~1.5시간)
+- ✅ 버전 자동 업데이트: v0.30.3 → v0.31.0 (MINOR)
+- ✅ 데이터베이스 모델 구축 완료, Phase 2 진행 가능
+
+---
+
+## 📋 다음 작업 (진행 예정)
 
 ### Phase 2: 이미지 처리 유틸리티 (4시간)
 - `app/utils/image_utils.py`: 전처리, 회전, 대비 향상, 노이즈 제거
@@ -129,11 +182,11 @@ mkdir -p data/invoices/temp
 ## 📊 프로젝트 현황
 
 ### 버전 정보
-- **현재 버전**: v0.30.3
-- **목표 버전**: v0.31.0 (MINOR)
-- **예상 완료**: Phase 1~6 완료 후 (약 2.5일)
+- **시작 버전**: v0.30.3
+- **현재 버전**: v0.31.0 (MINOR) ✅
+- **목표 완료**: Phase 2~6 완료 후 (약 2일 남음)
 
-### 주요 변경사항 (예정)
+### 주요 변경사항 (v0.31.0 완료)
 - 신규 기능: 거래 명세서 이미지 자동 입고
 - 신규 테이블: Invoice, InvoiceItem, InvoiceLearning (3개)
 - 신규 페이지: ImageInvoiceUpload.py
