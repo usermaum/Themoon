@@ -11,6 +11,43 @@
 
 ---
 
+## [Unreleased] - 거래 명세서 이미지 자동 입고 기능 (v0.31.0 목표)
+
+### 🚧 진행 중 (Work In Progress)
+
+**Phase 0: 환경 설정 ✅ (2025-11-12)**
+- ✅ Unity Hub 패키지 문제 해결 (tesseract-ocr-kor 설치 차단 해제)
+- ✅ Tesseract OCR 한글 언어팩 설치 (`kor` 지원 확인)
+- ✅ 시스템 패키지 확인 (tesseract-ocr, poppler-utils)
+- ✅ Python 패키지 설치 (6개):
+  - pytesseract==0.3.10 (Tesseract OCR Python wrapper)
+  - opencv-python==4.8.1.78 (이미지 전처리: 회전, 대비, 노이즈)
+  - pdf2image==1.16.3 (PDF → 이미지 변환)
+  - python-Levenshtein==0.25.0 (원두명 유사도 매칭)
+  - dateparser==1.2.0 (날짜 파싱)
+  - Pillow>=8.0.0 (이미지 처리)
+- ✅ 디렉토리 생성 (data/invoices/, data/invoices/temp/)
+- ✅ requirements.txt 업데이트
+
+**Phase 1: 데이터베이스 모델 (예정)**
+- Invoice 모델 (거래 명세서)
+- InvoiceItem 모델 (명세서 항목 - 다중 원두)
+- InvoiceLearning 모델 (학습 데이터)
+- 마이그레이션 스크립트
+
+**Phase 2~6: (예정)**
+- Phase 2: 이미지 처리 유틸리티 (image_utils, text_parser)
+- Phase 3: 서비스 계층 (ocr_service, invoice_service, learning_service)
+- Phase 4: UI 구현 (ImageInvoiceUpload.py)
+- Phase 5: 학습 기능 (사용자 피드백 기반 정확도 향상)
+- Phase 6: 테스트 & 문서화
+
+**관련 문서:**
+- 플랜: `Documents/Planning/IMAGE_INVOICE_UPLOAD_PLAN.md` (1,662 lines)
+- 세션 요약: `Documents/Progress/SESSION_SUMMARY_2025-11-12.md`
+
+---
+
 ## [0.30.3] - 2025-11-11
 
 ### 🐛 패치 (Bug Fix): 원가 계산 페이지 margin_percent None 처리 오류 수정
