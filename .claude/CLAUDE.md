@@ -1,7 +1,7 @@
 # CLAUDE.md - 프로젝트 가이드 네비게이터
 
 > **The Moon Drip BAR - 로스팅 비용 계산기**
-> 버전: 0.30.3 · 스택: Streamlit + SQLite · 환경: ./venv/
+> 버전: 0.32.0 · 스택: Streamlit + SQLite · 환경: ./venv/
 
 ---
 
