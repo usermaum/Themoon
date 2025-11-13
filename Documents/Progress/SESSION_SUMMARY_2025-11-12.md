@@ -226,12 +226,70 @@ mkdir -p data/invoices/temp
 
 ---
 
-## 📋 다음 작업 (진행 예정)
+---
 
-### Phase 3: 서비스 계층 (4시간)
-- `app/services/ocr_service.py`: OCR 수행, 데이터 파싱
-- `app/services/invoice_service.py`: 입고 처리, 이미지 저장
-- `app/services/learning_service.py`: 사용자 피드백 학습
+### 5. Phase 3: 서비스 계층 (4시간) ✅
+
+**목표**: OCR, Invoice, Learning 서비스 구현
+
+**작업 내용:**
+
+**Task 3-1: ocr_service.py 구현 (290 lines, 6개 메서드)**
+- ✅ `OCRService` 클래스
+- ✅ `extract_text_from_image()`: Tesseract OCR 수행 (kor+eng)
+- ✅ `parse_invoice_data()`: OCR 텍스트 → 구조화된 데이터
+- ✅ `match_bean_to_db()`: 원두명 DB 매칭 (유사도 0.7 이상)
+- ✅ `calculate_confidence()`: 신뢰도 계산 (0~100)
+- ✅ `process_image()`: 전체 파이프라인 (OCR + 파싱 + 신뢰도 + 검증)
+- ✅ `get_supported_languages()`: Tesseract 지원 언어 조회
+
+**Task 3-2: invoice_service.py 구현 (370 lines, 7개 메서드)**
+- ✅ `InvoiceService` 클래스
+- ✅ `process_invoice_image()`: 이미지 전체 처리 (변환 + OCR + 매칭)
+- ✅ `save_invoice()`: Invoice + InvoiceItem 저장, 이미지 파일 저장
+- ✅ `confirm_invoice()`: 입고 확정 (Inventory + Transaction 생성)
+- ✅ `update_invoice_status()`: 상태 변경 (PENDING/COMPLETED/FAILED)
+- ✅ `get_invoice_history()`: 최근 처리 내역 조회
+- ✅ `get_invoice_by_id()`: Invoice 상세 조회
+- ✅ `delete_invoice()`: Invoice 삭제 (PENDING 상태만 가능)
+
+**Task 3-3: learning_service.py 구현 (258 lines, 8개 메서드)**
+- ✅ `LearningService` 클래스
+- ✅ `save_correction()`: 사용자 수정 내역 저장
+- ✅ `get_learning_data()`: 학습 데이터 조회 (필드별 필터)
+- ✅ `suggest_correction()`: 과거 학습 기반 제안 (유사도 0.8+)
+- ✅ `get_correction_stats()`: 학습 데이터 통계
+- ✅ `batch_save_corrections()`: 여러 수정 내역 일괄 저장
+- ✅ `delete_learning()`: 학습 데이터 삭제
+- ✅ `clear_learning_data()`: 학습 데이터 초기화
+
+**주요 기능:**
+- Tesseract OCR 통합 (한글+영문 동시 인식)
+- GSC/HACIELO/UNKNOWN 타입 자동 감지
+- 원두명 유사도 매칭 (Levenshtein Distance)
+- 신뢰도 기반 검증 (필수 필드 + 매칭 점수 + 텍스트 길이 + 숫자 유효성)
+- 입고 확정 시 Inventory + Transaction 자동 생성
+- 사용자 수정 학습 및 자동 제안 (유사도 기반)
+
+**커밋:**
+```
+015d6355 feat: Phase 3 완료 - 서비스 계층 구현
+```
+
+**검증 기준:**
+- ✅ 모든 서비스 import 성공
+- ✅ OCR 파이프라인 완성
+- ✅ 입고 확정 로직 완성
+- ✅ 학습 기능 완성
+
+**결과:**
+- ✅ Phase 3 완료 (예상 시간: 4시간, 실제 시간: ~2.5시간)
+- ✅ 버전 자동 업데이트: v0.32.0 → v0.33.0 (MINOR)
+- ✅ 서비스 계층 구축 완료, Phase 4 (UI) 진행 가능
+
+---
+
+## 📋 다음 작업 (진행 예정)
 
 ### Phase 4: UI 구현 (4시간)
 - `app/pages/ImageInvoiceUpload.py`: 이미지 업로드, 결과 확인, 입고 확정
@@ -249,27 +307,32 @@ mkdir -p data/invoices/temp
 
 ### 버전 정보
 - **시작 버전**: v0.30.3
-- **현재 버전**: v0.32.0 (MINOR) ✅
-- **목표 완료**: Phase 3~6 완료 후 (약 1.5일 남음)
+- **현재 버전**: v0.33.0 (MINOR) ✅
+- **목표 완료**: Phase 4~6 완료 후 (약 1일 남음)
 
-### 주요 변경사항 (v0.31.0 → v0.32.0)
+### 주요 변경사항 (v0.31.0 → v0.32.0 → v0.33.0)
 
 **v0.31.0 (Phase 1 완료):**
 - 신규 테이블: Invoice, InvoiceItem, InvoiceLearning (3개)
 - 데이터베이스 모델 및 마이그레이션
 
-**v0.32.0 (Phase 2 완료) ✅:**
+**v0.32.0 (Phase 2 완료):**
 - 신규 유틸리티: image_utils (8개 함수), text_parser (18개 함수)
 - 단위 테스트: 58개 (100% 통과)
 - NumPy 호환성 수정: numpy<2
 
+**v0.33.0 (Phase 3 완료) ✅:**
+- 신규 서비스: ocr_service (6개 메서드), invoice_service (7개 메서드), learning_service (8개 메서드)
+- Tesseract OCR 통합 (kor+eng)
+- 신뢰도 기반 검증, 입고 확정, 학습 기능
+
 ### 완료된 Phase
 - ✅ Phase 0: 환경 설정 (1시간)
 - ✅ Phase 1: 데이터베이스 모델 (2시간)
-- ✅ Phase 2: 이미지 처리 유틸리티 (4시간) ← **완료**
+- ✅ Phase 2: 이미지 처리 유틸리티 (4시간)
+- ✅ Phase 3: 서비스 계층 (4시간) ← **완료**
 
 ### 남은 Phase
-- Phase 3: 서비스 계층 (4시간)
 - Phase 4: UI 구현 (4시간)
 - Phase 5: 학습 기능 (2시간)
 - Phase 6: 테스트 & 문서화 (2시간)
@@ -294,4 +357,4 @@ mkdir -p data/invoices/temp
 
 ---
 
-**최종 업데이트**: 2025-11-13 (Phase 2 완료, 현재 v0.32.0)
+**최종 업데이트**: 2025-11-13 (Phase 3 완료, 현재 v0.33.0)
