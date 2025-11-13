@@ -289,16 +289,89 @@ mkdir -p data/invoices/temp
 
 ---
 
-## 📋 다음 작업 (진행 예정)
+---
 
-### Phase 4: UI 구현 (4시간)
-- `app/pages/ImageInvoiceUpload.py`: 이미지 업로드, 결과 확인, 입고 확정
+### 6. Phase 4: UI 구현 (4시간) ✅
+
+**목표**: ImageInvoiceUpload.py 페이지 구현 (3개 탭)
+
+**작업 내용:**
+
+**Task 4-1: ImageInvoiceUpload.py 구현 (460 lines)**
+
+**Tab 1: 이미지 업로드** (120 lines)
+- ✅ 파일 업로더 (JPG, PNG, PDF 지원, 최대 10MB)
+- ✅ 이미지 미리보기 (PIL Image 표시)
+- ✅ AI 분석 시작 버튼 (primary button)
+- ✅ 사용 가이드 섹션
+  - 촬영 팁 (조명, 평평하게 펴기)
+  - 지원 형식 (GSC, HACIELO, 기타)
+  - 처리 과정 (AI 추출 → 매칭 → 확인 → 입고)
+
+**Tab 2: 인식 결과 확인 및 수정** (200 lines)
+- ✅ 메트릭 표시 (신뢰도, 타입, 항목 수, 총액)
+- ✅ 경고 메시지 표시 (warnings)
+- ✅ 명세서 메타데이터 수정
+  - 공급업체 (text_input)
+  - 거래일자 (date_input)
+  - 총액 (number_input)
+- ✅ 다중 원두 항목 관리 (Expander)
+  - 원두 선택 (selectbox, 전체 원두 목록)
+  - 자동 매칭 표시 (성공/실패 + 유사도)
+  - 중량, 단가, 규격 입력
+  - 공급가액 자동 계산 (metric)
+- ✅ 입고 확정/취소 버튼
+
+**Tab 3: 처리 내역** (120 lines)
+- ✅ 필터 (상태: 전체/PENDING/COMPLETED/FAILED)
+- ✅ 조회 개수 설정 (5~100건)
+- ✅ 명세서 목록 표시 (Expander)
+  - 메트릭: 상태, 신뢰도, 총액, 원두 항목 수
+  - 이미지 표시 (image_path)
+  - 원두 항목 상세 테이블
+  - 삭제 버튼 (PENDING 상태만)
+
+**주요 기능:**
+- OCRService, InvoiceService, LearningService, BeanService 통합
+- 실시간 이미지 분석 (process_invoice_image)
+- 원두 자동 매칭 (fuzzy_match_bean)
+- 신뢰도 기반 검증 및 경고 표시
+- 입고 확정 시 Inventory + Transaction 자동 생성
+- 처리 내역 조회 및 관리 (get_invoice_history)
+
+**UX 개선:**
+- 3단계 워크플로우 (업로드 → 확인 → 처리)
+- 실시간 피드백 (spinner, success, error, balloons)
+- 직관적인 수정 UI (selectbox, number_input, metric)
+- 자동 매칭 성공/실패 표시
+- 공급가액 자동 계산 (weight × unit_price)
+
+**커밋:**
+```
+e0a32266 feat: Phase 4 완료 - ImageInvoiceUpload.py UI 구현
+```
+
+**검증 기준:**
+- ✅ 이미지 업로드 성공
+- ✅ 분석 결과 표시 (메트릭 + 항목)
+- ✅ 수정 UI 작동
+- ✅ 입고 확정 로직 완성
+
+**결과:**
+- ✅ Phase 4 완료 (예상 시간: 4시간, 실제 시간: ~2시간)
+- ✅ 버전 자동 업데이트: v0.33.0 → v0.34.0 (MINOR)
+- ✅ UI 구현 완료, Phase 5~6 진행 가능
+
+---
+
+## 📋 다음 작업 (진행 예정)
 
 ### Phase 5: 학습 기능 (2시간)
 - 사용자 수정 내역 저장 및 제안
+- 학습 통계 페이지
 
 ### Phase 6: 테스트 & 문서화 (2시간)
-- 단위 테스트, 통합 테스트
+- 통합 테스트
 - 사용자 가이드, 아키텍처 문서
 
 ---
@@ -307,10 +380,10 @@ mkdir -p data/invoices/temp
 
 ### 버전 정보
 - **시작 버전**: v0.30.3
-- **현재 버전**: v0.33.0 (MINOR) ✅
-- **목표 완료**: Phase 4~6 완료 후 (약 1일 남음)
+- **현재 버전**: v0.34.0 (MINOR) ✅
+- **목표 완료**: Phase 5~6 완료 후 (약 0.5일 남음)
 
-### 주요 변경사항 (v0.31.0 → v0.32.0 → v0.33.0)
+### 주요 변경사항 (v0.31.0 → v0.32.0 → v0.33.0 → v0.34.0)
 
 **v0.31.0 (Phase 1 완료):**
 - 신규 테이블: Invoice, InvoiceItem, InvoiceLearning (3개)
@@ -321,19 +394,24 @@ mkdir -p data/invoices/temp
 - 단위 테스트: 58개 (100% 통과)
 - NumPy 호환성 수정: numpy<2
 
-**v0.33.0 (Phase 3 완료) ✅:**
+**v0.33.0 (Phase 3 완료):**
 - 신규 서비스: ocr_service (6개 메서드), invoice_service (7개 메서드), learning_service (8개 메서드)
 - Tesseract OCR 통합 (kor+eng)
 - 신뢰도 기반 검증, 입고 확정, 학습 기능
+
+**v0.34.0 (Phase 4 완료) ✅:**
+- 신규 페이지: ImageInvoiceUpload.py (460 lines, 3개 탭)
+- 이미지 업로드 → AI 분석 → 결과 확인 → 입고 확정 워크플로우
+- 다중 원두 항목 관리, 자동 매칭, 처리 내역 조회
 
 ### 완료된 Phase
 - ✅ Phase 0: 환경 설정 (1시간)
 - ✅ Phase 1: 데이터베이스 모델 (2시간)
 - ✅ Phase 2: 이미지 처리 유틸리티 (4시간)
-- ✅ Phase 3: 서비스 계층 (4시간) ← **완료**
+- ✅ Phase 3: 서비스 계층 (4시간)
+- ✅ Phase 4: UI 구현 (4시간) ← **완료**
 
 ### 남은 Phase
-- Phase 4: UI 구현 (4시간)
 - Phase 5: 학습 기능 (2시간)
 - Phase 6: 테스트 & 문서화 (2시간)
 
@@ -357,4 +435,4 @@ mkdir -p data/invoices/temp
 
 ---
 
-**최종 업데이트**: 2025-11-13 (Phase 3 완료, 현재 v0.33.0)
+**최종 업데이트**: 2025-11-13 (Phase 4 완료, 현재 v0.34.0)
