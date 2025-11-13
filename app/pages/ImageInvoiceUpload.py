@@ -1,0 +1,457 @@
+"""
+거래 명세서 이미지 자동 입고 페이지
+이미지 업로드 → OCR 분석 → 결과 확인 → 입고 확정
+"""
+
+import streamlit as st
+import sys
+import os
+from datetime import date, datetime
+from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from models import SessionLocal
+from services.ocr_service import OCRService
+from services.invoice_service import InvoiceService
+from services.learning_service import LearningService
+from services.bean_service import BeanService
+from components.sidebar import render_sidebar
+
+# 페이지 설정
+st.set_page_config(
+    page_title="거래 명세서 이미지 입고",
+    page_icon="📄",
+    layout="wide"
+)
+
+# 현재 페이지 저장
+st.session_state["current_page"] = "ImageInvoiceUpload"
+
+# 사이드바 렌더링
+render_sidebar()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 세션 상태 초기화
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if "db" not in st.session_state:
+    st.session_state.db = SessionLocal()
+
+if "ocr_service" not in st.session_state:
+    st.session_state.ocr_service = OCRService(st.session_state.db)
+
+if "invoice_service" not in st.session_state:
+    st.session_state.invoice_service = InvoiceService(st.session_state.db)
+
+if "learning_service" not in st.session_state:
+    st.session_state.learning_service = LearningService(st.session_state.db)
+
+if "bean_service" not in st.session_state:
+    st.session_state.bean_service = BeanService(st.session_state.db)
+
+# 분석 결과 저장용
+if "invoice_result" not in st.session_state:
+    st.session_state.invoice_result = None
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 헤더
+# ═══════════════════════════════════════════════════════════════════════════════
+
+st.title("📄 거래 명세서 이미지 자동 입고")
+st.markdown("""
+스마트폰으로 촬영한 거래 명세서를 업로드하면 AI가 자동으로 인식하여 입고 처리합니다.
+
+**지원 형식:** JPG, PNG, PDF (최대 10MB)
+""")
+
+st.divider()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 탭 구성
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tab1, tab2, tab3 = st.tabs([
+    "📤 이미지 업로드",
+    "✅ 인식 결과 확인",
+    "📋 처리 내역"
+])
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tab 1: 이미지 업로드
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with tab1:
+    st.header("1️⃣ 거래 명세서 이미지 업로드")
+
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.subheader("이미지 선택")
+
+        uploaded_file = st.file_uploader(
+            "거래 명세서 이미지를 선택하세요",
+            type=['jpg', 'jpeg', 'png', 'pdf'],
+            help="JPG, PNG, PDF 형식 지원 (최대 10MB)"
+        )
+
+        if uploaded_file:
+            st.success(f"✅ 파일 선택됨: {uploaded_file.name}")
+            st.caption(f"크기: {uploaded_file.size / 1024:.1f} KB")
+
+            # 분석 버튼
+            if st.button("🤖 AI 분석 시작", type="primary", use_container_width=True):
+                with st.spinner("AI가 명세서를 분석하고 있습니다... (약 5~10초 소요)"):
+                    try:
+                        # 이미지 처리 파이프라인 실행
+                        result = st.session_state.invoice_service.process_invoice_image(
+                            uploaded_file,
+                            st.session_state.ocr_service
+                        )
+
+                        # 결과 저장
+                        st.session_state.invoice_result = result
+
+                        st.success("✅ 분석 완료! '인식 결과 확인' 탭으로 이동하세요.")
+                        st.balloons()
+
+                    except Exception as e:
+                        st.error(f"❌ 분석 실패: {str(e)}")
+                        st.info("이미지가 흐릿하거나 형식이 맞지 않을 수 있습니다. 다른 이미지를 시도해주세요.")
+        else:
+            st.info("📁 거래 명세서 이미지를 업로드해주세요.")
+
+    with col2:
+        st.subheader("미리보기")
+
+        if uploaded_file:
+            try:
+                # 이미지 표시
+                if uploaded_file.type in ['image/jpeg', 'image/png', 'image/jpg']:
+                    image = Image.open(uploaded_file)
+                    st.image(image, caption="업로드된 이미지", use_column_width=True)
+                elif uploaded_file.type == 'application/pdf':
+                    st.info("📄 PDF 파일이 업로드되었습니다. 분석 시 첫 페이지만 처리됩니다.")
+            except Exception as e:
+                st.warning("이미지 미리보기 실패")
+        else:
+            st.image("https://via.placeholder.com/400x300?text=Image+Preview",
+                    caption="이미지 미리보기", use_column_width=True)
+
+    # 사용 가이드
+    st.divider()
+    st.subheader("📖 사용 가이드")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("""
+        **1. 촬영 팁**
+        - 📱 명세서 전체가 보이도록 촬영
+        - 💡 조명이 밝은 곳에서 촬영
+        - 📐 명세서를 평평하게 펴서 촬영
+        """)
+
+    with col2:
+        st.markdown("""
+        **2. 지원 형식**
+        - ✅ GSC 거래명세서 (높은 정확도)
+        - ✅ HACIELO 명세서
+        - ✅ 기타 표준 명세서
+        """)
+
+    with col3:
+        st.markdown("""
+        **3. 처리 과정**
+        - 🤖 AI가 텍스트 자동 추출
+        - 🔍 원두명 자동 매칭
+        - ✅ 사용자 확인 후 입고
+        """)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tab 2: 인식 결과 확인
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with tab2:
+    st.header("2️⃣ 인식 결과 확인 및 수정")
+
+    result = st.session_state.invoice_result
+
+    if not result:
+        st.info("먼저 '이미지 업로드' 탭에서 명세서를 분석해주세요.")
+    else:
+        # 신뢰도 표시
+        confidence = result['confidence']
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric("신뢰도", f"{confidence:.1f}%")
+
+        with col2:
+            invoice_type = result['invoice_type']
+            st.metric("명세서 타입", invoice_type)
+
+        with col3:
+            items_count = len(result['items'])
+            st.metric("원두 항목 수", f"{items_count}개")
+
+        with col4:
+            total_amount = result['invoice_data'].get('total_amount', 0)
+            st.metric("총액", f"₩{total_amount:,.0f}")
+
+        # 경고 메시지
+        if result['warnings']:
+            st.warning("⚠️ **경고사항**")
+            for warning in result['warnings']:
+                st.write(f"- {warning}")
+
+        st.divider()
+
+        # 명세서 메타데이터
+        st.subheader("📋 명세서 정보")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            supplier = st.text_input(
+                "공급업체",
+                value=result['invoice_data'].get('supplier', ''),
+                key="edit_supplier"
+            )
+
+        with col2:
+            invoice_date = st.date_input(
+                "거래일자",
+                value=result['invoice_data'].get('invoice_date', date.today()),
+                key="edit_invoice_date"
+            )
+
+        with col3:
+            total_amount_edit = st.number_input(
+                "총액 (원)",
+                value=float(result['invoice_data'].get('total_amount', 0)),
+                min_value=0.0,
+                step=1000.0,
+                key="edit_total_amount"
+            )
+
+        st.divider()
+
+        # 원두 항목 표시
+        st.subheader("☕ 원두 항목")
+
+        if not result['items']:
+            st.warning("인식된 원두 항목이 없습니다. 수동으로 추가해주세요.")
+        else:
+            # 모든 원두 목록 가져오기 (드롭다운용)
+            all_beans = st.session_state.bean_service.get_all_beans()
+            bean_options = {f"{bean.name} (NO.{bean.no})": bean for bean in all_beans}
+            bean_names = list(bean_options.keys())
+
+            # 각 항목마다 수정 폼
+            for idx, item in enumerate(result['items']):
+                with st.expander(f"**항목 {idx+1}: {item.get('bean_name', '알 수 없음')}**", expanded=(idx==0)):
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        # 원두 선택
+                        bean_name_raw = item.get('bean_name', '')
+
+                        # 매칭된 원두 찾기
+                        matched_bean, match_score = result['matched_beans'].get(bean_name_raw, (None, 0.0))
+
+                        if matched_bean:
+                            default_bean_name = f"{matched_bean.name} (NO.{matched_bean.no})"
+                            default_index = bean_names.index(default_bean_name) if default_bean_name in bean_names else 0
+                            st.success(f"✅ 자동 매칭됨 (유사도: {match_score:.1%})")
+                        else:
+                            default_index = 0
+                            st.warning("⚠️ 자동 매칭 실패 - 수동 선택 필요")
+
+                        selected_bean_name = st.selectbox(
+                            "원두 선택",
+                            options=bean_names,
+                            index=default_index,
+                            key=f"bean_select_{idx}"
+                        )
+
+                        selected_bean = bean_options[selected_bean_name]
+
+                        st.caption(f"OCR 인식값: {bean_name_raw}")
+
+                    with col2:
+                        # 중량 (kg)
+                        weight = st.number_input(
+                            "중량 (kg)",
+                            value=float(item.get('weight', 0)),
+                            min_value=0.0,
+                            step=0.1,
+                            key=f"weight_{idx}"
+                        )
+
+                    col3, col4, col5 = st.columns(3)
+
+                    with col3:
+                        # 단가 (원/kg)
+                        unit_price = st.number_input(
+                            "단가 (원/kg)",
+                            value=float(item.get('unit_price', 0)),
+                            min_value=0.0,
+                            step=100.0,
+                            key=f"unit_price_{idx}"
+                        )
+
+                    with col4:
+                        # 공급가액 (자동 계산)
+                        amount = weight * unit_price
+                        st.metric("공급가액", f"₩{amount:,.0f}")
+
+                    with col5:
+                        # 규격
+                        spec = st.text_input(
+                            "규격",
+                            value=item.get('spec', ''),
+                            key=f"spec_{idx}"
+                        )
+
+                    # 항목 정보 업데이트 (세션에 저장)
+                    result['items'][idx]['bean_id'] = selected_bean.id
+                    result['items'][idx]['bean_name'] = selected_bean.name
+                    result['items'][idx]['weight'] = weight
+                    result['items'][idx]['unit_price'] = unit_price
+                    result['items'][idx]['amount'] = amount
+                    result['items'][idx]['spec'] = spec
+
+        st.divider()
+
+        # 입고 확정 버튼
+        col1, col2, col3 = st.columns([2, 1, 1])
+
+        with col2:
+            if st.button("❌ 취소", use_container_width=True):
+                st.session_state.invoice_result = None
+                st.rerun()
+
+        with col3:
+            if st.button("✅ 입고 확정", type="primary", use_container_width=True):
+                try:
+                    with st.spinner("입고 처리 중..."):
+                        # Invoice 데이터 업데이트
+                        result['invoice_data']['supplier'] = supplier
+                        result['invoice_data']['invoice_date'] = invoice_date
+                        result['invoice_data']['total_amount'] = total_amount_edit
+
+                        # Invoice 저장
+                        invoice = st.session_state.invoice_service.save_invoice(
+                            invoice_data=result['invoice_data'],
+                            items=result['items'],
+                            image=result['image'],
+                            ocr_text=result['ocr_text'],
+                            confidence=confidence
+                        )
+
+                        # 입고 확정 (Inventory + Transaction 생성)
+                        st.session_state.invoice_service.confirm_invoice(invoice.id)
+
+                        st.success(f"✅ {len(result['items'])}개 원두 입고 완료!")
+                        st.balloons()
+
+                        # 결과 초기화
+                        st.session_state.invoice_result = None
+
+                        # 2초 후 처리 내역 탭으로 이동
+                        import time
+                        time.sleep(2)
+                        st.rerun()
+
+                except Exception as e:
+                    st.error(f"❌ 입고 실패: {str(e)}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tab 3: 처리 내역
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with tab3:
+    st.header("3️⃣ 처리 내역")
+
+    # 필터
+    col1, col2, col3 = st.columns([2, 1, 1])
+
+    with col1:
+        status_filter = st.selectbox(
+            "상태 필터",
+            options=["전체", "PENDING", "COMPLETED", "FAILED"],
+            index=1  # 기본값: COMPLETED
+        )
+
+    with col2:
+        limit = st.number_input(
+            "조회 개수",
+            value=20,
+            min_value=5,
+            max_value=100,
+            step=5
+        )
+
+    with col3:
+        if st.button("🔄 새로고침", use_container_width=True):
+            st.rerun()
+
+    st.divider()
+
+    # 처리 내역 조회
+    status = None if status_filter == "전체" else status_filter
+    invoices = st.session_state.invoice_service.get_invoice_history(
+        limit=limit,
+        status=status
+    )
+
+    if not invoices:
+        st.info("처리된 명세서가 없습니다.")
+    else:
+        st.subheader(f"📊 총 {len(invoices)}건")
+
+        # 테이블 형식으로 표시
+        for invoice in invoices:
+            with st.expander(f"**#{invoice.id} - {invoice.supplier}** ({invoice.invoice_date})"):
+                col1, col2, col3, col4 = st.columns(4)
+
+                with col1:
+                    st.metric("상태", invoice.status)
+
+                with col2:
+                    st.metric("신뢰도", f"{invoice.confidence_score:.1f}%")
+
+                with col3:
+                    st.metric("총액", f"₩{invoice.total_amount:,.0f}")
+
+                with col4:
+                    st.metric("원두 항목", f"{len(invoice.items)}개")
+
+                # 이미지 표시
+                if os.path.exists(invoice.image_path):
+                    st.image(invoice.image_path, caption="명세서 이미지", width=400)
+
+                # 항목 상세
+                st.subheader("원두 항목")
+                items_data = []
+                for item in invoice.items:
+                    items_data.append({
+                        "원두명": item.bean_name_raw,
+                        "중량(kg)": item.weight,
+                        "단가(원/kg)": f"₩{item.unit_price:,.0f}",
+                        "공급가액(원)": f"₩{item.amount:,.0f}",
+                        "규격": item.spec or "-"
+                    })
+
+                st.table(items_data)
+
+                # 삭제 버튼 (PENDING만)
+                if invoice.status == "PENDING":
+                    if st.button(f"🗑️ 삭제 (Invoice #{invoice.id})", key=f"delete_{invoice.id}"):
+                        try:
+                            st.session_state.invoice_service.delete_invoice(invoice.id)
+                            st.success("✅ 삭제 완료")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ 삭제 실패: {str(e)}")
