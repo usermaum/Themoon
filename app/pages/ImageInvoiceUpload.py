@@ -38,14 +38,21 @@ render_sidebar()
 if "db" not in st.session_state:
     st.session_state.db = SessionLocal()
 
-if "ocr_service" not in st.session_state:
-    st.session_state.ocr_service = OCRService(st.session_state.db)
-
-if "invoice_service" not in st.session_state:
-    st.session_state.invoice_service = InvoiceService(st.session_state.db)
-
+# learning_service 먼저 생성 (다른 서비스에서 사용)
 if "learning_service" not in st.session_state:
     st.session_state.learning_service = LearningService(st.session_state.db)
+
+if "ocr_service" not in st.session_state:
+    st.session_state.ocr_service = OCRService(
+        st.session_state.db,
+        learning_service=st.session_state.learning_service
+    )
+
+if "invoice_service" not in st.session_state:
+    st.session_state.invoice_service = InvoiceService(
+        st.session_state.db,
+        learning_service=st.session_state.learning_service
+    )
 
 if "bean_service" not in st.session_state:
     st.session_state.bean_service = BeanService(st.session_state.db)
@@ -71,10 +78,11 @@ st.divider()
 # 탭 구성
 # ═══════════════════════════════════════════════════════════════════════════════
 
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📤 이미지 업로드",
     "✅ 인식 결과 확인",
-    "📋 처리 내역"
+    "📋 처리 내역",
+    "📚 학습 통계"
 ])
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -111,6 +119,10 @@ with tab1:
 
                         # 결과 저장
                         st.session_state.invoice_result = result
+
+                        # OCR 원본 값 저장 (학습용)
+                        import copy
+                        st.session_state.invoice_result_original = copy.deepcopy(result)
 
                         st.success("✅ 분석 완료! '인식 결과 확인' 탭으로 이동하세요.")
                         st.balloons()
@@ -350,6 +362,67 @@ with tab2:
                             confidence=confidence
                         )
 
+                        # 사용자 수정 내역 저장 (학습용)
+                        if hasattr(st.session_state, 'invoice_result_original') and \
+                           hasattr(st.session_state, 'learning_service') and \
+                           st.session_state.learning_service is not None:
+                            try:
+                                corrections = []
+                                original_result = st.session_state.invoice_result_original
+
+                                # 각 항목별로 원본과 비교
+                                for idx, (original_item, current_item) in enumerate(zip(
+                                    original_result.get('items', []),
+                                    result['items']
+                                )):
+                                    # invoice_item_id 가져오기 (저장 후 생성된 ID)
+                                    if idx < len(invoice.items):
+                                        invoice_item_id = invoice.items[idx].id
+
+                                        # 원두명 비교
+                                        original_bean_name = original_item.get('bean_name', '')
+                                        current_bean_name = current_item.get('bean_name', '')
+                                        if original_bean_name and str(original_bean_name) != str(current_bean_name):
+                                            corrections.append({
+                                                'invoice_item_id': invoice_item_id,
+                                                'field_name': 'bean_name',
+                                                'ocr_value': str(original_bean_name),
+                                                'corrected_value': str(current_bean_name)
+                                            })
+
+                                        # 중량 비교
+                                        original_weight = original_item.get('weight')
+                                        current_weight = current_item.get('weight')
+                                        if original_weight is not None and current_weight is not None and \
+                                           float(original_weight) != float(current_weight):
+                                            corrections.append({
+                                                'invoice_item_id': invoice_item_id,
+                                                'field_name': 'weight',
+                                                'ocr_value': str(original_weight),
+                                                'corrected_value': str(current_weight)
+                                            })
+
+                                        # 단가 비교
+                                        original_unit_price = original_item.get('unit_price')
+                                        current_unit_price = current_item.get('unit_price')
+                                        if original_unit_price is not None and current_unit_price is not None and \
+                                           float(original_unit_price) != float(current_unit_price):
+                                            corrections.append({
+                                                'invoice_item_id': invoice_item_id,
+                                                'field_name': 'unit_price',
+                                                'ocr_value': str(original_unit_price),
+                                                'corrected_value': str(current_unit_price)
+                                            })
+
+                                # corrections 저장
+                                if corrections:
+                                    saved_count = st.session_state.invoice_service.save_user_corrections(corrections)
+                                    # st.info(f"📚 {saved_count}개 수정 내역이 학습되었습니다.")
+
+                            except Exception as e:
+                                # 학습 저장 실패해도 입고는 진행
+                                pass
+
                         # 입고 확정 (Inventory + Transaction 생성)
                         st.session_state.invoice_service.confirm_invoice(invoice.id)
 
@@ -358,6 +431,8 @@ with tab2:
 
                         # 결과 초기화
                         st.session_state.invoice_result = None
+                        if hasattr(st.session_state, 'invoice_result_original'):
+                            st.session_state.invoice_result_original = None
 
                         # 2초 후 처리 내역 탭으로 이동
                         import time
@@ -455,3 +530,180 @@ with tab3:
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ 삭제 실패: {str(e)}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tab 4: 학습 통계
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with tab4:
+    st.header("📚 학습 통계")
+    st.markdown("""
+    사용자가 OCR 결과를 수정한 내역을 학습하여 다음 분석의 정확도를 높입니다.
+    """)
+
+    if not hasattr(st.session_state, 'learning_service') or st.session_state.learning_service is None:
+        st.warning("⚠️ 학습 서비스가 활성화되지 않았습니다.")
+    else:
+        try:
+            # 학습 통계 조회
+            stats = st.session_state.learning_service.get_correction_stats()
+
+            if not stats:
+                st.info("📝 아직 학습 데이터가 없습니다. OCR 결과를 수정하면 자동으로 학습됩니다.")
+            else:
+                # ═══════════════════════════════════════════════════════════════
+                # 1. 전체 통계
+                # ═══════════════════════════════════════════════════════════════
+                st.subheader("📊 전체 통계")
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    total_count = stats.get('total_count', 0)
+                    st.metric(
+                        "총 학습 데이터 수",
+                        f"{total_count:,}건",
+                        help="사용자가 수정한 총 횟수"
+                    )
+
+                with col2:
+                    unique_fields = len(stats.get('by_field', {}))
+                    st.metric(
+                        "학습된 필드 수",
+                        f"{unique_fields}개",
+                        help="수정이 발생한 필드 종류"
+                    )
+
+                with col3:
+                    unique_beans = len(stats.get('by_bean_name', {}))
+                    st.metric(
+                        "학습된 원두 수",
+                        f"{unique_beans}개",
+                        help="수정이 발생한 원두 종류"
+                    )
+
+                st.divider()
+
+                # ═══════════════════════════════════════════════════════════════
+                # 2. 필드별 수정 빈도
+                # ═══════════════════════════════════════════════════════════════
+                st.subheader("📝 필드별 수정 빈도")
+
+                by_field = stats.get('by_field', {})
+                if by_field:
+                    # 데이터 준비
+                    field_data = []
+                    field_name_map = {
+                        'bean_name': '원두명',
+                        'weight': '중량',
+                        'unit_price': '단가',
+                        'quantity': '수량',
+                        'amount': '금액',
+                        'spec': '규격',
+                        'origin': '원산지',
+                        'supplier': '공급처',
+                        'invoice_date': '거래일자',
+                        'total_amount': '합계금액',
+                        'total_weight': '총 중량'
+                    }
+
+                    for field_name, count in sorted(by_field.items(), key=lambda x: x[1], reverse=True):
+                        field_data.append({
+                            "필드": field_name_map.get(field_name, field_name),
+                            "수정 횟수": f"{count}회",
+                            "비율": f"{count / total_count * 100:.1f}%"
+                        })
+
+                    st.table(field_data)
+                else:
+                    st.info("필드별 통계가 없습니다.")
+
+                st.divider()
+
+                # ═══════════════════════════════════════════════════════════════
+                # 3. 자주 수정되는 원두명 Top 5
+                # ═══════════════════════════════════════════════════════════════
+                st.subheader("🏆 자주 수정되는 원두명 Top 5")
+
+                by_bean_name = stats.get('by_bean_name', {})
+                if by_bean_name:
+                    # 상위 5개 추출
+                    top_beans = sorted(by_bean_name.items(), key=lambda x: x[1], reverse=True)[:5]
+
+                    bean_data = []
+                    for idx, (bean_name, count) in enumerate(top_beans, start=1):
+                        bean_data.append({
+                            "순위": f"{idx}위",
+                            "원두명": bean_name,
+                            "수정 횟수": f"{count}회"
+                        })
+
+                    st.table(bean_data)
+
+                    st.info("💡 자주 수정되는 원두는 OCR 인식 정확도가 낮을 수 있습니다. 원두명을 더 명확하게 촬영하거나 수동 매칭을 고려하세요.")
+                else:
+                    st.info("원두명 통계가 없습니다.")
+
+                st.divider()
+
+                # ═══════════════════════════════════════════════════════════════
+                # 4. 최근 학습 내역
+                # ═══════════════════════════════════════════════════════════════
+                st.subheader("📜 최근 학습 내역 (최근 10건)")
+
+                recent_learnings = st.session_state.learning_service.get_learning_data(limit=10)
+
+                if recent_learnings:
+                    learning_data = []
+                    field_name_map = {
+                        'bean_name': '원두명',
+                        'weight': '중량',
+                        'unit_price': '단가',
+                        'quantity': '수량',
+                        'amount': '금액',
+                        'spec': '규격',
+                        'origin': '원산지',
+                        'supplier': '공급처',
+                        'invoice_date': '거래일자',
+                        'total_amount': '합계금액',
+                        'total_weight': '총 중량'
+                    }
+
+                    for learning in recent_learnings:
+                        learning_data.append({
+                            "날짜": learning.created_at.strftime("%Y-%m-%d %H:%M"),
+                            "필드": field_name_map.get(learning.field_name, learning.field_name),
+                            "OCR 값": learning.ocr_value,
+                            "수정 값": learning.corrected_value,
+                            "Invoice": f"#{learning.invoice_item_id}"
+                        })
+
+                    st.table(learning_data)
+                else:
+                    st.info("최근 학습 내역이 없습니다.")
+
+                st.divider()
+
+                # ═══════════════════════════════════════════════════════════════
+                # 5. 학습 데이터 관리
+                # ═══════════════════════════════════════════════════════════════
+                st.subheader("⚙️ 학습 데이터 관리")
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.info("💡 학습 데이터는 자동으로 축적되며, OCR 정확도 향상에 활용됩니다.")
+
+                with col2:
+                    if st.button("🗑️ 모든 학습 데이터 초기화", type="secondary", key="clear_learning"):
+                        st.warning("⚠️ 정말로 모든 학습 데이터를 삭제하시겠습니까?")
+                        if st.button("✅ 예, 삭제합니다", key="confirm_clear"):
+                            try:
+                                st.session_state.learning_service.clear_learning_data()
+                                st.success("✅ 학습 데이터가 초기화되었습니다.")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ 초기화 실패: {str(e)}")
+
+        except Exception as e:
+            st.error(f"❌ 학습 통계 조회 실패: {str(e)}")

@@ -4,7 +4,7 @@ OCR 서비스
 거래 명세서 이미지에서 텍스트를 추출하고 구조화된 데이터로 파싱합니다.
 """
 
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, TYPE_CHECKING
 from datetime import datetime
 from PIL import Image
 import pytesseract
@@ -23,6 +23,10 @@ from utils.text_parser import (
 )
 from utils.image_utils import preprocess_image
 
+# Type hints only (순환 참조 방지)
+if TYPE_CHECKING:
+    from services.learning_service import LearningService
+
 
 class OCRService:
     """
@@ -32,12 +36,14 @@ class OCRService:
     구조화된 데이터로 파싱합니다.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, learning_service: Optional['LearningService'] = None):
         """
         Args:
             db: SQLAlchemy Session
+            learning_service: LearningService 인스턴스 (학습 기능 사용 시)
         """
         self.db = db
+        self.learning_service = learning_service
 
     def extract_text_from_image(
         self,
@@ -114,6 +120,88 @@ class OCRService:
         result = parse_invoice(ocr_text)
 
         return result
+
+    def parse_invoice_data_with_learning(self, ocr_text: str, threshold: float = 0.8) -> Dict:
+        """
+        학습 데이터를 참고하여 OCR 텍스트 파싱
+
+        기본 파싱 후 과거 학습 데이터를 기반으로 자동 제안을 추가합니다.
+        제안은 '{field}_suggested' 키로 추가됩니다.
+
+        Args:
+            ocr_text: OCR 결과 텍스트
+            threshold: 학습 제안 최소 유사도 (0~1, 기본값 0.8)
+
+        Returns:
+            파싱 결과 + 학습 제안
+            {
+                'bean_name': '...',
+                'bean_name_suggested': '...',  # 학습 제안 (있을 경우)
+                'quantity': 10,
+                'quantity_suggested': 12,      # 학습 제안 (있을 경우)
+                ...
+            }
+        """
+        # 1. 기본 파싱
+        parsed = self.parse_invoice_data(ocr_text)
+
+        # 2. 학습 서비스가 없으면 기본 파싱 결과만 반환
+        if not self.learning_service:
+            return parsed
+
+        # 3. GSC 타입: items에 학습 제안 추가
+        if parsed.get('invoice_type') == 'GSC':
+            items = parsed.get('items', [])
+            for item in items:
+                # 원두명 제안
+                bean_name = item.get('bean_name', '')
+                if bean_name:
+                    suggestion = self.learning_service.suggest_correction(
+                        str(bean_name), 'bean_name', threshold=threshold
+                    )
+                    if suggestion and suggestion != bean_name:
+                        item['bean_name_suggested'] = suggestion
+
+                # 중량 제안
+                weight = item.get('weight')
+                if weight is not None:
+                    suggestion = self.learning_service.suggest_correction(
+                        str(weight), 'weight', threshold=threshold
+                    )
+                    if suggestion:
+                        try:
+                            suggested_weight = float(suggestion)
+                            if suggested_weight != weight:
+                                item['weight_suggested'] = suggested_weight
+                        except (ValueError, TypeError):
+                            pass
+
+                # 단가 제안
+                unit_price = item.get('unit_price')
+                if unit_price is not None:
+                    suggestion = self.learning_service.suggest_correction(
+                        str(unit_price), 'unit_price', threshold=threshold
+                    )
+                    if suggestion:
+                        try:
+                            suggested_price = float(suggestion)
+                            if suggested_price != unit_price:
+                                item['unit_price_suggested'] = suggested_price
+                        except (ValueError, TypeError):
+                            pass
+
+        else:
+            # 4. 기본 타입: 단일 필드에 학습 제안 추가
+            for field in ['bean_name', 'quantity', 'unit_price']:
+                value = parsed.get(field)
+                if value is not None:
+                    suggestion = self.learning_service.suggest_correction(
+                        str(value), field, threshold=threshold
+                    )
+                    if suggestion and str(suggestion) != str(value):
+                        parsed[f'{field}_suggested'] = suggestion
+
+        return parsed
 
     def match_bean_to_db(
         self,

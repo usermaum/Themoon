@@ -4,7 +4,7 @@ Invoice 서비스
 거래 명세서 이미지 처리 및 입고 확정 관리
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING
 from datetime import datetime, date
 import os
 from PIL import Image
@@ -18,6 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models.invoice import Invoice, InvoiceItem
 from models.database import Bean, Inventory, Transaction
 from utils.image_utils import convert_uploaded_file_to_image, save_image
+
+# Type hints only (순환 참조 방지)
+if TYPE_CHECKING:
+    from services.learning_service import LearningService
 
 # Invoice 상태 (문자열로 직접 정의)
 class InvoiceStatus:
@@ -33,12 +37,14 @@ class InvoiceService:
     거래 명세서 이미지 처리, 저장, 입고 확정을 관리합니다.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, learning_service: Optional['LearningService'] = None):
         """
         Args:
             db: SQLAlchemy Session
+            learning_service: LearningService 인스턴스 (학습 기능 사용 시)
         """
         self.db = db
+        self.learning_service = learning_service
 
     def process_invoice_image(
         self,
@@ -362,3 +368,42 @@ class InvoiceService:
         # Invoice 삭제 (cascade로 InvoiceItem도 자동 삭제)
         self.db.delete(invoice)
         self.db.commit()
+
+    def save_user_corrections(
+        self,
+        corrections: List[Dict]
+    ) -> int:
+        """
+        사용자 수정 내역 일괄 저장
+
+        UI에서 사용자가 OCR 결과를 수정한 경우,
+        그 수정 내역을 InvoiceLearning 테이블에 저장합니다.
+
+        Args:
+            corrections: 수정 내역 리스트
+                [
+                    {
+                        'invoice_item_id': int,
+                        'field_name': str,
+                        'ocr_value': str,
+                        'corrected_value': str
+                    },
+                    ...
+                ]
+
+        Returns:
+            저장된 수정 내역 개수
+
+        Raises:
+            ValueError: learning_service가 없는 경우
+        """
+        if not self.learning_service:
+            raise ValueError("LearningService가 설정되지 않았습니다")
+
+        if not corrections:
+            return 0
+
+        # 학습 서비스를 통해 일괄 저장
+        saved_count = self.learning_service.batch_save_corrections(corrections)
+
+        return saved_count
