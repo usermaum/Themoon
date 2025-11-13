@@ -364,15 +364,75 @@ e0a32266 feat: Phase 4 완료 - ImageInvoiceUpload.py UI 구현
 
 ---
 
+---
+
+### 7. Phase 5: 학습 기능 (2시간) ✅
+
+**목표**: 사용자 수정 내역 학습 및 자동 제안 기능 구현
+
+**작업 내용:**
+
+**Task 5-1: OCRService에 학습 데이터 제안 기능 추가**
+- ✅ `parse_invoice_data_with_learning()` 메서드 추가 (81 lines)
+  - 과거 학습 데이터 기반 자동 제안
+  - `{field}_suggested` 형태로 제안 값 반환
+  - GSC 타입 및 기본 타입 모두 지원
+  - threshold 파라미터로 제안 최소 유사도 설정 (기본값 0.8)
+- ✅ TYPE_CHECKING import로 순환 참조 방지
+- ✅ `__init__`에 learning_service 파라미터 추가 (Optional)
+
+**Task 5-2: InvoiceService에 사용자 수정 내역 저장 메서드 추가**
+- ✅ `save_user_corrections()` 메서드 추가 (37 lines)
+  - corrections 리스트 받아서 일괄 저장
+  - LearningService.batch_save_corrections() 호출
+- ✅ TYPE_CHECKING import로 순환 참조 방지
+- ✅ `__init__`에 learning_service 파라미터 추가 (Optional)
+
+**Task 5-3: ImageInvoiceUpload.py - Tab 4 (학습 통계) 추가**
+- ✅ Tab 4 "📚 학습 통계" 추가 (178 lines)
+  - 전체 통계: 총 학습 데이터 수, 학습된 필드 수, 학습된 원두 수
+  - 필드별 수정 빈도: 테이블 형식, 비율 표시
+  - 자주 수정되는 원두명 Top 5: 순위 표시
+  - 최근 학습 내역: 최근 10건 표시
+  - 학습 데이터 관리: 초기화 버튼
+
+**Task 5-4: Tab 2에 사용자 수정 내역 자동 저장 기능 추가**
+- ✅ Tab 1에서 OCR 원본 값 저장 (`invoice_result_original`)
+  - deep copy로 원본 값 보존
+- ✅ Tab 2 입고 확정 시 수정 내역 자동 저장 (60 lines)
+  - 원본과 현재 값 비교 (bean_name, weight, unit_price)
+  - corrections 리스트 생성
+  - `save_user_corrections()` 호출
+
+**Task 5-5: 서비스 초기화 개선**
+- ✅ learning_service 먼저 생성
+- ✅ ocr_service, invoice_service에 learning_service 연결
+
+**커밋:**
+```
+c1b225fa feat: Phase 5 완료 - 학습 기능 구현
+```
+
+**검증 기준:**
+- ✅ 모든 서비스 import 성공
+- ✅ parse_invoice_data_with_learning 실행 성공
+- ✅ save_user_corrections 실행 성공
+- ✅ 학습 통계 조회 기능 정상 작동
+
+**결과:**
+- ✅ Phase 5 완료 (예상 시간: 2시간, 실제 시간: ~1.5시간)
+- ✅ 버전 자동 업데이트: v0.34.0 → v0.35.0 (MINOR)
+- ✅ 학습 기능 완성, Phase 6 (테스트 & 문서화) 진행 가능
+
+---
+
 ## 📋 다음 작업 (진행 예정)
 
-### Phase 5: 학습 기능 (2시간)
-- 사용자 수정 내역 저장 및 제안
-- 학습 통계 페이지
-
 ### Phase 6: 테스트 & 문서화 (2시간)
-- 통합 테스트
-- 사용자 가이드, 아키텍처 문서
+- 통합 테스트 (샘플 이미지 테스트)
+- 성능 테스트 (이미지 크기별 처리 시간)
+- 사용자 가이드 문서 작성
+- 아키텍처 문서 작성
 
 ---
 
@@ -380,10 +440,10 @@ e0a32266 feat: Phase 4 완료 - ImageInvoiceUpload.py UI 구현
 
 ### 버전 정보
 - **시작 버전**: v0.30.3
-- **현재 버전**: v0.34.0 (MINOR) ✅
-- **목표 완료**: Phase 5~6 완료 후 (약 0.5일 남음)
+- **현재 버전**: v0.35.0 (MINOR) ✅
+- **목표 완료**: Phase 6 완료 후 (약 0.25일 남음)
 
-### 주요 변경사항 (v0.31.0 → v0.32.0 → v0.33.0 → v0.34.0)
+### 주요 변경사항 (v0.31.0 → v0.32.0 → v0.33.0 → v0.34.0 → v0.35.0)
 
 **v0.31.0 (Phase 1 완료):**
 - 신규 테이블: Invoice, InvoiceItem, InvoiceLearning (3개)
@@ -399,20 +459,26 @@ e0a32266 feat: Phase 4 완료 - ImageInvoiceUpload.py UI 구현
 - Tesseract OCR 통합 (kor+eng)
 - 신뢰도 기반 검증, 입고 확정, 학습 기능
 
-**v0.34.0 (Phase 4 완료) ✅:**
+**v0.34.0 (Phase 4 완료):**
 - 신규 페이지: ImageInvoiceUpload.py (460 lines, 3개 탭)
 - 이미지 업로드 → AI 분석 → 결과 확인 → 입고 확정 워크플로우
 - 다중 원두 항목 관리, 자동 매칭, 처리 내역 조회
+
+**v0.35.0 (Phase 5 완료) ✅:**
+- OCRService: parse_invoice_data_with_learning (학습 데이터 기반 자동 제안)
+- InvoiceService: save_user_corrections (사용자 수정 내역 저장)
+- ImageInvoiceUpload.py: Tab 4 (학습 통계), 사용자 수정 내역 자동 저장
+- 서비스 초기화 개선: learning_service 연동
 
 ### 완료된 Phase
 - ✅ Phase 0: 환경 설정 (1시간)
 - ✅ Phase 1: 데이터베이스 모델 (2시간)
 - ✅ Phase 2: 이미지 처리 유틸리티 (4시간)
 - ✅ Phase 3: 서비스 계층 (4시간)
-- ✅ Phase 4: UI 구현 (4시간) ← **완료**
+- ✅ Phase 4: UI 구현 (4시간)
+- ✅ Phase 5: 학습 기능 (2시간) ← **완료**
 
 ### 남은 Phase
-- Phase 5: 학습 기능 (2시간)
 - Phase 6: 테스트 & 문서화 (2시간)
 
 ### 샘플 이미지 분석 완료
@@ -435,4 +501,4 @@ e0a32266 feat: Phase 4 완료 - ImageInvoiceUpload.py UI 구현
 
 ---
 
-**최종 업데이트**: 2025-11-13 (Phase 4 완료, 현재 v0.34.0)
+**최종 업데이트**: 2025-11-13 (Phase 5 완료, 현재 v0.35.0)
