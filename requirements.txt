@@ -4,7 +4,7 @@
 # Core
 streamlit==1.38.0
 pandas==2.2.3
-numpy==2.1.3
+numpy<2  # NumPy 1.x (opencv-python 호환성)
 
 # Database
 sqlalchemy==2.0.44
