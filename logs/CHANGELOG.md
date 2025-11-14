@@ -11,12 +11,83 @@
 
 ---
 
+## [0.36.0] - 2025-11-14
+
+### ✨ 마이너 업데이트 (Minor Update): Phase 6 완료 - 테스트 &  문서화
+
+#### 📝 변경사항
+
+**신규 테스트:**
+- `app/tests/test_invoice_integration.py` (272 lines)
+  - 6개 통합 테스트: 서비스 초기화, OCR 파싱, Invoice 저장/입고 확정, 학습 기능, 처리 내역 조회
+  - ✅ 6 passed, 0 failed
+  - Coverage: invoice_service 59%, learning_service 73%
+
+- `app/tests/test_invoice_performance.py` (195 lines)
+  - 5개 성능 테스트: 소형/중형/대형 이미지 처리, OCR 추출, 파싱
+  - OCR 추출: 0.98초 (목표: 10초 이내)
+  - 파싱: 0.14초 (목표: 1초 이내)
+
+**모델 수정:**
+- `app/models/database.py`:
+  - Transaction 모델에 `invoice_item_id` 필드 추가 (거래 명세서 항목 연결)
+
+**서비스 수정:**
+- `app/services/invoice_service.py`:
+  - save_invoice: 필드명 수정 (weight→quantity, spec 제거)
+  - confirm_invoice: Inventory 조회/업데이트 방식으로 변경
+    - 기존 Inventory 조회 후 quantity_kg 증가 (없으면 생성)
+    - Transaction 필드명 수정 (quantity_kg, price_per_unit, inventory_type 추가)
+  - save_user_corrections: 반환 타입 수정 (리스트 길이 반환)
+
+**문서 업데이트:**
+- `Documents/Progress/SESSION_SUMMARY_2025-11-14.md`: 세션 요약 추가
+- `logs/CHANGELOG.md`: 변경 로그 업데이트
+- `README.md`, `.claude/CLAUDE.md`: 버전 동기화 예정
+
+#### 🐛 버그 수정
+- InvoiceItem 필드명 불일치 수정 (weight → quantity)
+- Inventory 필드명 불일치 수정 (quantity → quantity_kg)
+- Transaction에 invoice_item_id 필드 추가
+- 학습 서비스 반환 값 타입 수정
+
+#### 🧪 테스트
+- 통합 테스트 6개 추가 (모두 통과)
+- 성능 테스트 5개 추가
+
+---
+
 ## [0.35.0] - 2025-11-13
 
 ### ✨ 마이너 업데이트 (Minor Update): Phase 5 완료 - 학습 기능 구현
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+
+**서비스 수정:**
+- `app/services/ocr_service.py`:
+  - `parse_invoice_data_with_learning()` 메서드 추가 (81 lines)
+  - 과거 학습 데이터 기반 자동 제안 기능
+  - `{field}_suggested` 형태로 제안 값 반환
+  - GSC 타입 및 기본 타입 모두 지원
+
+- `app/services/invoice_service.py`:
+  - `save_user_corrections()` 메서드 추가 (37 lines)
+  - corrections 리스트 받아서 일괄 저장
+  - LearningService.batch_save_corrections() 호출
+
+**UI 추가:**
+- `app/pages/ImageInvoiceUpload.py`:
+  - Tab 4 "📚 학습 통계" 추가 (178 lines)
+  - 전체 통계: 총 학습 데이터 수, 학습된 필드 수, 학습된 원두 수
+  - 필드별 수정 빈도 테이블
+  - 자주 수정되는 원두명 Top 5
+  - 최근 학습 내역 (10건)
+  - 학습 데이터 초기화 버튼
+  - Tab 2에 사용자 수정 내역 자동 저장 기능 추가
+
+**서비스 초기화 개선:**
+- learning_service 먼저 생성
+- ocr_service, invoice_service에 learning_service 연결
 
 ## [0.34.0] - 2025-11-13
 
