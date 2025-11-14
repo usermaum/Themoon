@@ -49,7 +49,7 @@ class OCRService:
         self,
         image: Image.Image,
         lang: str = 'kor+eng',
-        preprocess: bool = True,
+        preprocess: bool = False,  # 기본값 False로 변경 (전처리 없이가 더 나음)
         psm_mode: int = 6
     ) -> str:
         """
@@ -58,7 +58,7 @@ class OCRService:
         Args:
             image: PIL Image 객체
             lang: OCR 언어 (기본값: 'kor+eng')
-            preprocess: 전처리 수행 여부 (기본값: True)
+            preprocess: 전처리 수행 여부 (기본값: False)
             psm_mode: Page Segmentation Mode (기본값: 6)
                       3 - 완전 자동 (기본값)
                       6 - 균일한 텍스트 블록 (표 형식에 적합)
