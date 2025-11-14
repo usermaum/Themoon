@@ -337,10 +337,10 @@ with tab2:
                     # 항목 정보 업데이트 (세션에 저장)
                     result['items'][idx]['bean_id'] = selected_bean.id
                     result['items'][idx]['bean_name'] = selected_bean.name
-                    result['items'][idx]['weight'] = weight
+                    result['items'][idx]['quantity'] = weight  # 'weight' UI -> 'quantity' DB
                     result['items'][idx]['unit_price'] = unit_price
                     result['items'][idx]['amount'] = amount
-                    result['items'][idx]['spec'] = spec
+                    result['items'][idx]['notes'] = spec  # 'spec' UI -> 'notes' DB
 
         st.divider()
 
@@ -384,7 +384,7 @@ with tab2:
                                     result['items']
                                 )):
                                     # invoice_item_id 가져오기 (저장 후 생성된 ID)
-                                    if idx < len(invoice.items):
+                                    if invoice and invoice.items and idx < len(invoice.items):
                                         invoice_item_id = invoice.items[idx].id
 
                                         # 원두명 비교
@@ -399,15 +399,15 @@ with tab2:
                                             })
 
                                         # 중량 비교
-                                        original_weight = original_item.get('weight')
-                                        current_weight = current_item.get('weight')
-                                        if original_weight is not None and current_weight is not None and \
-                                           float(original_weight) != float(current_weight):
+                                        original_quantity = original_item.get('quantity')
+                                        current_quantity = current_item.get('quantity')
+                                        if original_quantity is not None and current_quantity is not None and \
+                                           float(original_quantity) != float(current_quantity):
                                             corrections.append({
                                                 'invoice_item_id': invoice_item_id,
-                                                'field_name': 'weight',
-                                                'ocr_value': str(original_weight),
-                                                'corrected_value': str(current_weight)
+                                                'field_name': 'quantity',
+                                                'ocr_value': str(original_quantity),
+                                                'corrected_value': str(current_quantity)
                                             })
 
                                         # 단가 비교
