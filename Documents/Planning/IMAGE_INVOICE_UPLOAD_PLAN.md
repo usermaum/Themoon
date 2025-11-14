@@ -237,7 +237,7 @@ def process_invoice_image(image_file):
 
 #### 분석 개요
 - **총 샘플 수**: 11개
-- **데이터 위치**: `data/coffee_bean_receiving_Specification/IMG_165*.PNG/JPG`
+- **데이터 위치**: `images/coffee_bean_receiving_Specification/IMG_165*.PNG/JPG`
 - **분석 일시**: 2025-11-12
 
 ---
