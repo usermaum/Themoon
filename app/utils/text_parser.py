@@ -198,15 +198,21 @@ def extract_date(text: str) -> Optional[date]:
 def fuzzy_match_bean(
     ocr_name: str,
     beans: List['Bean'],  # Bean 모델 리스트
-    threshold: float = 0.7
+    threshold: float = 0.65  # 임계값 하향 조정 (0.7 → 0.65)
 ) -> Tuple[Optional['Bean'], float]:
     """
-    원두명 유사도 매칭 (Levenshtein Distance)
+    원두명 유사도 매칭 (개선된 알고리즘)
+
+    개선 사항:
+    1. Levenshtein Distance (전체 문자열 유사도)
+    2. 토큰 기반 매칭 (단어별 비교)
+    3. 부분 문자열 매칭 (일부 포함 여부)
+    4. 가중 평균으로 최종 점수 계산
 
     Args:
         ocr_name: OCR로 추출한 원두명
         beans: DB에 저장된 Bean 객체 리스트
-        threshold: 최소 유사도 (0~1, 기본값 0.7)
+        threshold: 최소 유사도 (0~1, 기본값 0.65)
 
     Returns:
         (매칭된 Bean 객체, 유사도 점수)
@@ -217,26 +223,47 @@ def fuzzy_match_bean(
 
     # 정규화
     ocr_name_normalized = normalize_text(ocr_name.lower())
+    ocr_tokens = set(ocr_name_normalized.split())
 
     best_bean = None
     best_score = 0.0
 
     for bean in beans:
         bean_name_normalized = normalize_text(bean.name.lower())
+        bean_tokens = set(bean_name_normalized.split())
 
-        # Levenshtein Distance 계산
+        # 1. Levenshtein Distance (가중치 40%)
         max_len = max(len(ocr_name_normalized), len(bean_name_normalized))
         if max_len == 0:
             continue
 
         dist = levenshtein_distance(ocr_name_normalized, bean_name_normalized)
+        lev_similarity = 1 - (dist / max_len)
 
-        # 유사도 점수 (0~1, 1이 완전 일치)
-        similarity = 1 - (dist / max_len)
+        # 2. 토큰 기반 Jaccard 유사도 (가중치 40%)
+        # 교집합 / 합집합
+        if ocr_tokens and bean_tokens:
+            intersection = len(ocr_tokens & bean_tokens)
+            union = len(ocr_tokens | bean_tokens)
+            token_similarity = intersection / union if union > 0 else 0
+        else:
+            token_similarity = 0
+
+        # 3. 부분 문자열 매칭 (가중치 20%)
+        substring_similarity = 0
+        if ocr_name_normalized in bean_name_normalized or bean_name_normalized in ocr_name_normalized:
+            substring_similarity = 0.8  # 부분 일치 시 보너스
+
+        # 4. 가중 평균
+        final_similarity = (
+            lev_similarity * 0.4 +
+            token_similarity * 0.4 +
+            substring_similarity * 0.2
+        )
 
         # 최고 점수 업데이트
-        if similarity > best_score:
-            best_score = similarity
+        if final_similarity > best_score:
+            best_score = final_similarity
             best_bean = bean
 
     # 임계값 이상만 반환

@@ -49,7 +49,8 @@ class OCRService:
         self,
         image: Image.Image,
         lang: str = 'kor+eng',
-        preprocess: bool = True
+        preprocess: bool = True,
+        psm_mode: int = 6
     ) -> str:
         """
         이미지에서 텍스트 추출 (Tesseract OCR)
@@ -58,6 +59,10 @@ class OCRService:
             image: PIL Image 객체
             lang: OCR 언어 (기본값: 'kor+eng')
             preprocess: 전처리 수행 여부 (기본값: True)
+            psm_mode: Page Segmentation Mode (기본값: 6)
+                      3 - 완전 자동 (기본값)
+                      6 - 균일한 텍스트 블록 (표 형식에 적합)
+                      11 - 희소 텍스트 (적은 텍스트)
 
         Returns:
             추출된 텍스트 (원본)
@@ -70,10 +75,11 @@ class OCRService:
             if preprocess:
                 image = preprocess_image(image)
 
-            # Tesseract OCR 설정
-            custom_config = r'--oem 3 --psm 6'
-            # --oem 3: LSTM 엔진 사용
-            # --psm 6: 균일한 텍스트 블록 가정
+            # Tesseract OCR 설정 (개선됨)
+            custom_config = f'--oem 3 --psm {psm_mode} -c preserve_interword_spaces=1'
+            # --oem 3: LSTM 엔진 사용 (최신, 정확도 높음)
+            # --psm: Page Segmentation Mode
+            # preserve_interword_spaces=1: 단어 간 공백 유지
 
             # OCR 수행
             text = pytesseract.image_to_string(
@@ -86,6 +92,63 @@ class OCRService:
 
         except Exception as e:
             raise Exception(f"OCR 실패: {str(e)}")
+
+    def calculate_confidence_score(self, parsed_data: Dict) -> float:
+        """
+        파싱 결과의 신뢰도 점수 계산 (0~100)
+
+        신뢰도 계산 기준:
+        - 필수 필드 존재 여부 (supplier, invoice_date, items)
+        - items 개수 (1개 이상)
+        - items 각 필드 완성도 (bean_name, quantity, unit_price, amount)
+
+        Args:
+            parsed_data: 파싱 결과
+
+        Returns:
+            신뢰도 점수 (0~100)
+        """
+        score = 0.0
+
+        # 1. 공급업체 존재 (20점)
+        if parsed_data.get('supplier'):
+            score += 20
+
+        # 2. 날짜 존재 (20점)
+        if parsed_data.get('invoice_date'):
+            score += 20
+
+        # 3. items 존재 및 개수 (30점)
+        items = parsed_data.get('items', [])
+        if items:
+            score += 15  # items 존재
+            if len(items) >= 3:
+                score += 15  # 3개 이상
+            else:
+                score += 5 * len(items)  # 개수 비례
+
+        # 4. items 각 필드 완성도 (30점)
+        if items:
+            field_scores = []
+            for item in items:
+                item_score = 0
+                # 필수 필드: bean_name, quantity, unit_price, amount
+                if item.get('bean_name'):
+                    item_score += 0.25
+                if item.get('quantity') is not None:
+                    item_score += 0.25
+                if item.get('unit_price') is not None:
+                    item_score += 0.25
+                if item.get('amount') is not None:
+                    item_score += 0.25
+                field_scores.append(item_score)
+
+            # 평균 완성도 * 30점
+            if field_scores:
+                avg_completeness = sum(field_scores) / len(field_scores)
+                score += avg_completeness * 30
+
+        return round(score, 1)
 
     def parse_invoice_data(self, ocr_text: str) -> Dict:
         """
@@ -102,6 +165,7 @@ class OCRService:
                 'total_amount': float | None,
                 'total_weight': float | None,
                 'contract_number': str | None (GSC only),
+                'confidence_score': float (0~100),  # 신뢰도 점수
                 'items': [
                     {
                         'no': int,
@@ -118,6 +182,10 @@ class OCRService:
         """
         # 타입 자동 감지 및 파싱
         result = parse_invoice(ocr_text)
+
+        # 신뢰도 점수 계산
+        confidence = self.calculate_confidence_score(result)
+        result['confidence_score'] = confidence
 
         return result
 
