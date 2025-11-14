@@ -62,13 +62,14 @@ class TestInvoicePerformance:
         """소형 이미지 처리 성능 (800x600)"""
         learning_service = LearningService(db)
         ocr_service = OCRService(db, learning_service=learning_service)
-        invoice_service = InvoiceService(db, learning_service=learning_service)
 
         # 소형 이미지 생성 (800x600)
         img = create_test_image_with_text(800, 600)
 
         start_time = time.time()
-        result = invoice_service.process_invoice_image(img, ocr_service)
+        # OCR 직접 호출 (process_invoice_image 대신)
+        ocr_text = ocr_service.extract_text_from_image(img)
+        result = ocr_service.parse_invoice_data(ocr_text)
         end_time = time.time()
 
         processing_time = end_time - start_time
@@ -81,13 +82,14 @@ class TestInvoicePerformance:
         """중형 이미지 처리 성능 (1600x1200)"""
         learning_service = LearningService(db)
         ocr_service = OCRService(db, learning_service=learning_service)
-        invoice_service = InvoiceService(db, learning_service=learning_service)
 
         # 중형 이미지 생성 (1600x1200)
         img = create_test_image_with_text(1600, 1200)
 
         start_time = time.time()
-        result = invoice_service.process_invoice_image(img, ocr_service)
+        # OCR 직접 호출 (process_invoice_image 대신)
+        ocr_text = ocr_service.extract_text_from_image(img)
+        result = ocr_service.parse_invoice_data(ocr_text)
         end_time = time.time()
 
         processing_time = end_time - start_time
@@ -100,13 +102,14 @@ class TestInvoicePerformance:
         """대형 이미지 처리 성능 (3200x2400)"""
         learning_service = LearningService(db)
         ocr_service = OCRService(db, learning_service=learning_service)
-        invoice_service = InvoiceService(db, learning_service=learning_service)
 
         # 대형 이미지 생성 (3200x2400)
         img = create_test_image_with_text(3200, 2400)
 
         start_time = time.time()
-        result = invoice_service.process_invoice_image(img, ocr_service)
+        # OCR 직접 호출 (process_invoice_image 대신)
+        ocr_text = ocr_service.extract_text_from_image(img)
+        result = ocr_service.parse_invoice_data(ocr_text)
         end_time = time.time()
 
         processing_time = end_time - start_time
