@@ -234,6 +234,12 @@ with tab2:
             for warning in result['warnings']:
                 st.write(f"- {warning}")
 
+        # 디버그 정보 (OCR 원본 텍스트)
+        with st.expander("🔍 디버그: OCR 원본 텍스트 확인"):
+            ocr_text = result.get('ocr_text', '텍스트 없음')
+            st.text_area("OCR 추출 텍스트", ocr_text, height=300)
+            st.caption("💡 타입 감지가 실패하면 이 텍스트를 확인하세요.")
+
         st.divider()
 
         # 명세서 메타데이터
