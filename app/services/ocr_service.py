@@ -8,6 +8,7 @@ from typing import Dict, Tuple, Optional, TYPE_CHECKING
 from datetime import datetime
 from PIL import Image
 import pytesseract
+from pytesseract import Output
 from sqlalchemy.orm import Session
 import sys
 import os
@@ -49,9 +50,10 @@ class OCRService:
         self,
         image: Image.Image,
         lang: str = 'kor+eng',
-        preprocess: bool = False,  # 기본값 False로 변경 (전처리 없이가 더 나음)
-        psm_mode: int = 6
-    ) -> str:
+        preprocess: bool = False,
+        psm_mode: int = 6,
+        return_data: bool = False  # 신뢰도 데이터 반환 옵션
+    ):
         """
         이미지에서 텍스트 추출 (Tesseract OCR)
 
@@ -60,12 +62,18 @@ class OCRService:
             lang: OCR 언어 (기본값: 'kor+eng')
             preprocess: 전처리 수행 여부 (기본값: False)
             psm_mode: Page Segmentation Mode (기본값: 6)
-                      3 - 완전 자동 (기본값)
+                      3 - 완전 자동
                       6 - 균일한 텍스트 블록 (표 형식에 적합)
-                      11 - 희소 텍스트 (적은 텍스트)
+                      11 - 희소 텍스트
+            return_data: True면 상세 데이터(좌표, 신뢰도) 반환 (기본값: False)
 
         Returns:
-            추출된 텍스트 (원본)
+            return_data=False: 추출된 텍스트 (str)
+            return_data=True: {
+                'text': str,           # 전체 텍스트
+                'words': List[Dict],   # 단어별 상세 정보
+                'confidence': float    # 평균 신뢰도
+            }
 
         Raises:
             Exception: OCR 실패 시
@@ -75,20 +83,60 @@ class OCRService:
             if preprocess:
                 image = preprocess_image(image)
 
-            # Tesseract OCR 설정 (개선됨)
+            # Tesseract OCR 설정
             custom_config = f'--oem 3 --psm {psm_mode} -c preserve_interword_spaces=1'
-            # --oem 3: LSTM 엔진 사용 (최신, 정확도 높음)
-            # --psm: Page Segmentation Mode
-            # preserve_interword_spaces=1: 단어 간 공백 유지
 
-            # OCR 수행
-            text = pytesseract.image_to_string(
-                image,
-                lang=lang,
-                config=custom_config
-            )
+            if return_data:
+                # 상세 데이터 추출 (단어 단위 + 신뢰도)
+                data = pytesseract.image_to_data(
+                    image,
+                    lang=lang,
+                    config=custom_config,
+                    output_type=Output.DICT
+                )
 
-            return text
+                # 전체 텍스트 재구성
+                text = pytesseract.image_to_string(
+                    image,
+                    lang=lang,
+                    config=custom_config
+                )
+
+                # 단어별 정보 추출 (신뢰도 > 0인 것만)
+                words = []
+                confidences = []
+
+                for i in range(len(data['text'])):
+                    word_text = data['text'][i].strip()
+                    conf = float(data['conf'][i])
+
+                    if word_text and conf > 0:  # 빈 문자열 및 신뢰도 0 제외
+                        words.append({
+                            'text': word_text,
+                            'confidence': conf,
+                            'left': data['left'][i],
+                            'top': data['top'][i],
+                            'width': data['width'][i],
+                            'height': data['height'][i]
+                        })
+                        confidences.append(conf)
+
+                # 평균 신뢰도 계산
+                avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
+
+                return {
+                    'text': text,
+                    'words': words,
+                    'confidence': avg_confidence
+                }
+            else:
+                # 기존 방식 (텍스트만)
+                text = pytesseract.image_to_string(
+                    image,
+                    lang=lang,
+                    config=custom_config
+                )
+                return text
 
         except Exception as e:
             raise Exception(f"OCR 실패: {str(e)}")
@@ -387,7 +435,7 @@ class OCRService:
         """
         이미지 전체 처리 파이프라인
 
-        1. OCR 텍스트 추출
+        1. OCR 텍스트 추출 (상세 데이터 포함)
         2. 데이터 파싱
         3. 신뢰도 계산
 
@@ -398,14 +446,24 @@ class OCRService:
         Returns:
             {
                 'ocr_text': str,
+                'ocr_confidence': float,  # OCR 평균 신뢰도 (0~100)
+                'ocr_words': List[Dict],  # 단어별 상세 정보
                 'parsed_data': Dict,
                 'confidence': float,
                 'warnings': List[str],
                 'timestamp': datetime
             }
         """
-        # 1. OCR 수행
-        ocr_text = self.extract_text_from_image(image, preprocess=preprocess)
+        # 1. OCR 수행 (상세 데이터 포함)
+        ocr_result = self.extract_text_from_image(
+            image,
+            preprocess=preprocess,
+            return_data=True  # 신뢰도 데이터 포함
+        )
+
+        ocr_text = ocr_result['text']
+        ocr_words = ocr_result['words']
+        ocr_confidence = ocr_result['confidence']
 
         # 2. 데이터 파싱
         parsed_data = self.parse_invoice_data(ocr_text)
@@ -415,6 +473,11 @@ class OCRService:
 
         # 4. 검증 (경고 메시지)
         warnings = []
+
+        # OCR 신뢰도 낮으면 경고
+        if ocr_confidence < 60:
+            warnings.append(f"⚠️ OCR 인식 신뢰도가 낮습니다 ({ocr_confidence:.1f}%)")
+
         if parsed_data.get('invoice_type') == 'UNKNOWN':
             warnings.append("⚠️ 명세서 타입을 인식할 수 없습니다")
 
@@ -433,6 +496,8 @@ class OCRService:
 
         return {
             'ocr_text': ocr_text,
+            'ocr_confidence': ocr_confidence,
+            'ocr_words': ocr_words,
             'parsed_data': parsed_data,
             'confidence': confidence,
             'warnings': warnings,

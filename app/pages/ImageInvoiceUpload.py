@@ -234,11 +234,31 @@ with tab2:
             for warning in result['warnings']:
                 st.write(f"- {warning}")
 
-        # 디버그 정보 (OCR 원본 텍스트)
-        with st.expander("🔍 디버그: OCR 원본 텍스트 확인"):
+        # OCR 신뢰도 표시
+        ocr_confidence = result.get('ocr_confidence', 0)
+        if ocr_confidence > 0:
+            confidence_color = "🟢" if ocr_confidence >= 80 else "🟡" if ocr_confidence >= 60 else "🔴"
+            st.info(f"{confidence_color} **OCR 인식 신뢰도: {ocr_confidence:.1f}%**")
+
+        # 디버그 정보 (OCR 원본 텍스트 + 단어별 신뢰도)
+        with st.expander("🔍 디버그: OCR 상세 정보"):
+            # 원본 텍스트
             ocr_text = result.get('ocr_text', '텍스트 없음')
-            st.text_area("OCR 추출 텍스트", ocr_text, height=300)
-            st.caption("💡 타입 감지가 실패하면 이 텍스트를 확인하세요.")
+            st.text_area("OCR 추출 텍스트", ocr_text, height=200)
+
+            # 단어별 신뢰도 (낮은 순으로 정렬)
+            ocr_words = result.get('ocr_words', [])
+            if ocr_words:
+                st.subheader("단어별 신뢰도 (낮은 순)")
+                low_conf_words = sorted(ocr_words, key=lambda x: x['confidence'])[:20]
+
+                for word in low_conf_words:
+                    conf = word['confidence']
+                    text = word['text']
+                    color = "🟢" if conf >= 80 else "🟡" if conf >= 60 else "🔴"
+                    st.write(f"{color} `{text}` - {conf:.1f}%")
+
+            st.caption("💡 타입 감지가 실패하면 이 정보를 확인하세요.")
 
         st.divider()
 
