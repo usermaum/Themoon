@@ -68,7 +68,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📊 현황", "📝 거래 기록", "➕ 입�
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
-    from app.services.inventory_service import InventoryService
+    from services.inventory_service import InventoryService
 
     st.markdown("### 📊 현재 재고 현황")
     st.markdown("생두(로스팅 전)와 원두(로스팅 후) 재고를 별도로 관리합니다.")

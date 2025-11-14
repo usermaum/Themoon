@@ -16,9 +16,9 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from app.services.roasting_service import RoastingService
-from app.services.bean_service import BeanService
-from app.services.blend_service import BlendService
+from services.roasting_service import RoastingService
+from services.bean_service import BeanService
+from services.blend_service import BlendService
 from app.models import SessionLocal
 from app.components.sidebar import render_sidebar
 from app.i18n import Translator, LanguageManager

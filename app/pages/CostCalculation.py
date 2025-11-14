@@ -18,9 +18,9 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from app.services.cost_service import CostService
-from app.services.bean_service import BeanService
-from app.services.blend_service import BlendService
+from services.cost_service import CostService
+from services.bean_service import BeanService
+from services.blend_service import BlendService
 from app.models import SessionLocal
 from app.components.sidebar import render_sidebar
 from app.i18n import Translator, LanguageManager
@@ -84,7 +84,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
-    from app.services.cost_calculator_service import CostCalculatorService
+    from services.cost_calculator_service import CostCalculatorService
 
     st.markdown("### 📐 투입량 계산기")
     st.markdown("목표 산출량(원두)을 입력하면 필요한 생두 투입량을 계산합니다.")
