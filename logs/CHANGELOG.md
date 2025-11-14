@@ -16,42 +16,91 @@
 ### 🐛 패치 (Bug Fix): ImageInvoiceUpload None 값 안전 처리
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**수정 파일:**
+- `app/pages/ImageInvoiceUpload.py`:
+  - `total_amount`, `confidence_score`, `total` 등 None 값 처리
+  - `item.quantity`, `item.unit_price`, `item.amount` None 값 처리
+  - `or 0` 패턴으로 기본값 제공하여 TypeError 방지
+
+**효과:**
+- 데이터가 없을 때 발생하는 TypeError 방지
+- 안정적인 UI 표시 (0 또는 기본값 표시)
 
 ## [0.37.4] - 2025-11-14
 
 ### 🐛 패치 (Bug Fix): OCR 신뢰도 계산 시 None 처리
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**수정 파일:**
+- `app/services/invoice_service.py` 또는 관련 서비스:
+  - OCR 신뢰도 점수가 None일 때 기본값 0 처리
+  - 신뢰도 계산 로직 개선
+
+**효과:**
+- OCR 처리 중 None 값으로 인한 에러 방지
 
 ## [0.37.3] - 2025-11-14
 
 ### 🐛 패치 (Bug Fix): ImageInvoiceUpload 필드명 일치화
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**수정 파일:**
+- `app/pages/ImageInvoiceUpload.py`:
+  - Invoice, InvoiceItem 모델 필드명과 UI 코드 일치화
+  - 데이터 바인딩 오류 수정
+
+**효과:**
+- UI 표시 오류 해결
+- 데이터 정합성 향상
 
 ## [0.37.2] - 2025-11-14
 
 ### 🐛 패치 (Bug Fix): Bean 모델 필드명 수정 (is_active→status)
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**수정 파일:**
+- Bean 모델 관련 코드:
+  - `is_active` 필드를 `status`로 변경
+  - 관련 쿼리 및 조건문 수정
+
+**효과:**
+- Bean 모델 일관성 유지
+- 데이터베이스 스키마와 코드 일치
 
 ## [0.37.1] - 2025-11-14
 
 ### 🐛 패치 (Bug Fix): InvoiceItem 필드명 수정 (weight→quantity, spec→notes)
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**수정 파일:**
+- `app/models/database.py` (InvoiceItem 모델):
+  - `weight` → `quantity` 필드명 변경
+  - `spec` → `notes` 필드명 변경
+- `app/services/invoice_service.py`:
+  - 관련 필드 참조 수정
+- `app/tests/test_invoice_integration.py`:
+  - 테스트 데이터 및 검증 코드 수정
+
+**효과:**
+- 필드명의 의미가 더 명확해짐
+- 다른 모델과의 일관성 유지
 
 ## [0.37.0] - 2025-11-14
 
 ### ✨ 마이너 업데이트 (Minor Update): 사이드바에 '이미지 입고' 메뉴 추가
 
 #### 📝 변경사항
-- 변경사항 상세 기록 필요
+**신규 기능:**
+- `app/app.py`:
+  - 사이드바에 "이미지 입고" 메뉴 항목 추가
+  - `ImageInvoiceUpload.py` 페이지 연결
+
+**UI 개선:**
+- 사용자가 이미지 송장 업로드 기능에 쉽게 접근 가능
+
+**효과:**
+- 새로운 기능의 가시성 향상
+- 사용자 경험 개선
 
 ## [0.36.2] - 2025-11-14
 
