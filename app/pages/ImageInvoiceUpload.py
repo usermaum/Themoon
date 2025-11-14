@@ -17,6 +17,14 @@ from services.invoice_service import InvoiceService
 from services.learning_service import LearningService
 from services.bean_service import BeanService
 from components.sidebar import render_sidebar
+from i18n import Translator, LanguageManager
+
+# 다중 언어 지원 초기화
+if "translator" not in st.session_state:
+    st.session_state.translator = Translator(default_language="ko")
+
+if "language_manager" not in st.session_state:
+    st.session_state.language_manager = LanguageManager(st.session_state.translator)
 
 # 페이지 설정
 st.set_page_config(
