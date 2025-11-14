@@ -521,10 +521,10 @@ with tab3:
                 for item in invoice.items:
                     items_data.append({
                         "원두명": item.bean_name_raw,
-                        "중량(kg)": item.weight,
+                        "중량(kg)": item.quantity,
                         "단가(원/kg)": f"₩{item.unit_price:,.0f}",
                         "공급가액(원)": f"₩{item.amount:,.0f}",
-                        "규격": item.spec or "-"
+                        "규격": item.notes or "-"
                     })
 
                 st.table(items_data)
