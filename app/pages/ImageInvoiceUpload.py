@@ -247,9 +247,10 @@ with tab2:
             )
 
         with col3:
+            total_amount_value = result['invoice_data'].get('total_amount') or 0
             total_amount_edit = st.number_input(
                 "총액 (원)",
-                value=float(result['invoice_data'].get('total_amount', 0)),
+                value=float(total_amount_value),
                 min_value=0.0,
                 step=1000.0,
                 key="edit_total_amount"
@@ -301,9 +302,10 @@ with tab2:
 
                     with col2:
                         # 중량 (kg)
+                        weight_value = item.get('weight') or 0
                         weight = st.number_input(
                             "중량 (kg)",
-                            value=float(item.get('weight', 0)),
+                            value=float(weight_value),
                             min_value=0.0,
                             step=0.1,
                             key=f"weight_{idx}"
@@ -313,9 +315,10 @@ with tab2:
 
                     with col3:
                         # 단가 (원/kg)
+                        unit_price_value = item.get('unit_price') or 0
                         unit_price = st.number_input(
                             "단가 (원/kg)",
-                            value=float(item.get('unit_price', 0)),
+                            value=float(unit_price_value),
                             min_value=0.0,
                             step=100.0,
                             key=f"unit_price_{idx}"
