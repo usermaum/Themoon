@@ -221,7 +221,7 @@ class OCRService:
         """
         # DB에서 모든 원두 조회
         beans = self.db.query(Bean).filter(
-            Bean.is_active == True
+            Bean.status == "active"
         ).all()
 
         if not beans:
