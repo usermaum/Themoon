@@ -302,9 +302,11 @@ class OCRService:
         score += text_length_score
 
         # 4. 숫자 형식 유효성 (총액/중량이 양수면 각 5점)
-        if parsed_data.get('total_amount', 0) > 0:
+        total_amount = parsed_data.get('total_amount') or 0
+        if total_amount > 0:
             score += 5
-        if parsed_data.get('total_weight', 0) > 0:
+        total_weight = parsed_data.get('total_weight') or 0
+        if total_weight > 0:
             score += 5
 
         return min(score, 100.0)
