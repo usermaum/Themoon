@@ -153,6 +153,7 @@ class Transaction(Base):
     # 재고 관리 고도화 필드
     inventory_type = Column(String(20), nullable=True)  # RAW_BEAN(생두), ROASTED_BEAN(원두) - 어떤 재고에 영향?
     roasting_log_id = Column(Integer, ForeignKey("roasting_logs.id"), nullable=True)  # 로스팅 기록 연결
+    invoice_item_id = Column(Integer, nullable=True)  # 거래 명세서 항목 ID (InvoiceItem 연결)
 
     quantity_kg = Column(Float, nullable=False)
     price_per_unit = Column(Float, default=0.0)

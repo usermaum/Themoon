@@ -152,10 +152,7 @@ class InvoiceService:
             total_amount=invoice_data.get('total_amount', 0.0),
             status=InvoiceStatus.PENDING,
             confidence_score=confidence,
-            ocr_raw_text=ocr_text,
-            invoice_type=invoice_data.get('invoice_type', 'UNKNOWN'),
-            contract_number=invoice_data.get('contract_number'),
-            total_weight=invoice_data.get('total_weight')
+            ocr_raw_text=ocr_text
         )
 
         self.db.add(invoice)
@@ -172,7 +169,7 @@ class InvoiceService:
                 # 먼저 정확한 이름으로 조회
                 bean = self.db.query(Bean).filter(
                     Bean.name == bean_name_raw,
-                    Bean.is_active == True
+                    Bean.status == 'active'
                 ).first()
 
                 if bean:
@@ -185,8 +182,6 @@ class InvoiceService:
                 quantity=item.get('quantity', 0),
                 unit_price=item.get('unit_price', 0.0),
                 amount=item.get('amount', 0.0),
-                weight=item.get('weight', 0.0),
-                spec=item.get('spec'),
                 origin=item.get('origin'),
                 notes=item.get('notes'),
                 confidence_score=item.get('confidence_score', confidence)
@@ -229,29 +224,38 @@ class InvoiceService:
                 # bean_id가 없으면 입고 불가 (수동 매칭 필요)
                 continue
 
-            # 2-1. Inventory 생성 (원두 입고)
-            inventory = Inventory(
-                bean_id=item.bean_id,
-                inventory_type="RAW_BEAN",  # 문자열로 직접 사용
-                quantity=item.weight,  # kg 단위
-                cost_per_kg=item.unit_price,
-                notes=f"거래 명세서 입고 (Invoice #{invoice_id})",
-                created_at=invoice.invoice_date or datetime.now()
-            )
+            # 2-1. Inventory 조회 또는 생성
+            inventory = self.db.query(Inventory).filter(
+                Inventory.bean_id == item.bean_id,
+                Inventory.inventory_type == "RAW_BEAN"
+            ).first()
 
-            self.db.add(inventory)
-            self.db.flush()  # inventory.id 생성
+            if not inventory:
+                # 재고 없으면 새로 생성
+                inventory = Inventory(
+                    bean_id=item.bean_id,
+                    inventory_type="RAW_BEAN",
+                    quantity_kg=0.0
+                )
+                self.db.add(inventory)
+                self.db.flush()
+
+            # 재고 수량 증가
+            inventory.quantity_kg += item.quantity
 
             # 2-2. Transaction 생성 (입고 거래)
+            notes_text = f"거래 명세서 자동 입고 (Invoice #{invoice_id})"
+            if invoice.supplier:
+                notes_text += f" - {invoice.supplier}"
+
             transaction = Transaction(
                 bean_id=item.bean_id,
-                transaction_type="PURCHASE",  # 문자열로 직접 사용
-                quantity=item.weight,
-                unit_price=item.unit_price,
+                transaction_type="PURCHASE",
+                inventory_type="RAW_BEAN",
+                quantity_kg=item.quantity,
+                price_per_unit=item.unit_price,
                 total_amount=item.amount,
-                transaction_date=invoice.invoice_date or datetime.now(),
-                supplier=invoice.supplier,
-                notes=f"거래 명세서 자동 입고 (Invoice #{invoice_id})",
+                notes=notes_text,
                 invoice_item_id=item.id
             )
 
@@ -259,7 +263,6 @@ class InvoiceService:
 
         # 3. Invoice 상태 변경
         invoice.status = InvoiceStatus.COMPLETED
-        invoice.confirmed_at = datetime.now()
 
         self.db.commit()
 
@@ -404,6 +407,6 @@ class InvoiceService:
             return 0
 
         # 학습 서비스를 통해 일괄 저장
-        saved_count = self.learning_service.batch_save_corrections(corrections)
+        saved_items = self.learning_service.batch_save_corrections(corrections)
 
-        return saved_count
+        return len(saved_items)
