@@ -216,7 +216,7 @@ with tab2:
             st.metric("원두 항목 수", f"{items_count}개")
 
         with col4:
-            total_amount = result['invoice_data'].get('total_amount', 0)
+            total_amount = result['invoice_data'].get('total_amount') or 0
             st.metric("총액", f"₩{total_amount:,.0f}")
 
         # 경고 메시지
@@ -503,10 +503,12 @@ with tab3:
                     st.metric("상태", invoice.status)
 
                 with col2:
-                    st.metric("신뢰도", f"{invoice.confidence_score:.1f}%")
+                    confidence = invoice.confidence_score or 0
+                    st.metric("신뢰도", f"{confidence:.1f}%")
 
                 with col3:
-                    st.metric("총액", f"₩{invoice.total_amount:,.0f}")
+                    total = invoice.total_amount or 0
+                    st.metric("총액", f"₩{total:,.0f}")
 
                 with col4:
                     st.metric("원두 항목", f"{len(invoice.items)}개")
@@ -521,9 +523,9 @@ with tab3:
                 for item in invoice.items:
                     items_data.append({
                         "원두명": item.bean_name_raw,
-                        "중량(kg)": item.quantity,
-                        "단가(원/kg)": f"₩{item.unit_price:,.0f}",
-                        "공급가액(원)": f"₩{item.amount:,.0f}",
+                        "중량(kg)": item.quantity or 0,
+                        "단가(원/kg)": f"₩{item.unit_price or 0:,.0f}",
+                        "공급가액(원)": f"₩{item.amount or 0:,.0f}",
                         "규격": item.notes or "-"
                     })
 
