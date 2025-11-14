@@ -202,7 +202,7 @@ with tab2:
     else:
         # 신뢰도 표시
         confidence = result['confidence']
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
             st.metric("신뢰도", f"{confidence:.1f}%")
@@ -212,10 +212,19 @@ with tab2:
             st.metric("명세서 타입", invoice_type)
 
         with col3:
+            # 거래일자를 한글로 표시
+            invoice_date_obj = result['invoice_data'].get('invoice_date')
+            if invoice_date_obj:
+                date_str = f"{invoice_date_obj.year}년 {invoice_date_obj.month}월 {invoice_date_obj.day}일"
+            else:
+                date_str = "미확인"
+            st.metric("거래일자", date_str)
+
+        with col4:
             items_count = len(result['items'])
             st.metric("원두 항목 수", f"{items_count}개")
 
-        with col4:
+        with col5:
             total_amount = result['invoice_data'].get('total_amount') or 0
             st.metric("총액", f"₩{total_amount:,.0f}")
 
@@ -499,7 +508,13 @@ with tab3:
 
         # 테이블 형식으로 표시
         for invoice in invoices:
-            with st.expander(f"**#{invoice.id} - {invoice.supplier}** ({invoice.invoice_date})"):
+            # 날짜를 한글 형식으로 변환
+            if invoice.invoice_date:
+                date_str = f"{invoice.invoice_date.year}년 {invoice.invoice_date.month}월 {invoice.invoice_date.day}일"
+            else:
+                date_str = "날짜 없음"
+
+            with st.expander(f"**#{invoice.id} - {invoice.supplier}** ({date_str})"):
                 col1, col2, col3, col4 = st.columns(4)
 
                 with col1:
