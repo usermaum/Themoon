@@ -169,7 +169,19 @@ def extract_date(text: str) -> Optional[date]:
     Returns:
         추출된 날짜 (없으면 None)
     """
-    # 1. 한글 날짜 패턴 (OCR 오인식 대응)
+    # 1. 패턴 기반 우선 (YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD)
+    # OCR이 표 전체를 읽으면 날짜가 다른 숫자와 섞일 수 있음
+    date_pattern = r'(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})'
+    match = re.search(date_pattern, text)
+
+    if match:
+        year, month, day = match.groups()
+        try:
+            return date(int(year), int(month), int(day))
+        except ValueError:
+            pass
+
+    # 2. 한글 날짜 패턴 (OCR 오인식 대응)
     # "10월 29일", "108 29일", "10 8 29 일" (공백 포함)
     korean_date_pattern = r'(\d{1,3})\s*월?\s*(\d{1,2})\s*일'
     match = re.search(korean_date_pattern, text)
@@ -188,7 +200,7 @@ def extract_date(text: str) -> Optional[date]:
             except ValueError:
                 pass
 
-    # 2. dateparser 설정
+    # 3. dateparser 설정
     settings = {
         'PREFER_DAY_OF_MONTH': 'first',  # 날짜 우선 (MM/DD vs DD/MM)
         'PREFER_DATES_FROM': 'past',     # 과거 날짜 우선
@@ -200,17 +212,6 @@ def extract_date(text: str) -> Optional[date]:
 
     if parsed:
         return parsed.date()
-
-    # 3. 패턴 기반 백업 (YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD)
-    date_pattern = r'(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})'
-    match = re.search(date_pattern, text)
-
-    if match:
-        year, month, day = match.groups()
-        try:
-            return date(int(year), int(month), int(day))
-        except ValueError:
-            pass
 
     return None
 
@@ -500,15 +501,18 @@ def detect_invoice_type(ocr_text: str) -> str:
     # GSC 명세서 시그니처 (더 유연하게 개선)
     # 1. "GSC" 키워드 (대소문자 무관)
     # 2. "coffeegsc" 이메일 도메인
-    # 3. 사업자번호 "197-04-00506" 또는 OCR 오인식 패턴 (157-04, 197-04)
+    # 3. 사업자번호 "197-04-00506" 또는 OCR 오인식 패턴 (157-04, 197-04, 922507661582)
     # 4. "거래명세서" 키워드
+    # 5. "사업장" + 테이블 구조 패턴
     gsc_indicators = [
         'GSC' in ocr_upper,
         'COFFEEGSC' in ocr_upper,
         '197-04-00506' in ocr_text,
+        '922507661582' in ocr_text,  # 사업자번호 OCR 오인식 (@AMAR 등)
         '157-04' in ocr_text,  # OCR 오인식 패턴
         '197-04' in ocr_text,  # 부분 매칭
-        '거래명세서' in ocr_text
+        '거래명세서' in ocr_text,
+        ('사업장' in ocr_text and '우스' in ocr_text)  # "사업장 ... 우스" 패턴
     ]
 
     # 2개 이상의 지표가 매칭되면 GSC로 판정
@@ -516,7 +520,7 @@ def detect_invoice_type(ocr_text: str) -> str:
         return 'GSC'
 
     # 확실한 단일 지표만으로도 GSC 판정
-    if 'COFFEEGSC' in ocr_upper or '197-04-00506' in ocr_text:
+    if 'COFFEEGSC' in ocr_upper or '197-04-00506' in ocr_text or '922507661582' in ocr_text:
         return 'GSC'
 
     # HACIELO 명세서 시그니처
