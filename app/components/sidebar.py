@@ -149,6 +149,16 @@ def render_sidebar():
             st.session_state["current_page"] = "InventoryManagement"
             st.switch_page("pages/InventoryManagement.py")
 
+        # 거래 명세서 이미지 입고
+        if st.button(
+            "📄 이미지 입고",
+            type="primary" if current_page == "ImageInvoiceUpload" else "secondary",
+            use_container_width=True,
+            key="nav_image_invoice"
+        ):
+            st.session_state["current_page"] = "ImageInvoiceUpload"
+            st.switch_page("pages/ImageInvoiceUpload.py")
+
         # 보고서
         if st.button(
             "📋 보고서",
