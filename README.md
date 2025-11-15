@@ -204,6 +204,19 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
+### 3-1단계: EasyOCR 패치 (필수)
+EasyOCR이 Pillow 10.x와 호환되지 않는 문제를 해결합니다.
+
+```bash
+# 자동 패치 스크립트 실행
+./scripts/patch_easyocr.sh
+```
+
+**수동 패치** (스크립트 실행이 안 될 경우):
+```bash
+sed -i 's/Image\.ANTIALIAS/Image.LANCZOS/g' ./venv/lib/python3.12/site-packages/easyocr/utils.py
+```
+
 ### 4단계: 애플리케이션 실행
 
 **방법 1: 메인 런처 (권장)**
