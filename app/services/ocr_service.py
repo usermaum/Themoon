@@ -12,6 +12,7 @@ from pytesseract import Output
 import easyocr
 import numpy as np
 from sqlalchemy.orm import Session
+import streamlit as st
 import sys
 import os
 
@@ -24,11 +25,25 @@ from utils.text_parser import (
     fuzzy_match_bean,
     validate_parsed_data
 )
-from utils.image_utils import preprocess_image
+from utils.image_utils import preprocess_image, preprocess_for_easyocr
 
 # Type hints only (순환 참조 방지)
 if TYPE_CHECKING:
     from services.learning_service import LearningService
+
+
+@st.cache_resource
+def get_easyocr_reader():
+    """
+    EasyOCR Reader 싱글톤 (캐싱)
+
+    첫 실행: ~20-30초 (모델 다운로드 + 로드)
+    이후 실행: <1초 (캐시된 인스턴스 재사용)
+
+    Returns:
+        easyocr.Reader: 한글+영문 OCR Reader
+    """
+    return easyocr.Reader(['ko', 'en'], gpu=False)
 
 
 class OCRService:
@@ -47,8 +62,8 @@ class OCRService:
         """
         self.db = db
         self.learning_service = learning_service
-        # EasyOCR reader 초기화 (한글 + 영문)
-        self.reader = easyocr.Reader(['ko', 'en'], gpu=False)
+        # EasyOCR reader (캐시된 싱글톤 사용)
+        self.reader = get_easyocr_reader()
 
     def extract_text_from_image(
         self,
@@ -64,7 +79,7 @@ class OCRService:
         Args:
             image: PIL Image 객체
             lang: OCR 언어 (호환성 유지, 사용 안 함)
-            preprocess: 전처리 수행 여부 (기본값: False)
+            preprocess: 전처리 수행 여부 (EasyOCR용 전처리, 기본값: True로 권장)
             psm_mode: Page Segmentation Mode (호환성 유지, 사용 안 함)
             return_data: True면 상세 데이터(좌표, 신뢰도) 반환 (기본값: False)
 
@@ -80,9 +95,9 @@ class OCRService:
             Exception: OCR 실패 시
         """
         try:
-            # 전처리 수행 (옵션)
+            # 전처리 수행 (EasyOCR용)
             if preprocess:
-                image = preprocess_image(image)
+                image = preprocess_for_easyocr(image, enhance=True)
 
             # PIL Image → numpy array
             image_np = np.array(image)

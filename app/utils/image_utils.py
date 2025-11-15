@@ -14,7 +14,9 @@ import io
 
 def preprocess_image(image: Image.Image) -> Image.Image:
     """
-    이미지 전처리 (OCR 최적화)
+    이미지 전처리 (Tesseract OCR 최적화) - DEPRECATED
+
+    ⚠️ 이 함수는 Tesseract용입니다. EasyOCR에는 preprocess_for_easyocr() 사용 권장
 
     처리 순서:
     1. 그레이스케일 변환
@@ -57,6 +59,65 @@ def preprocess_image(image: Image.Image) -> Image.Image:
 
     # OpenCV → PIL
     return Image.fromarray(binary)
+
+
+def preprocess_for_easyocr(image: Image.Image, enhance: bool = True) -> Image.Image:
+    """
+    이미지 전처리 (EasyOCR 최적화)
+
+    EasyOCR은 딥러닝 기반이므로 컬러 이미지에서 더 잘 작동합니다.
+    이진화하지 않고 대비만 향상시킵니다.
+
+    처리 순서:
+    1. 해상도 확인 (너무 작으면 업스케일)
+    2. 대비 향상 (선택적, RGB 모드 유지)
+    3. 노이즈 제거 (약간만)
+
+    Args:
+        image: PIL Image 객체
+        enhance: 대비 향상 여부 (기본값: True)
+
+    Returns:
+        전처리된 PIL Image 객체 (RGB 모드)
+    """
+    # PIL → OpenCV (numpy array)
+    img_array = np.array(image)
+
+    # RGB 모드 확인 (그레이스케일이면 RGB로 변환)
+    if len(img_array.shape) == 2:  # Grayscale
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
+    elif img_array.shape[2] == 4:  # RGBA
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2RGB)
+
+    # 1. 해상도 확인 (최소 1000px 권장)
+    height, width = img_array.shape[:2]
+    if height < 1000 or width < 1000:
+        # 업스케일 (2배)
+        img_array = cv2.resize(
+            img_array,
+            (width * 2, height * 2),
+            interpolation=cv2.INTER_CUBIC
+        )
+
+    # 2. 대비 향상 (선택적)
+    if enhance:
+        # RGB → LAB (밝기 채널만 향상)
+        lab = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
+        l, a, b = cv2.split(lab)
+
+        # CLAHE (밝기 채널만)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l_enhanced = clahe.apply(l)
+
+        # LAB → RGB
+        lab_enhanced = cv2.merge([l_enhanced, a, b])
+        img_array = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
+
+    # 3. 약한 노이즈 제거 (디테일 유지)
+    img_array = cv2.GaussianBlur(img_array, (3, 3), 0)
+
+    # OpenCV → PIL
+    return Image.fromarray(img_array)
 
 
 def rotate_image(image: Image.Image, angle: int) -> Image.Image:
