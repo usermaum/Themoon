@@ -11,6 +11,48 @@
 
 ---
 
+## [Unreleased] - 2025-11-15
+
+### ✨ 기능 추가 (Feature): GSC 명세서 OCR 파싱 개선
+
+#### 📝 변경사항
+**수정 파일:**
+- `app/utils/text_parser.py`:
+  - `parse_gsc_invoice()`: 날짜/금액 패턴에 OCR 오인식 대응 추가
+    - 날짜: "년→=, 월→9" 패턴 인식 ("2025 = 109 29일" → 2025-10-29)
+    - 금액: "합→학, 액→9, 괄호 포함" 패턴 인식 ("학계금액 1825003) 원" → 1,825,003)
+  - `parse_gsc_table()`: 줄바꿈 처리 로직 개선
+    - 여러 줄에 걸친 항목 인식 (각 필드가 별도 줄에 있는 OCR 결과 대응)
+  - `parse_gsc_table_row()`: 규격 오인식 대응 (kg→k9)
+
+**새 파일:**
+- `test_ocr.py`: OCR 종합 테스트 스크립트
+  - 실제 명세서 이미지로 OCR 테스트
+  - 신뢰도 측정 및 결과 출력
+- `scripts/patch_easyocr.sh`: EasyOCR Pillow 호환성 자동 패치 스크립트
+  - Image.ANTIALIAS → Image.LANCZOS 치환
+
+**문서 업데이트:**
+- `requirements.txt`: easyocr==1.7.0 추가
+- `README.md`: EasyOCR 패치 안내 추가 (3-1단계)
+
+#### ✅ 테스트 결과 (IMG_1650.PNG)
+- **날짜**: ✓ 2025-10-29 (OCR: "2025 = 109 29일")
+- **금액**: ✓ 1,825,003원 (OCR: "학계금액 1825003) 원")
+- **항목**: ✓ 4개 성공적으로 추출
+  1. Colombis Supremo Huila - 1kg × 30 = 30kg
+  2. Colombia Supremo Dopayan sugarcane - 1kg × 30 = 30kg
+  3. Ethiopia G_ Sidsmo Natural - 1kg × 30 = 30kg
+  4. Yirgacheffe Washed - 1kg × 30 = 30kg
+- **신뢰도**: 전체 100.0% (OCR 55.5%, 파싱 76.1%)
+
+#### 💡 효과
+- GSC 명세서 OCR 파싱 성공률 대폭 향상
+- OCR 오인식 패턴 자동 대응
+- 실무 환경에서 즉시 사용 가능
+
+---
+
 ## [0.38.0] - 2025-11-14
 
 ### ✨ 마이너 업데이트 (Minor Update): OCR 정확도 대폭 개선
