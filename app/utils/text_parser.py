@@ -598,15 +598,22 @@ def parse_gsc_invoice(ocr_text: str) -> Dict:
     }
 
     # 1. 계약일자 추출 (하단)
-    # 패턴: "계약일자 : 2025년 11월 12일"
-    date_pattern = r'계약일자\s*[:：]\s*(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일'
+    # 패턴: "계약일자 : 2025년 11월 12일" 또는 "계약일자\n2025 = 109 29일" (OCR 오인식)
+    date_pattern = r'계약일자\s*[:：]?\s*(\d{4})\s*[년=\-]\s*(\d{1,3})\s*[월9oO]\s*(\d{1,2})\s*일'
     date_match = re.search(date_pattern, ocr_text)
     if date_match:
-        year, month, day = date_match.groups()
-        try:
-            result['invoice_date'] = date(int(year), int(month), int(day))
-        except ValueError:
-            pass
+        year_str, month_str, day_str = date_match.groups()
+        year = int(year_str)
+        # OCR 오인식: "109" → "10"
+        month = int(month_str[-2:]) if len(month_str) > 2 else int(month_str)
+        day = int(day_str)
+
+        # 유효성 검사
+        if 1 <= month <= 12 and 1 <= day <= 31:
+            try:
+                result['invoice_date'] = date(year, month, day)
+            except ValueError:
+                pass
 
     # 2. 계약번호 추출
     # 패턴: "계약번호 : ABC123"
@@ -623,11 +630,16 @@ def parse_gsc_invoice(ocr_text: str) -> Dict:
         result['total_weight'] = float(weight_match.group(1))
 
     # 4. 합계금액 추출 (하단)
-    # 패턴: "합계금액 : 1,500,000원"
-    amount_pattern = r'합계금액\s*[:：]\s*([\d,]+)\s*원'
+    # 패턴: "합계금액 : 1,500,000원" 또는 "학계금액 1825003) 원" (OCR 오인식)
+    amount_pattern = r'[합학][계]\s*[금액]*[9]?\s*[:：]?\s*([\d,\-\)]+)\s*원'
     amount_match = re.search(amount_pattern, ocr_text)
     if amount_match:
-        result['total_amount'] = float(amount_match.group(1).replace(',', ''))
+        # OCR 오인식: 콤마, 하이픈, 괄호 모두 제거
+        amount_str = amount_match.group(1).replace(',', '').replace('-', '').replace(')', '')
+        try:
+            result['total_amount'] = float(amount_str)
+        except ValueError:
+            pass
 
     # 5. 테이블 파싱 (핵심 로직)
     items = parse_gsc_table(ocr_text)
@@ -675,22 +687,46 @@ def parse_gsc_table(ocr_text: str) -> List[Dict]:
         return items
 
     table_text = ocr_text[table_start:table_end]
-    lines = table_text.split('\n')
 
-    # 헤더 라인 건너뛰기 (첫 2줄: "NO." 라인 + 컬럼명 라인)
-    for line in lines[2:]:
-        # 빈 라인 건너뛰기
-        if not line.strip():
+    # OCR 텍스트는 각 필드가 줄바꿈으로 구분되어 있음
+    # 줄바꿈을 공백으로 치환하여 한 줄로 만듦
+    table_text_flat = ' '.join(table_text.split('\n'))
+
+    # 헤더 제거 (NO., 목, 규격, 수량, 중량, 단가, 공급가액)
+    # 품목명 패턴으로 항목 추출 (영문 대문자로 시작)
+    # 패턴: 원두명 규격 수량 중량 단가 공급가액
+    pattern = r'([A-Z][a-zA-Z\s_]+?)\s+(\d+\s*[Kk][Gg9])\s+(\d+)\s+(\d+(?:\.\d+)?)\s+([\d,\.\)]+)\s+([\d,\.\)]+)'
+
+    matches = re.findall(pattern, table_text_flat)
+
+    for idx, match in enumerate(matches, 1):
+        bean_name, spec, quantity, weight, unit_price, amount = match
+
+        # 원두명 정리
+        bean_name = normalize_text(bean_name)
+
+        # 규격 정리 (OCR 오인식: k9 → kg)
+        spec = spec.replace('k9', 'kg').replace('K9', 'Kg')
+
+        # 숫자 변환
+        try:
+            quantity = int(quantity)
+            weight = float(weight)
+            # 콤마, 괄호, 점 제거
+            unit_price = float(unit_price.replace(',', '').replace(')', '').replace('.', ''))
+            amount = float(amount.replace(',', '').replace(')', '').replace('.', ''))
+
+            items.append({
+                'no': idx,
+                'bean_name': bean_name,
+                'spec': spec.strip(),
+                'quantity': quantity,
+                'weight': weight,
+                'unit_price': unit_price,
+                'amount': amount
+            })
+        except ValueError:
             continue
-
-        # NO. 숫자로 시작하는 라인만 처리
-        if not re.match(r'^\s*\d+', line):
-            continue
-
-        # 라인 파싱
-        item = parse_gsc_table_row(line)
-        if item:
-            items.append(item)
 
     return items
 
@@ -701,10 +737,13 @@ def parse_gsc_table_row(line: str) -> Optional[Dict]:
 
     패턴:
     1  Colombia Supreme Hulls  1kg  30  30  14,500  435,000
+    또는 (NO. 없이):
+    Colombia Supreme Hulls  1kg  30  30  14,500  435,000
 
     주의:
     - 원두명이 길어서 여러 단어로 구성 (Brazil NY2 FC 17/18 M-Y TYPE)
     - 숫자는 쉼표 포함 가능 (14,500)
+    - OCR 오인식: 1kg → 1k9, 괄호 포함 가능 (1250))
 
     Args:
         line: 테이블 행 텍스트
@@ -712,16 +751,16 @@ def parse_gsc_table_row(line: str) -> Optional[Dict]:
     Returns:
         파싱된 항목 (Dict) 또는 None (파싱 실패 시)
     """
-    # 정규식: NO. | 원두명 (여러 단어) | 규격 | 수량 | 중량 | 단가 | 공급가액
+    # 정규식: (NO. 선택적) | 원두명 | 규격 | 수량 | 중량 | 단가 | 공급가액
     # 원두명은 greedy하게 최대한 많이 매칭 (.+?)
     pattern = r'''
-        ^\s*(\d+)                           # NO.
-        \s+(.+?)                            # 원두명 (non-greedy, 나머지 필드 남기기)
-        \s+(\d+\s*[Kk][Gg])                 # 규격 (1kg, 5kg, ...)
+        ^\s*(?:(\d+)\s+)?                   # NO. (선택적)
+        (.+?)                               # 원두명 (non-greedy, 나머지 필드 남기기)
+        \s+(\d+\s*[Kk][Gg9])                # 규격 (1kg, 1k9, ...)
         \s+(\d+)                            # 수량
         \s+(\d+(?:\.\d+)?)                  # 중량 (소수점 가능)
-        \s+([\d,]+)                         # 단가 (쉼표 가능)
-        \s+([\d,]+)                         # 공급가액 (쉼표 가능)
+        \s+([\d,\.\)]+)                     # 단가 (쉼표, 점, 괄호 가능)
+        \s+([\d,\.\)]+)                     # 공급가액 (쉼표, 점, 괄호 가능)
     '''
 
     match = re.search(pattern, line, re.VERBOSE)
@@ -734,13 +773,17 @@ def parse_gsc_table_row(line: str) -> Optional[Dict]:
     # 원두명 정리 (양쪽 공백 제거)
     bean_name = normalize_text(bean_name)
 
+    # 규격 정리 (OCR 오인식: k9 → kg)
+    spec = spec.replace('k9', 'kg').replace('K9', 'Kg')
+
     # 숫자 변환
     try:
-        no = int(no)
+        no = int(no) if no else 0  # NO. 없으면 0
         quantity = int(quantity)
         weight = float(weight)
-        unit_price = float(unit_price.replace(',', ''))
-        amount = float(amount.replace(',', ''))
+        # 콤마, 괄호, 점 제거 (OCR 오인식 대응)
+        unit_price = float(unit_price.replace(',', '').replace(')', '').replace('.', ''))
+        amount = float(amount.replace(',', '').replace(')', '').replace('.', ''))
     except ValueError:
         return None
 
