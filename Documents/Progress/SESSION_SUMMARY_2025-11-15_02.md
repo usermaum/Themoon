@@ -320,5 +320,118 @@ EasyOCR 입력
 
 ---
 
-**세션 종료 시각**: 2025-11-15 (한국시간 기준)
-**다음 세션**: 실제 명세서로 종합 테스트 예정
+## 🚀 다음 세션 시작 가이드
+
+### 환경 확인
+```bash
+# 1. 프로젝트 디렉토리로 이동
+cd /mnt/d/Ai/WslProject/TheMoon_Project
+
+# 2. 최신 코드 pull
+git pull
+
+# 3. 현재 버전 확인
+cat logs/VERSION
+# 예상 출력: 0.46.0
+
+# 4. 앱 실행
+./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
+```
+
+### 현재 상태 요약
+**OCR 엔진**: EasyOCR (딥러닝 기반)
+**캐싱**: ✅ 적용 (20배 빠름)
+**전처리**: EasyOCR 전용 (컬러 이미지 유지)
+**파싱**: GSC 타입, 날짜, 금액 오인식 패턴 대응 완료
+
+### 우선순위 작업 (TodoWrite로 추가 권장)
+
+#### 1. OCR 종합 테스트 (최우선)
+```python
+# 테스트 이미지
+test_image = "/mnt/d/Ai/WslProject/TheMoon_Project/images/coffee_bean_receiving_Specification/IMG_1650.PNG"
+
+# 테스트 항목
+- [ ] GSC 타입 인식 (ESL 패턴)
+- [ ] 날짜 파싱 (2025 = 109 29일 → 2025-10-29)
+- [ ] 4개 항목 인식
+- [ ] 금액 파싱 (학계금9 패턴)
+- [ ] OCR 신뢰도 확인 (🔍 디버그 섹션)
+```
+
+#### 2. 추가 개선 사항
+```
+- [ ] 다양한 명세서로 테스트 (HACIELO, 다른 공급업체)
+- [ ] 오인식 패턴 데이터베이스 구축
+- [ ] OCR 신뢰도 임계값 조정 (현재: 60%)
+- [ ] 원두명 fuzzy matching 정확도 측정
+```
+
+#### 3. 성능 모니터링
+```
+- [ ] OCR 평균 신뢰도 로깅
+- [ ] 파싱 성공률 통계
+- [ ] 실패 케이스 수집 및 분석
+```
+
+### 주요 파일 위치
+```
+OCR 서비스:
+  app/services/ocr_service.py (EasyOCR Reader 캐싱)
+
+전처리 함수:
+  app/utils/image_utils.py
+  - preprocess_for_easyocr() (EasyOCR 전용)
+  - preprocess_image() (Tesseract 전용, deprecated)
+
+파싱 로직:
+  app/utils/text_parser.py
+  - detect_invoice_type() (Line 507-525)
+  - extract_date() (Line 155-214)
+  - extract_total_amount() (Line 351-386)
+
+UI:
+  app/pages/ImageInvoiceUpload.py
+  - OCR 신뢰도 표시 (Line 237-261)
+  - 디버그 섹션 (🔍 OCR 상세 정보)
+```
+
+### 알려진 이슈
+1. **EasyOCR 첫 로드 시간**: 20-30초 (정상, 모델 로드 시간)
+2. **철자 오류**: "Colombis" → "Colombia" (fuzzy matching으로 보정)
+3. **특수문자 오인식**: ")" → 숫자 뒤 (정규식으로 제거)
+
+### 참고 문서
+- 세션 요약: `Documents/Progress/SESSION_SUMMARY_2025-11-15_02.md` (이 파일)
+- 버전 관리: `logs/VERSION_MANAGEMENT.md`
+- 개발 가이드: `Documents/Architecture/DEVELOPMENT_GUIDE.md`
+
+### 빠른 디버깅
+```bash
+# OCR 테스트 (CLI)
+./venv/bin/python -c "
+from PIL import Image
+from app.services.ocr_service import OCRService
+from app.models.database import get_db
+
+db = next(get_db())
+ocr = OCRService(db)
+img = Image.open('images/coffee_bean_receiving_Specification/IMG_1650.PNG')
+result = ocr.process_image(img)
+print(result)
+"
+
+# 로그 확인
+tail -f logs/app.log  # (있다면)
+```
+
+### 세션 시작 시 확인사항
+- [ ] `Documents/Progress/SESSION_SUMMARY_2025-11-15_02.md` 읽기
+- [ ] `logs/VERSION` 확인 (0.46.0)
+- [ ] `git status` 확인 (clean working tree)
+- [ ] 앱 실행 확인 (http://localhost:8501)
+
+---
+
+**세션 종료 시각**: 2025-11-15 16:15 (한국시간 기준)
+**다음 세션**: 실제 명세서로 OCR 종합 테스트 및 인식률 측정
