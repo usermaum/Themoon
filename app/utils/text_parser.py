@@ -181,6 +181,24 @@ def extract_date(text: str) -> Optional[date]:
         except ValueError:
             pass
 
+    # 1-2. "YYYY년 MM월 DD일" 또는 "YYYY = MM9 DD일" (OCR 오인식) 패턴
+    # 예: "2025년 10월 29일", "2025 = 109 29일"
+    korean_full_date_pattern = r'(\d{4})\s*[년=\-]\s*(\d{1,3})\s*[월9oO]\s*(\d{1,2})\s*일'
+    match = re.search(korean_full_date_pattern, text)
+    if match:
+        year_str, month_str, day_str = match.groups()
+        year = int(year_str)
+        # OCR 오인식: "109" → "10"
+        month = int(month_str[-2:]) if len(month_str) > 2 else int(month_str)
+        day = int(day_str)
+
+        # 유효성 검사
+        if 1 <= month <= 12 and 1 <= day <= 31:
+            try:
+                return date(year, month, day)
+            except ValueError:
+                pass
+
     # 2. 한글 날짜 패턴 (OCR 오인식 대응)
     # "10월 29일", "108 29일", "10 8 29 일" (공백 포함)
     korean_date_pattern = r'(\d{1,3})\s*월?\s*(\d{1,2})\s*일'
@@ -346,16 +364,24 @@ def extract_total_amount(text: str) -> Optional[float]:
         총액 (원 단위, 없으면 None)
     """
     # 패턴 1: "합계금액", "총액", "합계"
-    keywords = ['합계금액', '총액', '합계', 'Total', 'TOTAL']
+    keywords = ['합계금액', '총액', '합계', 'Total', 'TOTAL', '학계금액', '학계금9']  # OCR 오인식 포함
 
     for keyword in keywords:
-        # 키워드 뒤에 오는 숫자 찾기
-        pattern = rf'{keyword}\s*[:：]?\s*[₩￦]?\s*(\d+(?:,\d{{3}})*)'
+        # 키워드 뒤에 오는 숫자 찾기 (괄호, 쉼표, 공백 허용)
+        # 예: "1,845,000", "1845000", "1825003)", "18-5000"
+        pattern = rf'{keyword}\s*[:：]?\s*[₩￦]?\s*(\d+(?:[,\-\s]\d{{3,}})*)\s*[)）]?\s*원?'
         match = re.search(pattern, text, re.IGNORECASE)
 
         if match:
-            amount_str = match.group(1).replace(',', '')
-            return float(amount_str)
+            amount_str = match.group(1)
+            # 쉼표, 하이픈, 공백 제거
+            amount_str = amount_str.replace(',', '').replace('-', '').replace(' ', '')
+
+            # 숫자만 남기고 파싱
+            try:
+                return float(amount_str)
+            except ValueError:
+                continue
 
     return None
 
@@ -506,13 +532,15 @@ def detect_invoice_type(ocr_text: str) -> str:
     # 5. "사업장" + 테이블 구조 패턴
     gsc_indicators = [
         'GSC' in ocr_upper,
+        'ESL' in ocr_upper,  # EasyOCR "GSC" 오인식
         'COFFEEGSC' in ocr_upper,
         '197-04-00506' in ocr_text,
         '922507661582' in ocr_text,  # 사업자번호 OCR 오인식 (@AMAR 등)
         '157-04' in ocr_text,  # OCR 오인식 패턴
         '197-04' in ocr_text,  # 부분 매칭
-        '거래명세서' in ocr_text,
-        ('사업장' in ocr_text and '우스' in ocr_text)  # "사업장 ... 우스" 패턴
+        '거래명세서' in ocr_text or '거 래 명 세 서' in ocr_text,  # 공백 포함 패턴
+        ('사업장' in ocr_text and '우스' in ocr_text),  # "사업장 ... 우스" 패턴
+        'coffeegsc' in ocr_text.lower()  # 이메일 도메인
     ]
 
     # 2개 이상의 지표가 매칭되면 GSC로 판정
