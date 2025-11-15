@@ -110,8 +110,8 @@ with tab1:
                 "ID": blend.id,
                 "블렌드명": blend.name,
                 "타입": blend.blend_type,
-                "포션": blend.total_portion,
-                "포션당 원가": f"₩{cost_info['cost_per_portion']:,.0f}" if cost_info else "-",
+                "혼합 비율": blend.total_portion,
+                "혼합 비율당 원가": f"₩{cost_info['cost_per_portion']:,.0f}" if cost_info else "-",
                 "제안 가격": f"₩{cost_info['suggested_price']:,.0f}" if cost_info else "-",
                 "상태": blend.status,
                 "설명": blend.description or "-"
@@ -129,7 +129,7 @@ with tab1:
 
         with col2:
             total_portions = sum(b.total_portion for b in filtered_blends)
-            st.metric("총 포션", f"{total_portions}개")
+            st.metric("총 혼합 비율", f"{total_portions}개")
 
         with col3:
             avg_cost = sum(blend_service.calculate_blend_cost(b.id)['cost_per_portion']
@@ -166,7 +166,7 @@ with tab2:
                     st.metric("타입", selected_blend.blend_type)
 
                 with col2:
-                    st.metric("포션", f"{selected_blend.total_portion}개")
+                    st.metric("혼합 비율", f"{selected_blend.total_portion}개")
 
                 with col3:
                     st.metric("상태", selected_blend.status)
@@ -197,7 +197,7 @@ with tab2:
                                 "원두명": bean.name,
                                 "국가": bean.country_code,
                                 "로스팅": bean.roast_level,
-                                "포션": recipe.portion_count,
+                                "혼합 비율": recipe.portion_count,
                                 "비율": f"{ratio:.1f}%",
                                 "가격/kg": f"₩{bean.price_per_kg:,.0f}"
                             })
@@ -205,17 +205,17 @@ with tab2:
                     df_recipes = pd.DataFrame(recipe_data)
                     st.dataframe(df_recipes, use_container_width=True, hide_index=True)
 
-                    # 파이 차트로 포션 구성 시각화
-                    st.markdown("#### 📊 포션 구성비")
+                    # 파이 차트로 혼합 비율 구성 시각화
+                    st.markdown("#### 📊 혼합 비율 구성비")
 
                     fig = go.Figure(data=[go.Pie(
                         labels=[r["원두명"] for r in recipe_data],
-                        values=[r["포션"] for r in recipe_data],
-                        hovertemplate="<b>%{label}</b><br>포션: %{value}개<br>비율: %{percent}<extra></extra>"
+                        values=[r["혼합 비율"] for r in recipe_data],
+                        hovertemplate="<b>%{label}</b><br>혼합 비율: %{value}개<br>비율: %{percent}<extra></extra>"
                     )])
 
                     fig.update_layout(
-                        title=f"{selected_blend.name} - 포션 구성",
+                        title=f"{selected_blend.name} - 혼합 비율 구성",
                         height=400,
                         showlegend=True
                     )
@@ -247,9 +247,9 @@ with tab2:
                         st.write(cost_details)
 
                     with col2:
-                        st.markdown("**포션당 원가**")
+                        st.markdown("**혼합 비율당 원가**")
                         portion_details = f"""
-                        - 포션당 원가: ₩{cost_info['cost_per_portion']:,.0f}
+                        - 혼합 비율당 원가: ₩{cost_info['cost_per_portion']:,.0f}
                         - 마진율: {cost_info['margin_rate']:.1f}배
                         - 제안 판매가: ₩{cost_info['suggested_price']:,.0f}
                         - **예상 이익**: ₩{cost_info['profit_margin']:,.0f}
@@ -309,7 +309,7 @@ with tab3:
         st.divider()
 
         st.markdown("#### 🌾 블렌드 레시피 구성")
-        st.info("원두를 선택하고 포션을 입력하여 레시피를 구성하세요.")
+        st.info("원두를 선택하고 혼합 비율을 입력하여 레시피를 구성하세요.")
 
         # 동적 레시피 입력
         recipes_input = []
@@ -331,7 +331,7 @@ with tab3:
                     )
 
                     portion = st.number_input(
-                        f"포션 {i+1}",
+                        f"혼합 비율 {i+1}",
                         min_value=1,
                         max_value=20,
                         value=1,
@@ -444,7 +444,7 @@ with tab4:
                     if bean:
                         recipe_data.append({
                             "원두": bean.name,
-                            "포션": recipe.portion_count,
+                            "혼합 비율": recipe.portion_count,
                             "ID": recipe.id
                         })
 
@@ -456,7 +456,7 @@ with tab4:
                     st.markdown("#### ✏️ 레시피 수정")
 
                     # 수정할 레시피 선택
-                    recipe_names = [f"{r['원두']} ({r['포션']}포션)" for r in recipe_data]
+                    recipe_names = [f"{r['원두']} ({r['혼합 비율']})" for r in recipe_data]
                     selected_recipe_idx = st.selectbox(
                         "수정할 레시피 선택",
                         range(len(recipe_data)),
@@ -483,9 +483,9 @@ with tab4:
                         )
 
                     with col2:
-                        # 포션 수 수정
+                        # 혼합 비율 수정
                         new_portion = st.number_input(
-                            "포션 개수",
+                            "혼합 비율 개수",
                             min_value=1,
                             max_value=20,
                             value=selected_recipe.portion_count,
@@ -554,8 +554,8 @@ if blends:
             "ID": blend.id,
             "블렌드명": blend.name,
             "타입": blend.blend_type,
-            "포션": blend.total_portion,
-            "포션당 원가": cost_info['cost_per_portion'] if cost_info else 0,
+            "혼합 비율": blend.total_portion,
+            "혼합 비율당 원가": cost_info['cost_per_portion'] if cost_info else 0,
             "제안 가격": blend.suggested_price or 0,
             "설명": blend.description or ""
         })

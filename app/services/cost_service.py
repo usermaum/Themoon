@@ -7,7 +7,7 @@ CostService: 원가 계산 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
-from app.models.database import Bean, Blend, BlendRecipe, CostSetting, BeanPriceHistory
+from models.database import Bean, Blend, BlendRecipe, CostSetting, BeanPriceHistory
 from datetime import datetime
 import logging
 

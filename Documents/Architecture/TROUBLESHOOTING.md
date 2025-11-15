@@ -105,7 +105,7 @@ sqlite3.OperationalError: no such table: beans
 **해결 방법:**
 ```bash
 # 1. 데이터베이스 재초기화 (데이터 삭제됨!)
-rm Data/roasting_data.db
+rm data/roasting_data.db
 
 # 2. 앱 재실행 (자동으로 테이블 생성)
 ./venv/bin/streamlit run app/app.py
@@ -114,15 +114,15 @@ rm Data/roasting_data.db
 ./venv/bin/python app/test_data.py
 
 # 4. 데이터베이스 확인
-sqlite3 Data/roasting_data.db ".tables"
-sqlite3 Data/roasting_data.db "SELECT COUNT(*) FROM beans;"
+sqlite3 data/roasting_data.db ".tables"
+sqlite3 data/roasting_data.db "SELECT COUNT(*) FROM beans;"
 ```
 
 **⚠️ 주의:** 데이터베이스 삭제 시 모든 데이터가 사라집니다. 백업을 먼저 하세요!
 
 ```bash
 # 백업 생성
-cp Data/roasting_data.db Data/roasting_data_backup_$(date +%Y%m%d_%H%M%S).db
+cp data/roasting_data.db data/roasting_data_backup_$(date +%Y%m%d_%H%M%S).db
 ```
 
 ---
@@ -145,14 +145,14 @@ lsof -ti :8501 | xargs kill -9
 pkill -f streamlit
 
 # 2. WAL 파일 정리 (선택사항)
-rm -f Data/roasting_data.db-wal
-rm -f Data/roasting_data.db-shm
+rm -f data/roasting_data.db-wal
+rm -f data/roasting_data.db-shm
 
 # 3. 앱 재실행
 ./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
 
 # 4. 데이터베이스 통합성 확인
-sqlite3 Data/roasting_data.db "PRAGMA integrity_check;"
+sqlite3 data/roasting_data.db "PRAGMA integrity_check;"
 ```
 
 ---
@@ -161,7 +161,7 @@ sqlite3 Data/roasting_data.db "PRAGMA integrity_check;"
 
 **오류 메시지:**
 ```
-FileNotFoundError: [Errno 2] No such file or directory: '../Data/roasting_data.db'
+FileNotFoundError: [Errno 2] No such file or directory: '../data/roasting_data.db'
 ```
 
 **원인:**
@@ -179,9 +179,9 @@ cd app
 
 # 또는 절대 경로 사용 (권장)
 # app/app.py 수정
-db_path = os.path.join(os.path.dirname(__file__), '../Data/roasting_data.db')
+db_path = os.path.join(os.path.dirname(__file__), '../data/roasting_data.db')
 # 대신
-db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Data/roasting_data.db'))
+db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/roasting_data.db'))
 ```
 
 ---
@@ -429,7 +429,7 @@ df = load_data()
 
 **오류 메시지:**
 ```
-PermissionError: [Errno 13] Permission denied: 'Data/roasting_data.db'
+PermissionError: [Errno 13] Permission denied: 'data/roasting_data.db'
 ```
 
 **원인:**
@@ -439,14 +439,14 @@ PermissionError: [Errno 13] Permission denied: 'Data/roasting_data.db'
 **해결 방법:**
 ```bash
 # 1. 권한 확인
-ls -la Data/roasting_data.db
+ls -la data/roasting_data.db
 
 # 2. 권한 수정
-chmod 644 Data/roasting_data.db
-chmod 755 Data/
+chmod 644 data/roasting_data.db
+chmod 755 data/
 
 # 3. 소유권 확인
-chown $USER:$USER Data/roasting_data.db
+chown $USER:$USER data/roasting_data.db
 
 # 4. WSL 특정 문제 (필요시)
 # .wslconfig 수정
@@ -557,22 +557,22 @@ grep -i "warning" streamlit.log
 
 ```bash
 # 1. 테이블 목록 확인
-sqlite3 Data/roasting_data.db ".tables"
+sqlite3 data/roasting_data.db ".tables"
 
 # 2. 테이블 스키마 확인
-sqlite3 Data/roasting_data.db ".schema beans"
+sqlite3 data/roasting_data.db ".schema beans"
 
 # 3. 데이터 확인
-sqlite3 Data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
+sqlite3 data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
 
 # 4. 데이터 개수 확인
-sqlite3 Data/roasting_data.db "SELECT COUNT(*) as cnt FROM beans;"
+sqlite3 data/roasting_data.db "SELECT COUNT(*) as cnt FROM beans;"
 
 # 5. 인덱스 확인
-sqlite3 Data/roasting_data.db ".indices"
+sqlite3 data/roasting_data.db ".indices"
 
 # 6. 통합성 확인
-sqlite3 Data/roasting_data.db "PRAGMA integrity_check;"
+sqlite3 data/roasting_data.db "PRAGMA integrity_check;"
 ```
 
 ### Python 디버깅
@@ -583,10 +583,10 @@ import os
 print(os.getcwd())
 
 # 2. 경로 확인
-print(os.path.abspath('Data/roasting_data.db'))
+print(os.path.abspath('data/roasting_data.db'))
 
 # 3. 파일 존재 확인
-print(os.path.exists('Data/roasting_data.db'))
+print(os.path.exists('data/roasting_data.db'))
 
 # 4. 모듈 위치 확인
 import app.models
@@ -608,7 +608,7 @@ print(f"Pandas: {pd.__version__}")
 - [ ] `./venv/bin/python --version`이 3.12.3인가?
 - [ ] `./venv/bin/pip list | grep streamlit`에 결과가 있는가?
 - [ ] 포트 8501이 사용 중이 아닌가?
-- [ ] Data/roasting_data.db 파일이 쓰기 권한이 있는가?
+- [ ] data/roasting_data.db 파일이 쓰기 권한이 있는가?
 
 **오류 발생 시 해결 순서:**
 1. 오류 메시지 전체 읽기
@@ -626,13 +626,13 @@ print(f"Pandas: {pd.__version__}")
 **Q: 기존 데이터 유지하면서 스키마 변경하려면?**
 ```bash
 # 1. 백업 생성
-cp Data/roasting_data.db Data/roasting_data_backup.db
+cp data/roasting_data.db data/roasting_data_backup.db
 
 # 2. SQLite 백업 유틸리티 사용
-sqlite3 Data/roasting_data.db ".dump" > backup.sql
+sqlite3 data/roasting_data.db ".dump" > backup.sql
 
 # 3. 스키마 변경 후
-sqlite3 Data/roasting_data_restored.db < backup.sql
+sqlite3 data/roasting_data_restored.db < backup.sql
 ```
 
 **Q: 여러 사용자가 동시에 접근하면?**

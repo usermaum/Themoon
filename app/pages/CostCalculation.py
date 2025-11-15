@@ -18,9 +18,9 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from app.services.cost_service import CostService
-from app.services.bean_service import BeanService
-from app.services.blend_service import BlendService
+from services.cost_service import CostService
+from services.bean_service import BeanService
+from services.blend_service import BlendService
 from app.models import SessionLocal
 from app.components.sidebar import render_sidebar
 from app.i18n import Translator, LanguageManager
@@ -71,7 +71,8 @@ st.divider()
 # 탭 생성
 # ═══════════════════════════════════════════════════════════════════════════════
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📐 투입량 계산기",
     "🧮 원가 계산",
     "📊 일괄 비교",
     "💰 원두 가격 관리",
@@ -79,10 +80,177 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Tab 1: 원가 계산
+# Tab 1: 투입량 계산기 (신규)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
+    from services.cost_calculator_service import CostCalculatorService
+
+    st.markdown("### 📐 투입량 계산기")
+    st.markdown("목표 산출량(원두)을 입력하면 필요한 생두 투입량을 계산합니다.")
+
+    # 서비스 초기화
+    calculator_service = CostCalculatorService(db)
+
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        # 원두 선택
+        beans = bean_service.get_active_beans()
+        bean_options = {f"{bean.name} ({bean.country_name})": bean.id for bean in beans}
+        bean_options["전체 평균 사용"] = None
+
+        selected_bean_name = st.selectbox(
+            "☕ 원두 선택",
+            options=list(bean_options.keys()),
+            help="특정 원두를 선택하면 해당 원두의 평균 손실률을 사용합니다"
+        )
+        selected_bean_id = bean_options[selected_bean_name]
+
+    with col2:
+        # 안전 여유율 설정
+        safety_margin = st.number_input(
+            "✨ 안전 여유율 (%)",
+            min_value=0.0,
+            max_value=10.0,
+            value=2.0,
+            step=0.5,
+            help="배치 편차를 고려한 여유분"
+        ) / 100
+
+    # 목표 산출량 입력
+    target_output = st.number_input(
+        "🎯 목표 산출량 (kg)",
+        min_value=0.1,
+        max_value=100.0,
+        value=10.0,
+        step=0.5,
+        help="로스팅 후 얻고자 하는 원두의 무게"
+    )
+
+    # 계산 버튼
+    if st.button("📊 투입량 계산", type="primary", use_container_width=True):
+        with st.spinner("계산 중..."):
+            result = calculator_service.calculate_required_input(
+                target_output_kg=target_output,
+                bean_id=selected_bean_id,
+                safety_margin=safety_margin
+            )
+
+            if 'error' in result:
+                st.error(f"❌ {result['error']}")
+            else:
+                st.divider()
+
+                # 통계 정보 표시
+                st.markdown("### 📊 원두 손실률 통계")
+
+                stat_col1, stat_col2, stat_col3 = st.columns(3)
+
+                with stat_col1:
+                    st.metric(
+                        "평균 손실률",
+                        f"{result['avg_loss_rate']:.2f}%",
+                        help="최근 로스팅 기록 기반"
+                    )
+
+                with stat_col2:
+                    st.metric(
+                        "표준편차",
+                        f"±{result['std_loss_rate']:.2f}%",
+                        help="손실률의 변동 폭"
+                    )
+
+                with stat_col3:
+                    st.metric(
+                        "로스팅 횟수",
+                        f"{result['sample_count']}회",
+                        help="통계 계산에 사용된 데이터"
+                    )
+
+                if result.get('warning'):
+                    st.warning(f"⚠️ {result['warning']}")
+
+                st.divider()
+
+                # 계산 결과
+                st.markdown("### 💡 계산 결과")
+
+                # 주요 결과 (큰 카드)
+                result_col1, result_col2 = st.columns(2)
+
+                with result_col1:
+                    st.markdown(f"""
+                    <div style='background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center;'>
+                        <h4 style='margin: 0; color: #555;'>기본 투입량</h4>
+                        <h2 style='margin: 10px 0; color: #1f77b4;'>{result['calculated_input']:.2f} kg</h2>
+                        <p style='margin: 0; color: #777; font-size: 14px;'>손실률만 고려한 계산값</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with result_col2:
+                    st.markdown(f"""
+                    <div style='background-color: #e8f5e9; padding: 20px; border-radius: 10px; text-align: center;'>
+                        <h4 style='margin: 0; color: #555;'>⭐ 권장 투입량</h4>
+                        <h2 style='margin: 10px 0; color: #2e7d32;'>{result['recommended_input']:.2f} kg</h2>
+                        <p style='margin: 0; color: #777; font-size: 14px;'>여유 {safety_margin*100:.1f}% 포함 ({result['safety_margin_kg']:.2f}kg)</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.divider()
+
+                # 예상 산출량 범위
+                st.markdown("### 📦 예상 산출량 범위")
+                st.markdown(f"권장 투입량({result['recommended_input']:.2f}kg)으로 로스팅 시 예상되는 결과:")
+
+                range_col1, range_col2, range_col3 = st.columns(3)
+
+                with range_col1:
+                    st.metric(
+                        "최소 예상",
+                        f"{result['min_output']:.2f} kg",
+                        delta=f"{result['min_output'] - target_output:.2f}kg",
+                        delta_color="off"
+                    )
+
+                with range_col2:
+                    st.metric(
+                        "평균 예상",
+                        f"{result['expected_output']:.2f} kg",
+                        delta=f"{result['expected_output'] - target_output:.2f}kg",
+                        delta_color="normal"
+                    )
+
+                with range_col3:
+                    st.metric(
+                        "최대 예상",
+                        f"{result['max_output']:.2f} kg",
+                        delta=f"{result['max_output'] - target_output:.2f}kg",
+                        delta_color="normal"
+                    )
+
+                # 도움말
+                with st.expander("ℹ️ 계산 방법 및 해석"):
+                    st.markdown(f"""
+                    **계산 공식:**
+                    - 기본 투입량 = 목표 산출량 ÷ (1 - 평균 손실률)
+                    - 권장 투입량 = 기본 투입량 × (1 + 안전 여유율)
+
+                    **예상 범위 계산:**
+                    - 손실률 범위: {result['avg_loss_rate'] - result['std_loss_rate']:.2f}% ~ {result['avg_loss_rate'] + result['std_loss_rate']:.2f}%
+                    - 이 범위 내에서 약 68%의 로스팅 결과가 나옵니다 (1 표준편차)
+
+                    **권장사항:**
+                    - 목표량을 정확히 맞추려면 "권장 투입량"을 사용하세요
+                    - 여유율은 배치마다 다를 수 있는 변동을 고려한 값입니다
+                    - 로스팅 횟수가 많을수록 통계가 정확해집니다
+                    """)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tab 2: 원가 계산
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with tab2:
     st.markdown("### 🧮 블렌드 원가 계산")
     st.markdown("선택한 블렌드의 상세 원가를 계산하고 분석합니다.")
 
@@ -221,7 +389,7 @@ with tab1:
                 ```
                 마진율 = (판매가 - 최종원가) / 판매가 × 100
                       = ({cost_data['selling_price'] if cost_data['selling_price'] else 0:,.0f} - {cost_data['final_cost_per_kg']:,.0f}) / {cost_data['selling_price'] if cost_data['selling_price'] else 0:,.0f} × 100
-                      = {cost_data['margin_percent']:.1f}% if cost_data['margin_percent'] else 'N/A'
+                      = {f"{cost_data['margin_percent']:.1f}%" if cost_data['margin_percent'] is not None else 'N/A'}
                 ```
                 """)
 
@@ -230,10 +398,10 @@ with tab1:
             st.exception(e)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Tab 2: 일괄 비교
+# Tab 3: 일괄 비교
 # ═══════════════════════════════════════════════════════════════════════════════
 
-with tab2:
+with tab3:
     st.markdown("### 📊 블렌드 일괄 비교")
     st.markdown("모든 블렌드의 원가를 일괄 계산하여 비교 분석합니다.")
 
@@ -368,10 +536,10 @@ with tab2:
         st.info("👆 위 버튼을 클릭하여 모든 블렌드의 원가를 계산하세요.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Tab 3: 원두 가격 관리
+# Tab 4: 원두 가격 관리
 # ═══════════════════════════════════════════════════════════════════════════════
 
-with tab3:
+with tab4:
     st.markdown("### 💰 원두 가격 관리")
     st.markdown("원두 가격을 조회하고 수정합니다.")
 
@@ -538,10 +706,10 @@ with tab3:
             st.error(f"❌ 이력 조회 실패: {str(e)}")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Tab 4: 비용 설정
+# Tab 5: 비용 설정
 # ═══════════════════════════════════════════════════════════════════════════════
 
-with tab4:
+with tab5:
     st.markdown("### ⚙️ 비용 설정")
     st.markdown("손실률 및 각종 비용 파라미터를 설정합니다.")
 

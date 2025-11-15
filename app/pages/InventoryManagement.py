@@ -68,70 +68,85 @@ tab1, tab2, tab3, tab4 = st.tabs(["📊 현황", "📝 거래 기록", "➕ 입�
 # ═══════════════════════════════════════════════════════════════════════════════
 
 with tab1:
+    from services.inventory_service import InventoryService
+
     st.markdown("### 📊 현재 재고 현황")
+    st.markdown("생두(로스팅 전)와 원두(로스팅 후) 재고를 별도로 관리합니다.")
 
-    beans = bean_service.get_active_beans()
+    # 재고 서비스 초기화
+    inventory_service = InventoryService(db)
 
-    if beans:
-        # 재고 데이터 로드
+    # 전체 재고 조회
+    all_inventory = inventory_service.get_all_inventory()
+
+    if all_inventory:
+        # 재고 데이터 가공
         inventory_data = []
-        total_quantity = 0
+        total_raw = 0
+        total_roasted = 0
         low_stock_count = 0
 
-        for bean in beans:
-            inventory = db.query(Inventory).filter(Inventory.bean_id == bean.id).first()
+        for item in all_inventory:
+            raw_qty = item['raw_bean_qty']
+            roasted_qty = item['roasted_bean_qty']
+            total_raw += raw_qty
+            total_roasted += roasted_qty
 
-            if inventory:
-                quantity = inventory.quantity_kg
-                min_qty = inventory.min_quantity_kg
-                max_qty = inventory.max_quantity_kg
-                total_quantity += quantity
+            # 저재고 판정 (생두 또는 원두 중 하나라도 저재고이면)
+            raw_inv = item['raw_inventory']
+            roasted_inv = item['roasted_inventory']
 
-                # 저재고 판정
-                is_low = quantity < min_qty if min_qty > 0 else False
-                if is_low:
-                    low_stock_count += 1
+            raw_low = raw_inv and raw_inv.min_quantity_kg > 0 and raw_qty < raw_inv.min_quantity_kg
+            roasted_low = roasted_inv and roasted_inv.min_quantity_kg > 0 and roasted_qty < roasted_inv.min_quantity_kg
 
-                # 상태 판정
-                if min_qty > 0 and quantity < min_qty:
-                    status = "🔴 저재고"
-                elif max_qty > 0 and quantity > max_qty:
-                    status = "🟡 과재고"
-                else:
-                    status = "🟢 정상"
+            if raw_low or roasted_low:
+                low_stock_count += 1
 
-                inventory_data.append({
-                    "원두명": bean.name,
-                    "국가": bean.country_code or "-",
-                    "현재": f"{quantity:.2f}kg",
-                    "최소": f"{min_qty:.2f}kg",
-                    "최대": f"{max_qty:.2f}kg",
-                    "상태": status,
-                    "가격/kg": f"₩{bean.price_per_kg:,.0f}"
-                })
+            # 상태 판정
+            status_icons = []
+            if raw_low:
+                status_icons.append("🔴생두")
+            if roasted_low:
+                status_icons.append("🔴원두")
+            if not status_icons:
+                status_icons.append("🟢정상")
+
+            status = " ".join(status_icons)
+
+            inventory_data.append({
+                "원두명": item['bean_name'],
+                "국가": item['bean_country'] or "-",
+                "생두 (Raw)": f"{raw_qty:.2f}kg",
+                "원두 (Roasted)": f"{roasted_qty:.2f}kg",
+                "합계": f"{item['total_qty']:.2f}kg",
+                "상태": status,
+                "가격/kg": f"₩{item['bean'].price_per_kg:,.0f}"
+            })
 
         # 통계
         st.markdown("#### 📈 재고 통계")
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
 
         with col1:
-            st.metric("☕ 원두 종류", len(beans))
+            st.metric("☕ 원두 종류", len(all_inventory))
 
         with col2:
-            st.metric("📦 총 재고", f"{total_quantity:.2f}kg")
+            st.metric("🌾 총 생두", f"{total_raw:.2f}kg", help="로스팅 전 생두 재고")
 
         with col3:
-            avg_per_bean = total_quantity / len(beans) if beans else 0
-            st.metric("평균 보유", f"{avg_per_bean:.2f}kg")
+            st.metric("☕ 총 원두", f"{total_roasted:.2f}kg", help="로스팅 후 원두 재고")
 
         with col4:
+            st.metric("📦 전체 재고", f"{total_raw + total_roasted:.2f}kg", help="생두 + 원두")
+
+        with col5:
             st.metric("🔴 저재고", low_stock_count)
 
         st.divider()
 
         # 재고 테이블
-        st.markdown("#### 📋 재고 목록")
+        st.markdown("#### 📋 재고 목록 (생두/원두 구분)")
 
         df_inventory = pd.DataFrame(inventory_data)
         st.dataframe(df_inventory, use_container_width=True, hide_index=True)
@@ -139,34 +154,50 @@ with tab1:
         st.divider()
 
         # 재고 시각화
-        st.markdown("#### 📊 재고 분포")
+        st.markdown("#### 📊 재고 분포 (생두/원두 구분)")
 
-        # 현재 재고량 그래프
-        inventory_quantity = []
-        bean_names = []
+        # 생두/원두 재고 데이터 준비
+        bean_names = [item['bean_name'] for item in all_inventory]
+        raw_quantities = [item['raw_bean_qty'] for item in all_inventory]
+        roasted_quantities = [item['roasted_bean_qty'] for item in all_inventory]
 
-        for bean in beans:
-            inventory = db.query(Inventory).filter(Inventory.bean_id == bean.id).first()
-            if inventory:
-                inventory_quantity.append(inventory.quantity_kg)
-                bean_names.append(bean.name)
-
-        if inventory_quantity:
-            fig = go.Figure(data=[go.Bar(
-                x=bean_names,
-                y=inventory_quantity,
-                marker_color="#4472C4",
-                text=[f"{q:.2f}kg" for q in inventory_quantity],
-                textposition="auto",
-                hovertemplate="<b>%{x}</b><br>재고: %{y:.2f}kg<extra></extra>"
-            )])
+        if bean_names:
+            # 스택 바 차트
+            fig = go.Figure(data=[
+                go.Bar(
+                    name='생두 (Raw)',
+                    x=bean_names,
+                    y=raw_quantities,
+                    marker_color="#8B4513",  # 갈색 (생두)
+                    text=[f"{q:.1f}kg" if q > 0 else "" for q in raw_quantities],
+                    textposition="inside",
+                    hovertemplate="<b>%{x}</b><br>생두: %{y:.2f}kg<extra></extra>"
+                ),
+                go.Bar(
+                    name='원두 (Roasted)',
+                    x=bean_names,
+                    y=roasted_quantities,
+                    marker_color="#654321",  # 진한 갈색 (원두)
+                    text=[f"{q:.1f}kg" if q > 0 else "" for q in roasted_quantities],
+                    textposition="inside",
+                    hovertemplate="<b>%{x}</b><br>원두: %{y:.2f}kg<extra></extra>"
+                )
+            ])
 
             fig.update_layout(
-                title="원두별 현재 재고량",
+                title="원두별 현재 재고량 (생두 + 원두)",
                 xaxis_title="원두명",
                 yaxis_title="재고량 (kg)",
                 height=400,
-                xaxis_tickangle=-45
+                xaxis_tickangle=-45,
+                barmode='stack',  # 스택 바 차트
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                )
             )
 
             st.plotly_chart(fig, use_container_width=True)

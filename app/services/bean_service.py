@@ -69,6 +69,7 @@ class BeanService:
         roast_level: str,
         country_code: str = None,
         country_name: str = None,
+        brand: str = None,
         description: str = None,
         price_per_kg: float = 0.0,
         image_url: str = None
@@ -84,6 +85,7 @@ class BeanService:
             roast_level=roast_level,
             country_code=country_code,
             country_name=country_name,
+            brand=brand,
             description=description,
             price_per_kg=price_per_kg,
             image_url=image_url,

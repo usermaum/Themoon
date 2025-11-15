@@ -6,7 +6,7 @@ AuthService: 인증 및 권한 관리 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from app.models.database import User, UserPermission
+from models.database import User, UserPermission
 from passlib.context import CryptContext
 from datetime import datetime
 import logging

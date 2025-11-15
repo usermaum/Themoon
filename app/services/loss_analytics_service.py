@@ -6,7 +6,7 @@ LossAnalyticsService: 손실률 예측 및 계절성 분석 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.database import RoastingLog
+from models.database import RoastingLog
 from datetime import datetime, timedelta
 import statistics
 import logging

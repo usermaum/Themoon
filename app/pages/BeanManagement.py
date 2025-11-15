@@ -67,8 +67,14 @@ tab1, tab2, tab3, tab4 = st.tabs(["📋 목록", "➕ 추가", "✏️ 편집", 
 with tab1:
     st.markdown("### 📋 원두 목록")
 
+    # 원두 데이터 로드 (필터링 옵션을 위해 먼저 로드)
+    beans = bean_service.get_active_beans()
+
+    # 브랜드 목록 추출
+    brands = sorted(set(b.brand for b in beans if b.brand))
+
     # 필터링 옵션
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         filter_country = st.multiselect(
@@ -85,12 +91,16 @@ with tab1:
         )
 
     with col3:
+        filter_brand = st.multiselect(
+            "브랜드 필터",
+            options=brands,
+            default=None
+        ) if brands else None
+
+    with col4:
         search_text = st.text_input("원두명 검색", "")
 
     st.divider()
-
-    # 원두 데이터 로드
-    beans = bean_service.get_active_beans()
 
     # 필터링 적용
     filtered_beans = beans
@@ -100,6 +110,9 @@ with tab1:
 
     if filter_roast:
         filtered_beans = [b for b in filtered_beans if b.roast_level in filter_roast]
+
+    if filter_brand:
+        filtered_beans = [b for b in filtered_beans if b.brand in filter_brand]
 
     if search_text:
         filtered_beans = [b for b in filtered_beans if search_text.lower() in b.name.lower()]
@@ -112,8 +125,12 @@ with tab1:
                 "No": bean.no,
                 "국가코드": bean.country_code or "-",
                 "원두명": bean.name,
+                "브랜드": bean.brand or "-",
                 "로스팅": bean.roast_level,
                 "가격(원/kg)": f"₩{bean.price_per_kg:,.0f}" if bean.price_per_kg > 0 else "미정",
+                "평균 손실률(%)": f"{bean.avg_loss_rate:.1f}%" if bean.avg_loss_rate else "-",
+                "로스팅 횟수": bean.total_roasted_count or 0,
+                "마지막 로스팅": bean.last_roasted_date.strftime("%Y-%m-%d") if bean.last_roasted_date else "-",
                 "상태": bean.status,
                 "설명": bean.description or "-"
             })
@@ -157,6 +174,7 @@ with tab2:
             no = st.number_input("원두 번호", min_value=1, max_value=999, value=14)
             name = st.text_input("원두명", "")
             country_code = st.selectbox("국가코드", ["Eth", "K", "Co", "Gu", "Cos", "Br", "기타"])
+            brand = st.text_input("브랜드", "", help="원두 브랜드 (선택사항)")
 
         with col2:
             roast_level = st.selectbox("로스팅 레벨", ["W", "N", "Pb", "Rh", "SD", "SC"])
@@ -173,6 +191,7 @@ with tab2:
                         name=name,
                         roast_level=roast_level,
                         country_code=country_code if country_code != "기타" else None,
+                        brand=brand if brand else None,
                         description=description,
                         price_per_kg=price_per_kg
                     )
@@ -297,6 +316,122 @@ with tab4:
             st.markdown("**🔻 가장 싼 원두 (Top 3)**")
             for i, bean in enumerate(reversed(beans_with_price[-3:]), 1):
                 st.write(f"{i}. {bean.name}: ₩{bean.price_per_kg:,.0f}/kg")
+
+    # 원두별 상세 통계
+    st.divider()
+    st.markdown("#### 📈 원두별 상세 통계")
+
+    beans_with_stats = [b for b in beans if b.total_roasted_count and b.total_roasted_count > 0]
+
+    if beans_with_stats:
+        bean_names = {b.name: b.id for b in beans_with_stats}
+        selected_bean_name = st.selectbox(
+            "원두 선택",
+            list(bean_names.keys()),
+            help="로스팅 이력이 있는 원두만 표시됩니다"
+        )
+
+        if selected_bean_name:
+            selected_bean_id = bean_names[selected_bean_name]
+            selected_bean = bean_service.get_bean_by_id(selected_bean_id)
+
+            # 원두 통계 카드
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric("📊 평균 손실률",
+                         f"{selected_bean.avg_loss_rate:.1f}%" if selected_bean.avg_loss_rate else "N/A")
+
+            with col2:
+                st.metric("🎯 표준편차",
+                         f"{selected_bean.std_loss_rate:.1f}%" if selected_bean.std_loss_rate else "N/A")
+
+            with col3:
+                st.metric("🔥 총 로스팅 횟수",
+                         f"{selected_bean.total_roasted_count}회")
+
+            with col4:
+                st.metric("📅 마지막 로스팅",
+                         selected_bean.last_roasted_date.strftime("%Y-%m-%d") if selected_bean.last_roasted_date else "N/A")
+
+            # 로스팅 이력 조회
+            from services.roasting_service import RoastingService
+            roasting_service = RoastingService()
+
+            roasting_logs = st.session_state.db.query(
+                st.session_state.db.query(RoastingLog).filter(RoastingLog.bean_id == selected_bean_id).order_by(RoastingLog.roasting_date.desc()).limit(10).subquery()
+            ).all() if 'RoastingLog' in dir() else []
+
+            # 간단한 방법으로 다시 시도
+            try:
+                from models.database import RoastingLog
+                roasting_logs = st.session_state.db.query(RoastingLog).filter(
+                    RoastingLog.bean_id == selected_bean_id
+                ).order_by(RoastingLog.roasting_date.desc()).limit(10).all()
+
+                if roasting_logs:
+                    st.markdown("##### 📋 최근 로스팅 이력 (최근 10건)")
+
+                    log_data = []
+                    for log in reversed(roasting_logs):  # 날짜 오름차순으로 표시
+                        log_data.append({
+                            "날짜": log.roasting_date.strftime("%Y-%m-%d"),
+                            "투입량(kg)": f"{log.raw_weight_kg:.2f}",
+                            "산출량(kg)": f"{log.roasted_weight_kg:.2f}",
+                            "손실률(%)": f"{log.loss_rate_percent:.1f}%",
+                            "편차(%)": f"{log.loss_variance_percent:+.1f}%" if log.loss_variance_percent else "-"
+                        })
+
+                    df_logs = pd.DataFrame(log_data)
+                    st.dataframe(df_logs, use_container_width=True, hide_index=True)
+
+                    # 손실률 추이 그래프
+                    st.markdown("##### 📉 손실률 추이")
+
+                    import plotly.graph_objects as go
+
+                    dates = [log.roasting_date for log in reversed(roasting_logs)]
+                    loss_rates = [log.loss_rate_percent for log in reversed(roasting_logs)]
+
+                    fig = go.Figure()
+
+                    # 손실률 라인
+                    fig.add_trace(go.Scatter(
+                        x=dates,
+                        y=loss_rates,
+                        mode='lines+markers',
+                        name='손실률',
+                        line=dict(color='#FF6B6B', width=2),
+                        marker=dict(size=8)
+                    ))
+
+                    # 평균 손실률 라인
+                    if selected_bean.avg_loss_rate:
+                        fig.add_trace(go.Scatter(
+                            x=[dates[0], dates[-1]],
+                            y=[selected_bean.avg_loss_rate, selected_bean.avg_loss_rate],
+                            mode='lines',
+                            name=f'평균 ({selected_bean.avg_loss_rate:.1f}%)',
+                            line=dict(color='#4ECDC4', width=2, dash='dash')
+                        ))
+
+                    fig.update_layout(
+                        title="",
+                        xaxis_title="날짜",
+                        yaxis_title="손실률 (%)",
+                        hovermode='x unified',
+                        height=400
+                    )
+
+                    st.plotly_chart(fig, use_container_width=True)
+
+                else:
+                    st.info("로스팅 이력이 없습니다.")
+
+            except Exception as e:
+                st.warning(f"로스팅 이력을 불러올 수 없습니다: {str(e)}")
+    else:
+        st.info("로스팅 이력이 있는 원두가 없습니다.")
 
     # 데이터 내보내기
     st.divider()

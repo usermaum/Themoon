@@ -1,7 +1,7 @@
 # CLAUDE.md - 프로젝트 가이드 네비게이터
 
 > **The Moon Drip BAR - 로스팅 비용 계산기**
-> 버전: 0.22.0 · 스택: Streamlit + SQLite · 환경: ./venv/
+> 버전: 0.46.0 · 스택: Streamlit + SQLite · 환경: ./venv/
 
 ---
 
@@ -28,6 +28,40 @@
 **📌 참고**:
 - `logs/VERSION_STRATEGY.md` - 상세 전략
 - `logs/VERSION_MANAGEMENT.md` - 사용법
+
+---
+
+## 🔗 URL 작성 규칙 (MANDATORY - 절대 위반 금지!)
+
+**❌ 절대 하지 말 것:**
+```
+웹앱은 http://localhost:8501에서 실행 중입니다!  ← URL 뒤에 한글 붙음 (클릭 불가)
+- URL: http://localhost:8501                        ← URL 뒤에 줄바꿈 없음
+```
+
+**✅ 반드시 할 것:**
+```
+웹앱이 실행되었습니다:
+
+http://localhost:8501
+
+위 주소로 접속하세요.
+```
+
+**또는:**
+```
+접속 정보:
+
+- URL: http://localhost:8501
+- 상태: 실행 중
+```
+
+**핵심 규칙:**
+1. URL 앞: 최소 1개 공백 또는 줄바꿈
+2. URL 뒤: 최소 1개 공백 또는 줄바꿈
+3. URL 바로 뒤에 한글/특수문자/이모지 절대 금지
+
+**상세 내용:** `.claude/instructions.md` 참조
 
 ---
 
@@ -170,7 +204,7 @@ TheMoon_Project/
 │   ├── services/         # 6개 서비스 (비즈니스 로직)
 │   ├── models/           # SQLAlchemy 모델
 │   └── components/       # 15+ 재사용 컴포넌트
-├── Data/                  # SQLite 데이터베이스
+├── data/                  # SQLite 데이터베이스
 ├── Documents/            # 28개 분류별 문서
 └── logs/                 # 버전 관리 (VERSION, CHANGELOG.md)
 ```

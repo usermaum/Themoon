@@ -4,6 +4,7 @@
 
 import streamlit as st
 from utils.constants import UI_CONFIG
+from config import VERSION, UPDATE_DATE, PROJECT_STATUS, UI_STYLE
 
 
 def render_sidebar():
@@ -148,6 +149,16 @@ def render_sidebar():
             st.session_state["current_page"] = "InventoryManagement"
             st.switch_page("pages/InventoryManagement.py")
 
+        # 거래 명세서 이미지 입고
+        if st.button(
+            "📄 이미지 입고",
+            type="primary" if current_page == "ImageInvoiceUpload" else "secondary",
+            use_container_width=True,
+            key="nav_image_invoice"
+        ):
+            st.session_state["current_page"] = "ImageInvoiceUpload"
+            st.switch_page("pages/ImageInvoiceUpload.py")
+
         # 보고서
         if st.button(
             "📋 보고서",
@@ -202,6 +213,16 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### 📊 현황")
 
+        # 세션 상태 초기화 확인
+        if "db" not in st.session_state:
+            from models.database import SessionLocal
+            from services.bean_service import BeanService
+            from services.blend_service import BlendService
+
+            st.session_state.db = SessionLocal()
+            st.session_state.bean_service = BeanService(st.session_state.db)
+            st.session_state.blend_service = BlendService(st.session_state.db)
+
         db = st.session_state.db
         bean_service = st.session_state.bean_service
         blend_service = st.session_state.blend_service
@@ -232,14 +253,14 @@ def render_sidebar():
         # ═══════════════════════════════════════════════════════════
         st.markdown("### ℹ️ 정보")
         st.caption(f"""
-        **{UI_CONFIG["app_title"]}** v0.1.0
+        **{UI_CONFIG["app_title"]}** v{VERSION}
 
-        🚀 Claude Desktop Style UI
-        📅 업데이트: 2025-10-29
-        🎯 상태: 개발 중
+        🚀 {UI_STYLE}
+        📅 업데이트: {UPDATE_DATE}
+        🎯 상태: {PROJECT_STATUS}
 
         **현재 데이터:**
         - 원두: {len(beans)}종
         - 블렌드: {len(blends)}개
-        - 포션: 20개
+        - 혼합 비율: 20개
         """)

@@ -376,8 +376,8 @@ for use_case in use_cases:
 ./venv/bin/streamlit run app/app.py 2>&1 | grep -i error
 
 # 데이터베이스 확인
-sqlite3 Data/roasting_data.db ".tables"
-sqlite3 Data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
+sqlite3 data/roasting_data.db ".tables"
+sqlite3 data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
 ```
 
 ---

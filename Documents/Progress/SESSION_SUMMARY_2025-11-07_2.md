@@ -110,7 +110,7 @@ f69feef5 - feat: 전체 17종 원두 정보 검증 및 완성 (v0.21.0)
   - `app/update_newmoon_price.py` (146 lines)
   - `Documents/Planning/MASTER_PLAN_v2_Phase2.md` (242 lines)
 - **수정 파일**: 1개
-  - `Data/roasting_data.db` (원두 정보 업데이트)
+  - `data/roasting_data.db` (원두 정보 업데이트)
 
 ### 코드 통계
 - **추가된 코드**: ~400 lines

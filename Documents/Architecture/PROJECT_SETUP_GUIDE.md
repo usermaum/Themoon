@@ -129,7 +129,7 @@ python << 'EOF'
 import sqlite3
 import os
 
-db_path = 'Data/roasting_data.db'
+db_path = 'data/roasting_data.db'
 os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
 conn = sqlite3.connect(db_path)
@@ -242,7 +242,7 @@ TheMoon_Project/
 │   ├── test_data.py                   # 테스트 데이터 생성
 │   └── data/                          # 선택적 추가 데이터
 │
-├── Data/                              # ✅ 데이터 저장소
+├── data/                              # ✅ 데이터 저장소
 │   └── roasting_data.db               # SQLite DB (28KB)
 │       ├── roasting_logs              # 로스팅 기록
 │       ├── bean_prices                # 원두 가격
@@ -473,7 +473,7 @@ pip list | grep -E 'streamlit|pandas|numpy|plotly|openpyxl'
 # SQLite 데이터베이스 테이블 확인
 python << 'EOF'
 import sqlite3
-conn = sqlite3.connect('Data/roasting_data.db')
+conn = sqlite3.connect('data/roasting_data.db')
 cursor = conn.cursor()
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
 tables = cursor.fetchall()
@@ -561,7 +561,7 @@ pip install --no-cache-dir -r requirements.txt
 
 **증상:**
 ```
-FileNotFoundError: Data/roasting_data.db
+FileNotFoundError: data/roasting_data.db
 ```
 
 **해결:**
@@ -574,7 +574,7 @@ python << 'EOF'
 import sqlite3
 import os
 os.makedirs('Data', exist_ok=True)
-conn = sqlite3.connect('Data/roasting_data.db')
+conn = sqlite3.connect('data/roasting_data.db')
 # ... (테이블 생성 코드)
 EOF
 ```
@@ -678,7 +678,7 @@ streamlit run app/app.py
 - [ ] 가상환경 생성됨
 - [ ] 가상환경 활성화됨
 - [ ] requirements.txt에서 패키지 설치됨
-- [ ] Data/roasting_data.db 파일 존재함
+- [ ] data/roasting_data.db 파일 존재함
 - [ ] app/app.py 파일 존재함
 - [ ] Streamlit 실행 시 http://localhost:8501 접근 가능함
 - [ ] Git 로컬 설정 완료됨

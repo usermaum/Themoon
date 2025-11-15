@@ -331,7 +331,7 @@ from app.services.bean_service import BeanService
 **데이터베이스 오류:**
 ```bash
 # DB 재초기화
-rm Data/roasting_data.db
+rm data/roasting_data.db
 ./venv/bin/streamlit run app/app.py
 ```
 

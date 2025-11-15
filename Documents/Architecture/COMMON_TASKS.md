@@ -113,7 +113,7 @@ lsof -i :8501  # 아무것도 나오지 않아야 함
 
 2. **데이터베이스 확인:**
 ```bash
-sqlite3 Data/roasting_data.db "SELECT * FROM beans WHERE name = 'Ethiopia Yirgacheffe';"
+sqlite3 data/roasting_data.db "SELECT * FROM beans WHERE name = 'Ethiopia Yirgacheffe';"
 ```
 
 **팁:**
@@ -143,7 +143,7 @@ sqlite3 Data/roasting_data.db "SELECT * FROM beans WHERE name = 'Ethiopia Yirgac
 
 3. **확인:**
 ```bash
-sqlite3 Data/roasting_data.db "SELECT * FROM blends WHERE name = 'Signature Blend';"
+sqlite3 data/roasting_data.db "SELECT * FROM blends WHERE name = 'Signature Blend';"
 ```
 
 **예시:**
@@ -174,7 +174,7 @@ sqlite3 Data/roasting_data.db "SELECT * FROM blends WHERE name = 'Signature Blen
 
 2. **데이터베이스 확인:**
 ```bash
-sqlite3 Data/roasting_data.db "SELECT * FROM roasting_logs ORDER BY date DESC LIMIT 1;"
+sqlite3 data/roasting_data.db "SELECT * FROM roasting_logs ORDER BY date DESC LIMIT 1;"
 ```
 
 **팁:**
@@ -203,7 +203,7 @@ sqlite3 Data/roasting_data.db "SELECT * FROM roasting_logs ORDER BY date DESC LI
 
 2. **데이터베이스 확인:**
 ```bash
-sqlite3 Data/roasting_data.db "SELECT * FROM cost_settings;"
+sqlite3 data/roasting_data.db "SELECT * FROM cost_settings;"
 ```
 
 **팁:**
@@ -302,7 +302,7 @@ rs.export_to_excel('output.xlsx')
    - "원두 관리"에서 새 원두 확인
    - 데이터베이스에서 확인:
      ```bash
-     sqlite3 Data/roasting_data.db "SELECT COUNT(*) FROM beans;"
+     sqlite3 data/roasting_data.db "SELECT COUNT(*) FROM beans;"
      ```
 
 **팁:**
@@ -428,12 +428,12 @@ import package_name
 
 1. **데이터베이스 백업 (권장):**
 ```bash
-cp Data/roasting_data.db Data/roasting_data_backup_$(date +%Y%m%d).db
+cp data/roasting_data.db data/roasting_data_backup_$(date +%Y%m%d).db
 ```
 
 2. **데이터베이스 삭제:**
 ```bash
-rm Data/roasting_data.db
+rm data/roasting_data.db
 ```
 
 3. **앱 재실행 (자동 초기화):**
@@ -443,7 +443,7 @@ rm Data/roasting_data.db
 
 4. **확인:**
 ```bash
-sqlite3 Data/roasting_data.db ".tables"
+sqlite3 data/roasting_data.db ".tables"
 # 출력: beans blends inventory transactions cost_settings roasting_logs
 ```
 
@@ -472,7 +472,7 @@ sqlite3 Data/roasting_data.db ".tables"
 ```bash
 # 웹 UI에서 "원두 관리" 페이지 확인
 # 또는 데이터베이스 확인
-sqlite3 Data/roasting_data.db "SELECT COUNT(*) FROM roasting_logs;"
+sqlite3 data/roasting_data.db "SELECT COUNT(*) FROM roasting_logs;"
 ```
 
 **팁:**
@@ -616,21 +616,21 @@ curl http://localhost:8502  # 새 포트에서 실행 확인
 1. **파일 복사 백업:**
 ```bash
 # 현재 날짜를 파일명에 포함
-cp Data/roasting_data.db Data/roasting_data_backup_$(date +%Y%m%d_%H%M%S).db
+cp data/roasting_data.db data/roasting_data_backup_$(date +%Y%m%d_%H%M%S).db
 ```
 
 2. **SQL 덤프 백업 (권장):**
 ```bash
-sqlite3 Data/roasting_data.db ".dump" > Data/backup.sql
+sqlite3 data/roasting_data.db ".dump" > data/backup.sql
 ```
 
 3. **복원하기:**
 ```bash
 # SQL 덤프에서 복원
-sqlite3 Data/roasting_data_restored.db < Data/backup.sql
+sqlite3 data/roasting_data_restored.db < data/backup.sql
 
 # 또는 파일 복사본 사용
-cp Data/roasting_data_backup_20251027.db Data/roasting_data.db
+cp data/roasting_data_backup_20251027.db data/roasting_data.db
 ```
 
 4. **자동 백업 설정 (선택):**
@@ -638,7 +638,7 @@ cp Data/roasting_data_backup_20251027.db Data/roasting_data.db
 # cron 작업으로 매일 백업
 crontab -e
 # 다음 추가:
-# 0 2 * * * cp /path/to/Data/roasting_data.db /path/to/Data/backup_$(date +\%Y\%m\%d).db
+# 0 2 * * * cp /path/to/data/roasting_data.db /path/to/data/backup_$(date +\%Y\%m\%d).db
 ```
 
 ---
@@ -821,7 +821,7 @@ class Feature(Base):
 ./venv/bin/streamlit run app/app.py
 
 # 확인
-sqlite3 Data/roasting_data.db ".schema features"
+sqlite3 data/roasting_data.db ".schema features"
 ```
 
 ---
@@ -1039,11 +1039,11 @@ git commit -m "docs: 새 기능 가이드 추가
 | 앱 시작 | `./venv/bin/streamlit run app/app.py` |
 | 앱 중지 | `Ctrl+C` |
 | 포트 초기화 | `lsof -ti :8501 \| xargs kill -9` |
-| DB 초기화 | `rm Data/roasting_data.db && ./venv/bin/streamlit run app/app.py` |
+| DB 초기화 | `rm data/roasting_data.db && ./venv/bin/streamlit run app/app.py` |
 | 테스트 데이터 | `./venv/bin/python app/test_data.py` |
 | Git 커밋 | `git add . && git commit -m "메시지"` |
 | 버전 확인 | `cat logs/VERSION` |
-| 로그 확인 | `sqlite3 Data/roasting_data.db "SELECT * FROM roasting_logs;"` |
+| 로그 확인 | `sqlite3 data/roasting_data.db "SELECT * FROM roasting_logs;"` |
 | 패키지 목록 | `./venv/bin/pip list` |
 
 ---

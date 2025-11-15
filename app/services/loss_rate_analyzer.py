@@ -6,7 +6,7 @@ LossRateAnalyzer: 손실률 이상 탐지 및 분석 서비스
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.database import RoastingLog, LossRateWarning, Bean
+from models.database import RoastingLog, LossRateWarning, Bean
 from datetime import datetime, timedelta
 import statistics
 import logging

@@ -409,7 +409,7 @@ with tab3:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.write(f"**위치:** Data/roasting_data.db")
+        st.write(f"**위치:** data/roasting_data.db")
         st.write(f"**타입:** SQLite3")
 
     with col2:
@@ -456,7 +456,7 @@ with tab3:
             try:
                 import shutil
                 backup_name = f"roasting_data_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-                shutil.copy("Data/roasting_data.db", f"Data/{backup_name}")
+                shutil.copy("data/roasting_data.db", f"data/{backup_name}")
                 st.success(f"✅ 백업이 생성되었습니다: {backup_name}")
             except Exception as e:
                 st.error(f"❌ 백업 오류: {str(e)}")

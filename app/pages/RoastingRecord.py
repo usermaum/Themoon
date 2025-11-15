@@ -16,9 +16,9 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from app.services.roasting_service import RoastingService
-from app.services.bean_service import BeanService
-from app.services.blend_service import BlendService
+from services.roasting_service import RoastingService
+from services.bean_service import BeanService
+from services.blend_service import BlendService
 from app.models import SessionLocal
 from app.components.sidebar import render_sidebar
 from app.i18n import Translator, LanguageManager
@@ -49,6 +49,7 @@ if 'roasting_service' not in st.session_state:
 
 db = st.session_state.db
 roasting_service = st.session_state.roasting_service
+bean_service = st.session_state.bean_service
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 사이드바 렌더링
@@ -85,37 +86,106 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown("### 📋 로스팅 기록 목록")
 
-    # 필터 옵션
-    col1, col2, col3 = st.columns([2, 1, 1])
+    # 페이징 설정 초기화
+    if 'roasting_page_number' not in st.session_state:
+        st.session_state.roasting_page_number = 1
+    if 'roasting_page_size' not in st.session_state:
+        st.session_state.roasting_page_size = 10
+
+    # 필터 및 페이징 옵션
+    col1, col2, col3 = st.columns([3, 1, 1])
 
     with col1:
-        date_filter = st.date_input(
+        # 조회 기간 선택
+        period_option = st.selectbox(
             "조회 기간",
-            value=(date.today() - timedelta(days=30), date.today()),
-            max_value=date.today()
+            options=["전체", "날짜조회", "오늘", "1개월", "3개월", "6개월", "1년"],
+            key="period_selector"
         )
+
+        # "날짜조회" 선택 시에만 date_input 표시
+        if period_option == "날짜조회":
+            date_filter = st.date_input(
+                "날짜 범위 선택",
+                value=(date.today() - timedelta(days=30), date.today()),
+                max_value=date.today(),
+                key="custom_date_filter"
+            )
+        else:
+            date_filter = None
 
     with col2:
-        limit_count = st.selectbox(
-            "표시 개수",
-            options=[10, 30, 50, 100],
-            index=0
-        )
-
-    with col3:
         sort_option = st.selectbox(
             "정렬 기준",
             options=["최신순", "오래된순", "손실률 높은순", "손실률 낮은순"]
         )
 
+    with col3:
+        page_size = st.selectbox(
+            "페이지당 표시 개수",
+            options=[10, 25, 50, 100],
+            index=[10, 25, 50, 100].index(st.session_state.roasting_page_size),
+            key="page_size_selector"
+        )
+        # 페이지 크기가 변경되면 첫 페이지로 이동
+        if page_size != st.session_state.roasting_page_size:
+            st.session_state.roasting_page_size = page_size
+            st.session_state.roasting_page_number = 1
+
     st.divider()
 
-    # 데이터 조회
-    all_logs = roasting_service.get_all_logs(db, limit=limit_count)
+    # 데이터 조회 (전체 데이터)
+    all_logs = roasting_service.get_all_logs(db)
 
     # 날짜 필터링
-    if isinstance(date_filter, tuple) and len(date_filter) == 2:
-        start_date, end_date = date_filter
+    if period_option == "전체":
+        # 모든 데이터 표시
+        filtered_logs = all_logs
+    elif period_option == "날짜조회":
+        # 사용자가 선택한 날짜 범위
+        if isinstance(date_filter, tuple) and len(date_filter) == 2:
+            start_date, end_date = date_filter
+            filtered_logs = [
+                log for log in all_logs
+                if start_date <= log.roasting_date <= end_date
+            ]
+        else:
+            filtered_logs = all_logs
+    elif period_option == "오늘":
+        # 오늘 날짜만
+        today = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if log.roasting_date == today
+        ]
+    elif period_option == "1개월":
+        # 최근 1개월
+        start_date = date.today() - timedelta(days=30)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "3개월":
+        # 최근 3개월
+        start_date = date.today() - timedelta(days=90)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "6개월":
+        # 최근 6개월
+        start_date = date.today() - timedelta(days=180)
+        end_date = date.today()
+        filtered_logs = [
+            log for log in all_logs
+            if start_date <= log.roasting_date <= end_date
+        ]
+    elif period_option == "1년":
+        # 최근 1년
+        start_date = date.today() - timedelta(days=365)
+        end_date = date.today()
         filtered_logs = [
             log for log in all_logs
             if start_date <= log.roasting_date <= end_date
@@ -159,9 +229,16 @@ with tab1:
         # 데이터 테이블
         st.markdown("#### 📄 상세 기록")
 
-        # DataFrame 생성
+        # DataFrame 생성 (전체 데이터)
         data = []
         for log in filtered_logs:
+            # 원두 이름 조회
+            bean_name = "-"
+            if log.bean_id:
+                bean = bean_service.get_bean_by_id(log.bean_id)
+                if bean:
+                    bean_name = f"{bean.name}"
+
             # 손실률 차이에 따른 상태 표시
             variance = log.loss_variance_percent
             if abs(variance) <= 3.0:
@@ -174,6 +251,7 @@ with tab1:
             data.append({
                 "ID": log.id,
                 "날짜": log.roasting_date.strftime("%Y-%m-%d"),
+                "원두": bean_name,
                 "생두(kg)": f"{log.raw_weight_kg:.2f}",
                 "로스팅후(kg)": f"{log.roasted_weight_kg:.2f}",
                 "손실률(%)": f"{log.loss_rate_percent:.2f}%",
@@ -183,11 +261,61 @@ with tab1:
             })
 
         df = pd.DataFrame(data)
+
+        # 페이징 처리
+        total_records = len(df)
+        total_pages = (total_records + page_size - 1) // page_size  # 올림 계산
+
+        # 페이지 번호가 범위를 벗어나면 조정
+        if st.session_state.roasting_page_number > total_pages:
+            st.session_state.roasting_page_number = total_pages if total_pages > 0 else 1
+
+        # 현재 페이지 데이터 추출
+        start_idx = (st.session_state.roasting_page_number - 1) * page_size
+        end_idx = start_idx + page_size
+        df_page = df.iloc[start_idx:end_idx]
+
+        # 페이지 데이터 표시
         st.dataframe(
-            df,
+            df_page,
             use_container_width=True,
-            hide_index=True
+            hide_index=True,
+            height=400
         )
+
+        # 페이징 컨트롤 (모바일 최적화)
+        # 페이지 정보 상단 표시
+        st.caption(f"📄 {st.session_state.roasting_page_number} / {total_pages} 페이지 (전체 {total_records}건)")
+
+        # 페이징 버튼 (3개 컬럼으로 간소화)
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col1:
+            if st.button("◀️ 이전", disabled=(st.session_state.roasting_page_number == 1), use_container_width=True, key="prev_page"):
+                st.session_state.roasting_page_number -= 1
+                st.rerun()
+
+        with col2:
+            # 페이지 번호 직접 입력
+            new_page = st.number_input(
+                "페이지 이동",
+                min_value=1,
+                max_value=total_pages,
+                value=st.session_state.roasting_page_number,
+                step=1,
+                label_visibility="collapsed",
+                key="page_number_input"
+            )
+            if new_page != st.session_state.roasting_page_number:
+                st.session_state.roasting_page_number = new_page
+                st.rerun()
+
+        with col3:
+            if st.button("다음 ▶️", disabled=(st.session_state.roasting_page_number == total_pages), use_container_width=True, key="next_page"):
+                st.session_state.roasting_page_number += 1
+                st.rerun()
+
+        st.divider()
 
         # 범례
         st.caption("🟢 정상 (±3% 이내) | 🟡 주의 (±3~5%) | 🔴 위험 (±5% 초과)")
@@ -205,12 +333,22 @@ with tab2:
     # Session state 초기화
     if 'add_roasting_date' not in st.session_state:
         st.session_state.add_roasting_date = date.today()
+    if 'add_bean_id' not in st.session_state:
+        st.session_state.add_bean_id = None
     if 'add_raw_weight' not in st.session_state:
         st.session_state.add_raw_weight = 0.0
     if 'add_roasted_weight' not in st.session_state:
         st.session_state.add_roasted_weight = 0.0
     if 'add_notes' not in st.session_state:
         st.session_state.add_notes = ""
+
+    # 원두 목록 조회
+    all_beans = bean_service.get_all_beans()
+
+    # 원두 선택 옵션 생성
+    bean_options = {"선택 안함 (원두 미지정)": None}
+    for bean in all_beans:
+        bean_options[f"{bean.name} ({bean.country_name})"] = bean.id
 
     col1, col2 = st.columns(2)
 
@@ -222,6 +360,15 @@ with tab2:
             key="add_date_input"
         )
         st.session_state.add_roasting_date = roasting_date
+
+        # 원두 선택
+        selected_bean_option = st.selectbox(
+            "☕ 원두 선택",
+            options=list(bean_options.keys()),
+            help="로스팅할 원두를 선택하세요",
+            key="add_bean_select"
+        )
+        st.session_state.add_bean_id = bean_options[selected_bean_option]
 
         raw_weight_kg = st.number_input(
             "⚖️ 생두 무게 (kg)",
@@ -311,6 +458,7 @@ with tab2:
     with col2:
         if st.button("🔄 초기화", use_container_width=True, key="add_reset_button"):
             st.session_state.add_roasting_date = date.today()
+            st.session_state.add_bean_id = None
             st.session_state.add_raw_weight = 0.0
             st.session_state.add_roasted_weight = 0.0
             st.session_state.add_notes = ""
@@ -348,6 +496,7 @@ with tab2:
                     raw_weight_kg=raw_weight_kg,
                     roasted_weight_kg=roasted_weight_kg,
                     roasting_date=roasting_date,
+                    bean_id=st.session_state.add_bean_id,
                     notes=notes if notes else None,
                     expected_loss_rate=17.0  # 기본 예상 손실률
                 )
@@ -364,6 +513,7 @@ with tab2:
 
                 # 초기화
                 st.session_state.add_roasting_date = date.today()
+                st.session_state.add_bean_id = None
                 st.session_state.add_raw_weight = 0.0
                 st.session_state.add_roasted_weight = 0.0
                 st.session_state.add_notes = ""
@@ -400,9 +550,16 @@ with tab3:
             selected_log = roasting_service.get_roasting_log_by_id(db, selected_log_id)
 
             if selected_log:
+                # 원두 이름 표시 (있을 경우)
+                bean_name = ""
+                if selected_log.bean_id:
+                    bean = bean_service.get_bean_by_id(selected_log.bean_id)
+                    if bean:
+                        bean_name = f" | 원두: {bean.name} ({bean.country_name})"
+
                 # 현재 기록 정보 표시
                 st.info(
-                    f"**현재 기록**: {selected_log.roasting_date.strftime('%Y-%m-%d')} | "
+                    f"**현재 기록**: {selected_log.roasting_date.strftime('%Y-%m-%d')}{bean_name} | "
                     f"생두: {selected_log.raw_weight_kg}kg → 로스팅후: {selected_log.roasted_weight_kg}kg | "
                     f"손실률: {selected_log.loss_rate_percent}% (예상: {selected_log.expected_loss_rate_percent}%)"
                 )
@@ -412,11 +569,28 @@ with tab3:
                 # Session state 초기화 (선택된 로그가 변경되었을 때)
                 if 'edit_log_id' not in st.session_state or st.session_state.edit_log_id != selected_log.id:
                     st.session_state.edit_log_id = selected_log.id
+                    st.session_state.edit_bean_id = selected_log.bean_id
                     st.session_state.edit_roasting_date = selected_log.roasting_date
                     st.session_state.edit_raw_weight = float(selected_log.raw_weight_kg)
                     st.session_state.edit_roasted_weight = float(selected_log.roasted_weight_kg)
                     st.session_state.edit_expected_loss_rate = float(selected_log.expected_loss_rate_percent)
                     st.session_state.edit_notes = selected_log.notes or ""
+
+                # 원두 목록 조회
+                all_beans = bean_service.get_all_beans()
+
+                # 원두 선택 옵션 생성
+                bean_options = {"선택 안함 (원두 미지정)": None}
+                for bean in all_beans:
+                    bean_options[f"{bean.name} ({bean.country_name})"] = bean.id
+
+                # 현재 선택된 원두 찾기
+                current_bean_option = "선택 안함 (원두 미지정)"
+                if st.session_state.edit_bean_id:
+                    for option_text, bean_id in bean_options.items():
+                        if bean_id == st.session_state.edit_bean_id:
+                            current_bean_option = option_text
+                            break
 
                 # 편집 폼
                 col1, col2 = st.columns(2)
@@ -429,6 +603,16 @@ with tab3:
                         key="edit_date_input"
                     )
                     st.session_state.edit_roasting_date = new_roasting_date
+
+                    # 원두 선택
+                    selected_bean_option = st.selectbox(
+                        "☕ 원두 선택",
+                        options=list(bean_options.keys()),
+                        index=list(bean_options.keys()).index(current_bean_option),
+                        help="로스팅할 원두를 선택하세요",
+                        key="edit_bean_select"
+                    )
+                    st.session_state.edit_bean_id = bean_options[selected_bean_option]
 
                     new_raw_weight_kg = st.number_input(
                         "⚖️ 생두 무게 (kg)",
@@ -542,6 +726,7 @@ with tab3:
                             roasting_service.update_roasting_log(
                                 db=db,
                                 log_id=selected_log.id,
+                                bean_id=st.session_state.edit_bean_id,
                                 raw_weight_kg=new_raw_weight_kg,
                                 roasted_weight_kg=new_roasted_weight_kg,
                                 loss_rate_percent=round(new_loss_rate, 2),

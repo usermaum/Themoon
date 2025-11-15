@@ -196,7 +196,7 @@ MetricsGrid(metrics, columns=4)
 
 ## 📊 Data Layer
 
-### 📍 Data/roasting_data.db
+### 📍 data/roasting_data.db
 SQLite 데이터베이스 파일입니다. 모든 데이터를 저장합니다.
 
 **테이블 목록:**
@@ -268,7 +268,7 @@ services/*.py (비즈니스 로직)
     ↓
 models/*.py (ORM)
     ↓
-Data/roasting_data.db (SQLite)
+data/roasting_data.db (SQLite)
     ↓
 결과 표시
 ```

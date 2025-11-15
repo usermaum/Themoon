@@ -119,7 +119,7 @@ e14e28e - data: 계절성 패턴 테스트 데이터 100개 추가
 - **수정 파일**: 3개
   - `app/services/loss_rate_analyzer.py` (+91 lines)
   - `app/tests/test_loss_rate_analyzer.py` (+139 lines, -4 lines)
-  - `Data/roasting_data.db` (+100 records)
+  - `data/roasting_data.db` (+100 records)
 
 ### 코드 통계
 - **추가된 코드**: ~500 lines
@@ -325,7 +325,7 @@ e14e28e - data: 계절성 패턴 테스트 데이터 100개 추가
   - `app/services/loss_rate_analyzer.py` (+91 lines)
   - `app/tests/test_loss_rate_analyzer.py` (+135 lines)
   - `app/pages/Dashboard.py` (+47 lines)
-  - `Data/roasting_data.db` (+100 records)
+  - `data/roasting_data.db` (+100 records)
 
 ### 코드 통계 (최종)
 - **추가된 코드**: ~1,400 lines
