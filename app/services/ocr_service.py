@@ -9,6 +9,8 @@ from datetime import datetime
 from PIL import Image
 import pytesseract
 from pytesseract import Output
+import easyocr
+import numpy as np
 from sqlalchemy.orm import Session
 import sys
 import os
@@ -33,7 +35,7 @@ class OCRService:
     """
     OCR 서비스
 
-    Tesseract OCR을 사용하여 이미지에서 텍스트를 추출하고
+    EasyOCR을 사용하여 이미지에서 텍스트를 추출하고
     구조화된 데이터로 파싱합니다.
     """
 
@@ -45,26 +47,25 @@ class OCRService:
         """
         self.db = db
         self.learning_service = learning_service
+        # EasyOCR reader 초기화 (한글 + 영문)
+        self.reader = easyocr.Reader(['ko', 'en'], gpu=False)
 
     def extract_text_from_image(
         self,
         image: Image.Image,
-        lang: str = 'kor+eng',
+        lang: str = 'kor+eng',  # 호환성 유지 (사용 안 함)
         preprocess: bool = False,
-        psm_mode: int = 6,
+        psm_mode: int = 6,  # 호환성 유지 (사용 안 함)
         return_data: bool = False  # 신뢰도 데이터 반환 옵션
     ):
         """
-        이미지에서 텍스트 추출 (Tesseract OCR)
+        이미지에서 텍스트 추출 (EasyOCR)
 
         Args:
             image: PIL Image 객체
-            lang: OCR 언어 (기본값: 'kor+eng')
+            lang: OCR 언어 (호환성 유지, 사용 안 함)
             preprocess: 전처리 수행 여부 (기본값: False)
-            psm_mode: Page Segmentation Mode (기본값: 6)
-                      3 - 완전 자동
-                      6 - 균일한 텍스트 블록 (표 형식에 적합)
-                      11 - 희소 텍스트
+            psm_mode: Page Segmentation Mode (호환성 유지, 사용 안 함)
             return_data: True면 상세 데이터(좌표, 신뢰도) 반환 (기본값: False)
 
         Returns:
@@ -83,60 +84,57 @@ class OCRService:
             if preprocess:
                 image = preprocess_image(image)
 
-            # Tesseract OCR 설정
-            custom_config = f'--oem 3 --psm {psm_mode} -c preserve_interword_spaces=1'
+            # PIL Image → numpy array
+            image_np = np.array(image)
+
+            # EasyOCR 수행
+            results = self.reader.readtext(image_np)
+            # results: List of ([box_coordinates], text, confidence)
 
             if return_data:
-                # 상세 데이터 추출 (단어 단위 + 신뢰도)
-                data = pytesseract.image_to_data(
-                    image,
-                    lang=lang,
-                    config=custom_config,
-                    output_type=Output.DICT
-                )
-
-                # 전체 텍스트 재구성
-                text = pytesseract.image_to_string(
-                    image,
-                    lang=lang,
-                    config=custom_config
-                )
-
-                # 단어별 정보 추출 (신뢰도 > 0인 것만)
+                # 단어별 정보 추출
                 words = []
                 confidences = []
+                text_parts = []
 
-                for i in range(len(data['text'])):
-                    word_text = data['text'][i].strip()
-                    conf = float(data['conf'][i])
+                for (bbox, text, conf) in results:
+                    if text.strip():  # 빈 문자열 제외
+                        # bbox: [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+                        x_coords = [point[0] for point in bbox]
+                        y_coords = [point[1] for point in bbox]
 
-                    if word_text and conf > 0:  # 빈 문자열 및 신뢰도 0 제외
+                        left = int(min(x_coords))
+                        top = int(min(y_coords))
+                        width = int(max(x_coords) - min(x_coords))
+                        height = int(max(y_coords) - min(y_coords))
+
                         words.append({
-                            'text': word_text,
-                            'confidence': conf,
-                            'left': data['left'][i],
-                            'top': data['top'][i],
-                            'width': data['width'][i],
-                            'height': data['height'][i]
+                            'text': text,
+                            'confidence': conf * 100,  # 0~1 → 0~100
+                            'left': left,
+                            'top': top,
+                            'width': width,
+                            'height': height
                         })
-                        confidences.append(conf)
+                        confidences.append(conf * 100)
+                        text_parts.append(text)
+
+                # 전체 텍스트 재구성 (줄바꿈으로 연결)
+                full_text = '\n'.join(text_parts)
 
                 # 평균 신뢰도 계산
                 avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
                 return {
-                    'text': text,
+                    'text': full_text,
                     'words': words,
                     'confidence': avg_confidence
                 }
             else:
                 # 기존 방식 (텍스트만)
-                text = pytesseract.image_to_string(
-                    image,
-                    lang=lang,
-                    config=custom_config
-                )
-                return text
+                text_parts = [text for (_, text, _) in results if text.strip()]
+                full_text = '\n'.join(text_parts)
+                return full_text
 
         except Exception as e:
             raise Exception(f"OCR 실패: {str(e)}")
