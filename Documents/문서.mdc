@@ -39,3 +39,7 @@ claude --dangerously-skip-permissions
 ## wsl 클로드업데이트 혹은 설치.
 curl -fsSL https://claude.ai/install.sh | bash
 출처: https://couplewith.tistory.com/837 [AgileBus - IT 기술자를 위한 최신 기술 Trends:티스토리]
+
+
+로스팅 후 무게 인풋 박스에서 엔터를 처야 손실률 값이 자동 게산 되는데    
+ 인풋 박스에서 포커스 아웃되면 자동 게산되게도 추가해줘.
