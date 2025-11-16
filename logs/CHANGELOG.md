@@ -11,6 +11,34 @@
 
 ---
 
+## [0.48.0] - 2025-11-16
+
+### ✨ 마이너 업데이트 (Minor Update): statusline에 Block 사용량 정보 추가
+
+#### 📝 변경사항
+**수정 파일:**
+- `statusline.sh`: Block 사용량 정보 통합 (v2.1)
+  - **새 기능:**
+    - 📦 Block 사용률 표시 (백분율)
+    - ⏱️ 남은 시간 표시 (Xh Xm 형식)
+    - Block 사용률에 따른 색상 코딩 (녹색/노란색/빨간색)
+  - **JSON 파싱 추가:**
+    - `block_cost_usd`: Block 비용
+    - `block_limit_usd`: Block 한도
+    - `block_time_left_ms`: 남은 시간 (밀리초)
+  - **출력 형식:** `🤖 {model} | 📁 {project} | 💰 ${session}/${today} | {color}📦 {%} ({time}) | {color}🧠 {tokens} ({%})`
+
+#### ✅ 테스트 결과
+- ✅ Block 50% 사용 (1h 30m 남음): 노란색 표시
+- ✅ Block 90% 사용 (30m 남음): 빨간색 표시
+- ✅ Block 25% 사용 (3h 남음): 녹색 표시
+- ✅ Block 정보 없음: 0% (N/A) 표시
+
+#### 📊 개선 효과
+- **기존 (v2.0)**: 모델, 프로젝트, 비용, 토큰만 표시
+- **개선 (v2.1)**: Block 사용량 및 남은 시간 추가
+- **사용자 경험**: 5시간 Block 한도 관리 용이
+
 ## [0.47.0] - 2025-11-16
 
 ### ✨ 마이너 업데이트 (Minor Update): statusline에 모델/프로젝트/토큰 사용량 표시 추가
