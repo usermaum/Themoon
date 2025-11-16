@@ -12,7 +12,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import SessionLocal
-from services.ocr_service import OCRService
+from services.claude_ocr_service import ClaudeOCRService
 from services.invoice_service import InvoiceService
 from services.learning_service import LearningService
 from services.bean_service import BeanService
@@ -50,11 +50,14 @@ if "db" not in st.session_state:
 if "learning_service" not in st.session_state:
     st.session_state.learning_service = LearningService(st.session_state.db)
 
-if "ocr_service" not in st.session_state:
-    st.session_state.ocr_service = OCRService(
-        st.session_state.db,
-        learning_service=st.session_state.learning_service
-    )
+# Claude OCR 서비스 초기화
+if "claude_ocr_service" not in st.session_state:
+    try:
+        st.session_state.claude_ocr_service = ClaudeOCRService()
+    except ValueError as e:
+        st.error(f"❌ Claude API 초기화 실패: {str(e)}")
+        st.info("💡 .env 파일에 ANTHROPIC_API_KEY를 설정해주세요.")
+        st.stop()
 
 if "invoice_service" not in st.session_state:
     st.session_state.invoice_service = InvoiceService(
@@ -122,7 +125,7 @@ with tab1:
                         # 이미지 처리 파이프라인 실행
                         result = st.session_state.invoice_service.process_invoice_image(
                             uploaded_file,
-                            st.session_state.ocr_service
+                            st.session_state.claude_ocr_service
                         )
 
                         # 결과 저장

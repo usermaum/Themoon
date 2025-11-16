@@ -49,20 +49,19 @@ class InvoiceService:
     def process_invoice_image(
         self,
         uploaded_file,
-        ocr_service: 'OCRService'
+        claude_ocr_service
     ) -> Dict:
         """
-        거래 명세서 이미지 전체 처리 파이프라인
+        거래 명세서 이미지 전체 처리 파이프라인 (Claude API 사용)
 
         1. 이미지 변환 (UploadedFile → PIL Image)
-        2. OCR 수행
-        3. 데이터 파싱
-        4. 원두 매칭
-        5. 결과 반환
+        2. Claude API로 OCR + 파싱
+        3. 원두 매칭
+        4. 결과 반환
 
         Args:
             uploaded_file: Streamlit UploadedFile 객체
-            ocr_service: OCRService 인스턴스
+            claude_ocr_service: ClaudeOCRService 인스턴스
 
         Returns:
             {
@@ -73,48 +72,84 @@ class InvoiceService:
                 'items': List[Dict],
                 'confidence': float,
                 'warnings': List[str],
-                'matched_beans': Dict[str, Tuple[Bean, float]]
+                'matched_beans': Dict[str, Tuple[Bean, float]],
+                'timestamp': str
             }
         """
         # 1. 이미지 변환
         image = convert_uploaded_file_to_image(uploaded_file)
 
-        # 2. OCR 처리
-        ocr_result = ocr_service.process_image(image, preprocess=True)
+        # 2. Claude API로 OCR + 파싱
+        claude_result = claude_ocr_service.process_invoice(image)
 
-        parsed_data = ocr_result['parsed_data']
-        invoice_type = parsed_data.get('invoice_type', 'UNKNOWN')
+        invoice_type = claude_result.get('invoice_type', 'UNKNOWN')
+        invoice_data = claude_result.get('invoice_data', {})
+        items = claude_result.get('items', [])
 
-        # 3. 원두 매칭 (items 또는 단일 원두)
+        # 3. 원두 매칭
         matched_beans = {}
 
         if invoice_type == 'GSC':
             # GSC: 다중 원두 매칭
-            for item in parsed_data.get('items', []):
+            for item in items:
                 bean_name = item.get('bean_name', '')
                 if bean_name and bean_name not in matched_beans:
-                    matched_bean, score = ocr_service.match_bean_to_db(bean_name)
+                    # DB에서 유사한 원두 찾기
+                    matched_bean, score = self._match_bean_to_db(bean_name)
                     matched_beans[bean_name] = (matched_bean, score)
 
         else:
             # 기본 타입: 단일 원두 매칭
-            bean_name = parsed_data.get('bean_name', '')
+            bean_name = invoice_data.get('bean_name', '')
             if bean_name:
-                matched_bean, score = ocr_service.match_bean_to_db(bean_name)
+                matched_bean, score = self._match_bean_to_db(bean_name)
                 matched_beans[bean_name] = (matched_bean, score)
 
         # 4. 결과 반환
         return {
             'image': image,
-            'ocr_text': ocr_result['ocr_text'],
+            'ocr_text': claude_result.get('ocr_text', ''),
             'invoice_type': invoice_type,
-            'invoice_data': parsed_data,
-            'items': parsed_data.get('items', []),
-            'confidence': ocr_result['confidence'],
-            'warnings': ocr_result['warnings'],
+            'invoice_data': invoice_data,
+            'items': items,
+            'confidence': claude_result.get('confidence', 95.0),
+            'warnings': claude_result.get('warnings', []),
             'matched_beans': matched_beans,
-            'timestamp': ocr_result['timestamp']
+            'timestamp': claude_result.get('timestamp', '')
         }
+
+    def _match_bean_to_db(self, bean_name: str):
+        """
+        원두명을 DB에서 매칭 (유사도 기반)
+
+        Args:
+            bean_name: 추출된 원두명
+
+        Returns:
+            (matched_bean, score) tuple
+        """
+        from difflib import SequenceMatcher
+
+        all_beans = self.db.query(Bean).filter(Bean.status == 'active').all()
+
+        if not all_beans:
+            return (None, 0.0)
+
+        # 유사도 계산
+        best_match = None
+        best_score = 0.0
+
+        for bean in all_beans:
+            score = SequenceMatcher(None, bean_name.lower(), bean.name.lower()).ratio()
+            if score > best_score:
+                best_score = score
+                best_match = bean
+
+        # 70% 이상 유사하면 매칭으로 간주
+        if best_score >= 0.7:
+            return (best_match, best_score)
+        else:
+            return (None, 0.0)
 
     def save_invoice(
         self,
