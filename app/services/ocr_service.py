@@ -71,7 +71,8 @@ class OCRService:
         lang: str = 'kor+eng',  # 호환성 유지 (사용 안 함)
         preprocess: bool = False,
         psm_mode: int = 6,  # 호환성 유지 (사용 안 함)
-        return_data: bool = False  # 신뢰도 데이터 반환 옵션
+        return_data: bool = False,  # 신뢰도 데이터 반환 옵션
+        preprocess_mode: str = 'normal'  # 전처리 모드 ('normal' 또는 'enhanced')
     ):
         """
         이미지에서 텍스트 추출 (EasyOCR)
@@ -82,6 +83,7 @@ class OCRService:
             preprocess: 전처리 수행 여부 (EasyOCR용 전처리, 기본값: True로 권장)
             psm_mode: Page Segmentation Mode (호환성 유지, 사용 안 함)
             return_data: True면 상세 데이터(좌표, 신뢰도) 반환 (기본값: False)
+            preprocess_mode: 전처리 강도 ('normal' 또는 'enhanced')
 
         Returns:
             return_data=False: 추출된 텍스트 (str)
@@ -97,7 +99,7 @@ class OCRService:
         try:
             # 전처리 수행 (EasyOCR용)
             if preprocess:
-                image = preprocess_for_easyocr(image, enhance=True)
+                image = preprocess_for_easyocr(image, enhance=True, mode=preprocess_mode)
 
             # PIL Image → numpy array
             image_np = np.array(image)
@@ -458,6 +460,7 @@ class OCRService:
 
         Returns:
             {
+                'success': bool,  # 처리 성공 여부
                 'ocr_text': str,
                 'ocr_confidence': float,  # OCR 평균 신뢰도 (0~100)
                 'ocr_words': List[Dict],  # 단어별 상세 정보
@@ -490,6 +493,7 @@ class OCRService:
         # OCR 신뢰도 낮으면 경고
         if ocr_confidence < 60:
             warnings.append(f"⚠️ OCR 인식 신뢰도가 낮습니다 ({ocr_confidence:.1f}%)")
+            warnings.append(f"💡 더 선명한 이미지로 다시 시도해주세요")
 
         if parsed_data.get('invoice_type') == 'UNKNOWN':
             warnings.append("⚠️ 명세서 타입을 인식할 수 없습니다")
@@ -507,7 +511,14 @@ class OCRService:
             _, validation_warnings = validate_parsed_data(parsed_data)
             warnings.extend(validation_warnings)
 
+        # 5. 성공 여부 판단
+        success = (
+            parsed_data.get('invoice_type') != 'UNKNOWN' and
+            len(parsed_data.get('items', [])) > 0
+        )
+
         return {
+            'success': success,
             'ocr_text': ocr_text,
             'ocr_confidence': ocr_confidence,
             'ocr_words': ocr_words,

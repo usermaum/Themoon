@@ -61,21 +61,30 @@ def preprocess_image(image: Image.Image) -> Image.Image:
     return Image.fromarray(binary)
 
 
-def preprocess_for_easyocr(image: Image.Image, enhance: bool = True) -> Image.Image:
+def preprocess_for_easyocr(image: Image.Image, enhance: bool = True, mode: str = 'normal') -> Image.Image:
     """
     이미지 전처리 (EasyOCR 최적화)
 
     EasyOCR은 딥러닝 기반이므로 컬러 이미지에서 더 잘 작동합니다.
     이진화하지 않고 대비만 향상시킵니다.
 
-    처리 순서:
+    처리 순서 (normal 모드):
     1. 해상도 확인 (너무 작으면 업스케일)
     2. 대비 향상 (선택적, RGB 모드 유지)
     3. 노이즈 제거 (약간만)
 
+    처리 순서 (enhanced 모드):
+    1. 해상도 확인 (3배 업스케일)
+    2. 강력한 노이즈 제거
+    3. 강화된 대비 향상
+    4. 선명화 (Unsharp Mask)
+
     Args:
         image: PIL Image 객체
         enhance: 대비 향상 여부 (기본값: True)
+        mode: 전처리 강도 ('normal' 또는 'enhanced')
+              - 'normal': 기본 전처리 (고품질 이미지용)
+              - 'enhanced': 강화된 전처리 (저품질 이미지용)
 
     Returns:
         전처리된 PIL Image 객체 (RGB 모드)
@@ -92,29 +101,45 @@ def preprocess_for_easyocr(image: Image.Image, enhance: bool = True) -> Image.Im
     # 1. 해상도 확인 (최소 1000px 권장)
     height, width = img_array.shape[:2]
     if height < 1000 or width < 1000:
-        # 업스케일 (2배)
+        # 업스케일 (2배 또는 3배)
+        scale_factor = 3 if mode == 'enhanced' else 2
         img_array = cv2.resize(
             img_array,
-            (width * 2, height * 2),
+            (width * scale_factor, height * scale_factor),
             interpolation=cv2.INTER_CUBIC
         )
 
-    # 2. 대비 향상 (선택적)
-    if enhance:
-        # RGB → LAB (밝기 채널만 향상)
-        lab = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
-        l, a, b = cv2.split(lab)
+    if mode == 'enhanced':
+        # === Enhanced 모드 전처리 ===
+        # 2. 강력한 노이즈 제거
+        img_array = cv2.fastNlMeansDenoisingColored(img_array, None, 10, 10, 7, 21)
 
-        # CLAHE (밝기 채널만)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        l_enhanced = clahe.apply(l)
+        # 3. 강화된 대비 향상
+        if enhance:
+            lab = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
+            l, a, b = cv2.split(lab)
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+            l_enhanced = clahe.apply(l)
+            lab_enhanced = cv2.merge([l_enhanced, a, b])
+            img_array = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
 
-        # LAB → RGB
-        lab_enhanced = cv2.merge([l_enhanced, a, b])
-        img_array = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
+        # 4. 선명화 (Unsharp Mask)
+        gaussian = cv2.GaussianBlur(img_array, (5, 5), 1.0)
+        img_array = cv2.addWeighted(img_array, 1.5, gaussian, -0.5, 0)
 
-    # 3. 약한 노이즈 제거 (디테일 유지)
-    img_array = cv2.GaussianBlur(img_array, (3, 3), 0)
+    else:
+        # === Normal 모드 전처리 (기존 로직 유지) ===
+        # 2. 대비 향상
+        if enhance:
+            lab = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
+            l, a, b = cv2.split(lab)
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            l_enhanced = clahe.apply(l)
+            lab_enhanced = cv2.merge([l_enhanced, a, b])
+            img_array = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2RGB)
+
+        # 3. 약한 노이즈 제거 (디테일 유지)
+        img_array = cv2.GaussianBlur(img_array, (3, 3), 0)
 
     # OpenCV → PIL
     return Image.fromarray(img_array)
