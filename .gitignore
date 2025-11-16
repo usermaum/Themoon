@@ -23,6 +23,9 @@ __pycache__/
 .env.local
 .env.*.local
 
+# Streamlit Secrets (Streamlit Cloud)
+.streamlit/secrets.toml
+
 # MCP Configuration (contains sensitive tokens)
 .claude/mcpServers.json
 

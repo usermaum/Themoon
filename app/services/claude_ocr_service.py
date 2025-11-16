@@ -8,13 +8,48 @@ import os
 import base64
 import json
 import io
-from typing import Dict
+from typing import Dict, Optional
 from PIL import Image
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
 # .env 파일 로드
 load_dotenv()
+
+
+def get_api_key() -> Optional[str]:
+    """
+    API 키 가져오기 (다중 환경 지원)
+
+    우선순위:
+    1. Streamlit Secrets (Streamlit Cloud)
+    2. 환경 변수 (로컬/서버)
+    3. .env 파일 (로컬)
+
+    Returns:
+        API 키 문자열 또는 None
+    """
+    # 1. Streamlit Secrets 시도 (Streamlit Cloud)
+    try:
+        import streamlit as st
+        if "ANTHROPIC_API_KEY" in st.secrets:
+            return st.secrets["ANTHROPIC_API_KEY"]
+    except (ImportError, FileNotFoundError, AttributeError):
+        # Streamlit이 없거나 secrets가 없는 경우
+        pass
+
+    # 2. 환경 변수 확인
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if api_key:
+        return api_key
+
+    # 3. .env 파일 다시 로드 시도
+    load_dotenv()
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if api_key:
+        return api_key
+
+    return None
 
 
 class ClaudeOCRService:
@@ -26,6 +61,7 @@ class ClaudeOCRService:
     - 이미지 → JSON 직접 변환 (파싱 불필요)
     - 높은 정확도 (95%+)
     - 문맥 기반 오타 보정
+    - 다중 환경 지원 (로컬/.env, Streamlit Cloud/Secrets)
     """
 
     def __init__(self):
@@ -35,13 +71,19 @@ class ClaudeOCRService:
         Raises:
             ValueError: ANTHROPIC_API_KEY가 없을 때
         """
-        api_key = os.getenv("ANTHROPIC_API_KEY")
+        api_key = get_api_key()
 
         if not api_key:
             raise ValueError(
-                "ANTHROPIC_API_KEY not found in .env file.\n"
-                "Please create .env file with:\n"
-                "ANTHROPIC_API_KEY=sk-ant-your-key-here"
+                "ANTHROPIC_API_KEY not found.\n\n"
+                "로컬 환경:\n"
+                "  1. .env 파일 생성: cp .env.example .env\n"
+                "  2. API 키 입력: ANTHROPIC_API_KEY=sk-ant-your-key-here\n\n"
+                "Streamlit Cloud:\n"
+                "  1. 앱 설정 → Secrets 메뉴\n"
+                "  2. TOML 형식으로 입력:\n"
+                "     ANTHROPIC_API_KEY = \"sk-ant-your-key-here\"\n"
+                "  3. Save 클릭"
             )
 
         self.client = Anthropic(api_key=api_key)
