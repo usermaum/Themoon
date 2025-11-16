@@ -630,8 +630,8 @@ def parse_gsc_invoice(ocr_text: str) -> Dict:
         result['total_weight'] = float(weight_match.group(1))
 
     # 4. 합계금액 추출 (하단)
-    # 패턴: "합계금액 : 1,500,000원" 또는 "학계금액 1825003) 원" (OCR 오인식)
-    amount_pattern = r'[합학][계]\s*[금액]*[9]?\s*[:：]?\s*([\d,\-\)]+)\s*원'
+    # 패턴: "합계금액 : 1,500,000원" 또는 "학계금액 1825003) 원" 또는 "한계금액 305300) 원" (OCR 오인식)
+    amount_pattern = r'[합학한][계]\s*[금액]*[9]?\s*[:：]?\s*([\d,\-\)]+)\s*원'
     amount_match = re.search(amount_pattern, ocr_text)
     if amount_match:
         # OCR 오인식: 콤마, 하이픈, 괄호 모두 제거
@@ -692,29 +692,73 @@ def parse_gsc_table(ocr_text: str) -> List[Dict]:
     # 줄바꿈을 공백으로 치환하여 한 줄로 만듦
     table_text_flat = ' '.join(table_text.split('\n'))
 
-    # 헤더 제거 (NO., 목, 규격, 수량, 중량, 단가, 공급가액)
-    # 품목명 패턴으로 항목 추출 (영문 대문자로 시작)
-    # 패턴: 원두명 규격 수량 중량 단가 공급가액
-    pattern = r'([A-Z][a-zA-Z\s_]+?)\s+(\d+\s*[Kk][Gg9])\s+(\d+)\s+(\d+(?:\.\d+)?)\s+([\d,\.\)]+)\s+([\d,\.\)]+)'
+    # 헤더 제거
+    header_keywords = ['공급가액', '품   목']
+    for keyword in header_keywords:
+        header_end = table_text_flat.find(keyword)
+        if header_end != -1:
+            table_text_flat = table_text_flat[header_end + len(keyword):].strip()
+            break
 
-    matches = re.findall(pattern, table_text_flat)
+    # 개선된 파싱 전략: 두 가지 패턴 모두 지원
+    # 규격 패턴: "5kg", "1kg", "Sk9", "5k9" 등
+    spec_pattern = r'[0-9SsKk]+[Kk][Gg9]'
+
+    # 패턴 1 (6개 필드): (규격) (수량) (중량) (단가) (금액)
+    item_pattern_with_qty = rf'({spec_pattern})\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+([\d,\.\)\-]+)\s+([\d,\.\)\-]+)'
+    # 패턴 2 (5개 필드): (규격) (중량) (단가) (금액)
+    item_pattern_no_qty = rf'({spec_pattern})\s+(\d+(?:\.\d+)?)\s+([\d,\.\)\-]+)\s+([\d,\.\)\-]+)'
+
+    # 먼저 패턴 1 (수량 있음) 시도
+    matches = list(re.finditer(item_pattern_with_qty, table_text_flat))
+    has_quantity = True
+
+    # 패턴 1로 항목이 2개 미만이면 패턴 2 (수량 없음) 시도
+    if len(matches) < 2:
+        matches = list(re.finditer(item_pattern_no_qty, table_text_flat))
+        has_quantity = False
 
     for idx, match in enumerate(matches, 1):
-        bean_name, spec, quantity, weight, unit_price, amount = match
+        groups = match.groups()
+
+        if has_quantity:
+            # 패턴 1: (규격) (수량) (중량) (단가) (금액)
+            if len(groups) != 5:
+                continue
+            spec, quantity, weight, unit_price, amount = groups
+        else:
+            # 패턴 2: (규격) (중량) (단가) (금액)
+            if len(groups) != 4:
+                continue
+            spec, weight, unit_price, amount = groups
+            quantity = 0
+
+        # 원두명 추출: 이전 매칭 끝 ~ 현재 매칭 시작
+        if idx == 1:
+            bean_name_start = 0
+        else:
+            bean_name_start = matches[idx-2].end()  # 이전 항목의 끝
+
+        bean_name_end = match.start()
+        bean_name = table_text_flat[bean_name_start:bean_name_end].strip()
+
+        # 원두명 앞에 숫자가 붙어있으면 제거 (이전 항목의 금액)
+        bean_name = re.sub(r'^[\d,\.\)\-]+\s+', '', bean_name)
 
         # 원두명 정리
         bean_name = normalize_text(bean_name)
 
-        # 규격 정리 (OCR 오인식: k9 → kg)
+        # 규격 정리 (OCR 오인식: k9 → kg, Sk9 → 5kg)
         spec = spec.replace('k9', 'kg').replace('K9', 'Kg')
+        spec = spec.replace('Sk', '5k').replace('SK', '5K')
 
         # 숫자 변환
         try:
-            quantity = int(quantity)
+            quantity = int(float(quantity)) if has_quantity else 0
             weight = float(weight)
-            # 콤마, 괄호, 점 제거
-            unit_price = float(unit_price.replace(',', '').replace(')', '').replace('.', ''))
-            amount = float(amount.replace(',', '').replace(')', '').replace('.', ''))
+            # 콤마, 괄호, 점, 하이픈 제거
+            unit_price = float(unit_price.replace(',', '').replace(')', '').replace('.', '').replace('-', ''))
+            amount = float(amount.replace(',', '').replace(')', '').replace('.', '').replace('-', ''))
 
             items.append({
                 'no': idx,
