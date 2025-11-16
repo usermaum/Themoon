@@ -83,6 +83,9 @@ total_tokens=$(echo "$input" | jq -r '.cost.total_input_tokens // 0')
 token_limit=$(echo "$input" | jq -r '.cost.token_limit // 200000')
 session_cost=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
 today_cost=$(echo "$input" | jq -r '.cost.today_cost_usd // 0')
+block_cost=$(echo "$input" | jq -r '.cost.block_cost_usd // 0')
+block_limit=$(echo "$input" | jq -r '.cost.block_limit_usd // 0')
+block_time_left=$(echo "$input" | jq -r '.cost.block_time_left_ms // 0')
 
 # 데이터 가공
 project_name=$(get_current_project)
@@ -91,11 +94,24 @@ tokens_fmt=$(format_tokens "$total_tokens")
 token_percent=$(calc_percent "$total_tokens" "$token_limit")
 color=$(get_color_code "$token_percent")
 
+# Block 정보 가공
+block_percent=$(calc_percent "$block_cost" "$block_limit")
+if [ "$block_time_left" != "0" ] && [ "$block_time_left" != "null" ]; then
+    hours=$(echo "scale=0; $block_time_left / 3600000" | bc 2>/dev/null || echo "0")
+    minutes=$(echo "scale=0; ($block_time_left % 3600000) / 60000" | bc 2>/dev/null || echo "0")
+    time_left="${hours}h${minutes}m"
+else
+    time_left="N/A"
+fi
+block_color=$(get_color_code "$block_percent")
+
 # 출력
-printf "🤖 %s | 📁 %s | 💰 \$%.2f/\$%.2f | ${color}🧠 %s (%d%%)\033[0m" \
+printf "🤖 %s | 📁 %s | 💰 \$%.2f/\$%.2f | ${block_color}📦 %d%%\033[0m (%s) | ${color}🧠 %s (%d%%)\033[0m" \
     "$model_short" \
     "$project_name" \
     "$session_cost" \
     "$today_cost" \
+    "$block_percent" \
+    "$time_left" \
     "$tokens_fmt" \
     "$token_percent"
