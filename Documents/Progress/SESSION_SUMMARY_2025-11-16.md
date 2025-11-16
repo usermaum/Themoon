@@ -98,16 +98,88 @@ bean_name = re.sub(r'^[\d,\.\)\-]+\s+', '', bean_name)
 
 (어제 패턴 개선 과정에서 생성된 임시 파일들)
 
+### 7. 추가 이미지 테스트 (IMG_1652~1659)
+
+**테스트 방법:**
+- `test_quick_check.py` 생성하여 9개 이미지 일괄 테스트
+
+**테스트 결과:**
+- IMG_1650/1651: ✅ 완벽 (4개 항목, 100% 신뢰도)
+- IMG_1652~1659: ❌ 대부분 실패 (0~6개 항목, 낮은 신뢰도)
+
+**원인 분석:**
+- 저품질 이미지 → OCR 인식 신뢰도 40~60%
+- 텍스트 인식 오류로 인한 파싱 실패
+
+### 8. Enhanced 전처리 모드 시도 (실험)
+
+**목표:**
+- 저품질 이미지의 OCR 인식률 향상
+
+**구현 내용:**
+- `image_utils.py`: `preprocess_for_easyocr()` 함수에 `mode='enhanced'` 추가
+  - 3배 업스케일링
+  - 강력한 노이즈 제거 (fastNlMeansDenoisingColored)
+  - 강화된 CLAHE (clipLimit=3.0)
+  - Unsharp Mask 선명화
+- `ocr_service.py`: OCR 신뢰도 < 60% 시 자동 재시도
+
+**테스트 결과:**
+- ❌ 불안정한 결과
+  - IMG_1652: 3→0개 (더 나빠짐)
+  - IMG_1653: 0→2개 (개선됨)
+- 결론: **Enhanced 모드는 신뢰할 수 없음**
+
+### 9. Enhanced 모드 폐기 및 코드 정리
+
+**사용자 결정:**
+- "A → B로 진행"
+  - A: Enhanced 모드 폐기, 현재 상태 유지
+  - B: UI 통합 먼저 진행
+
+**코드 정리:**
+- `ocr_service.py`: `process_image()` 함수에서 auto_enhance 로직 제거
+- `image_utils.py`: Enhanced 모드 코드는 주석 없이 유지 (향후 사용 가능)
+- 테스트 파일 삭제: `test_batch_ocr.py`, `test_quick_check.py`, `test_compare_modes.py`
+- 저품질 이미지에 대한 경고 메시지 강화
+
+**커밋:**
+```bash
+ffef80f refactor: OCR 전처리 로직 정리
+```
+
+### 10. UI 통합 확인
+
+**확인 내용:**
+1. `ImageInvoiceUpload.py` (line 123): `invoice_service.process_invoice_image()` 호출
+2. `invoice_service.py` (line 82): `ocr_service.process_image()` 호출
+3. `ocr_service.py`: `parse_invoice_data()` → `text_parser.parse_gsc_table()` 호출
+
+**결과:**
+- ✅ **코드 수정 불필요**
+- ✅ 개선된 dual-pattern 파싱 로직 이미 통합됨
+- ✅ warnings 필드 UI 연동 확인 완료
+
+**테스트 환경:**
+- Streamlit 앱 실행: http://0.0.0.0:8501
+- ImageInvoiceUpload 페이지에서 IMG_1650/1651 업로드 테스트 가능
+
 ---
 
 ## 📊 변경 파일
 
 ### 수정 파일
-- `app/utils/text_parser.py` (text_parser.py:703-773)
+- `app/utils/text_parser.py` (line 703-773)
   - `parse_gsc_table()`: 두 가지 패턴 자동 감지 및 파싱 로직 추가
+  - 원두명 앞 숫자 자동 제거 로직 추가
+- `app/utils/image_utils.py` (line 64-145)
+  - `preprocess_for_easyocr()`: `mode='enhanced'` 파라미터 추가 (현재 미사용)
+- `app/services/ocr_service.py` (line 445-529)
+  - `process_image()`: 저품질 이미지 경고 메시지 강화
 
 ### 삭제 파일
-- 5개 테스트 파일 (test_pattern*.py, test_ocr_debug.py)
+- 어제 세션: 5개 테스트 파일 (test_pattern*.py, test_ocr_debug.py)
+- 오늘 세션: 3개 테스트 파일 (test_batch_ocr.py, test_quick_check.py, test_compare_modes.py)
 
 ### 문서 업데이트
 - `logs/CHANGELOG.md`: Unreleased 섹션 업데이트 (2025-11-16)
@@ -147,10 +219,14 @@ bean_name = re.sub(r'^[\d,\.\)\-]+\s+', '', bean_name)
 
 ## 🎯 다음 단계
 
-1. **다른 명세서 이미지 테스트**: IMG_1652 ~ IMG_1659 추가 테스트
-2. **HACIELO 명세서 파싱**: 두 번째 공급자 타입 지원
-3. **UI 통합**: ImageInvoiceUpload 페이지에 개선된 파싱 로직 통합
-4. **에러 처리 강화**: 파싱 실패 시 상세 로그 및 사용자 피드백
+1. **HACIELO 명세서 파싱**: 두 번째 공급자 타입 지원
+   - HACIELO 명세서 이미지 수집
+   - 파싱 패턴 개발 및 테스트
+2. **저품질 이미지 대응 개선**:
+   - Enhanced 모드 재설계 (더 안정적인 전처리 파라미터)
+   - 또는 사용자에게 재촬영 권장 UI 강화
+3. **에러 처리 강화**: 파싱 실패 시 상세 로그 및 사용자 피드백
+4. **테스트 커버리지 확대**: OCR 서비스 단위 테스트 추가
 
 ---
 
@@ -158,11 +234,29 @@ bean_name = re.sub(r'^[\d,\.\)\-]+\s+', '', bean_name)
 
 ```bash
 ab554c4 feat: OCR 파싱 로직 개선 (수량 유무 패턴 모두 지원)
+# - text_parser.py: dual-pattern 감지 로직 추가
+# - 테스트 파일 5개 삭제
+
+ffef80f refactor: OCR 전처리 로직 정리
+# - ocr_service.py: auto_enhance 로직 제거
+# - image_utils.py: enhanced 모드 코드 유지 (미사용)
+# - 테스트 파일 3개 삭제
 ```
 
 ---
 
 ## 🏁 세션 종료 시간
 - **시작**: 2025-11-16 12:30 (추정)
-- **종료**: 2025-11-16 13:30 (추정)
-- **총 시간**: 약 1시간
+- **종료**: 2025-11-16 14:40 (추정)
+- **총 시간**: 약 2시간 10분
+
+## 📌 주요 성과
+
+1. ✅ **GSC 명세서 dual-pattern 지원 완성**
+   - IMG_1650 (수량 있음) + IMG_1651 (수량 없음) 모두 100% 파싱
+2. ✅ **Enhanced 전처리 모드 실험 및 의사결정**
+   - 신뢰할 수 없는 결과로 폐기, 코드는 유지
+3. ✅ **UI 통합 확인**
+   - 기존 코드 수정 없이 개선된 로직 자동 통합 완료
+4. ✅ **문서화 완료**
+   - SESSION_SUMMARY, CHANGELOG 업데이트

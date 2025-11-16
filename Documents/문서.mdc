@@ -41,5 +41,50 @@ curl -fsSL https://claude.ai/install.sh | bash
 출처: https://couplewith.tistory.com/837 [AgileBus - IT 기술자를 위한 최신 기술 Trends:티스토리]
 
 
-로스팅 후 무게 인풋 박스에서 엔터를 처야 손실률 값이 자동 게산 되는데    
- 인풋 박스에서 포커스 아웃되면 자동 게산되게도 추가해줘.
+## 나한테 물어보는 아래내용 한글로 해줄수 있는방법없어?
+
+Do you want to proceed?
+ ❯ 1. Yes
+   2. Yes, and don't ask again for claude config commands in /mnt/d/Ai/WslProject/TheMoon_Project
+   3. Tell Claude what to do differently
+
+
+클로드 데스크톱 설정-> 사용량 메뉴에서 보이는 다음과같은 정보를 
+
+플랜 사용량 한도 (Pro)
+Current session : 50% 사용됨
+2시간 34분 후 재설정
+
+주간 한도
+All models : 49% 사용됨
+(금) 오후 5:59에 재설정
+
+Opus only : 0% 사용됨
+아직 Opus를 사용하지 않았습니다
+(이모티콘) 현재 선택모델 동적으로 가져오기.
+(이모티콘) Project : (동적으로 프로젝트 이름 가져오기)
+(이모티콘) 플랜 사용량 : 50% 사용됨 | (또는 구분자 이모티콘) (이모티콘) 주간 한도 : (All Models) 49% 사용됨.
+
+사용량 정보 새로고침할때 모델명, 동적으로 가져오기.
+
+  ccusage blocks --live
+
+
+
+  "command": "echo '📁 Project: The Moon Drip BAR' && ~/.claude/statusline.sh",
+
+  "command": "echo '📁 Project: The Moon Drip BAR' && bun x ccusage statusline --visual-burn-rate emoji",
+
+
+
+  \\wsl.localhost\Ubuntu\home\usermaum\node_modules\ccusage
+  ~\node_modules\ccusage 프로그램을 직접 수정또는 참고해서 settings.json 파일에 넣을 명령어 알려줘.
+  예제)
+  
+    "statusLine": {
+    "type": "command",
+    "command": "echo '📁 Project: The Moon Drip BAR' && bun x ccusage statusline --visual-burn-rate emoji",
+    "padding": 0
+  }
+
+
