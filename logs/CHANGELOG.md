@@ -103,7 +103,109 @@
 **커밋:**
 ```bash
 ffef80f refactor: OCR 전처리 로직 정리
+a1ca297 docs: Claude API 명세서 OCR 통합 가이드 추가
 ```
+
+---
+
+### 📚 가이드 문서 추가 (Documentation)
+
+#### 📝 Claude API 통합 가이드 작성
+
+**문서 위치:**
+- `Documents/Guides/CLAUDE_API_INTEGRATION_GUIDE.md` (1,308줄)
+
+**내용:**
+1. **개요 및 배경**
+   - EasyOCR vs Claude API 비교
+   - 비용 분석 (월 100개 처리 시 약 400원)
+   - 예상 효과 (60% → 95%+ 인식률)
+
+2. **구현 가이드 (6단계)**
+   - Step 1: anthropic SDK 설치 및 .env 설정
+   - Step 2: claude_ocr_service.py 전체 코드 (복사 가능)
+   - Step 3: invoice_service.py 수정 방법
+   - Step 4: ImageInvoiceUpload.py 수정 방법
+   - Step 5: requirements.txt 수정
+   - Step 6: 기존 파일 백업 및 제거
+
+3. **테스트 및 검증**
+   - 단위 테스트 스크립트 (test_claude_ocr.py)
+   - 비용 모니터링 방법
+   - 성능 비교 코드
+
+4. **트러블슈팅**
+   - API 키 오류, 네트워크 오류, JSON 파싱 오류 등
+   - 일일 사용량 제한 코드
+   - 이미지 리사이징
+
+5. **FAQ (8가지)**
+   - 하이브리드 방식 구현 (EasyOCR 우선, 실패 시 Claude)
+   - HACIELO 명세서 처리 방법
+   - 오프라인 환경 대응
+   - 개인정보 보호 정책
+   - 다국어 지원
+   - 응답 속도 최적화
+   - 비용 절감 방법
+
+**목적:**
+- 다른 컴퓨터에서 독립적으로 Claude API 통합 가능
+- EasyOCR 제거 및 Claude Vision으로 전환
+- 명세서 인식 정확도 대폭 향상
+
+**다음 세션 작업:**
+- 가이드 문서 따라 Claude API 통합 구현 (예상: 2시간)
+
+**커밋:**
+```bash
+a1ca297 docs: Claude API 명세서 OCR 통합 가이드 추가
+```
+
+---
+
+### 📚 statusline 개선 플랜 작성 (Planning)
+
+**문서 위치:**
+- `Documents/Planning/STATUSLINE_ENHANCEMENT_PLAN.md` (1,305줄)
+
+**내용:**
+1. **7단계 체계적 개발 방법론 적용**
+   - 1. Constitution (원칙): 목표, 제약사항, 기술 스택
+   - 2. Specify (명세): 기능/비기능 요구사항, 입출력 명세
+   - 3. Clarify (명확화): 사용자 요구사항 확인, 기술 결정
+   - 4. Plan (계획): 아키텍처, 구현 방법 비교
+   - 5. Tasks (작업 분해): 5개 Phase로 세분화
+   - 6. Technical Specifications: 시스템 요구사항, 함수 명세
+   - 7. Next Steps: 즉시 실행 가능한 가이드
+
+2. **5개 Phase로 작업 분해**
+   - Phase 1: 환경 준비 (jq 설치, 백업) - 5분
+   - Phase 2: 핵심 함수 구현 (5개 함수) - 15분
+   - Phase 3: statusline.sh 통합 - 10분
+   - Phase 4: 테스트 및 검증 - 10분
+   - Phase 5: 문서화 및 정리 - 5분
+   - **총 예상 시간: 45분**
+
+3. **독립 실행 가이드 (부록 C)**
+   - 5분 빠른 시작 가이드
+   - 전체 statusline.sh 코드 (1156-1255 라인, 복사 가능)
+   - 테스트 JSON 포함
+   - 단계별 체크리스트
+
+**예상 출력 형식:**
+```
+🤖 sonnet-4-5 | 📁 TheMoon_Project | 💰 $0.15/$0.50 | 🧠 25K (12%)
+```
+
+**기능:**
+- 현재 모델 표시 (간략화)
+- 프로젝트 이름 표시 (PWD 기반)
+- 토큰 사용량 및 백분율
+- 세션/오늘 비용 표시
+- 사용량에 따른 색상 코딩 (녹색/노란색/빨간색)
+
+**다음 세션 작업:**
+- 플랜 문서 따라 statusline.sh 개선 (예상: 45분)
 
 ---
 

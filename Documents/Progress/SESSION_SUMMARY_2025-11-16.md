@@ -258,5 +258,103 @@ ffef80f refactor: OCR 전처리 로직 정리
    - 신뢰할 수 없는 결과로 폐기, 코드는 유지
 3. ✅ **UI 통합 확인**
    - 기존 코드 수정 없이 개선된 로직 자동 통합 완료
-4. ✅ **문서화 완료**
+4. ✅ **Claude API 통합 가이드 작성**
+   - EasyOCR → Claude API 전환 완전 가이드 (1,308줄)
+   - 비용 분석, 단계별 구현, 테스트, 트러블슈팅 포함
+5. ✅ **문서화 완료**
    - SESSION_SUMMARY, CHANGELOG 업데이트
+
+---
+
+## 🎯 다음 세션 작업 계획
+
+### 📋 다음 세션에서 진행할 작업 (우선순위순)
+
+#### 🔴 우선순위 1: Claude API 통합 (다른 컴퓨터에서)
+
+**문서 위치:**
+- `Documents/Guides/CLAUDE_API_INTEGRATION_GUIDE.md`
+
+**작업 요약:**
+1. Anthropic API 키 발급 (https://console.anthropic.com)
+2. anthropic SDK 설치: `./venv/bin/pip install anthropic python-dotenv`
+3. .env 파일 생성: `ANTHROPIC_API_KEY=sk-ant-...`
+4. `app/services/claude_ocr_service.py` 작성 (문서에 전체 코드 있음)
+5. `app/services/invoice_service.py` 수정
+6. `app/pages/ImageInvoiceUpload.py` 수정
+7. 테스트: `test_claude_ocr.py` 실행
+
+**예상 소요 시간:** 2시간
+**예상 효과:** OCR 인식률 60% → 95%+
+
+**참고:**
+- 가이드 문서에 모든 코드 포함 (복사 가능)
+- 단계별 체크리스트 제공
+- 트러블슈팅 섹션 완비
+
+---
+
+#### 🟡 우선순위 2: statusline 개선 (현재 컴퓨터에서 가능)
+
+**문서 위치:**
+- `Documents/Planning/STATUSLINE_ENHANCEMENT_PLAN.md`
+
+**작업 요약:**
+1. jq 설치: `sudo apt-get install jq`
+2. statusline.sh 백업: `cp statusline.sh statusline.sh.backup-$(date +%Y%m%d)`
+3. 새 statusline.sh 작성 (문서 부록 C에 전체 코드 있음)
+4. 실행 권한: `chmod +x statusline.sh`
+5. 테스트: 문서의 테스트 JSON으로 확인
+
+**예상 소요 시간:** 45분
+**예상 효과:** statusline에 모델/프로젝트/토큰/비용 실시간 표시
+
+**출력 형식:**
+```
+🤖 sonnet-4-5 | 📁 TheMoon_Project | 💰 $0.15/$0.50 | 🧠 25K (12%)
+```
+
+**참고:**
+- 독립 실행 가이드 완비 (부록 C)
+- 전체 코드 복사 가능 (1156-1255 라인)
+- 5분 빠른 시작 가이드 있음
+
+---
+
+### 📌 다음 세션 시작 시 확인사항
+
+**1단계: 어떤 작업을 먼저 할지 결정**
+```
+옵션 A: Claude API 통합 (다른 컴퓨터, 2시간, 높은 효과)
+옵션 B: statusline 개선 (현재 컴퓨터, 45분, 편의 기능)
+옵션 C: 둘 다 진행 (순서: B → A 권장)
+```
+
+**2단계: 해당 문서 읽기**
+- 옵션 A: `Documents/Guides/CLAUDE_API_INTEGRATION_GUIDE.md`
+- 옵션 B: `Documents/Planning/STATUSLINE_ENHANCEMENT_PLAN.md`
+
+**3단계: 문서 내 체크리스트 따라 진행**
+- 각 문서에 단계별 체크리스트 있음
+- 코드 전체 포함되어 복사만 하면 됨
+
+---
+
+### 💡 권장 진행 순서
+
+**시나리오 1: 현재 컴퓨터에서 바로 시작**
+1. statusline 개선 (45분) ← 빠르고 간단
+2. 문서화 및 커밋
+3. Claude API는 다른 컴퓨터에서
+
+**시나리오 2: 다른 컴퓨터에서 시작**
+1. Claude API 통합 (2시간) ← 높은 효과
+2. IMG_1650~1659 전체 테스트
+3. 비용/성능 측정
+
+**시나리오 3: 둘 다 한 번에**
+1. statusline 개선 (45분)
+2. 커밋 및 푸시
+3. 다른 컴퓨터로 이동
+4. Claude API 통합 (2시간)
+5. 전체 테스트 및 문서화
