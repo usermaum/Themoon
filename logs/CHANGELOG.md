@@ -11,6 +11,42 @@
 
 ---
 
+## [0.47.0] - 2025-11-16
+
+### ✨ 마이너 업데이트 (Minor Update): statusline에 모델/프로젝트/토큰 사용량 표시 추가
+
+#### 📝 변경사항
+**수정 파일:**
+- `statusline.sh`: Claude Code statusline 커스터마이징 (v2.0)
+  - **새 기능:**
+    - 🤖 모델 이름 표시 (간략화: claude-sonnet-4-5-20250929 → sonnet-4-5)
+    - 📁 프로젝트 이름 표시 (PWD 기반)
+    - 🧠 토큰 사용량 K/M 단위 포맷팅
+    - 💰 세션/오늘 비용 표시
+    - 색상 코딩: 사용량 백분율에 따라 녹색(0-50%)/노란색(51-80%)/빨간색(81-100%)
+  - **주요 함수:**
+    - `get_current_project()`: PWD에서 프로젝트 이름 추출
+    - `simplify_model_name()`: 모델 이름 간략화 (정규식 기반)
+    - `format_tokens()`: 토큰 수 K/M 단위 변환
+    - `calc_percent()`: 백분율 계산 (division by zero 방지)
+    - `get_color_code()`: 사용량 기반 색상 선택
+  - **출력 형식:** `🤖 {model} | 📁 {project} | 💰 ${session}/${today} | {color}🧠 {tokens} ({%})`
+  - **에러 핸들링:** jq 미설치 확인, JSON 유효성 검사, 기본값 처리
+
+**백업 파일:**
+- `statusline.sh.backup-*`: 기존 statusline.sh 백업
+
+#### ✅ 테스트 결과
+- ✅ 정상 입력 테스트 (25K 토큰, 12% 사용): 녹색 표시
+- ✅ 높은 사용량 테스트 (180K 토큰, 90% 사용): 빨간색 표시
+- ✅ 중간 사용량 테스트 (120K 토큰, 60% 사용): 노란색 표시
+- ✅ M 단위 포맷팅 테스트 (5M 토큰): 정상 표시
+- ✅ 빈 JSON 테스트: 기본값으로 처리
+- ✅ 모델 이름 간략화: sonnet-4-5, opus-4, haiku-4-5 등 정상 변환
+
+#### 📚 참고 문서
+- `Documents/Planning/STATUSLINE_ENHANCEMENT_PLAN.md`: 전체 개발 플랜 (1,305줄)
+
 ## [Unreleased] - 2025-11-16
 
 ### ✨ 기능 추가 (Feature): GSC 명세서 OCR 파싱 개선 (세션 3-4)
