@@ -11,6 +11,27 @@
 
 ---
 
+## [0.50.0] - 2025-11-16
+
+### ✨ 마이너 업데이트 (Minor Update): Streamlit Cloud 배포 지원 추가
+
+#### 📝 변경사항
+**수정 파일:**
+- `app/services/claude_ocr_service.py`:
+  - `get_api_key()` 헬퍼 함수 추가 (다중 환경 지원)
+  - 우선순위: Streamlit Secrets → 환경 변수 → .env 파일
+  - 에러 메시지에 환경별 설정 방법 안내
+
+- `.gitignore`: `.streamlit/secrets.toml` 추가 (보안)
+
+**새로운 파일:**
+- `.streamlit/secrets.toml.example`: Streamlit Cloud Secrets 템플릿
+- `Documents/Guides/STREAMLIT_CLOUD_DEPLOYMENT.md` (300+줄): 배포 가이드
+
+#### 🎯 개선 효과
+- 로컬 개발(.env) + Streamlit Cloud(Secrets) 동시 지원
+- 하나의 코드베이스로 다중 환경 배포 가능
+
 ## [0.49.0] - 2025-11-16
 
 ### ✨ 마이너 업데이트 (Minor Update): Claude API 기반 OCR 시스템 통합
