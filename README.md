@@ -269,6 +269,50 @@ conn.close()
 "
 ```
 
+### statusline 커스터마이징
+Claude Code의 하단 상태 표시줄에 실시간 사용량 정보를 표시합니다.
+
+**표시 정보:**
+- 🤖 현재 모델 (간략화된 이름)
+- 📁 프로젝트 이름
+- 💰 세션/오늘 비용
+- 📦 Block 사용량 (%, 남은 시간)
+- 🧠 토큰 사용량 (K/M 단위, %)
+- 색상 코딩 (사용량에 따라 녹색/노란색/빨간색)
+
+**출력 예시:**
+```
+🤖 sonnet-4-5 | 📁 TheMoon_Project | 💰 $0.25/$1.50 | 📦 48% (2h 0m) | 🧠 48K (24%)
+```
+
+**수동 테스트:**
+```bash
+cat << 'EOF' | ./statusline.sh
+{
+  "model": "claude-sonnet-4-5-20250929",
+  "cost": {
+    "total_input_tokens": 50000,
+    "token_limit": 200000,
+    "total_cost_usd": 0.25,
+    "today_cost_usd": 1.50,
+    "block_cost_usd": 0.12,
+    "block_limit_usd": 0.25,
+    "block_time_left_ms": 7200000
+  }
+}
+EOF
+```
+
+**설정 파일:** `~/.claude/settings.json`
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "/mnt/d/Ai/WslProject/TheMoon_Project/statusline.sh"
+  }
+}
+```
+
 ---
 
 ## 🗄️ 데이터베이스 스키마
