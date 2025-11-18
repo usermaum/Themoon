@@ -11,7 +11,31 @@
 
 ---
 
-## [0.50.0] - 2025-11-16
+## [0.50.0] - 2025-11-18
+
+### 📋 문서 업데이트: DeepSeek-OCR 통합 플랜 작성
+
+#### 📝 변경사항
+**새로운 파일:**
+- `Documents/Planning/DEEPSEEK_OCR_INTEGRATION_PLAN.md` (500+ 줄):
+  - 7단계 개발 방법론 적용 (Constitution ~ Analyze)
+  - DeepSeek-OCR 기술 조사 및 EasyOCR 비교 분석
+  - 3가지 실행 방식 (로컬/API/하이브리드) 설계
+  - 6 Phase 통합 계획 (POC → 구현 → 검증)
+  - 사용자 결정 필요 항목 명시 (Clarify 단계)
+
+- `Documents/Progress/SESSION_SUMMARY_2025-11-18.md`:
+  - 세션 작업 내용 요약
+  - 다음 세션 진행 계획
+
+#### 🎯 개선 효과
+- OCR 정확도 개선 방안 체계적 검토
+- POC 테스트 우선 접근 (리스크 최소화)
+- 기존 EasyOCR 유지하며 점진적 전환 가능
+
+---
+
+## [0.50.0] - 2025-11-16 (이전 변경사항)
 
 ### ✨ 마이너 업데이트 (Minor Update): Streamlit Cloud 배포 지원 추가
 
