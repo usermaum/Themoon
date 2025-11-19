@@ -23,13 +23,13 @@ class InventoryType:
 
 class TransactionType:
     """거래 유형 상수"""
-    PURCHASE = "PURCHASE"  # 입고 (생두 구매)
-    ROASTING = "ROASTING"  # 로스팅 (생두 → 원두)
-    PRODUCTION = "PRODUCTION"  # 생산 (로스팅 완료, 원두 증가)
-    SALES = "SALES"  # 판매출고
-    GIFT = "GIFT"  # 증정출고
-    WASTE = "WASTE"  # 폐기
-    ADJUSTMENT = "ADJUSTMENT"  # 재고조정
+    PURCHASE = "입고"  # 입고 (생두 구매)
+    ROASTING = "로스팅"  # 로스팅 (생두 → 원두)
+    PRODUCTION = "생산"  # 생산 (로스팅 완료, 원두 증가)
+    SALES = "판매출고"  # 판매출고
+    GIFT = "증정출고"  # 증정출고
+    WASTE = "폐기"  # 폐기
+    ADJUSTMENT = "재고조정"  # 재고조정
 
 
 class InventoryService:

@@ -6,7 +6,7 @@ Invoice, InvoiceItem, InvoiceLearning 모델 정의
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from .database import Base
+from .base import Base
 
 
 class Invoice(Base):

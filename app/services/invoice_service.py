@@ -49,19 +49,19 @@ class InvoiceService:
     def process_invoice_image(
         self,
         uploaded_file,
-        claude_ocr_service
+        ocr_service  # GeminiOCRService 또는 ClaudeOCRService
     ) -> Dict:
         """
-        거래 명세서 이미지 전체 처리 파이프라인 (Claude API 사용)
+        거래 명세서 이미지 전체 처리 파이프라인
 
         1. 이미지 변환 (UploadedFile → PIL Image)
-        2. Claude API로 OCR + 파싱
+        2. OCR + 파싱 (Gemini 또는 Claude)
         3. 원두 매칭
         4. 결과 반환
 
         Args:
             uploaded_file: Streamlit UploadedFile 객체
-            claude_ocr_service: ClaudeOCRService 인스턴스
+            ocr_service: GeminiOCRService 또는 ClaudeOCRService 인스턴스
 
         Returns:
             {
@@ -79,12 +79,12 @@ class InvoiceService:
         # 1. 이미지 변환
         image = convert_uploaded_file_to_image(uploaded_file)
 
-        # 2. Claude API로 OCR + 파싱
-        claude_result = claude_ocr_service.process_invoice(image)
+        # 2. OCR + 파싱 (서비스 타입 자동 감지)
+        ocr_result = ocr_service.process_invoice(image)
 
-        invoice_type = claude_result.get('invoice_type', 'UNKNOWN')
-        invoice_data = claude_result.get('invoice_data', {})
-        items = claude_result.get('items', [])
+        invoice_type = ocr_result.get('invoice_type', 'UNKNOWN')
+        invoice_data = ocr_result.get('invoice_data', {})
+        items = ocr_result.get('items', [])
 
         # 3. 원두 매칭
         matched_beans = {}
@@ -108,14 +108,14 @@ class InvoiceService:
         # 4. 결과 반환
         return {
             'image': image,
-            'ocr_text': claude_result.get('ocr_text', ''),
+            'ocr_text': ocr_result.get('ocr_text', ''),
             'invoice_type': invoice_type,
             'invoice_data': invoice_data,
             'items': items,
-            'confidence': claude_result.get('confidence', 95.0),
-            'warnings': claude_result.get('warnings', []),
+            'confidence': ocr_result.get('confidence', 95.0),
+            'warnings': ocr_result.get('warnings', []),
             'matched_beans': matched_beans,
-            'timestamp': claude_result.get('timestamp', '')
+            'timestamp': ocr_result.get('timestamp', '')
         }
 
     def _match_bean_to_db(self, bean_name: str):
@@ -195,25 +195,16 @@ class InvoiceService:
 
         # 3. InvoiceItem 생성
         for item in items:
-            # 원두 매칭 (bean_id 설정)
-            bean_id = None
-            bean_name_raw = item.get('bean_name', '')
-
-            # Bean 조회 시도 (정확한 이름 또는 유사도 매칭)
-            if bean_name_raw:
-                # 먼저 정확한 이름으로 조회
-                bean = self.db.query(Bean).filter(
-                    Bean.name == bean_name_raw,
-                    Bean.status == 'active'
-                ).first()
-
-                if bean:
-                    bean_id = bean.id
+            # bean_id는 UI에서 이미 설정됨 (매칭된 원두)
+            bean_id = item.get('bean_id')
+            
+            # bean_name_raw는 OCR 원본 값 (bean_name_original 또는 bean_name)
+            bean_name_raw = item.get('bean_name_original') or item.get('bean_name', '')
 
             invoice_item = InvoiceItem(
                 invoice_id=invoice.id,
                 bean_id=bean_id,
-                bean_name_raw=bean_name_raw,
+                bean_name_raw=bean_name_raw,  # OCR 원본 값 (예: "Colombia Supremo Huila")
                 quantity=item.get('quantity', 0),
                 unit_price=item.get('unit_price', 0.0),
                 amount=item.get('amount', 0.0),

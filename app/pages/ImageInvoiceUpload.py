@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import SessionLocal
 from services.claude_ocr_service import ClaudeOCRService
+from services.gemini_ocr_service import GeminiOCRService
 from services.invoice_service import InvoiceService
 from services.learning_service import LearningService
 from services.bean_service import BeanService
@@ -50,14 +51,32 @@ if "db" not in st.session_state:
 if "learning_service" not in st.session_state:
     st.session_state.learning_service = LearningService(st.session_state.db)
 
-# Claude OCR 서비스 초기화
+# Gemini OCR 서비스 초기화 (우선 시도)
+if "gemini_ocr_service" not in st.session_state:
+    try:
+        gemini_service = GeminiOCRService()
+        if gemini_service.is_configured():
+            st.session_state.gemini_ocr_service = gemini_service
+            st.session_state.ocr_provider = "gemini"
+        else:
+            st.session_state.gemini_ocr_service = None
+            st.session_state.ocr_provider = None
+    except Exception as e:
+        st.session_state.gemini_ocr_service = None
+        st.session_state.ocr_provider = None
+
+# Claude OCR 서비스 초기화 (Gemini가 없으면 fallback)
 if "claude_ocr_service" not in st.session_state:
     try:
         st.session_state.claude_ocr_service = ClaudeOCRService()
+        if st.session_state.ocr_provider is None:
+            st.session_state.ocr_provider = "claude"
     except ValueError as e:
-        st.error(f"❌ Claude API 초기화 실패: {str(e)}")
-        st.info("💡 .env 파일에 ANTHROPIC_API_KEY를 설정해주세요.")
-        st.stop()
+        st.session_state.claude_ocr_service = None
+        if st.session_state.ocr_provider is None:
+            st.error(f"❌ OCR 서비스 초기화 실패: {str(e)}")
+            st.info("💡 .env 파일에 GOOGLE_API_KEY 또는 ANTHROPIC_API_KEY를 설정해주세요.")
+            st.stop()
 
 if "invoice_service" not in st.session_state:
     st.session_state.invoice_service = InvoiceService(
@@ -118,14 +137,32 @@ with tab1:
             st.success(f"✅ 파일 선택됨: {uploaded_file.name}")
             st.caption(f"크기: {uploaded_file.size / 1024:.1f} KB")
 
+            # OCR 제공자 표시
+            ocr_provider = st.session_state.get("ocr_provider", "unknown")
+            if ocr_provider == "gemini":
+                st.info("🤖 **OCR 엔진:** Google Gemini 1.5 Flash (무료)")
+            elif ocr_provider == "claude":
+                st.info("🤖 **OCR 엔진:** Claude 3.5 Sonnet")
+            else:
+                st.warning("⚠️ OCR 엔진이 설정되지 않았습니다.")
+
             # 분석 버튼
             if st.button("🤖 AI 분석 시작", type="primary", use_container_width=True):
                 with st.spinner("AI가 명세서를 분석하고 있습니다... (약 5~10초 소요)"):
                     try:
+                        # OCR 서비스 선택
+                        if ocr_provider == "gemini" and st.session_state.gemini_ocr_service:
+                            ocr_service = st.session_state.gemini_ocr_service
+                        elif ocr_provider == "claude" and st.session_state.claude_ocr_service:
+                            ocr_service = st.session_state.claude_ocr_service
+                        else:
+                            st.error("❌ 사용 가능한 OCR 서비스가 없습니다.")
+                            st.stop()
+
                         # 이미지 처리 파이프라인 실행
                         result = st.session_state.invoice_service.process_invoice_image(
                             uploaded_file,
-                            st.session_state.claude_ocr_service
+                            ocr_service
                         )
 
                         # 결과 저장
@@ -203,6 +240,101 @@ with tab2:
     if not result:
         st.info("먼저 '이미지 업로드' 탭에서 명세서를 분석해주세요.")
     else:
+        # ═══════════════════════════════════════════════════════════
+        # 🔍 OCR 상세 정보 (맨 위에 배치)
+        # ═══════════════════════════════════════════════════════════
+        st.subheader("🔍 OCR 상세 정보")
+        
+        # OCR 제공자 표시
+        ocr_provider = st.session_state.get("ocr_provider", "unknown")
+        st.info(f"🤖 **사용된 OCR 엔진:** {ocr_provider.upper()}")
+        
+        # 탭으로 구분
+        debug_tab1, debug_tab2, debug_tab3 = st.tabs(["📊 파싱된 데이터", "📝 원본 응답", "🔍 상세 정보"])
+        
+        with debug_tab1:
+            st.subheader("파싱된 데이터 구조 (JSON)")
+            
+            # 항상 읽어온 데이터 출력 (성공/실패 무관)
+            try:
+                # date 객체를 문자열로 변환
+                invoice_date = result.get('invoice_data', {}).get('invoice_date')
+                if invoice_date:
+                    if hasattr(invoice_date, 'strftime'):
+                        invoice_date_str = invoice_date.strftime('%Y-%m-%d')
+                    else:
+                        invoice_date_str = str(invoice_date)
+                else:
+                    invoice_date_str = None
+                
+                parsed_data_display = {
+                    "invoice_type": result.get('invoice_type', 'UNKNOWN'),
+                    "supplier": result.get('invoice_data', {}).get('supplier'),
+                    "invoice_date": invoice_date_str,
+                    "total_amount": result.get('invoice_data', {}).get('total_amount'),
+                    "items_count": len(result.get('items', [])),
+                    "items": result.get('items', [])
+                }
+                
+                import json
+                st.code(json.dumps(parsed_data_display, indent=2, ensure_ascii=False), language="json")
+                
+            except Exception as e:
+                st.error(f"JSON 직렬화 오류: {str(e)}")
+                st.write("**원본 데이터 (Python Dict):**")
+                st.json(result)
+            
+            # 에러가 있으면 표시
+            if 'error' in result:
+                st.error(f"⚠️ **파싱 오류 발생:** {result['error']}")
+            else:
+                st.success("✅ 파싱 성공")
+            
+            st.caption("💡 이 데이터가 실제로 데이터베이스에 저장됩니다.")
+        
+        with debug_tab2:
+            st.subheader("OCR 원본 응답")
+            
+            # 원본 텍스트
+            ocr_text = result.get('ocr_text', '텍스트 없음')
+            st.text_area("OCR 추출 텍스트 (Gemini 응답)", ocr_text, height=400, key="ocr_text_area")
+            
+            # Gemini의 경우 raw_response도 표시
+            if 'raw_response' in result:
+                st.text_area("Gemini 원본 응답 (파싱 전)", result['raw_response'], height=200, key="raw_response_area")
+        
+        with debug_tab3:
+            st.subheader("상세 분석 정보")
+            
+            # 에러 메시지가 있으면 표시
+            if 'error' in result:
+                st.error(f"❌ 오류: {result['error']}")
+            else:
+                st.success("✅ 파싱 성공")
+
+            # 단어별 신뢰도 (낮은 순으로 정렬) - Claude OCR만 해당
+            ocr_words = result.get('ocr_words', [])
+            if ocr_words:
+                st.subheader("단어별 신뢰도 (낮은 순)")
+                low_conf_words = sorted(ocr_words, key=lambda x: x['confidence'])[:20]
+
+                for word in low_conf_words:
+                    conf = word['confidence']
+                    text = word['text']
+                    color = "🟢" if conf >= 80 else "🟡" if conf >= 60 else "🔴"
+                    st.write(f"{color} `{text}` - {conf:.1f}%")
+            else:
+                st.info("Gemini OCR은 단어별 신뢰도를 제공하지 않습니다.")
+
+        st.caption("💡 타입 감지가 실패하면 이 정보를 확인하세요.")
+        
+        st.divider()
+        
+        # ═══════════════════════════════════════════════════════════
+        # 📊 요약 정보
+        # ═══════════════════════════════════════════════════════════
+        st.subheader("📊 요약 정보")
+        
         # 신뢰도 표시
         confidence = result['confidence']
         col1, col2, col3, col4, col5 = st.columns(5)
@@ -243,25 +375,6 @@ with tab2:
             confidence_color = "🟢" if ocr_confidence >= 80 else "🟡" if ocr_confidence >= 60 else "🔴"
             st.info(f"{confidence_color} **OCR 인식 신뢰도: {ocr_confidence:.1f}%**")
 
-        # 디버그 정보 (OCR 원본 텍스트 + 단어별 신뢰도)
-        with st.expander("🔍 디버그: OCR 상세 정보"):
-            # 원본 텍스트
-            ocr_text = result.get('ocr_text', '텍스트 없음')
-            st.text_area("OCR 추출 텍스트", ocr_text, height=200)
-
-            # 단어별 신뢰도 (낮은 순으로 정렬)
-            ocr_words = result.get('ocr_words', [])
-            if ocr_words:
-                st.subheader("단어별 신뢰도 (낮은 순)")
-                low_conf_words = sorted(ocr_words, key=lambda x: x['confidence'])[:20]
-
-                for word in low_conf_words:
-                    conf = word['confidence']
-                    text = word['text']
-                    color = "🟢" if conf >= 80 else "🟡" if conf >= 60 else "🔴"
-                    st.write(f"{color} `{text}` - {conf:.1f}%")
-
-            st.caption("💡 타입 감지가 실패하면 이 정보를 확인하세요.")
 
         st.divider()
 
@@ -339,8 +452,8 @@ with tab2:
                         st.caption(f"OCR 인식값: {bean_name_raw}")
 
                     with col2:
-                        # 중량 (kg)
-                        weight_value = item.get('weight') or 0
+                        # 중량 (kg) - quantity 또는 weight 필드 사용
+                        weight_value = item.get('quantity') or item.get('weight') or 0
                         weight = st.number_input(
                             "중량 (kg)",
                             value=float(weight_value),
@@ -363,9 +476,17 @@ with tab2:
                         )
 
                     with col4:
-                        # 공급가액 (자동 계산)
-                        amount = weight * unit_price
-                        st.metric("공급가액", f"₩{amount:,.0f}")
+                        # 공급가액 - 원본 값이 있으면 사용, 없으면 계산
+                        original_amount = item.get('amount', 0)
+                        calculated_amount = weight * unit_price
+                        
+                        # 원본 amount가 있고 0이 아니면 원본 사용, 아니면 계산값 사용
+                        if original_amount and original_amount > 0:
+                            amount = original_amount
+                            st.metric("공급가액 (OCR)", f"₩{amount:,.0f}")
+                        else:
+                            amount = calculated_amount
+                            st.metric("공급가액 (계산)", f"₩{amount:,.0f}")
 
                     with col5:
                         # 규격
@@ -376,11 +497,16 @@ with tab2:
                         )
 
                     # 항목 정보 업데이트 (세션에 저장)
+                    # 원본 OCR 값 보존
+                    if 'bean_name_original' not in result['items'][idx]:
+                        result['items'][idx]['bean_name_original'] = item.get('bean_name', '')  # 최초 OCR 값 저장
+                    
                     result['items'][idx]['bean_id'] = selected_bean.id
-                    result['items'][idx]['bean_name'] = selected_bean.name
+                    result['items'][idx]['matched_bean_name'] = selected_bean.name  # 매칭된 DB 원두명
+                    result['items'][idx]['bean_name_kr'] = item.get('bean_name_kr', '')  # Gemini 한글 번역
                     result['items'][idx]['quantity'] = weight  # 'weight' UI -> 'quantity' DB
                     result['items'][idx]['unit_price'] = unit_price
-                    result['items'][idx]['amount'] = amount
+                    result['items'][idx]['amount'] = amount  # 원본 또는 계산값
                     result['items'][idx]['notes'] = spec  # 'spec' UI -> 'notes' DB
 
         st.divider()

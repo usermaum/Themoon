@@ -414,7 +414,7 @@ class ReportService:
         # 1. 요약 통계
         total_in = sum(
             abs(t.quantity_kg) for t in transactions
-            if t.transaction_type in ['PURCHASE', 'PRODUCTION'] or
+            if t.transaction_type in ['입고', '생산'] or
                (t.transaction_type == 'ADJUSTMENT' and t.quantity_kg > 0)
         )
 

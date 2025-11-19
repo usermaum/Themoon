@@ -11,6 +11,51 @@
 
 ---
 
+## [0.50.0] - 2025-11-19
+
+### 🔧 버그 수정: Gemini OCR 오류 처리 개선 및 문서 추가
+
+#### 📝 변경사항
+**수정 파일:**
+- `app/services/gemini_ocr_service.py`:
+  - Gemini API 응답 거부 시 (finish_reason=1) 안전 처리 추가
+  - `response.text` 접근 전 `response.candidates` 검증
+  - 사용자 친절한 오류 메시지 및 Claude API 대안 제시
+  - 이미지 품질 문제 감지 및 가이드 제공
+
+**신규 파일:**
+- `Documents/EXPERT_REVIEW_AND_PLAN.md` (113줄):
+  - 프로젝트 전문가 리뷰 (종합 평가 ⭐⭐⭐⭐⭐)
+  - 아키텍처 분석 및 개선 플랜 (4 Phase)
+  - 모델 분리/CSS 분리는 이미 완료 확인 ✅
+  - Alembic DB 마이그레이션 도구 도입 제안 (미래)
+
+- `Documents/GEMINI_OCR_GUIDE.md` (222줄):
+  - Google Gemini 1.5 Flash 무료 OCR 통합 가이드
+  - API Key 설정 및 환경 변수 구성
+  - 성능 비교표 (Gemini vs Claude)
+  - 문제 해결 가이드 및 향후 개선 계획
+
+**신규 모델 파일 (아키텍처 개선 완료):**
+- `app/models/base.py`: Base, engine, session
+- `app/models/bean.py`: Bean, BeanPriceHistory
+- `app/models/blend.py`: Blend, BlendRecipe, BlendRecipesHistory
+- `app/models/cost_setting.py`: CostSetting
+- `app/models/inventory.py`: Inventory
+- `app/models/transaction.py`: Transaction, RoastingLog
+- `app/models/user.py`: User, UserPermission
+
+**신규 Assets:**
+- `app/assets/style.css`: app.py에서 분리된 CSS (5480 bytes)
+
+#### 🎯 개선 효과
+- Gemini OCR 오류 시 명확한 메시지 표시로 사용자 경험 개선
+- 전문가 리뷰를 통한 프로젝트 품질 검증 및 로드맵 명확화
+- 모델 파일 분리로 유지보수성 향상 (database.py 760줄 → 9개 파일 분산)
+- CSS 분리로 코드 가독성 향상
+
+---
+
 ## [0.50.0] - 2025-11-18
 
 ### 📋 문서 업데이트: DeepSeek-OCR 통합 플랜 작성

@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from models import SessionLocal, init_db
 from services.bean_service import BeanService
 from services.blend_service import BlendService
-from utils.constants import UI_CONFIG
+from config import UI_CONFIG
 from i18n import Translator, LanguageManager
 from components.sidebar import render_sidebar
 
@@ -34,174 +34,14 @@ st.set_page_config(
 # 🎨 커스텀 스타일
 # ═══════════════════════════════════════════════════════════════════════════════
 
-st.markdown("""
-<style>
-    /* ═══════════════════════════════════════════════════════════
-       주요 컬러 변수
-       ═══════════════════════════════════════════════════════════ */
-    :root {
-        --primary: #1F4E78;
-        --secondary: #4472C4;
-        --success: #70AD47;
-        --danger: #C41E3A;
-        --sidebar-bg: #0E1117;           /* 페이지 배경색과 동일 */
-        --hover-bg: #161B22;             /* 다크 테마 hover 배경 */
-        --text-muted: #999;              /* 다크 테마 텍스트 */
-        --divider-color: #444444;        /* 다크 테마 구분선 */
-    }
+def load_css():
+    """CSS 파일 로드"""
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
+    with open(css_path, "r", encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-    /* ═══════════════════════════════════════════════════════════
-       메인 헤더
-       ═══════════════════════════════════════════════════════════ */
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
+load_css()
 
-    .sub-header {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        margin-bottom: 1.5rem;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       Claude Desktop 스타일 사이드바
-       ═══════════════════════════════════════════════════════════ */
-
-    /* 사이드바 배경 */
-    [data-testid="stSidebar"] {
-        background-color: #0E1117 !important;
-        padding: 1rem 0.5rem;
-    }
-
-    /* 사이드바 내부 배경 추가 */
-    [data-testid="stSidebar"] section {
-        background-color: #0E1117 !important;
-    }
-
-    /* 사이드바 섹션 헤더 */
-    [data-testid="stSidebar"] h3 {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        letter-spacing: 0.5px;
-        margin-top: 1rem;
-        margin-bottom: 0.75rem;
-        padding-left: 0.5rem;
-    }
-
-    /* 사이드바 첫 번째 h3는 margin-top 제거 */
-    [data-testid="stSidebar"] h3:first-of-type {
-        margin-top: 0;
-    }
-
-    /* 메뉴 버튼 기본 스타일 */
-    [data-testid="stSidebar"] .stButton > button {
-        width: 100%;
-        text-align: left;
-        padding: 10px 16px;
-        border-radius: 8px;
-        border: none;
-        background-color: transparent !important;
-        color: var(--text-muted) !important;
-        font-size: 14px;
-        font-weight: 400;
-        transition: all 0.2s ease;
-        margin-bottom: 6px;
-        cursor: pointer;
-        border-left: 4px solid transparent;
-    }
-
-    /* 사이드바 버튼 호버 효과 */
-    [data-testid="stSidebar"] .stButton > button:hover {
-        background-color: var(--hover-bg) !important;
-        color: var(--primary) !important;
-        border-left-color: transparent;
-    }
-
-    /* 사이드바 버튼 활성 (primary type) */
-    [data-testid="stSidebar"] [role="button"] > button[kind="primary"] {
-        background-color: var(--secondary) !important;
-        color: white !important;
-        font-weight: 600;
-        border-left-color: var(--primary) !important;
-    }
-
-    /* Primary 버튼 추가 스타일 */
-    [data-testid="stSidebar"] button[kind="primary"] {
-        background-color: var(--secondary) !important;
-        color: white !important;
-        font-weight: 600;
-    }
-
-    /* Divider 스타일 */
-    [data-testid="stSidebar"] hr {
-        margin: 0.75rem 0;
-        border: none;
-        border-top: 1px solid var(--divider-color);
-        opacity: 0.5;
-    }
-
-    /* 메트릭 카드 (사이드바) */
-    [data-testid="stSidebar"] [data-testid="stMetric"] {
-        background-color: #161B22;
-        padding: 8px 12px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        margin-bottom: 8px;
-    }
-
-    [data-testid="stSidebar"] [data-testid="stMetric"] label {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    [data-testid="stSidebar"] [data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--primary);
-    }
-
-    /* 사이드바 아이콘 크기 */
-    [data-testid="stSidebar"] .stButton > button span {
-        font-size: 18px;
-    }
-
-    /* Info/Alert Box (사이드바) */
-    [data-testid="stSidebar"] .stAlert {
-        padding: 10px 12px;
-        border-radius: 6px;
-        font-size: 13px;
-    }
-
-    /* Caption 텍스트 (사이드바) */
-    [data-testid="stSidebar"] .stCaption {
-        font-size: 11px;
-        color: #999;
-        line-height: 1.5;
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       메인 콘텐츠 버튼
-       ═══════════════════════════════════════════════════════════ */
-
-    /* 메인 영역 버튼 */
-    .stButton > button {
-        background-color: var(--secondary) !important;
-        color: white !important;
-        border: none !important;
-        transition: background-color 0.2s ease;
-        border-radius: 6px;
-    }
-
-    .stButton > button:hover {
-        background-color: var(--primary) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🔄 세션 상태 초기화

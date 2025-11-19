@@ -271,6 +271,10 @@ def fuzzy_match_bean(
         bean_name_normalized = normalize_text(bean.name.lower())
         bean_tokens = set(bean_name_normalized.split())
 
+        # 0. 공백 제거 후 정확 일치 확인 (가장 강력한 매칭)
+        if ocr_name_normalized.replace(" ", "") == bean_name_normalized.replace(" ", ""):
+            return bean, 1.0
+
         # 1. Levenshtein Distance (가중치 40%)
         max_len = max(len(ocr_name_normalized), len(bean_name_normalized))
         if max_len == 0:
