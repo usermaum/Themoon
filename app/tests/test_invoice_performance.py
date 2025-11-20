@@ -15,7 +15,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import SessionLocal
-from services.ocr_service import OCRService
+from services.gemini_ocr_service import GeminiOCRService
 from services.invoice_service import InvoiceService
 from services.learning_service import LearningService
 
