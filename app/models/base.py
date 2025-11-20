@@ -21,10 +21,16 @@ DATABASE_PATH = os.path.join(DATA_DIR, "roasting_data.db")
 # 데이터베이스 URL
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
-# SQLAlchemy 엔진 생성
+# SQLAlchemy 엔진 생성 (WSL 환경 최적화)
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    connect_args={
+        "check_same_thread": False,
+        "timeout": 30,  # 타임아웃 30초
+        "isolation_level": None  # Autocommit mode (I/O 오류 방지)
+    },
+    pool_pre_ping=True,  # 연결 확인
+    pool_recycle=3600,   # 1시간마다 연결 재생성
     echo=False
 )
 
