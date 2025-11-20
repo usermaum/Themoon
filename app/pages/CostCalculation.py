@@ -21,9 +21,9 @@ if project_root not in sys.path:
 from services.cost_service import CostService
 from services.bean_service import BeanService
 from services.blend_service import BlendService
-from app.models import SessionLocal
-from app.components.sidebar import render_sidebar
-from app.i18n import Translator, LanguageManager
+from models import SessionLocal
+from components.sidebar import render_sidebar
+from i18n import Translator, LanguageManager
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Session State 초기화

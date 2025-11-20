@@ -3,12 +3,12 @@
 showSidebarNavigation = false
 
 [theme]
-# 다크 테마 설정
+# 다크 테마 설정 (Slate/Blue Theme)
 base = "dark"
-primaryColor = "#1F4E78"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#161B22"
-textColor = "#FFFFFF"
+primaryColor = "#3B82F6"
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#F8FAFC"
 font = "sans serif"
 
 [server]

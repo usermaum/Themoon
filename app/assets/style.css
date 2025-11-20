@@ -1,164 +1,207 @@
 /* ═══════════════════════════════════════════════════════════
-   주요 컬러 변수
+   폰트 및 변수 설정
    ═══════════════════════════════════════════════════════════ */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
 :root {
-    --primary: #1F4E78;
-    --secondary: #4472C4;
-    --success: #70AD47;
-    --danger: #C41E3A;
-    --sidebar-bg: #0E1117;           /* 페이지 배경색과 동일 */
-    --hover-bg: #161B22;             /* 다크 테마 hover 배경 */
-    --text-muted: #999;              /* 다크 테마 텍스트 */
-    --divider-color: #444444;        /* 다크 테마 구분선 */
+    /* Modern Color Palette */
+    --primary: #3B82F6;
+    /* Blue 500 */
+    --primary-dark: #2563EB;
+    /* Blue 600 */
+    --secondary: #60A5FA;
+    /* Blue 400 */
+    --accent: #8B5CF6;
+    /* Violet 500 */
+
+    --background: #0F172A;
+    /* Slate 900 */
+    --surface: #1E293B;
+    /* Slate 800 */
+    --surface-hover: #334155;
+    /* Slate 700 */
+
+    --text: #F8FAFC;
+    /* Slate 50 */
+    --text-muted: #94A3B8;
+    /* Slate 400 */
+
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+
+    --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --radius-lg: 1rem;
+    --radius-md: 0.75rem;
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   메인 헤더
+   기본 스타일
    ═══════════════════════════════════════════════════════════ */
+html,
+body,
+[class*="css"] {
+    font-family: var(--font-main) !important;
+}
+
+/* 메인 헤더 스타일 */
 .main-header {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--primary);
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(to right, var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 0.5rem;
+    letter-spacing: -0.05rem;
 }
 
 .sub-header {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--text-muted);
-    margin-bottom: 1.5rem;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   Claude Desktop 스타일 사이드바
-   ═══════════════════════════════════════════════════════════ */
-
-/* 사이드바 배경 */
-[data-testid="stSidebar"] {
-    background-color: #0E1117 !important;
-    padding: 1rem 0.5rem;
-}
-
-/* 사이드바 내부 배경 추가 */
-[data-testid="stSidebar"] section {
-    background-color: #0E1117 !important;
-}
-
-/* 사이드바 섹션 헤더 */
-[data-testid="stSidebar"] h3 {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
-    padding-left: 0.5rem;
-}
-
-/* 사이드바 첫 번째 h3는 margin-top 제거 */
-[data-testid="stSidebar"] h3:first-of-type {
-    margin-top: 0;
-}
-
-/* 메뉴 버튼 기본 스타일 */
-[data-testid="stSidebar"] .stButton > button {
-    width: 100%;
-    text-align: left;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    background-color: transparent !important;
-    color: var(--text-muted) !important;
-    font-size: 14px;
     font-weight: 400;
-    transition: all 0.2s ease;
-    margin-bottom: 6px;
-    cursor: pointer;
-    border-left: 4px solid transparent;
-}
-
-/* 사이드바 버튼 호버 효과 */
-[data-testid="stSidebar"] .stButton > button:hover {
-    background-color: var(--hover-bg) !important;
-    color: var(--primary) !important;
-    border-left-color: transparent;
-}
-
-/* 사이드바 버튼 활성 (primary type) */
-[data-testid="stSidebar"] [role="button"] > button[kind="primary"] {
-    background-color: var(--secondary) !important;
-    color: white !important;
-    font-weight: 600;
-    border-left-color: var(--primary) !important;
-}
-
-/* Primary 버튼 추가 스타일 */
-[data-testid="stSidebar"] button[kind="primary"] {
-    background-color: var(--secondary) !important;
-    color: white !important;
-    font-weight: 600;
-}
-
-/* Divider 스타일 */
-[data-testid="stSidebar"] hr {
-    margin: 0.75rem 0;
-    border: none;
-    border-top: 1px solid var(--divider-color);
-    opacity: 0.5;
-}
-
-/* 메트릭 카드 (사이드바) */
-[data-testid="stSidebar"] [data-testid="stMetric"] {
-    background-color: #161B22;
-    padding: 8px 12px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    margin-bottom: 8px;
-}
-
-[data-testid="stSidebar"] [data-testid="stMetric"] label {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-[data-testid="stSidebar"] [data-testid="stMetric"] [data-testid="stMetricValue"] {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--primary);
-}
-
-/* 사이드바 아이콘 크기 */
-[data-testid="stSidebar"] .stButton > button span {
-    font-size: 18px;
-}
-
-/* Info/Alert Box (사이드바) */
-[data-testid="stSidebar"] .stAlert {
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-/* Caption 텍스트 (사이드바) */
-[data-testid="stSidebar"] .stCaption {
-    font-size: 11px;
-    color: #999;
-    line-height: 1.5;
+    margin-bottom: 2rem;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   메인 콘텐츠 버튼
+   Streamlit 컴포넌트 커스터마이징
    ═══════════════════════════════════════════════════════════ */
 
-/* 메인 영역 버튼 */
-.stButton > button {
-    background-color: var(--secondary) !important;
+/* 사이드바 */
+[data-testid="stSidebar"] {
+    background-color: #0B1120 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-testid="stSidebar"] section {
+    background-color: transparent !important;
+}
+
+/* 메트릭 카드 */
+[data-testid="stMetric"] {
+    background-color: var(--surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+[data-testid="stMetric"]:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+    background-color: var(--surface-hover);
+}
+
+[data-testid="stMetric"] label {
+    color: var(--text-muted) !important;
+    font-size: 0.9rem !important;
+}
+
+[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: var(--text) !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+}
+
+/* 버튼 스타일 */
+.stButton>button {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
     color: white !important;
     border: none !important;
-    transition: background-color 0.2s ease;
-    border-radius: 6px;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+    transition: all 0.3s ease !important;
+    width: 100%;
+    margin-bottom: 0.5rem !important;
 }
 
-.stButton > button:hover {
-    background-color: var(--primary) !important;
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.6);
+    filter: brightness(1.1);
+}
+
+.stButton>button:active {
+    transform: translateY(0);
+}
+
+/* 사이드바 버튼 (네비게이션) */
+[data-testid="stSidebar"] .stButton>button {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 0.5rem !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="stSidebar"] .stButton>button:hover {
+    background: var(--surface) !important;
+    color: var(--text) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] .stButton>button:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+}
+
+/* 구분선 */
+hr {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    margin: 2rem 0 !important;
+}
+
+/* 헤딩 스타일 */
+h1,
+h2,
+h3 {
+    color: var(--text) !important;
+    font-weight: 700 !important;
+}
+
+h2 {
+    font-size: 1.8rem !important;
+    margin-bottom: 1.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+h3 {
+    font-size: 1.4rem !important;
+    color: var(--secondary) !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    background-color: var(--surface) !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* DataFrame/Table */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+/* Custom Card Container (Markdown으로 사용 시) */
+.custom-card {
+    background-color: var(--surface);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
 }
