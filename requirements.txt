@@ -22,7 +22,8 @@ reportlab==4.0.9
 python-dateutil==2.8.2
 
 # Image Processing & OCR
-opencv-python==4.8.1.78
+opencv-python==4.8.1.78  # Local development
+opencv-python-headless==4.12.0.88  # Streamlit Cloud deployment
 pdf2image==1.16.3
 python-Levenshtein==0.25.0
 dateparser==1.2.0
