@@ -6,8 +6,9 @@ FastAPI 메인 애플리케이션
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from app.api.v1 import api_router
-# from app.core.config import settings
+from app.database import engine, Base
+from app.models import Bean  # Import all models here
+from app.api.v1 import api_router
 
 app = FastAPI(
     title="TheMoon API",
@@ -23,6 +24,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    """애플리케이션 시작 시 데이터베이스 테이블 생성"""
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/")
@@ -41,5 +48,5 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# API 라우터 등록 (TODO)
-# app.include_router(api_router, prefix="/api/v1")
+# API 라우터 등록
+app.include_router(api_router, prefix="/api/v1")

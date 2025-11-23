@@ -1,7 +1,7 @@
 """
 애플리케이션 설정
 
-환경 변수를 통한 설정 관리
+환경 변수 기반 설정 관리
 """
 from pydantic_settings import BaseSettings
 from typing import Optional
@@ -10,13 +10,17 @@ from typing import Optional
 class Settings(BaseSettings):
     """애플리케이션 설정"""
 
-    # 기본 설정
-    PROJECT_NAME: str = "TheMoon API"
+    # 애플리케이션
+    APP_NAME: str = "TheMoon API"
     VERSION: str = "1.0.0"
+    DEBUG: bool = True
     API_V1_STR: str = "/api/v1"
 
-    # 데이터베이스
-    DATABASE_URL: str = "postgresql://themoon:password@localhost:5432/themoon_db"
+    # 데이터베이스 (개발용 SQLite)
+    DATABASE_URL: str = "sqlite:///./themoon.db"
+    
+    # PostgreSQL 사용 시 (프로덕션):
+    # DATABASE_URL: str = "postgresql://user:password@localhost/themoon"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
