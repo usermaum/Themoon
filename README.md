@@ -1,704 +1,884 @@
-# ☕ 더문드립바 로스팅 비용 계산 시스템
+# TheMoon Roasting Cost Calculator
 
-**The Moon Drip BAR - Roasting Cost Calculator v0.50.4**
+> **v0.50.2** | 커피 로스팅 비용 계산 및 재고 관리 시스템
 
-프리미엄 스페셜티 커피 로스팅 사업을 위한 **완전 통합형 원가 분석 및 수익성 계산 플랫폼**
-
-> **프로젝트 상태:** ✅ 100% 완료 | 🚀 프로덕션 배포 준비 완료 | 📚 28개 문서 완성 | 💡 모듈식 아키텍처 | 🎯 토큰 효율 최적화
-
----
-
-## 🎯 주요 기능 (v0.50.4)
-
-### 📊 원가 관리 시스템
-- ✅ **로스팅 기록 관리**: 일일 로스팅 데이터 저장 및 실시간 추적
-- ✅ **원두 비용 관리**: 13종 원두의 원가 설정 및 동적 관리
-- ✅ **블렌드 레시피 관리**: 7개 프리미엠 블렌드 (풀문 3개, 뉴문 3개, 시즈널 1개)
-- ✅ **비용 설정 커스터마이징**: 손실율, 로스팅비, 인건비, 전기료, 기타 비용 상세 설정
-
-### 💰 스마트 원가 계산
-- ✅ **실시간 자동 계산**: 입력 즉시 비용 계산 및 마진율 분석
-- ✅ **손실율 반영**: 로스팅 손실(16.7%) 자동 적용
-- ✅ **다단계 비용 분석**: 원두 → 로스팅 → 인건비 → 판매가 까지 전체 마진 분석
-- ✅ **동적 마진율**: 기본값 2.5배, 커스터마이징 가능
-
-### 📈 고급 데이터 분석 (Phase 3+)
-- ✅ **35+ 인터랙티브 차트**: Plotly 기반 다양한 시각화
-- ✅ **월간 비용 분석**: 월별 비용 추이 및 비교 분석
-- ✅ **원두별 사용 분석**: 원두 입출고, 총사용량 추적
-- ✅ **블렌드 성능 분석**: 판매가, 원가, 마진 비교 및 ROI 분석
-- ✅ **재고 예측**: 선형 회귀 기반 재고 수량 및 소진 일수 예측
-- ✅ **트렌드 분석**: 최대 24개월 역사 데이터 추적 및 추세 분석
-
-### 📚 보고서 & 내보내기 (Phase 3+)
-- ✅ **월별 종합 보고서**: 자동 요약 및 통계
-- ✅ **비용 상세 분석 보고서**: 날짜 범위별 필터링
-- ✅ **Excel 내보내기**: 완벽한 포맷팅 지원
-- ✅ **CSV 내보내기**: 데이터 분석용 형식 지원
-- ✅ **PDF 생성**: reportlab 기반 전문적 보고서 (선택)
-
-### 🔄 데이터 동기화 (Phase 3+)
-- ✅ **Excel 임포트**: 원두/블렌드 데이터 일괄 입력
-- ✅ **데이터 검증**: 오류 체크 및 상세 보고
-- ✅ **템플릿 다운로드**: 표준화된 입력 형식 제공
-- ✅ **일괄 업데이트**: 다중 레코드 동시 처리
-
-### ⚙️ 시스템 설정 (Phase 3+)
-- ✅ **동적 비용 관리**: 슬라이더를 통한 실시간 파라미터 조정
-- ✅ **데이터 백업**: 자동 백업 생성 및 복원 (Cron 지원)
-- ✅ **데이터베이스 관리**: 무결성 검사 및 최적화
-- ✅ **시스템 초기화**: 안전한 전체 데이터 초기화
+[![Python](https://img.shields.io/badge/Python-3.12.3-blue.svg)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-14.0-black.svg)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 🏗️ 기술 스택
+## 📋 목차 (Table of Contents)
 
-| 항목 | 기술 |
-|------|------|
-| **Frontend** | Streamlit 1.38.0 |
-| **Database** | SQLite 3.x |
-| **Data Processing** | Pandas 2.2.3, NumPy 2.1.3 |
-| **Visualization** | Plotly 5.24.1 |
-| **Excel Support** | OpenPyXL 3.1.5 |
-| **Runtime** | Python 3.12.3 |
+- [프로젝트 개요](#-프로젝트-개요)
+- [아키텍처](#-아키텍처)
+- [마이그레이션 진행 상황](#-마이그레이션-진행-상황)
+- [빠른 시작](#-빠른-시작)
+- [기능 목록](#-기능-목록)
+- [프로젝트 구조](#-프로젝트-구조)
+- [기술 스택](#-기술-스택)
+- [개발 가이드](#-개발-가이드)
+- [API 문서](#-api-문서)
+- [테스트](#-테스트)
+- [배포](#-배포)
+- [기여하기](#-기여하기)
+- [라이선스](#-라이선스)
 
 ---
 
-## 📁 프로젝트 구조 (v0.50.4)
+## 🎯 프로젝트 개요
+
+**TheMoon Roasting Cost Calculator**는 커피 로스팅 업체를 위한 **비용 계산 및 재고 관리 시스템**입니다.
+
+### 핵심 기능
+
+- ☕ **원두 관리** - 생두 정보, 가격, 로스팅 레벨 관리
+- 🧪 **블렌드 관리** - 블렌드 레시피 및 원가 계산
+- 📦 **재고 관리** - 실시간 재고 추적 및 입출고 관리
+- 📊 **로스팅 기록** - 로스팅 로그 및 손실률 분석
+- 💰 **비용 계산** - 정확한 원가 계산 및 가격 제안
+- 📈 **분석 및 리포트** - 손실률, 비용 추이, 재고 분석
+- 🖼️ **OCR 송장 처리** - AI 기반 송장 자동 인식 (Gemini/Claude)
+
+### 프로젝트 현황
+
+현재 프로젝트는 **Streamlit**에서 **Next.js + FastAPI** 아키텍처로의 마이그레이션이 진행 중입니다.
+
+- ✅ **기존 시스템** (Production): Streamlit 기반 - 완전 동작
+- 🚧 **신규 시스템** (Development): Next.js + FastAPI - Phase 1 진행 중
+
+---
+
+## 🏗️ 아키텍처
+
+### 현재 아키텍처 (Streamlit)
 
 ```
-TheMoon_Project/
-├── venv/                              # 프로젝트 격리 Python 환경 (3.12.3)
-│
-├── app/                               # Streamlit 애플리케이션 코어
-│   ├── app.py                         # 메인 애플리케이션 (450줄)
-│   ├── init_data.py                   # 데이터 초기화 (138줄)
-│   ├── run_app.py                     # 대체 런처
-│   ├── test_data.py                   # 테스트 데이터 생성
-│   ├── test_*.py                      # 테스트 파일 (226개 테스트, 100% 통과) ✅
-│   │
-│   ├── pages/                         # 10개 Streamlit 페이지 ✅ (영문 파일명)
-│   │   ├── Dashboard.py               # 홈 대시보드 (440줄)
-│   │   ├── BeanManagement.py          # 원두 CRUD (293줄)
-│   │   ├── BlendManagement.py         # 블렌드 관리 (488줄)
-│   │   ├── Analysis.py                # 상세 분석 (594줄)
-│   │   ├── CostCalculation.py         # 원가 계산 (547줄) ⭐ NEW
-│   │   ├── InventoryManagement.py     # 재고 추적 (483줄)
-│   │   ├── Report.py                  # 보고서 생성 (588줄)
-│   │   ├── Settings.py                # 시스템 설정 (502줄)
-│   │   ├── ExcelSync.py               # Excel 임포트/내보내기 (349줄)
-│   │   └── AdvancedAnalysis.py        # 고급 분석 (566줄)
-│   │
-│   ├── services/                      # 6개 비즈니스 로직 서비스 ✅
-│   │   ├── bean_service.py            # 원두 관리 서비스
-│   │   ├── blend_service.py           # 블렌드 관리 서비스
-│   │   ├── report_service.py          # 보고서 생성 서비스
-│   │   ├── excel_service.py           # Excel 동기화 서비스
-│   │   ├── analytics_service.py       # 분석 기능 서비스
-│   │   └── __init__.py
-│   │
-│   ├── models/                        # SQLAlchemy ORM 모델 ✅
-│   │   ├── database.py                # DB 연결 & 세션 관리
-│   │   ├── bean.py                    # Bean 모델
-│   │   ├── blend.py                   # Blend 모델
-│   │   ├── inventory.py               # Inventory 모델
-│   │   ├── transaction.py             # Transaction 모델
-│   │   ├── cost_setting.py            # CostSetting 모델
-│   │   └── __init__.py
-│   │
-│   ├── utils/                         # 유틸리티 & 상수 ✅
-│   │   ├── constants.py               # 13종 원두, 7개 블렌드 상수
-│   │   ├── validators.py              # 데이터 검증 함수
-│   │   ├── __init__.py
-│   │   └── logger.py                  # 로깅 설정 (선택)
-│   │
-│   └── __init__.py
-│
-├── data/
-│   ├── roasting_data.db               # SQLite 데이터베이스
-│   └── backups/                       # 자동 백업 디렉토리 (선택)
-│
-├── Documents/                         # 분류별 체계적 문서 관리 ✅ (28개)
-│   │
-│   ├── Architecture/                  # 아키텍처 & 설계 문서 (8개)
-│   │   ├── FILE_STRUCTURE.md          # 📁 프로젝트 파일 구조 & 책임 (335줄)
-│   │   ├── DEVELOPMENT_GUIDE.md       # 🚀 5단계 개발 프로세스 (350줄)
-│   │   ├── SYSTEM_ARCHITECTURE.md     # 🏗️ 3계층 아키텍처 & 데이터 흐름 (350줄)
-│   │   ├── TROUBLESHOOTING.md         # 🔧 16가지 오류 & 해결법 (375줄)
-│   │   ├── COMMON_TASKS.md            # ✅ 25가지 자주 하는 작업 (520줄)
-│   │   ├── COMPONENT_DESIGN.md        # 🎨 재사용 컴포넌트 설계
-│   │   ├── COMPONENT_USAGE_GUIDE.md   # 📖 컴포넌트 사용 가이드
-│   │   └── PROJECT_SETUP_GUIDE.md     # ⚙️ 프로젝트 재구성 가이드
-│   │
-│   ├── Guides/                        # 사용자 & 개발 가이드 (3개)
-│   │   ├── 배포가이드.md              # 배포 설명서 (600+줄)
-│   │   ├── 사용자가이드.md            # 사용자 설명서 (800+줄)
-│   │   └── 성능최적화_가이드.md       # 성능 최적화 (220줄)
-│   │
-│   ├── Progress/                      # 진행 상황 & 세션 관리 (8개)
-│   │   ├── 00_프로젝트_진행상황.md    # 프로젝트 전체 진행상황
-│   │   ├── SESSION_SUMMARY_2025-10-27.md  # 📋 최근 세션 요약 (새로운 5개 문서)
-│   │   ├── SESSION_START_CHECKLIST.md     # ✅ 세션 시작 체크리스트
-│   │   ├── SESSION_END_CHECKLIST.md       # 🏁 세션 종료 체크리스트
-│   │   ├── PHASE1_완료_및_재개가이드.md
-│   │   ├── PHASE2_완료_및_테스트가이드.md
-│   │   ├── PHASE3_완료_및_최종요약.md
-│   │   └── PHASE4_완료_최종정리.md
-│   │
-│   ├── Planning/                      # 구현 계획 & 설계 (3개)
-│   │   ├── 웹페이지_구현_마스터플랜.md
-│   │   ├── 웹페이지_구현_마스터플랜.docx
-│   │   └── 성능최적화_가이드.md       # 성능 최적화 가이드
-│   │
-│   └── Resources/                     # 참고 자료 & 데이터 (6개)
-│       ├── roasting_and_abbrev.mdc    # 로스팅 용어 정리
-│       ├── the_moon.mdc               # 사업 개요
-│       ├── 로스팅일지_분석결과.xlsx
-│       ├── 로스팅일지_분석보고서.docx
-│       ├── 메뉴판.xlsx
-│       └── 문드립바 로스팅 일지.xlsx
-│
-├── run.py                             # 메인 런처 스크립트
-├── requirements.txt                   # Python 패키지 의존성 (5개)
-├── README.md                          # 이 파일 (종합 설명서)
-├── .claude/
-│   └── CLAUDE.md                      # Claude Code 개발 가이드
-├── .gitignore                         # Git 무시 파일
-├── LICENSE                            # MIT 라이선스
-└── Dockerfile                         # Docker 컨테이너화 (선택)
-    docker-compose.yml                 # Docker Compose 설정 (선택)
-    nginx.conf                         # Nginx 설정 (선택)
+┌─────────────────────────────────────────┐
+│         Streamlit Application           │
+│  ┌───────────────────────────────────┐  │
+│  │  UI Pages (14 pages)              │  │
+│  │  - Dashboard, BeanManagement,     │  │
+│  │  - BlendManagement, CostCalc,     │  │
+│  │  - InventoryManagement, etc.      │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │  Services (12 services)           │  │
+│  │  - BeanService, BlendService,     │  │
+│  │  - InventoryService, etc.         │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │  SQLAlchemy Models                │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+                  ↓
+         ┌─────────────────┐
+         │  SQLite Database │
+         └─────────────────┘
+```
 
-📊 총 통계:
-├── 파일: 50+개
-├── 코드: 10,100+줄 (10 pages + 6 services + 6 utils + models)
-├── 문서: 5,500+줄 (30+ 분류별 체계적 문서)
-├── 아키텍처 문서: 2,000+줄 (전문 문서)
-├── 테스트: 220개 (100% 통과율, 97% 커버리지)
-└── 시각화: 37+ 인터랙티브 차트
+### 목표 아키텍처 (Next.js + FastAPI)
+
+```
+┌────────────────────────────────────────────────────┐
+│              Next.js Frontend (Port 3000)          │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  Pages: Dashboard, Beans, Blends, etc.      │  │
+│  │  Components: UI Components (shadcn/ui)      │  │
+│  │  Hooks: useWebSocket, API hooks             │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
+                       ↓ (REST API + WebSocket)
+┌────────────────────────────────────────────────────┐
+│              FastAPI Backend (Port 8000)           │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  API v1 Endpoints                            │  │
+│  │  - /auth, /beans, /blends, /inventory        │  │
+│  └──────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  Business Logic Services                     │  │
+│  └──────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  SQLAlchemy Models + Pydantic Schemas        │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
+         ↓                              ↓
+┌─────────────────┐         ┌─────────────────────┐
+│   PostgreSQL    │         │  Redis + Celery     │
+│   (Port 5432)   │         │  (Async Tasks)      │
+└─────────────────┘         └─────────────────────┘
 ```
 
 ---
 
-## 🚀 설치 및 실행
+## 🚧 마이그레이션 진행 상황
 
-### 1단계: 프로젝트 클론
+### Phase 1: 기반 구축 및 백엔드 API화 (진행 중 - 70%)
+
+#### ✅ 완료된 작업
+
+- [x] **인프라 구성**
+  - Docker Compose 설정 (PostgreSQL, Redis)
+  - FastAPI 프로젝트 구조 생성
+
+- [x] **데이터베이스**
+  - SQLAlchemy 모델 정의 (8개 모델)
+    - Bean, BeanPriceHistory
+    - Blend, BlendRecipe, BlendRecipesHistory
+    - Inventory
+    - Transaction, RoastingLog, LossRateWarning
+    - User, UserPermission, AuditLog
+    - Invoice, InvoiceItem, InvoiceLearning
+    - CostSetting
+  - Alembic 마이그레이션 설정
+  - DB 마이그레이션 스크립트 (`scripts/migrate_db.py`)
+
+- [x] **API 개발**
+  - 인증/인가 (JWT 기반 로그인) - `/api/v1/login/access-token`
+  - 원두(Beans) CRUD API - `/api/v1/beans/`
+  - 블렌드(Blends) CRUD API - `/api/v1/blends/`
+  - 재고(Inventory) API - `/api/v1/inventory/`
+  - WebSocket 엔드포인트 - `/api/v1/ws`
+
+- [x] **프론트엔드 초기 구축**
+  - Next.js 14 + TypeScript 프로젝트 생성
+  - Tailwind CSS + shadcn/ui 설정
+  - 기본 페이지 구조 (Home, Dashboard, Beans, Blends)
+  - API 클라이언트 모듈 (`lib/api.ts`)
+  - WebSocket 훅 (`lib/hooks/useWebSocket.ts`)
+
+- [x] **실행 스크립트**
+  - `run_backend.sh` - 백엔드 자동 실행 스크립트
+  - `run_frontend.sh` - 프론트엔드 자동 실행 스크립트
+
+#### 🚧 진행 중인 작업
+
+- [ ] Pydantic 스키마 완성
+- [ ] 비즈니스 로직 서비스 이식
+- [ ] 단위 테스트 작성 (Pytest)
+- [ ] API 문서화 (Swagger UI 보강)
+
+#### 📝 남은 작업
+
+- [ ] Celery + Redis 비동기 작업 큐 설정
+- [ ] OCR 처리 로직 API화
+- [ ] 데이터 이관 스크립트 완성 및 실행
+
+### Phase 2: 프론트엔드 전환 (대기 중)
+
+- [ ] 주요 페이지 완성 (Dashboard, Beans, Blends, Inventory)
+- [ ] API 연동 완료
+- [ ] 하이브리드 운영 (Streamlit + Next.js 병행)
+
+### Phase 3: 고도화 (계획 중)
+
+- [ ] 실시간 알림 (WebSocket)
+- [ ] PWA 적용 (모바일 최적화)
+- [ ] 성능 최적화
+
+### Phase 4: 완료 (계획 중)
+
+- [ ] 레거시 Streamlit 제거
+- [ ] 프로덕션 배포
+
+---
+
+## 🚀 빠른 시작
+
+### 시스템 요구사항
+
+- **Python**: 3.12.3 이상
+- **Node.js**: 18.0 이상
+- **Docker**: 20.0 이상 (선택사항)
+- **PostgreSQL**: 15.0 이상 (Docker로 제공 가능)
+- **Redis**: 7.0 이상 (Docker로 제공 가능)
+
+### 옵션 1: Streamlit 앱 실행 (기존 시스템)
+
 ```bash
-git clone git@github.com:usermaum/Project.git TheMoon_Project
-cd TheMoon_Project
-```
-
-### 2단계: 가상환경 설정
-```bash
-# 이미 설정된 venv가 있다면 그대로 사용
-# 없다면 생성:
+# 1. 가상환경 생성 및 활성화
 python3 -m venv venv
-```
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-### 3단계: 의존성 설치
-```bash
-# 프로젝트 격리 Python 사용
-./venv/bin/pip install -r requirements.txt
-
-# 또는 시스템 Python 사용
+# 2. 의존성 설치
 pip install -r requirements.txt
+
+# 3. Streamlit 앱 실행
+streamlit run app/app.py --server.port 8501 --server.headless true
 ```
 
-### 3-1단계: EasyOCR 패치 (필수)
-EasyOCR이 Pillow 10.x와 호환되지 않는 문제를 해결합니다.
+**접속**:
 
-```bash
-# 자동 패치 스크립트 실행
-./scripts/patch_easyocr.sh
-```
-
-**수동 패치** (스크립트 실행이 안 될 경우):
-```bash
-sed -i 's/Image\.ANTIALIAS/Image.LANCZOS/g' ./venv/lib/python3.12/site-packages/easyocr/utils.py
-```
-
-### 4단계: 애플리케이션 실행
-
-**방법 1: 메인 런처 (권장)**
-```bash
-./venv/bin/python run.py
-```
-
-**방법 2: Streamlit 직접 실행**
-```bash
-./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
-```
-
-### 5단계: 브라우저 접속
-```
 http://localhost:8501
-```
 
----
+### 옵션 2: Next.js + FastAPI 실행 (신규 시스템)
 
-## 📖 사용 가이드
+#### 백엔드 (FastAPI)
 
-### 테스트 데이터 생성
 ```bash
-# 샘플 로스팅 데이터 생성
-./venv/bin/python app/test_data.py
-```
-
-### 패키지 관리
-```bash
-# 새 패키지 설치
-./venv/bin/pip install package_name
-
-# 설치된 패키지 목록 확인
-./venv/bin/pip list
-
-# requirements.txt 업데이트
-./venv/bin/pip freeze > requirements.txt
-```
-
-### 데이터베이스 확인
-```bash
-# SQLite 데이터베이스 직접 확인
-./venv/bin/python -c "
-import sqlite3
-conn = sqlite3.connect('data/roasting_data.db')
-cursor = conn.cursor()
-cursor.execute('SELECT name FROM sqlite_master WHERE type=\"table\"')
-print(cursor.fetchall())
-conn.close()
-"
-```
-
-### statusline 커스터마이징
-Claude Code의 하단 상태 표시줄에 실시간 사용량 정보를 표시합니다.
-
-**표시 정보:**
-- 🤖 현재 모델 (간략화된 이름)
-- 📁 프로젝트 이름
-- 💰 세션/오늘 비용
-- 📦 Block 사용량 (%, 남은 시간)
-- 🧠 토큰 사용량 (K/M 단위, %)
-- 색상 코딩 (사용량에 따라 녹색/노란색/빨간색)
-
-**출력 예시:**
-```
-🤖 sonnet-4-5 | 📁 TheMoon_Project | 💰 $0.25/$1.50 | 📦 48% (2h 0m) | 🧠 48K (24%)
-```
-
-**수동 테스트:**
-```bash
-cat << 'EOF' | ./statusline.sh
-{
-  "model": "claude-sonnet-4-5-20250929",
-  "cost": {
-    "total_input_tokens": 50000,
-    "token_limit": 200000,
-    "total_cost_usd": 0.25,
-    "today_cost_usd": 1.50,
-    "block_cost_usd": 0.12,
-    "block_limit_usd": 0.25,
-    "block_time_left_ms": 7200000
-  }
-}
-EOF
-```
-
-**설정 파일:** `~/.claude/settings.json`
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "/mnt/d/Ai/WslProject/TheMoon_Project/statusline.sh"
-  }
-}
-```
-
----
-
-## 🗄️ 데이터베이스 스키마
-
-### roasting_logs 테이블
-로스팅 기록을 저장합니다.
-
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | INTEGER | 고유 ID (자동증가) |
-| date | TEXT | 로스팅 날짜 |
-| bean_name | TEXT | 원두 이름 |
-| green_weight_kg | REAL | 생두 무게 (kg) |
-| roasted_weight_kg | REAL | 로스팅 후 무게 (kg) |
-| bean_cost_per_kg | REAL | 원두 비용 (₩/kg) |
-| roasting_cost_per_kg | REAL | 로스팅 비용 (₩/kg) |
-| labor_cost | REAL | 인건비 (₩) |
-| electricity_cost | REAL | 전기료 (₩) |
-| misc_cost | REAL | 기타 비용 (₩) |
-| notes | TEXT | 메모 |
-
-### bean_prices 테이블
-원두 종류별 가격을 관리합니다.
-
-| 컬럼 | 설명 |
-|------|------|
-| id | 고유 ID |
-| bean_name | 원두 이름 (유일) |
-| price_per_kg | 킬로그램당 가격 (₩) |
-| updated_date | 업데이트 날짜 |
-
-### cost_settings 테이블
-전역 비용 설정을 관리합니다.
-
-| 파라미터 | 기본값 | 설명 |
-|---------|-------|------|
-| roasting_loss_rate | 16.7% | 로스팅 손실률 |
-| roasting_cost_per_kg | 2,000₩ | 킬로그램당 로스팅 비용 |
-| labor_cost_per_hour | 15,000₩ | 시간당 인건비 |
-| roasting_time_hours | 2시간 | 로스팅 소요 시간 |
-| electricity_cost | 5,000₩ | 전기료 |
-| misc_cost | 3,000₩ | 기타 비용 |
-
----
-
-## 💡 원가 계산 공식
-
-```
-총 비용 = 원두 비용 + 로스팅 비용 + 인건비 + 전기료 + 기타 비용
-
-원두 비용 = 생두 무게(kg) × 원두 비용(₩/kg)
-로스팅 비용 = 로스팅 후 무게(kg) × 킬로그램당 로스팅 비용(₩)
-인건비 = 시간당 인건비 × 로스팅 소요 시간
-
-킬로그램당 원가 = 총 비용 ÷ 로스팅 후 무게(kg)
-수익률(%) = (판매가 - 원가) / 판매가 × 100
-```
-
----
-
-## 🎯 10개 페이지 상세 설명 (v0.50.4)
-
-### 1️⃣ 대시보드 (Dashboard) 🏠
-**홈 페이지 - 핵심 메트릭 및 개요**
-- 📊 KPI 메트릭: 총 로스팅 건수, 평균 원가, 총 로스팅량, 평균 마진율
-- 🎨 주요 차트: 월별 비용 추이, 원두별 사용량 분포, 블렌드 판매가 비교
-- 🔔 알림 시스템: 재고 부족, 이상 비용, 시스템 상태 알림
-
-### 2️⃣ 원두 관리 (Bean Management) ☕
-**13종 원두의 CRUD 및 가격 관리**
-- ✅ 원두 생성/조회/수정/삭제 (13종 사전 설정)
-- 🌍 국가별 분류: 에티오피아, 케냐, 콜롬비아, 과테말라, 브라질, 코스타리카
-- 🔥 로스팅 레벨: W(Light), N(Normal), Pb, Rh, SD, SC (6가지)
-- 💰 가격 관리: 실시간 가격 설정 및 변경 추적
-- 📈 사용 통계: 원두별 사용 현황 및 재고 수준
-
-### 3️⃣ 블렌딩 관리 (Blend Management) 🎨
-**7개 프리미엄 블렌드의 레시피 및 성능 관리**
-- 🌙 블렌드 타입: 풀문(Full Moon) 3개, 뉴문(New Moon) 3개, 시즈널 1개
-- 🧪 레시피 관리: 각 블렌드의 원두 구성, 비율, 포션 수 관리
-- 📊 자동 비용 계산: 원두 비용 + 손실율 = 원가 자동 계산
-- 💹 마진율 분석: 판매가 설정 시 마진율 자동 계산 (기본값 2.5배)
-- 🔗 다중 레시피 지원: 각 블렌드마다 최대 4개 원두 구성 가능
-
-### 4️⃣ 분석 (Analysis) 📊
-**상세 비용 분석 및 인터랙티브 시각화**
-- 💰 월별 비용 분석: 월별 총 비용, 원두별 비용 비교
-- 🔍 비용 상세 분석: 원두 비용, 로스팅 비용, 인건비, 전기료, 기타비용 분해
-- 📈 블렌드 성능: 판매가, 원가, 마진 비교 및 ROI 분석
-- 📊 15+ 인터랙티브 차트: 파이, 막대, 선, 스택 차트 모두 지원
-- 📅 기간별 필터링: 월, 분기, 연도 단위 분석 가능
-
-### 5️⃣ 재고 관리 (Inventory Management) 📦
-**원두별 입출고 및 예측 추적**
-- 📥 입고 기록: 언제, 몇 kg, 어느 원두인지 추적
-- 📤 출고 기록: 각 거래(블렌드 판매)의 원두 사용량 자동 감소
-- 📊 현재 재고: 실시간 재고량 표시
-- 🔮 재고 예측: 선형 회귀 기반 향후 재고량 및 소진 예상일 계산
-- ⚠️ 부족 알림: 설정 임계값 이하 원두 자동 경고
-
-### 6️⃣ 보고서 (Reports) 📋
-**월별 종합 보고서 및 다양한 형식의 내보내기**
-- 📅 월별 요약: 월별 종합 비용, 블렌드 판매량, 평균 원가 자동 생성
-- 📊 비용 분석: 날짜 범위별 상세 비용 분석 보고서
-- 🧪 원두 사용: 원두별 입출고 현황 및 사용량 분석
-- 💼 블렌드 성능: 판매가, 원가, 마진, ROI 비교
-- 💾 내보내기: Excel(완벽한 포맷팅), CSV(데이터 분석용) 지원
-
-### 7️⃣ 설정 (Settings) ⚙️
-**시스템 전역 설정 및 데이터 관리**
-- 💰 비용 파라미터: 손실율, 로스팅비, 인건비, 전기료, 기타비용 실시간 조정
-- 📊 비용 설정 변경: 슬라이더/입력창으로 간편하게 수정
-- 💾 데이터 백업: 백업 생성, 다운로드, 복원 기능
-- 🔍 데이터 검증: 데이터베이스 무결성 검사
-- 🔄 시스템 초기화: 전체 데이터 초기화 (주의!)
-
-### 8️⃣ Excel 동기화 (Excel Sync) 📤📥
-**Excel을 통한 일괄 데이터 임포트 및 내보내기**
-- 📥 임포트: 원두/블렌드 데이터 일괄 입력 (검증 지원)
-- 📤 내보내기: 원두, 블렌드, 거래 기록 등 다양한 형식 export
-- 📋 템플릿: 표준화된 입력 형식 다운로드 제공
-- ✅ 데이터 검증: 오류 체크 및 상세한 오류 보고
-- 🔄 병합 업데이트: 기존 데이터와 새 데이터 자동 병합
-
-### 9️⃣ 고급 분석 (Advanced Analytics) 🚀
-**머신러닝 기반 고급 분석 및 예측**
-- 📈 월간 트렌드: 최대 24개월 역사 데이터 시각화 및 추세 분석
-- 🔮 재고 예측: 선형 회귀 기반 향후 재고 수량 및 소진일 예측
-- 💹 ROI 분석: 블렌드별 수익성 및 투자 수익률 분석
-- ⭐ 성능 메트릭: 월별 거래건수, 일일 평균 판매량, 효율성 점수
-- 🎯 비교 분석: 다중 블렌드 성능 비교 및 순위 지정
-
----
-
-## 🌙 더문의 원두 상품군
-
-### 아프리카 (Africa)
-- 에티오피아: Yirgacheffe, Momora, Gokehuni, Uraga
-- 케냐: AA FAQ, Kirinyaga
-
-### 남미 (Americas)
-- 콜롬비아: Huila
-- 과테말라: Antigua
-- 브라질: Fazenda Carmo
-
-### 특별 상품
-- Decaf: SDM, SM
-- Flavored: Swiss Water
-
----
-
-## 🔧 개발 가이드
-
-### 새 기능 추가
-1. `.claude/CLAUDE.md` 참조하여 프로젝트 규칙 확인
-2. `./venv/bin/python` 또는 `./venv/bin/streamlit` 사용
-3. 로컬에서 `./venv/bin/streamlit run app/app.py` 테스트
-4. 패키지 추가 후 `./venv/bin/pip freeze > requirements.txt` 실행
-
-### 데이터베이스 수정
-- 스키마 변경: `app/app.py`의 `init_database()` 함수 수정
-- 마이그레이션: 현재 SQLite `CREATE TABLE IF NOT EXISTS` 패턴 사용
-- 백업: `data/roasting_data.db`
-
-### Git 워크플로우
-```bash
-# 변경사항 커밋
-git add .
-git commit -m "설명: 기능설명"
-
-# 원격 저장소에 푸시
-git push origin main
-```
-
----
-
-## 📚 참고 문서 (v0.50.4)
-
-### 🏗️ 아키텍처 & 설계 - 신규 5개 전문 문서 추가 (Documents/Architecture/)
-
-#### ✨ 신규 문서 (2025-10-27)
-- **FILE_STRUCTURE.md** (335줄) - 📁 프로젝트 파일 구조, 책임, 의존성 맵
-- **DEVELOPMENT_GUIDE.md** (350줄) - 🚀 5단계 개발 프로세스, CRUD 패턴, 의존성 규칙
-- **SYSTEM_ARCHITECTURE.md** (350줄) - 🏗️ 3계층 아키텍처, 데이터 흐름, 성능 최적화
-- **TROUBLESHOOTING.md** (375줄) - 🔧 16가지 오류 & 해결법, 디버깅 기법, FAQ
-- **COMMON_TASKS.md** (520줄) - ✅ 25가지 자주 하는 작업 단계별 가이드
-
-#### 기존 문서
-- **COMPONENT_DESIGN.md** - 재사용 컴포넌트 시스템 설계 및 상세 아키텍처
-- **COMPONENT_USAGE_GUIDE.md** - 15+ 재사용 컴포넌트 사용 가이드
-- **PROJECT_SETUP_GUIDE.md** - 프로젝트 재구성 및 설정 가이드
-
-**💡 문서 로드 전략:** CLAUDE.md → 필요한 전문 문서 로드 (토큰 효율성 최적화)
-
-### 📖 사용자 가이드 (Documents/Guides/)
-- **배포가이드.md** - Docker, Nginx, SSL, 스케일링, 롤백 절차 (600+줄)
-- **사용자가이드.md** - 10개 페이지 상세 사용 방법, FAQ, 문제 해결 (800+줄)
-- **성능최적화_가이드.md** - 성능 측정, 최적화 권장사항, 병목 지점 분석 (220줄)
-
-### 📋 진행 상황 & 세션 관리 (Documents/Progress/)
-
-#### 세션 관리 시스템 (2025-10-27 신규)
-- **SESSION_SUMMARY_2025-10-27.md** - 최근 세션: 5개 전문 문서 + CLAUDE.md 축약
-- **SESSION_START_CHECKLIST.md** - 새 세션 시작 체크리스트 (5분 빠른 확인)
-- **SESSION_END_CHECKLIST.md** - 세션 종료 체크리스트 (커밋/버전 관리)
-
-#### Phase별 완료 보고서
-- **00_프로젝트_진행상황.md** - 전체 프로젝트 진행 상황 요약
-- **PHASE1_완료_및_재개가이드.md** - Phase 1 기본 구조 완료 보고서
-- **PHASE2_완료_및_테스트가이드.md** - Phase 2 핵심 기능 완료 보고서
-- **PHASE3_완료_및_최종요약.md** - Phase 3 고급 기능 완료 보고서
-- **PHASE4_완료_최종정리.md** - Phase 4 테스트/배포 완료 보고서
-
-### 🎯 구현 계획 (Documents/Planning/)
-- **웹페이지_구현_마스터플랜.md** - 웹페이지 구현 마스터플랜
-- **웹페이지_구현_마스터플랜.docx** - 마스터플랜 Word 형식
-
-### 📚 참고 자료 (Documents/Resources/)
-- **the_moon.mdc** - 사업 모델 및 개요
-- **roasting_and_abbrev.mdc** - 로스팅 용어 및 약어 정리
-- **로스팅일지_분석결과.xlsx** - 로스팅 데이터 분석 결과
-- **로스팅일지_분석보고서.docx** - 로스팅 분석 보고서
-- **메뉴판.xlsx** - 메뉴판 데이터
-- **문드립바 로스팅 일지.xlsx** - 로스팅 일지 원본
-
-### 🛠️ 개발자 가이드
-- **.claude/CLAUDE.md** - 30줄 네비게이터 (필수 규칙 & 문서 위치 안내)
-  - 프로젝트 격리 venv (./venv/) 필수
-  - 모든 응답 한글로 작성
-  - 빠른 시작 명령어
-  - 5개 전문 문서 로드 시스템
-
----
-
-## 📊 프로젝트 정보 (v0.50.4)
-
-| 항목 | 정보 |
-|------|------|
-| **프로젝트명** | The Moon Drip BAR - Roasting Cost Calculator |
-| **현재 버전** | v0.50.4 (2025-11-20) |
-| **프로젝트 상태** | ✅ Phase 1-5 완료 / 🚀 보고서 및 분석 시스템 구축 완료 / 📊 종합 데이터 분석 가능 |
-| **라이선스** | MIT |
-| **저장소** | [GitHub: usermaum/Project](https://github.com/usermaum/Project) |
-| **최종 커밋** | c97231c3 - docs: Next.js 마이그레이션 플랜 작성 |
-
-### 프로젝트 통계 (v0.50.4)
-- **총 코드**: 10,100+줄 (10 pages + 9 services + 6 utils + models)
-- **총 문서**: 5,500+줄 (30+ 분류별 체계적 문서)
-- **아키텍처 문서**: 2,000+줄 (전문 문서)
-- **총 라인**: 15,600+줄
-- **테스트**: 226/226 통과 (100% ✅) | 전체 커버리지: 96%
-- **시각화**: 37+ 인터랙티브 차트
-- **원두**: 13종
-- **블렌드**: 7개 프리미엄 블렌드
-- **페이지**: 10개 (모든 기능 완성)
-- **세션 관리**: SESSION_SUMMARY, 체크리스트 시스템
-
-### Phase별 완료 현황
-```
-Phase 1: 기본 구조 & 데이터베이스  [████████████████████] 100% ✅
-Phase 2: 핵심 기능 & 비용 계산     [████████████████████] 100% ✅
-Phase 3: 고급 기능 & 분석          [████████████████████] 100% ✅
-Phase 4: 테스트/최적화/배포        [████████████████████] 100% ✅
-─────────────────────────────────────────────────────
-전체 프로젝트 완료율                [████████████████████] 100% ✅
-```
-
----
-
-## 🤝 기여 가이드
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/NewFeature`)
-3. Commit your Changes (`git commit -m 'Add NewFeature'`)
-4. Push to the Branch (`git push origin feature/NewFeature`)
-5. Open a Pull Request
-
----
-
-## 🚀 배포 가이드 (v0.50.4)
-
-### 로컬 실행
-```bash
-# 빠른 시작 (3단계)
-git clone https://github.com/usermaum/Project.git
-cd TheMoon_Project
-./venv/bin/streamlit run app/app.py --server.port 8501
-# 브라우저: http://localhost:8501
-```
-
-### Docker 배포 (권장)
-```bash
-# 빌드 및 실행
-docker build -t themoon-roasting:v0.50.4 .
-docker run -d -p 8501:8501 -v $(pwd)/Data:/app/Data themoon-roasting:v0.50.4
-
-# 또는 Docker Compose
+# 1. 인프라 시작 (PostgreSQL + Redis)
+cd infrastructure
 docker-compose up -d
-# 브라우저: http://localhost:8501
+
+# 2. 백엔드 실행 (자동화 스크립트)
+cd ..
+./run_backend.sh
 ```
 
-### 클라우드 배포 (Streamlit Cloud)
+**접속**:
+- API:
+
+http://localhost:8000
+
+- Swagger UI:
+
+http://localhost:8000/docs
+
+#### 프론트엔드 (Next.js)
+
 ```bash
-# GitHub에 푸시 후 https://share.streamlit.io에서 배포
-# 5분 내 자동 배포 완료
+# 터미널을 새로 열고 실행
+./run_frontend.sh
 ```
 
-📖 **자세한 배포 가이드는 Documents/배포가이드.md를 참조하세요.**
+**접속**:
+
+http://localhost:3000
 
 ---
 
-## ⭐ 주요 기능 하이라이트
+## ✨ 기능 목록
 
-### 🎯 스마트 원가 계산 엔진
-- 원두 입력 → 자동 비용 계산 → 마진율 분석까지 3초 내 완료
-- 16.7% 손실율, 로스팅비, 인건비, 기타비용 자동 반영
-- 2.5배 마진율로 판매가 자동 제시
+### 기존 시스템 (Streamlit) - 14개 페이지
 
-### 📊 35+ 인터랙티브 차트
-- 월별 비용 추이, 원두별 사용량, 블렌드 성능 비교
-- Plotly 기반 마우스 호버, 줌, 다운로드 지원
-- 모바일 반응형 설계
+| 페이지 | 기능 | 상태 |
+|--------|------|------|
+| **Dashboard** | 일일 로스팅 통계, 재고 현황, 손실률 추이 | ✅ 완료 |
+| **BeanManagement** | 원두 등록/수정/삭제, 가격 이력 관리 | ✅ 완료 |
+| **BlendManagement** | 블렌드 레시피 생성/관리, 원가 계산 | ✅ 완료 |
+| **InventoryManagement** | 재고 현황 조회, 입출고 관리 | ✅ 완료 |
+| **CostCalculation** | 정확한 원가 계산, 가격 제안 | ✅ 완료 |
+| **RoastingRecord** | 로스팅 기록 등록, 로스팅 로그 관리 | ✅ 완료 |
+| **RoastingReceipt** | 로스팅 영수증 출력 | ✅ 완료 |
+| **Analysis** | 기본 분석 (손실률, 비용 추이) | ✅ 완료 |
+| **AdvancedAnalysis** | 고급 분석 (재고 회전율, ABC 분석) | ✅ 완료 |
+| **AnalysisReport** | 종합 분석 리포트 | ✅ 완료 |
+| **Report** | 맞춤형 리포트 생성 | ✅ 완료 |
+| **ImageInvoiceUpload** | OCR 기반 송장 자동 입력 | ✅ 완료 |
+| **ExcelSync** | Excel 데이터 동기화 | ✅ 완료 |
+| **Settings** | 시스템 설정, 비용 설정 | ✅ 완료 |
 
-### 🔮 AI 기반 예측 분석
-- 선형 회귀로 향후 재고 수량 및 소진일 예측
-- ROI 분석으로 최수익 블렌드 파악
-- 24개월 이력 데이터 추세 분석
+### 신규 시스템 (Next.js) - API 엔드포인트
 
-### 💾 완벽한 데이터 관리
-- 자동 백업 (매일 자정)
-- Excel 임포트/내보내기 (검증 포함)
-- 데이터베이스 무결성 검사
-
-### 🔒 보안 & 성능
-- 프로덕션 준비 완료 (Docker, Nginx, SSL)
-- 226개 테스트 (100% 통과, 전체 커버리지 96%)
-- 페이지 로드 < 2초, 쿼리 < 500ms
-
----
-
-## 📞 지원 및 문의
-
-- **개발자**: usermaum
-- **이메일**: usermaum@gmail.com
-- **GitHub**: https://github.com/usermaum
-- **GitHub Issues**: [버그 보고 및 기능 요청](https://github.com/usermaum/Project/issues)
+| 엔드포인트 | 메서드 | 기능 | 상태 |
+|-----------|--------|------|------|
+| `/api/v1/login/access-token` | POST | JWT 로그인 | ✅ 완료 |
+| `/api/v1/beans/` | GET, POST | 원두 조회/생성 | ✅ 완료 |
+| `/api/v1/beans/{id}` | GET, PUT, DELETE | 원두 상세/수정/삭제 | ✅ 완료 |
+| `/api/v1/blends/` | GET, POST | 블렌드 조회/생성 | ✅ 완료 |
+| `/api/v1/inventory/` | GET, POST | 재고 조회/생성 | ✅ 완료 |
+| `/api/v1/ws` | WebSocket | 실시간 알림 | 🚧 진행 중 |
 
 ---
 
-## 📈 향후 계획 (Phase 5+)
-
-- [ ] 다국어 지원 (English, 日本語, 中文)
-- [ ] 모바일 앱 개발 (React Native)
-- [ ] REST API 개발 (FastAPI)
-- [ ] 머신러닝 고도화 (sklearn, TensorFlow)
-- [ ] 클라우드 마이그레이션 (AWS, GCP)
-- [ ] IoT 센서 통합
-- [ ] B2B 플랫폼 확대
-
----
-
-## 📜 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+## 📁 프로젝트 구조
 
 ```
-MIT License
-
-Copyright (c) 2025 usermaum
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction...
+TheMoon/
+├── app/                          # Streamlit 애플리케이션 (기존 시스템)
+│   ├── pages/                    # 14개 페이지 모듈
+│   │   ├── Dashboard.py
+│   │   ├── BeanManagement.py
+│   │   ├── BlendManagement.py
+│   │   ├── InventoryManagement.py
+│   │   ├── CostCalculation.py
+│   │   ├── RoastingRecord.py
+│   │   ├── RoastingReceipt.py
+│   │   ├── Analysis.py
+│   │   ├── AdvancedAnalysis.py
+│   │   ├── AnalysisReport.py
+│   │   ├── Report.py
+│   │   ├── ImageInvoiceUpload.py
+│   │   ├── ExcelSync.py
+│   │   └── Settings.py
+│   ├── services/                 # 12개 비즈니스 로직 서비스
+│   │   ├── bean_service.py
+│   │   ├── blend_service.py
+│   │   ├── inventory_service.py
+│   │   ├── roasting_service.py
+│   │   ├── cost_calculator_service.py
+│   │   ├── analytics_service.py
+│   │   ├── report_service.py
+│   │   ├── invoice_service.py
+│   │   ├── gemini_ocr_service.py
+│   │   ├── claude_ocr_service.py
+│   │   └── ...
+│   ├── models/                   # SQLAlchemy 모델
+│   │   ├── bean.py
+│   │   ├── blend.py
+│   │   ├── inventory.py
+│   │   ├── transaction.py
+│   │   ├── user.py
+│   │   └── invoice.py
+│   ├── components/               # UI 컴포넌트
+│   ├── utils/                    # 유틸리티
+│   ├── tests/                    # 테스트 (20개 파일)
+│   └── app.py                    # 메인 진입점
+│
+├── backend/                      # FastAPI 백엔드 (신규 시스템)
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── endpoints/    # API 엔드포인트
+│   │   │       │   ├── auth.py
+│   │   │       │   ├── beans.py
+│   │   │       │   ├── blends.py
+│   │   │       │   ├── inventory.py
+│   │   │       │   └── websockets.py
+│   │   │       └── api.py
+│   │   ├── core/                 # 핵심 설정
+│   │   │   ├── config.py
+│   │   │   ├── security.py
+│   │   │   └── celery_app.py
+│   │   ├── models/               # SQLAlchemy 모델 (8개)
+│   │   │   ├── bean.py
+│   │   │   ├── blend.py
+│   │   │   ├── inventory.py
+│   │   │   ├── transaction.py
+│   │   │   ├── user.py
+│   │   │   ├── invoice.py
+│   │   │   └── cost_setting.py
+│   │   ├── schemas/              # Pydantic 스키마
+│   │   │   ├── bean.py
+│   │   │   ├── blend.py
+│   │   │   ├── inventory.py
+│   │   │   ├── user.py
+│   │   │   └── token.py
+│   │   ├── database.py           # DB 연결
+│   │   └── main.py               # FastAPI 앱
+│   ├── alembic/                  # DB 마이그레이션
+│   ├── tests/                    # API 테스트
+│   └── requirements.txt
+│
+├── frontend/                     # Next.js 프론트엔드 (신규 시스템)
+│   ├── app/                      # Next.js App Router
+│   │   ├── page.tsx              # 홈 페이지
+│   │   ├── layout.tsx            # 레이아웃
+│   │   ├── dashboard/
+│   │   │   └── page.tsx
+│   │   ├── beans/
+│   │   │   └── page.tsx
+│   │   └── blends/
+│   │       └── page.tsx
+│   ├── components/               # React 컴포넌트
+│   │   └── ui/                   # shadcn/ui 컴포넌트
+│   ├── lib/                      # 라이브러리
+│   │   ├── api.ts                # API 클라이언트
+│   │   ├── hooks/
+│   │   │   └── useWebSocket.ts
+│   │   └── utils.ts
+│   ├── public/
+│   └── package.json
+│
+├── infrastructure/               # 인프라 설정
+│   └── docker-compose.yml        # PostgreSQL + Redis
+│
+├── scripts/                      # 유틸리티 스크립트
+│   ├── migrate_db.py             # DB 마이그레이션
+│   └── generate_icons.py         # 아이콘 생성
+│
+├── data/                         # 데이터베이스 파일
+│   └── roasting_data.db          # SQLite (기존)
+│
+├── Documents/                    # 프로젝트 문서
+│   ├── Architecture/             # 아키텍처 문서
+│   ├── Guides/                   # 가이드
+│   ├── Progress/                 # 진행 상황
+│   └── Planning/                 # 계획 문서
+│
+├── logs/                         # 로그 및 버전 관리
+│   ├── VERSION                   # 현재 버전
+│   ├── CHANGELOG.md              # 변경 로그
+│   └── VERSION_MANAGEMENT.md     # 버전 관리 규칙
+│
+├── run_backend.sh                # 백엔드 실행 스크립트
+├── run_frontend.sh               # 프론트엔드 실행 스크립트
+├── implementation_plan.md        # 마이그레이션 실행 계획
+├── README.md                     # 이 파일
+└── requirements.txt              # Python 의존성 (Streamlit용)
 ```
 
 ---
 
-**☕ The Moon Drip BAR | Roasting Cost Calculator v0.50.4**
+## 🛠️ 기술 스택
 
-**Made with ❤️ using Streamlit, SQLite, Pandas, NumPy, and Plotly**
+### 기존 시스템 (Streamlit)
 
-**✨ 아키텍처 최적화 완료**
-- 📚 28개 분류별 체계적 문서
-- 💡 모듈식 전문 문서 시스템
-- 🎯 토큰 효율성 최적화 (Claude Code 전용)
-- 🔄 세션 관리 시스템
+| 분류 | 기술 |
+|------|------|
+| **프레임워크** | Streamlit 1.28+ |
+| **언어** | Python 3.12.3 |
+| **데이터베이스** | SQLite 3 |
+| **ORM** | SQLAlchemy 2.0 |
+| **AI/ML** | Google Gemini API, Anthropic Claude API |
+| **테스트** | pytest, pytest-cov |
+| **기타** | pandas, Pillow, python-dotenv |
 
-**🎉 프로젝트 100% 완료 | 테스트 97% 커버리지 | 배포 준비 완료 | 지금 바로 시작하세요! 🚀**
-# Themoon
+### 신규 시스템 (Next.js + FastAPI)
+
+#### Backend
+
+| 분류 | 기술 |
+|------|------|
+| **프레임워크** | FastAPI 0.100+ |
+| **언어** | Python 3.12.3 |
+| **데이터베이스** | PostgreSQL 15 |
+| **ORM** | SQLAlchemy 2.0 |
+| **마이그레이션** | Alembic 1.10+ |
+| **스키마** | Pydantic 2.0 |
+| **인증** | JWT (python-jose, passlib) |
+| **캐시/큐** | Redis 7, Celery 5.3 |
+| **서버** | Uvicorn (ASGI) |
+| **테스트** | pytest |
+
+#### Frontend
+
+| 분류 | 기술 |
+|------|------|
+| **프레임워크** | Next.js 14.0 |
+| **언어** | TypeScript 5 |
+| **UI 라이브러리** | React 18 |
+| **스타일링** | Tailwind CSS 3.3 |
+| **UI 컴포넌트** | shadcn/ui (Radix UI) |
+| **아이콘** | lucide-react |
+| **HTTP 클라이언트** | Axios 1.6 |
+| **빌드 도구** | Next.js (Turbopack) |
+
+#### Infrastructure
+
+| 분류 | 기술 |
+|------|------|
+| **컨테이너** | Docker, Docker Compose |
+| **데이터베이스** | PostgreSQL 15 (Docker) |
+| **캐시** | Redis 7 (Docker) |
+
+---
+
+## 💻 개발 가이드
+
+### 개발 환경 설정
+
+#### 1. 프로젝트 클론
+
+```bash
+git clone <repository-url>
+cd TheMoon
+```
+
+#### 2. 환경 변수 설정
+
+```bash
+# 루트 디렉토리에 .env 파일 생성
+cp .env.example .env
+
+# .env 파일 편집
+nano .env
+```
+
+**.env 예시:**
+
+```env
+# Database
+DATABASE_URL=postgresql://themoon:themoon_password@localhost:5432/themoon_db
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# JWT
+SECRET_KEY=your-secret-key-here
+ACCESS_TOKEN_EXPIRE_MINUTES=480
+
+# AI API Keys
+GEMINI_API_KEY=your-gemini-api-key
+ANTHROPIC_API_KEY=your-claude-api-key
+```
+
+#### 3. Streamlit 앱 개발
+
+```bash
+# 가상환경 생성
+python3 -m venv venv
+source venv/bin/activate
+
+# 의존성 설치
+pip install -r requirements.txt
+
+# 앱 실행
+streamlit run app/app.py --server.port 8501 --server.headless true
+```
+
+#### 4. FastAPI 백엔드 개발
+
+```bash
+# 인프라 시작
+cd infrastructure
+docker-compose up -d
+cd ..
+
+# 가상환경 생성 (루트에 venv 사용)
+python3 -m venv venv
+source venv/bin/activate
+
+# 의존성 설치
+pip install -r backend/requirements.txt
+
+# 데이터베이스 마이그레이션
+cd backend
+alembic upgrade head
+
+# 개발 서버 실행
+uvicorn app.main:app --reload --port 8000
+```
+
+**API 테스트:**
+- Swagger UI:
+
+http://localhost:8000/docs
+
+- ReDoc:
+
+http://localhost:8000/redoc
+
+#### 5. Next.js 프론트엔드 개발
+
+```bash
+cd frontend
+
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+```
+
+**접속**:
+
+http://localhost:3000
+
+### 코드 스타일
+
+#### Python (PEP 8)
+
+```bash
+# 코드 포맷팅 (black)
+pip install black
+black app/ backend/
+
+# 린트 (flake8)
+pip install flake8
+flake8 app/ backend/
+```
+
+#### TypeScript (ESLint + Prettier)
+
+```bash
+# 린트
+cd frontend
+npm run lint
+
+# 포맷팅
+npm run format  # package.json에 스크립트 추가 필요
+```
+
+### 브랜치 전략
+
+```
+main            # 프로덕션 브랜치
+├── develop     # 개발 브랜치
+│   ├── feature/bean-management
+│   ├── feature/blend-calculation
+│   └── feature/ocr-integration
+└── hotfix/     # 긴급 수정
+```
+
+---
+
+## 📚 API 문서
+
+### Base URL
+
+- **개발**:
+
+http://localhost:8000
+
+- **프로덕션**: TBD
+
+### 인증
+
+모든 API 요청은 JWT 토큰이 필요합니다 (로그인 제외).
+
+```bash
+# 1. 로그인
+curl -X POST "http://localhost:8000/api/v1/login/access-token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=admin123"
+
+# 응답
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+
+# 2. API 호출 (토큰 사용)
+curl -X GET "http://localhost:8000/api/v1/beans/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### 주요 엔드포인트
+
+#### 원두 (Beans)
+
+```bash
+# 원두 목록 조회
+GET /api/v1/beans/?skip=0&limit=100
+
+# 원두 생성
+POST /api/v1/beans/
+{
+  "no": 1,
+  "name": "Ethiopia Yirgacheffe",
+  "country_name": "Ethiopia",
+  "roast_level": "MEDIUM",
+  "price_per_kg": 25000,
+  "status": "active"
+}
+
+# 원두 상세 조회
+GET /api/v1/beans/{bean_id}
+
+# 원두 수정
+PUT /api/v1/beans/{bean_id}
+
+# 원두 삭제
+DELETE /api/v1/beans/{bean_id}
+```
+
+#### 블렌드 (Blends)
+
+```bash
+# 블렌드 목록 조회
+GET /api/v1/blends/?skip=0&limit=100
+
+# 블렌드 생성
+POST /api/v1/blends/
+{
+  "name": "House Blend",
+  "blend_type": "CUSTOM",
+  "total_portion": 10,
+  "suggested_price": 18000,
+  "recipes": [
+    {
+      "bean_id": 1,
+      "portion_count": 6,
+      "ratio": 60.0
+    },
+    {
+      "bean_id": 2,
+      "portion_count": 4,
+      "ratio": 40.0
+    }
+  ]
+}
+```
+
+#### 재고 (Inventory)
+
+```bash
+# 재고 조회
+GET /api/v1/inventory/?skip=0&limit=100
+
+# 재고 생성/업데이트
+POST /api/v1/inventory/
+{
+  "bean_id": 1,
+  "inventory_type": "RAW_BEAN",
+  "quantity_kg": 50.0,
+  "min_quantity_kg": 10.0,
+  "max_quantity_kg": 100.0
+}
+```
+
+**상세 API 문서**:
+
+http://localhost:8000/docs
+
+---
+
+## 🧪 테스트
+
+### Streamlit 앱 테스트
+
+```bash
+# 가상환경 활성화
+source venv/bin/activate
+
+# 전체 테스트 실행
+pytest app/tests/ -v
+
+# 커버리지 포함 테스트
+pytest app/tests/ --cov=app --cov-report=html
+
+# 특정 서비스 테스트
+pytest app/tests/test_bean_service.py -v
+pytest app/tests/test_blend_service.py -v
+pytest app/tests/test_inventory_service.py -v
+```
+
+**커버리지 리포트**: `htmlcov/index.html`
+
+### FastAPI 백엔드 테스트
+
+```bash
+cd backend
+
+# 테스트 실행
+pytest tests/ -v
+
+# 커버리지 포함
+pytest tests/ --cov=app --cov-report=html
+```
+
+### Next.js 프론트엔드 테스트
+
+```bash
+cd frontend
+
+# Jest 테스트 (설정 필요)
+npm run test
+
+# E2E 테스트 (Playwright 설정 필요)
+npm run test:e2e
+```
+
+---
+
+## 🚀 배포
+
+### Docker Compose로 전체 스택 배포
+
+```bash
+# 프로덕션 docker-compose.yml 작성 필요
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 개별 배포
+
+#### Streamlit 앱 (Streamlit Cloud)
+
+```bash
+# Streamlit Cloud에 배포
+# 1. GitHub 레포지토리 연결
+# 2. app/app.py를 메인 파일로 지정
+# 3. requirements.txt 사용
+```
+
+#### FastAPI (Render / Railway / AWS)
+
+```bash
+# Dockerfile 작성
+cd backend
+
+# Docker 이미지 빌드
+docker build -t themoon-backend .
+
+# 실행
+docker run -p 8000:8000 themoon-backend
+```
+
+#### Next.js (Vercel / Netlify)
+
+```bash
+cd frontend
+
+# 빌드
+npm run build
+
+# 프로덕션 실행
+npm run start
+```
+
+---
+
+## 🤝 기여하기
+
+프로젝트에 기여하고 싶으신가요? 환영합니다!
+
+### 기여 방법
+
+1. 이 저장소를 포크합니다
+2. 새 브랜치를 생성합니다 (`git checkout -b feature/AmazingFeature`)
+3. 변경사항을 커밋합니다 (`git commit -m 'feat: Add some AmazingFeature'`)
+4. 브랜치에 푸시합니다 (`git push origin feature/AmazingFeature`)
+5. Pull Request를 생성합니다
+
+### 커밋 메시지 규칙
+
+```
+feat: 새로운 기능 추가
+fix: 버그 수정
+docs: 문서 수정
+refactor: 코드 리팩토링
+test: 테스트 코드 추가/수정
+chore: 빌드 스크립트, 패키지 업데이트
+```
+
+---
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+---
+
+## 📞 문의
+
+프로젝트에 대한 질문이나 제안이 있으시면 이슈를 생성해주세요.
+
+---
+
+## 📝 변경 로그
+
+전체 변경 로그는 [CHANGELOG.md](logs/CHANGELOG.md)를 참조하세요.
+
+### 최근 업데이트 (v0.50.2)
+
+- 🚧 Next.js + FastAPI 마이그레이션 Phase 1 진행 중
+- ✅ FastAPI 백엔드 기본 구조 완성
+- ✅ Next.js 프론트엔드 초기 설정 완료
+- ✅ Docker Compose 인프라 구성
+- ✅ SQLAlchemy 모델 8개 정의 완료
+- ✅ API 엔드포인트 5개 구현 완료
+- 🐛 FastAPI import 오류 수정 (crud 모듈 제거)
+
+---
+
+## 🙏 감사의 말
+
+이 프로젝트는 다음 오픈소스 라이브러리들을 사용하여 만들어졌습니다:
+
+- [Streamlit](https://streamlit.io/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Next.js](https://nextjs.org/)
+- [SQLAlchemy](https://www.sqlalchemy.org/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+모든 기여자분들께 감사드립니다! 🎉
+
+---
+
+**Made with ☕ by TheMoon Team**
+
+**Last Updated**: 2024-11-23
