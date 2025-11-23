@@ -1,7 +1,7 @@
 # CLAUDE.md - 프로젝트 가이드 네비게이터
 
-> **The Moon Drip BAR - 로스팅 비용 계산기**
-> 버전: 0.50.4 · 스택: Streamlit + SQLite · 환경: ./venv/
+> **TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)**
+> 버전: 0.0.1 · 스택: Next.js + FastAPI + PostgreSQL · Clean Slate
 
 ---
 
@@ -149,14 +149,24 @@ http://localhost:8501
 
 ---
 
-✅ **항상 프로젝트 venv 사용** (절대 `python3` 금지)
+✅ **개발 환경 구성**
 ```bash
-./venv/bin/python script.py
-./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
-./venv/bin/pip install package_name
+# Backend (FastAPI)
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# Frontend (Next.js)
+cd frontend
+npm install
+npm run dev
 ```
 
 ✅ **모든 응답은 한글로 작성** (코드/오류는 원본 유지)
+
+✅ **원본 프로젝트 참조** (코드 복사 금지)
+- 원본 위치: `/mnt/d/Ai/WslProject/TheMoon_Project/`
+- 참조용으로만 사용, 모든 코드는 새로 작성
 
 ---
 
@@ -176,19 +186,25 @@ http://localhost:8501
 ## 🚀 빠른 시작
 
 ```bash
-# 1. 앱 실행
-./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
-# → http://localhost:8501
+# 1. Backend (FastAPI) 실행
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+# → http://localhost:8000
 
-# 2. 테스트 데이터 생성
-./venv/bin/python app/test_data.py
+# 2. Frontend (Next.js) 실행
+cd frontend
+npm install
+npm run dev
+# → http://localhost:3000
 
 # 3. Git 커밋 (한글 설명)
 git add .
 git commit -m "feat: 새 기능 설명"
 
 # 4. 포트 충돌 해결
-lsof -ti :8501 | xargs kill -9
+lsof -ti :8000 | xargs kill -9  # Backend
+lsof -ti :3000 | xargs kill -9  # Frontend
 ```
 
 ---
