@@ -5,6 +5,8 @@ Bean 모델 - 원두 정보 관리
 """
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -34,8 +36,11 @@ class Bean(Base):
     notes = Column(Text, comment="메모")
     
     # 타임스탬프
-    created_at = Column(DateTime, default=datetime.utcnow, comment="생성일시")
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment="수정일시")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    inventory_logs = relationship("InventoryLog", back_populates="bean", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Bean(id={self.id}, name='{self.name}', origin='{self.origin}')>"

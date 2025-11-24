@@ -6,24 +6,35 @@ Bean API 엔드포인트
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+import math
 
 from app.database import get_db
-from app.schemas.bean import Bean, BeanCreate, BeanUpdate
+from app.schemas.bean import Bean, BeanCreate, BeanUpdate, BeanListResponse
 from app.services import bean_service
 
-router = APIRouter(prefix="/beans", tags=["beans"])
+router = APIRouter()
 
 
-@router.get("/", response_model=List[Bean])
+@router.get("/", response_model=BeanListResponse)
 def read_beans(
-    skip: int = Query(0, ge=0, description="건너뛸 항목 수"),
-    limit: int = Query(100, ge=1, le=1000, description="조회할 항목 수"),
+    page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+    size: int = Query(10, ge=1, le=100, description="페이지당 항목 수"),
     search: Optional[str] = Query(None, description="검색어 (이름, 원산지, 품종)"),
     db: Session = Depends(get_db)
 ):
     """원두 목록 조회"""
-    beans = bean_service.get_beans(db, skip=skip, limit=limit, search=search)
-    return beans
+    skip = (page - 1) * size
+    beans = bean_service.get_beans(db, skip=skip, limit=size, search=search)
+    total = bean_service.get_beans_count(db)
+    pages = math.ceil(total / size) if size > 0 else 0
+    
+    return BeanListResponse(
+        items=beans,
+        total=total,
+        page=page,
+        size=size,
+        pages=pages
+    )
 
 
 @router.get("/{bean_id}", response_model=Bean)

@@ -1,0 +1,95 @@
+from sqlalchemy.orm import Session
+from app.models.inventory_log import InventoryLog
+from app.models.bean import Bean
+from app.schemas.inventory_log import InventoryLogCreate
+from typing import List, Optional
+
+class InventoryLogService:
+    def get_logs(self, db: Session, bean_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> List[InventoryLog]:
+        query = db.query(InventoryLog)
+        if bean_id:
+            query = query.filter(InventoryLog.bean_id == bean_id)
+        return query.order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
+
+    def create_log(self, db: Session, log: InventoryLogCreate) -> InventoryLog:
+        # Bean의 현재 재고량 가져오기
+        bean = db.query(Bean).filter(Bean.id == log.bean_id).first()
+        if not bean:
+            raise ValueError("Bean not found")
+        
+        # 재고량 업데이트
+        new_quantity = bean.quantity_kg + log.quantity_change
+        if new_quantity < 0:
+            raise ValueError("Insufficient inventory")
+        
+        bean.quantity_kg = new_quantity
+        
+        # 로그 생성
+        db_log = InventoryLog(
+            bean_id=log.bean_id,
+            transaction_type=log.transaction_type,
+            quantity_change=log.quantity_change,
+            current_quantity=new_quantity,
+            reason=log.reason
+        )
+        
+        db.add(db_log)
+        db.commit()
+        db.refresh(db_log)
+        return db_log
+
+    def update_log(self, db: Session, log_id: int, quantity_change: float, reason: Optional[str] = None) -> Optional[InventoryLog]:
+        # 기존 로그 조회
+        db_log = db.query(InventoryLog).filter(InventoryLog.id == log_id).first()
+        if not db_log:
+            return None
+        
+        # 원두 조회
+        bean = db.query(Bean).filter(Bean.id == db_log.bean_id).first()
+        if not bean:
+            raise ValueError("Bean not found")
+        
+        # 기존 변경량 되돌리기
+        bean.quantity_kg -= db_log.quantity_change
+        
+        # 새 변경량 적용
+        new_quantity = bean.quantity_kg + quantity_change
+        if new_quantity < 0:
+            raise ValueError("Insufficient inventory")
+        
+        bean.quantity_kg = new_quantity
+        
+        # 로그 업데이트
+        db_log.quantity_change = quantity_change
+        db_log.current_quantity = new_quantity
+        if reason is not None:
+            db_log.reason = reason
+        
+        db.commit()
+        db.refresh(db_log)
+        return db_log
+
+    def delete_log(self, db: Session, log_id: int) -> bool:
+        # 기존 로그 조회
+        db_log = db.query(InventoryLog).filter(InventoryLog.id == log_id).first()
+        if not db_log:
+            return False
+        
+        # 원두 조회
+        bean = db.query(Bean).filter(Bean.id == db_log.bean_id).first()
+        if not bean:
+            raise ValueError("Bean not found")
+        
+        # 변경량 되돌리기
+        new_quantity = bean.quantity_kg - db_log.quantity_change
+        if new_quantity < 0:
+            raise ValueError("Cannot delete: would result in negative inventory")
+        
+        bean.quantity_kg = new_quantity
+        
+        # 로그 삭제
+        db.delete(db_log)
+        db.commit()
+        return True
+
+inventory_log_service = InventoryLogService()

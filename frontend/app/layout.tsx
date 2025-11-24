@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TheMoon - 로스팅 원가 계산',
-  description: '커피 로스팅 원가 계산 및 재고 관리 시스템',
+  title: 'The Moon Drip Bar',
+  description: 'Premium Roasting Management System',
 }
 
 export default function RootLayout({
@@ -16,7 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900`}>
+        <Navbar />
+        <main className="flex-grow">{children}</main>
+        <Footer />
+      </body>
     </html>
   )
 }

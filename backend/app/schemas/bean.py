@@ -45,7 +45,17 @@ class Bean(BeanBase):
     """Bean 응답 - DB 정보 포함"""
     
     id: int
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class BeanListResponse(BaseModel):
+    """Bean 목록 응답 (페이지네이션 정보 포함)"""
+    
+    items: list[Bean]
+    total: int
+    page: int
+    size: int
+    pages: int
