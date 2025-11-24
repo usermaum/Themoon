@@ -11,6 +11,71 @@
 
 ---
 
+## [0.0.2] - 2025-11-24
+
+### ✨ Phase 3 완료 - 블렌드 레시피 및 재고 관리 시스템
+
+#### 🎯 주요 기능
+
+**Backend (FastAPI)**
+- 블렌드 레시피 관리 API (CRUD)
+  - `backend/app/api/v1/endpoints/blends.py` - 블렌드 엔드포인트
+  - `backend/app/models/blend.py` - 블렌드 모델
+  - `backend/app/schemas/blend.py` - 블렌드 스키마
+  - `backend/app/services/blend_service.py` - 블렌드 비즈니스 로직
+
+- 재고 관리 시스템 (입출고 처리)
+  - `backend/app/api/v1/endpoints/inventory_logs.py` - 재고 엔드포인트
+  - `backend/app/models/inventory_log.py` - 재고 로그 모델
+  - `backend/app/schemas/inventory_log.py` - 재고 로그 스키마
+  - `backend/app/services/inventory_log_service.py` - 재고 비즈니스 로직
+
+**Frontend (Next.js)**
+- 블렌드 레시피 페이지
+  - `frontend/app/blends/page.tsx` - 블렌드 목록
+  - `frontend/app/blends/new/page.tsx` - 블렌드 등록
+  - `frontend/app/blends/[id]/page.tsx` - 블렌드 상세
+  - `frontend/components/blends/BlendForm.tsx` - 블렌드 폼 컴포넌트
+
+- 재고 관리 페이지
+  - `frontend/app/inventory/page.tsx` - 재고 현황 및 입출고 관리
+
+- 원두 관리 페이지
+  - `frontend/app/beans/page.tsx` - 원두 목록
+  - `frontend/app/beans/new/page.tsx` - 원두 등록
+  - `frontend/app/beans/[id]/page.tsx` - 원두 상세
+  - `frontend/components/beans/BeanForm.tsx` - 원두 폼 컴포넌트
+
+**UI/UX 개선**
+- 배경 이미지 적용
+  - `frontend/public/beans_background.png` - 원두 관리 배경
+  - `frontend/public/blends_background.png` - 블렌드 배경
+  - `frontend/public/inventory_background.png` - 재고 관리 배경
+
+- 공통 컴포넌트
+  - `frontend/components/ui/PageHero.tsx` - 페이지 히어로 (배경 이미지 지원)
+  - `frontend/components/ui/Card.tsx` - 카드 컴포넌트
+  - `frontend/components/ui/Carousel.tsx` - 캐러셀 컴포넌트
+  - `frontend/components/layout/Navbar.tsx` - 네비게이션 바
+  - `frontend/components/layout/Footer.tsx` - 푸터
+  - `frontend/components/home/Hero.tsx` - 홈 히어로
+
+**배포 설정**
+- `DEPLOYMENT.md` - 배포 가이드
+- `DEPLOYMENT_FREE.md` - 무료 배포 가이드
+- `backend/Procfile` - Heroku 배포 설정
+- `backend/runtime.txt` - Python 버전 명시
+- `backend/.env.example` - 환경 변수 예시
+- `render.yaml` - Render.com 배포 설정
+
+#### 📊 통계
+- 추가된 파일: 37개
+- 수정된 파일: 13개
+- 추가된 코드: 9,446줄
+- 삭제된 코드: 183줄
+
+---
+
 ## [0.0.1] - 2025-11-23
 
 ### 🎉 초기 릴리스 (Initial Release): Clean Slate - 프로젝트 완전 재시작
