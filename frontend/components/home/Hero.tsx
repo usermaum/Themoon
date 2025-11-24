@@ -5,11 +5,10 @@ export default function Hero() {
         <div className="relative bg-gray-900 overflow-hidden">
             <div className="absolute inset-0">
                 <img
-                    className="w-full h-full object-cover opacity-30"
-                    src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1951&q=80"
-                    alt="Coffee beans background"
+                    className="w-full h-full object-cover opacity-60"
+                    src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1920&q=80"
+                    alt="Hand drip coffee brewing"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent" />
             </div>
             <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
                 <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">

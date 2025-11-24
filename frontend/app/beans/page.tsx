@@ -53,7 +53,7 @@ export default function BeanManagementPage() {
                 title="원두 관리"
                 description="다양한 원산지의 원두를 관리하고 품질을 추적하세요"
                 icon="☕"
-                backgroundImage="/beans_background.png"
+                backgroundImage="https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1920&q=80"
             />
 
             <div className="container mx-auto px-4 py-8">

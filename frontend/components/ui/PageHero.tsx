@@ -17,13 +17,12 @@ export default function PageHero({
         <div className="relative overflow-hidden">
             {/* 배경 이미지 또는 그라데이션 */}
             {backgroundImage ? (
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0 bg-gray-900">
                     <img
                         src={backgroundImage}
                         alt="Background"
-                        className="absolute inset-0 w-full h-full object-cover opacity-20"
+                        className="absolute inset-0 w-full h-full object-cover opacity-60"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 to-purple-900/90" />
                 </div>
             ) : (
                 showBackground && (

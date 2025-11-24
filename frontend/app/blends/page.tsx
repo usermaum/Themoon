@@ -32,7 +32,7 @@ export default function BlendsPage() {
                 title="블렌드 레시피"
                 description="나만의 커피 블렌드 레시피를 만들고 관리하세요"
                 icon="🎨"
-                backgroundImage="/blends_background.png"
+                backgroundImage="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1920&q=80"
             />
 
             <div className="container mx-auto px-4 py-8">
@@ -77,6 +77,7 @@ export default function BlendsPage() {
                                 tags={[blend.target_roast_level || 'Roast Level 미지정']}
                                 href={`/blends/${blend.id}`}
                                 actionText="레시피 보기"
+                                imageUrl="/blend_card_placeholder.png"
                             />
                         ))}
                     </div>

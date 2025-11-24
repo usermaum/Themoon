@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Bean, BeanAPI, Blend, BlendAPI, InventoryLog, InventoryLogAPI } from '@/lib/api'
 import Link from 'next/link'
 import Card from '@/components/ui/Card'
+import Hero from '@/components/home/Hero'
 
 export default function DashboardPage() {
   const [beans, setBeans] = useState<Bean[]>([])
@@ -40,12 +41,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-2">The Moon Drip Bar</h1>
-          <p className="text-xl opacity-90">Premium Roasting Management System</p>
-        </div>
-      </div>
+      <Hero />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
@@ -160,8 +156,8 @@ export default function DashboardPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${log.transaction_type === 'IN'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
                               }`}>
                               {log.transaction_type === 'IN' ? '입고' : '출고'}
                             </span>
