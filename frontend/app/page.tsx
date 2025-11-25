@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import Hero from '@/components/home/Hero'
 
-export default function DashboardPage() {
+export default function HomePage() {
   const [beans, setBeans] = useState<Bean[]>([])
   const [blends, setBlends] = useState<Blend[]>([])
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
