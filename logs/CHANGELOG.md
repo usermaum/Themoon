@@ -11,6 +11,73 @@
 
 ---
 
+## [0.0.3] - 2025-11-26
+
+### 🚀 Render.com 배포 완료 및 Production 환경 구축
+
+#### 🎯 주요 작업
+
+**Render.com 배포 설정**
+- `render.yaml` 완전 구성 (Backend, Frontend, PostgreSQL 18)
+- Backend: `/health` 엔드포인트 추가
+- Frontend: `NEXT_PUBLIC_API_URL` 환경 변수 설정
+- Database: PostgreSQL 18 + 자동 연결 (`themoon_p922`)
+
+**Production 빌드 오류 해결**
+1. PostgreSQL 버전: 16 → 18로 변경
+2. Backend 의존성 단순화: 38개 → 10개 필수 패키지
+3. Frontend 의존성 구조 개선: devDependencies → dependencies 이동
+   - `autoprefixer`, `postcss`, `tailwindcss`
+   - `typescript`, `@types/node`, `@types/react`, `@types/react-dom`
+4. Path Alias 해결: 3단계 설정
+   - `tsconfig.json`: moduleResolution "node", baseUrl "."
+   - `jsconfig.json`: 신규 생성
+   - `next.config.js`: 명시적 webpack alias
+
+**Database 연결 및 검증 로직**
+- `backend/app/database.py`: postgres:// → postgresql:// 자동 변환
+- `backend/app/main.py`: lifespan 이벤트 (테이블 자동 생성)
+- 연결 정보 디버그 로깅 추가
+
+**Data Validation 개선**
+- `backend/app/schemas/bean.py`: @field_validator 추가
+  - 빈 문자열('') → None 자동 변환
+  - Optional 필드 검증 강화
+
+**UI 개선**
+- 메뉴: "Dashboard" → "Home" 변경
+- `frontend/components/layout/Navbar.tsx` 수정
+
+**개발 환경 최적화**
+- `start_backend.sh`: venv 자동 관리, 포트 충돌 해결
+- `start_frontend.sh`: 캐시 삭제 옵션, 대화형 메뉴
+- `start_all.sh`: Backend + Frontend 동시 실행
+- CRLF → LF 라인 엔딩 수정
+
+#### 🐛 해결된 오류
+
+1. **PostgreSQL 버전 다운그레이드 불가**: 16 → 18
+2. **metadata-generation-failed**: 의존성 단순화
+3. **autoprefixer 모듈 누락**: dependencies 이동
+4. **Path Alias 해결 실패**: 3단계 설정
+5. **TypeScript 패키지 누락**: dependencies 이동
+6. **원두 등록 실패**: field_validator 추가
+7. **원두 목록 로드 실패**: Database URL 변환 + 로깅
+8. **스크립트 라인 엔딩**: CRLF → LF
+
+#### 📊 통계
+- 수정된 파일: 12개
+- 추가된 파일: 6개 (스크립트 3개, 설정 파일 3개)
+- 해결된 배포 오류: 8건
+- Git 커밋: 15개
+
+#### 🔗 배포 URL
+- Backend: `https://themoon-api.onrender.com`
+- Frontend: `https://themoon-frontend.onrender.com`
+- Database: `dpg-d4is05qli9vc73epqth0-a.oregon-postgres.render.com/themoon_p922`
+
+---
+
 ## [0.0.2] - 2025-11-24
 
 ### ✨ Phase 3 완료 - 블렌드 레시피 및 재고 관리 시스템
