@@ -1,26 +1,40 @@
-services:
-  - type: web
-    name: themoon-api
-    env: python
-    region: singapore
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
+# Exported from Render on 2025-11-25T13:36:16Z
+version: "1"
+projects:
+- name: themoon
+  environments:
+  - name: BACKEND_CORS_ORIGINS='["https://themoon-frontend.onrender.com"]'
+    services:
+    - type: web
+      name: themoon-api
+      runtime: python
+      repo: https://github.com/usermaum/Themoon
+      branch: claude/deploy-backend-render-01JWPCLXfStgAvsHgts9prXP
+      plan: free
+      envVars:
+      - key: BACKEND_CORS_ORIGINS
+        sync: false
+      - key: DEBUG
+        sync: false
+      - key: SECRET_KEY
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: themoon-db
           property: connectionString
-      - key: DEBUG
-        value: False
-      - key: SECRET_KEY
-        generateValue: true
-      - key: BACKEND_CORS_ORIGINS
-        value: '["http://localhost:3000"]'
-
-  - type: pserv
-    name: themoon-db
-    env: docker
-    plan: free
-    region: singapore
-    ipAllowList: []
+      region: oregon
+      buildCommand: pip install -r requirements.txt
+      startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+      healthCheckPath: /health
+      autoDeployTrigger: commit
+      rootDir: backend
+    databases:
+    - name: themoon-db
+      databaseName: themoon
+      user: themoon
+      plan: free
+      region: oregon
+      ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+      postgresMajorVersion: "18"
