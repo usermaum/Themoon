@@ -5,12 +5,12 @@ Pydantic 모델을 사용한 데이터 검증 및 직렬화
 """
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class BeanBase(BaseModel):
     """Bean 공통 필드"""
-    
+
     name: str = Field(..., min_length=1, max_length=100, description="원두명")
     origin: Optional[str] = Field(None, max_length=100, description="원산지")
     variety: Optional[str] = Field(None, max_length=50, description="품종")
@@ -21,6 +21,14 @@ class BeanBase(BaseModel):
     roast_level: Optional[str] = Field(None, max_length=20, description="로스팅 단계")
     notes: Optional[str] = Field(None, description="메모")
 
+    @field_validator('origin', 'variety', 'processing_method', 'roast_level', 'notes', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        """빈 문자열을 None으로 변환"""
+        if v == '':
+            return None
+        return v
+
 
 class BeanCreate(BeanBase):
     """Bean 생성 요청"""
@@ -29,7 +37,7 @@ class BeanCreate(BeanBase):
 
 class BeanUpdate(BaseModel):
     """Bean 수정 요청 - 모든 필드 선택적"""
-    
+
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="원두명")
     origin: Optional[str] = Field(None, max_length=100, description="원산지")
     variety: Optional[str] = Field(None, max_length=50, description="품종")
@@ -39,6 +47,14 @@ class BeanUpdate(BaseModel):
     quantity_kg: Optional[float] = Field(None, ge=0, description="재고량 (kg)")
     roast_level: Optional[str] = Field(None, max_length=20, description="로스팅 단계")
     notes: Optional[str] = Field(None, description="메모")
+
+    @field_validator('name', 'origin', 'variety', 'processing_method', 'roast_level', 'notes', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        """빈 문자열을 None으로 변환"""
+        if v == '':
+            return None
+        return v
 
 
 class Bean(BeanBase):
