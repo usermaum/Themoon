@@ -31,3 +31,8 @@ app.include_router(inventory_logs.router, prefix="/api/v1/inventory-logs", tags=
 @app.get("/")
 def read_root():
     return {"message": "Welcome to The Moon Drip Bar API"}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for Render.com"""
+    return {"status": "healthy", "service": "themoon-api"}

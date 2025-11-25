@@ -32,7 +32,7 @@ ENV/
 # Environment
 .env
 .env.local
-.env.production
+# Note: .env.production is tracked for Render.com deployment
 
 # IDE
 .vscode/
