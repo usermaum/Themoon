@@ -22,6 +22,24 @@ services:
         value: '["*"]'
     healthCheckPath: /health
 
+  # Next.js Frontend Service
+  - type: web
+    name: themoon-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    branch: claude/deploy-backend-render-01JWPCLXfStgAvsHgts9prXP
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: themoon-api
+          type: web
+          property: url
+    healthCheckPath: /
+
 databases:
   # PostgreSQL Database
   - name: themoon-db

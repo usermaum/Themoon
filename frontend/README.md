@@ -82,7 +82,89 @@ npm run build
 npm run start
 ```
 
+## 🚢 Render.com 배포
+
+### 자동 배포 (추천)
+
+Backend와 함께 자동으로 배포됩니다. 프로젝트 루트의 `render.yaml` 파일에서 설정됩니다.
+
+**1. GitHub 연동**
+- Render.com 대시보드에서 "New +" → "Blueprint" 선택
+- GitHub 저장소 연결
+- `render.yaml` 파일이 자동으로 감지됨
+
+**2. 환경 변수 (자동 설정)**
+
+Render가 자동으로 설정하는 환경 변수:
+- `NEXT_PUBLIC_API_URL`: Backend API URL (themoon-api에서 자동 참조)
+
+**3. 배포 확인**
+- 배포 로그에서 빌드 진행 상황 확인
+- 배포 완료 후 제공되는 URL로 접속
+
+**배포 URL 예시:**
+
+https://themoon-frontend.onrender.com
+
+### 수동 배포 (개별 서비스)
+
+개별적으로 Frontend만 배포하려면:
+
+**1. Render 대시보드에서 "New +" → "Web Service"**
+
+**2. 설정**
+```
+Name: themoon-frontend
+Runtime: Node
+Build Command: npm install && npm run build
+Start Command: npm start
+Branch: main (또는 원하는 브랜치)
+Root Directory: frontend
+```
+
+**3. 환경 변수 추가**
+```
+NEXT_PUBLIC_API_URL=https://your-backend-api.onrender.com
+```
+
+### 주요 설정 파일
+
+- `render.yaml`: Render 배포 설정 (프로젝트 루트)
+- `.env.example`: 환경 변수 템플릿
+- `package.json`: 빌드 스크립트 정의
+- `next.config.js`: Next.js 설정
+
+### 트러블슈팅
+
+**문제: API 연결 오류**
+```
+해결: NEXT_PUBLIC_API_URL 환경 변수가 올바르게 설정되었는지 확인
+      브라우저 콘솔에서 API URL 확인
+```
+
+**문제: 빌드 실패**
+```
+해결: package.json의 의존성 버전 확인
+      Node.js 버전 확인 (권장: 18.x 이상)
+```
+
+**문제: 환경 변수가 적용되지 않음**
+```
+해결: NEXT_PUBLIC_ 접두사가 있는지 확인
+      Next.js는 클라이언트 사이드 환경 변수에 NEXT_PUBLIC_ 필요
+      빌드 시점에 환경 변수가 번들에 포함됨
+```
+
+### 배포 후 CORS 설정
+
+Frontend 배포 후, Backend의 CORS 설정을 업데이트해야 합니다:
+
+**Backend Render 환경 변수 업데이트:**
+```
+BACKEND_CORS_ORIGINS='["https://themoon-frontend.onrender.com"]'
+```
+
 ---
 
-**버전:** 1.0.0
-**최종 업데이트:** 2024-11-23
+**버전:** 0.0.1
+**최종 업데이트:** 2025-11-25 (Render.com 배포 설정 추가)
