@@ -16,19 +16,28 @@
 ### Added
 - **Render.com 배포 설정**: `render.yaml` 파일 추가로 Infrastructure as Code 지원
   - PostgreSQL 데이터베이스 자동 생성
-  - FastAPI 웹 서비스 자동 배포
-  - 환경 변수 자동 관리 (DATABASE_URL, SECRET_KEY)
-- **환경 변수 템플릿**: `backend/.env.example` 파일 추가
+  - FastAPI 웹 서비스 자동 배포 (Backend)
+  - Next.js 웹 서비스 자동 배포 (Frontend)
+  - 환경 변수 자동 관리 (DATABASE_URL, SECRET_KEY, NEXT_PUBLIC_API_URL)
+  - 서비스 간 참조 (Frontend가 Backend URL 자동 참조)
+- **환경 변수 템플릿**
+  - `backend/.env.example`: Backend 환경 변수
+  - `frontend/.env.example`: Frontend 환경 변수
 
 ### Changed
-- **config.py**: PostgreSQL 환경 변수 자동 감지, CORS 설정 개선
+- **backend/app/config.py**: PostgreSQL 환경 변수 자동 감지, CORS 설정 개선
   - `get_cors_origins()` 메서드 추가로 JSON 문자열 파싱 지원
   - DATABASE_URL 환경 변수 우선 로드
-- **main.py**: settings 기반 CORS 설정으로 변경
+- **backend/app/main.py**: settings 기반 CORS 설정으로 변경
 - **backend/README.md**: Render 배포 가이드 섹션 추가
   - 자동 배포 방법
   - 환경 변수 설정 가이드
   - 트러블슈팅 섹션
+- **frontend/README.md**: Render 배포 가이드 섹션 추가
+  - 자동/수동 배포 방법
+  - 환경 변수 설정
+  - CORS 설정 가이드
+  - 트러블슈팅
 
 ---
 
