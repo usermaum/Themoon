@@ -92,6 +92,67 @@ backend/
 pytest tests/ -v
 ```
 
+## 🚢 Render.com 배포
+
+### 자동 배포 (추천)
+
+1. **GitHub 연동**
+   - Render.com 대시보드에서 "New +" → "Blueprint" 선택
+   - GitHub 저장소 연결
+   - `render.yaml` 파일이 자동으로 감지됨
+
+2. **환경 변수 확인**
+
+   Render가 자동으로 설정하는 환경 변수:
+   - `DATABASE_URL`: PostgreSQL 연결 문자열 (자동 생성)
+   - `SECRET_KEY`: JWT 시크릿 키 (자동 생성)
+   - `PORT`: 서버 포트 (자동 할당)
+
+   수동으로 추가할 환경 변수:
+   - `BACKEND_CORS_ORIGINS`: 프론트엔드 URL (예: `["https://your-frontend.vercel.app"]`)
+   - `GEMINI_API_KEY`: Gemini API 키 (선택)
+   - `ANTHROPIC_API_KEY`: Claude API 키 (선택)
+
+3. **배포 확인**
+   - 배포 로그 확인
+   - Health Check: `https://your-app.onrender.com/health`
+   - API 문서: `https://your-app.onrender.com/docs`
+
+### 수동 배포
+
+```bash
+# 1. 프로젝트 루트에서 Git 푸시
+git push origin main
+
+# 2. Render가 자동으로 감지하고 배포 시작
+# 3. 배포 로그에서 진행 상황 확인
+```
+
+### 주요 설정 파일
+
+- `render.yaml`: Render 배포 설정 (Infrastructure as Code)
+- `.env.example`: 환경 변수 템플릿
+- `requirements.txt`: Python 의존성
+
+### 트러블슈팅
+
+**문제: 데이터베이스 연결 오류**
+```
+해결: Render 대시보드에서 DATABASE_URL 환경 변수가 올바르게 설정되었는지 확인
+```
+
+**문제: CORS 오류**
+```
+해결: BACKEND_CORS_ORIGINS 환경 변수에 프론트엔드 URL 추가
+예: BACKEND_CORS_ORIGINS='["https://your-frontend.vercel.app"]'
+```
+
+**문제: 빌드 실패**
+```
+해결: requirements.txt의 패키지 버전 확인
+      Python 버전 확인 (render.yaml에 명시 가능)
+```
+
 ## 📝 개발 가이드
 
 원본 프로젝트의 비즈니스 로직을 참조하되, 완전히 새로 작성합니다:
