@@ -49,7 +49,7 @@ services:
 # Database
 databases:
   - name: themoon-db
-    databaseName: themoon
+    databaseName: themoon_p922
     user: themoon
     plan: free
     region: oregon
