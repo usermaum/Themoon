@@ -66,13 +66,11 @@ if [ ! -d "node_modules" ]; then
     npm install
     echo "✅ 설치 완료"
     echo ""
-else
-    # package.json이 변경되었는지 빠르게 확인
-    if [ ! -f "node_modules/.package-lock.json" ] || [ "package.json" -nt "node_modules/.package-lock.json" ]; then
-        echo "📦 의존성 업데이트 확인 중..."
-        npm install
-        echo ""
-    fi
+elif [ "package.json" -nt "node_modules/.modules.yaml" ] 2>/dev/null; then
+    # package.json이 변경된 경우에만
+    echo "📦 의존성 업데이트 중..."
+    npm install
+    echo ""
 fi
 
 # 4. 포트 충돌 확인 및 해결

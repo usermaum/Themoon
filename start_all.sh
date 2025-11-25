@@ -51,14 +51,12 @@ echo ""
 # ==========================================
 # 1. Backend 준비
 # ==========================================
-echo "📦 [Backend] 준비 중..."
-
 cd "$ROOT_DIR/backend" || {
     echo "❌ Error: backend 디렉토리를 찾을 수 없습니다."
     exit 1
 }
 
-# 가상환경 확인
+# 가상환경 확인 및 활성화
 if [ ! -d "$ROOT_DIR/venv" ]; then
     echo "⚠️  [Backend] venv 생성 중..."
     python3 -m venv "$ROOT_DIR/venv"
@@ -67,8 +65,10 @@ if [ ! -d "$ROOT_DIR/venv" ]; then
     pip install -q -r requirements.txt
 else
     source "$ROOT_DIR/venv/bin/activate"
-    # 의존성이 이미 설치되어 있는지 빠르게 확인
-    if ! python -c "import fastapi" 2>/dev/null; then
+    # 의존성이 이미 설치되어 있는지 빠르게 확인 (0.1초 미만)
+    if ! python -c "import fastapi, uvicorn" 2>/dev/null; then
+        echo "📦 [Backend] 의존성 설치 중..."
+        pip install -q --upgrade pip
         pip install -q -r requirements.txt
     fi
 fi
@@ -79,14 +79,11 @@ if lsof -ti :8000 > /dev/null 2>&1; then
     lsof -ti :8000 | xargs kill -9
 fi
 
-echo "✅ [Backend] 준비 완료"
 echo ""
 
 # ==========================================
 # 2. Frontend 준비
 # ==========================================
-echo "📦 [Frontend] 준비 중..."
-
 cd "$ROOT_DIR/frontend" || {
     echo "❌ Error: frontend 디렉토리를 찾을 수 없습니다."
     exit 1
@@ -105,12 +102,10 @@ fi
 if [ ! -d "node_modules" ]; then
     echo "📦 [Frontend] 의존성 설치 중..."
     npm install
-else
-    # package.json이 변경되었는지 빠르게 확인
-    if [ ! -f "node_modules/.package-lock.json" ] || [ "package.json" -nt "node_modules/.package-lock.json" ]; then
-        echo "📦 [Frontend] 의존성 업데이트 중..."
-        npm install
-    fi
+elif [ "package.json" -nt "node_modules/.modules.yaml" ] 2>/dev/null; then
+    # package.json이 변경된 경우에만
+    echo "📦 [Frontend] 의존성 업데이트 중..."
+    npm install
 fi
 
 # 포트 충돌 확인
@@ -119,7 +114,6 @@ if lsof -ti :3000 > /dev/null 2>&1; then
     lsof -ti :3000 | xargs kill -9
 fi
 
-echo "✅ [Frontend] 준비 완료"
 echo ""
 
 # ==========================================

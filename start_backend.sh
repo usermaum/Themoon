@@ -13,7 +13,7 @@ cd "$(dirname "$0")/backend" || {
     exit 1
 }
 
-# 2. Python 가상환경 확인
+# 2. Python 가상환경 확인 및 활성화
 if [ ! -d "../venv" ]; then
     echo "⚠️  venv가 없습니다. 생성 중..."
     python3 -m venv ../venv
@@ -22,12 +22,16 @@ if [ ! -d "../venv" ]; then
     pip install -q --upgrade pip
     pip install -q -r requirements.txt
     echo "✅ 초기 설정 완료"
+    echo ""
 else
     source ../venv/bin/activate
-    # 의존성이 이미 설치되어 있는지 빠르게 확인
-    if ! python -c "import fastapi" 2>/dev/null; then
+    # 의존성이 이미 설치되어 있는지 빠르게 확인 (0.1초 미만)
+    if ! python -c "import fastapi, uvicorn" 2>/dev/null; then
         echo "📦 의존성 설치 중..."
+        pip install -q --upgrade pip
         pip install -q -r requirements.txt
+        echo "✅ 설치 완료"
+        echo ""
     fi
 fi
 
