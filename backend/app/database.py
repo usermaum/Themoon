@@ -12,13 +12,19 @@ from app.config import settings
 # PostgreSQL URL이 postgres://로 시작하면 postgresql://로 변경
 # (일부 오래된 라이브러리 호환성 문제)
 database_url = settings.DATABASE_URL
+print(f"🔗 Original DATABASE_URL: {database_url[:50]}...")  # 보안을 위해 일부만 출력
+
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
+    print(f"✅ Converted to: postgresql://...")
 
 # SQLite인 경우 connect_args 추가
 connect_args = {}
 if database_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+    print("📁 Using SQLite database")
+elif database_url.startswith("postgresql"):
+    print("🐘 Using PostgreSQL database")
 
 # SQLAlchemy 엔진 생성
 engine = create_engine(
