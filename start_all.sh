@@ -60,15 +60,18 @@ cd "$ROOT_DIR/backend" || {
 
 # 가상환경 확인
 if [ ! -d "$ROOT_DIR/venv" ]; then
-    echo "⚠️  [Backend] venv가 없습니다. 생성합니다..."
+    echo "⚠️  [Backend] venv 생성 중..."
     python3 -m venv "$ROOT_DIR/venv"
-    echo "✅ [Backend] venv 생성 완료"
+    source "$ROOT_DIR/venv/bin/activate"
+    pip install -q --upgrade pip
+    pip install -q -r requirements.txt
+else
+    source "$ROOT_DIR/venv/bin/activate"
+    # 의존성이 이미 설치되어 있는지 빠르게 확인
+    if ! python -c "import fastapi" 2>/dev/null; then
+        pip install -q -r requirements.txt
+    fi
 fi
-
-# 가상환경 활성화 및 의존성 설치
-source "$ROOT_DIR/venv/bin/activate"
-pip install -q --upgrade pip
-pip install -q -r requirements.txt
 
 # 포트 충돌 확인
 if lsof -ti :8000 > /dev/null 2>&1; then
@@ -100,9 +103,14 @@ fi
 
 # node_modules 확인
 if [ ! -d "node_modules" ]; then
-    echo "📦 [Frontend] node_modules 설치 중..."
+    echo "📦 [Frontend] 의존성 설치 중..."
     npm install
-    echo "✅ [Frontend] npm install 완료"
+else
+    # package.json이 변경되었는지 빠르게 확인
+    if [ ! -f "node_modules/.package-lock.json" ] || [ "package.json" -nt "node_modules/.package-lock.json" ]; then
+        echo "📦 [Frontend] 의존성 업데이트 중..."
+        npm install
+    fi
 fi
 
 # 포트 충돌 확인

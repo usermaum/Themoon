@@ -62,10 +62,17 @@ fi
 
 # 3. node_modules 확인
 if [ ! -d "node_modules" ]; then
-    echo "📦 node_modules가 없습니다. npm install을 실행합니다..."
+    echo "📦 의존성 설치 중..."
     npm install
-    echo "✅ npm install 완료"
+    echo "✅ 설치 완료"
     echo ""
+else
+    # package.json이 변경되었는지 빠르게 확인
+    if [ ! -f "node_modules/.package-lock.json" ] || [ "package.json" -nt "node_modules/.package-lock.json" ]; then
+        echo "📦 의존성 업데이트 확인 중..."
+        npm install
+        echo ""
+    fi
 fi
 
 # 4. 포트 충돌 확인 및 해결

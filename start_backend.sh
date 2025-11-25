@@ -15,21 +15,23 @@ cd "$(dirname "$0")/backend" || {
 
 # 2. Python 가상환경 확인
 if [ ! -d "../venv" ]; then
-    echo "⚠️  Warning: venv가 없습니다. 생성합니다..."
+    echo "⚠️  venv가 없습니다. 생성 중..."
     python3 -m venv ../venv
-    echo "✅ venv 생성 완료"
+    source ../venv/bin/activate
+    echo "📦 의존성 설치 중..."
+    pip install -q --upgrade pip
+    pip install -q -r requirements.txt
+    echo "✅ 초기 설정 완료"
+else
+    source ../venv/bin/activate
+    # 의존성이 이미 설치되어 있는지 빠르게 확인
+    if ! python -c "import fastapi" 2>/dev/null; then
+        echo "📦 의존성 설치 중..."
+        pip install -q -r requirements.txt
+    fi
 fi
 
-# 3. 가상환경 활성화
-echo "📦 가상환경 활성화 중..."
-source ../venv/bin/activate
-
-# 4. 의존성 설치 확인
-echo "📦 의존성 확인 중..."
-pip install -q --upgrade pip
-pip install -q -r requirements.txt
-
-# 5. 포트 충돌 확인 및 해결
+# 3. 포트 충돌 확인 및 해결
 if lsof -ti :8000 > /dev/null 2>&1; then
     echo "⚠️  Warning: 포트 8000이 이미 사용 중입니다."
     read -p "기존 프로세스를 종료하시겠습니까? (y/n): " answer
@@ -43,7 +45,7 @@ if lsof -ti :8000 > /dev/null 2>&1; then
     fi
 fi
 
-# 6. 서버 시작
+# 4. 서버 시작
 echo ""
 echo "========================================="
 echo "✅ Backend 서버 시작"
