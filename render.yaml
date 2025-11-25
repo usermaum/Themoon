@@ -53,7 +53,7 @@ databases:
     user: themoon
     plan: free
     region: oregon
-    postgresMajorVersion: "16"
+    postgresMajorVersion: "18"
     ipAllowList:
       - source: 0.0.0.0/0
         description: Allow all (for development)
