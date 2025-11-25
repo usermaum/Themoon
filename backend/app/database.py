@@ -9,11 +9,23 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 
+# PostgreSQL URL이 postgres://로 시작하면 postgresql://로 변경
+# (일부 오래된 라이브러리 호환성 문제)
+database_url = settings.DATABASE_URL
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+# SQLite인 경우 connect_args 추가
+connect_args = {}
+if database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
 # SQLAlchemy 엔진 생성
 engine = create_engine(
-    settings.DATABASE_URL,
+    database_url,
     pool_pre_ping=True,  # 연결 상태 확인
     echo=False,  # SQL 로그 (개발 시 True)
+    connect_args=connect_args,
 )
 
 # 세션 팩토리

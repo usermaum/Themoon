@@ -1,17 +1,29 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.api.v1.endpoints import beans, blends, inventory_logs
 from app.database import engine, Base
 from app.models import bean, blend, inventory_log
 from app.config import settings
 
-# 데이터베이스 테이블 생성
-Base.metadata.create_all(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """애플리케이션 시작/종료 이벤트"""
+    # 시작 시: 데이터베이스 테이블 생성
+    print("🔧 Creating database tables...")
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database tables created successfully")
+    yield
+    # 종료 시: 정리 작업 (필요시)
+    print("👋 Shutting down...")
+
 
 app = FastAPI(
     title="The Moon Drip Bar API",
     description="Roasting Management System API",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS 설정
