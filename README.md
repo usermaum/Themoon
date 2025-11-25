@@ -162,7 +162,46 @@ frontend/
 
 ### 방법 1: 자동 실행 스크립트 (권장)
 
-#### Backend 서버 실행
+#### 🚀 전체 서버 한 번에 실행 (Backend + Frontend)
+
+```bash
+./start_all.sh
+```
+
+**기능:**
+- ✅ Backend + Frontend 동시 실행 (백그라운드)
+- ✅ Frontend 캐시 삭제 옵션 선택 가능
+- ✅ 자동 가상환경 및 의존성 관리
+- ✅ 포트 충돌 자동 해결 (8000, 3000)
+- ✅ Ctrl+C로 모든 서버 동시 종료
+- ✅ 실시간 로그 출력 (Backend + Frontend)
+
+**접속:**
+
+http://localhost:8000
+
+(Backend API)
+
+http://localhost:8000/docs
+
+(API 문서)
+
+http://localhost:3000
+
+(Frontend)
+
+**로그 확인:**
+```bash
+# Backend 로그
+tail -f /tmp/themoon_backend.log
+
+# Frontend 로그
+tail -f /tmp/themoon_frontend.log
+```
+
+---
+
+#### Backend만 실행
 
 ```bash
 ./start_backend.sh
@@ -182,7 +221,7 @@ http://localhost:8000
 
 http://localhost:8000/docs
 
-#### Frontend 서버 실행
+#### Frontend만 실행
 
 ```bash
 ./start_frontend.sh
