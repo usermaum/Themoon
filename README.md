@@ -160,7 +160,48 @@ frontend/
 - **PostgreSQL**: 15.0 이상
 - **Redis**: 7.0 이상 (선택사항)
 
-### 1. Backend (FastAPI) 실행
+### 방법 1: 자동 실행 스크립트 (권장)
+
+#### Backend 서버 실행
+
+```bash
+./start_backend.sh
+```
+
+**기능:**
+- 자동 가상환경 확인 및 생성
+- 의존성 자동 설치
+- 포트 충돌 자동 해결
+- 서버 시작
+
+**접속:**
+
+http://localhost:8000
+
+**API 문서:**
+
+http://localhost:8000/docs
+
+#### Frontend 서버 실행
+
+```bash
+./start_frontend.sh
+```
+
+**옵션 선택:**
+1. 일반 시작 (캐시 유지)
+2. 캐시 삭제 후 시작 (`rm -rf .next`)
+3. 취소
+
+**접속:**
+
+http://localhost:3000
+
+---
+
+### 방법 2: 수동 실행
+
+#### 1. Backend (FastAPI) 실행
 
 ```bash
 cd backend
@@ -184,7 +225,7 @@ http://localhost:8000
 
 http://localhost:8000/docs
 
-### 2. Frontend (Next.js) 실행
+#### 2. Frontend (Next.js) 실행
 
 ```bash
 cd frontend
