@@ -264,8 +264,131 @@ git remote -v
 
 ---
 
-**세션 종료**: 2025-11-26
-**다음 세션 시작 시 읽을 문서**:
-- `Documents/Progress/SESSION_SUMMARY_2025-11-26.md` (현재 문서)
-- `logs/CHANGELOG.md` (0.0.3 변경사항)
-- Render.com 로그 (배포 상태 확인)
+**세션 종료**: 2025-11-26 (첫 번째 세션)
+
+---
+
+# 추가 세션: PostgreSQL 호환성 개선 (2025-11-26)
+
+## 📋 세션 개요
+
+- **날짜**: 2025-11-26 (두 번째 세션)
+- **작업 시간**: 약 30분
+- **주요 목표**: Render.com Database 연결 실패 원인 분석 및 해결
+- **현재 버전**: 0.0.3 (유지)
+
+## 🔍 문제 분석
+
+### 발견된 PostgreSQL 호환성 문제
+
+**1. String 타입 길이 미지정 (Critical)**
+- SQLite: 길이 제한 없어도 동작
+- PostgreSQL: 명시적 길이 지정 필수
+- 영향 받는 파일:
+  - `backend/app/models/blend.py`
+  - `backend/app/models/inventory_log.py`
+
+**2. DateTime 타임스탬프 함수**
+- 기존: `func.now()`
+- 개선: `func.current_timestamp()` (PostgreSQL에서 더 명확)
+- 영향 받는 파일:
+  - `backend/app/models/bean.py`
+  - `backend/app/models/blend.py`
+  - `backend/app/models/inventory_log.py`
+
+## ✅ 수정 내용
+
+### 1. blend.py 수정
+```python
+# Before
+name = Column(String, index=True, nullable=False)
+description = Column(String, nullable=True)
+target_roast_level = Column(String, nullable=True)
+notes = Column(String, nullable=True)
+
+# After
+name = Column(String(200), index=True, nullable=False)
+description = Column(Text, nullable=True)
+target_roast_level = Column(String(50), nullable=True)
+notes = Column(Text, nullable=True)
+```
+
+### 2. inventory_log.py 수정
+```python
+# Before
+transaction_type = Column(String, nullable=False)
+reason = Column(String, nullable=True)
+
+# After
+transaction_type = Column(String(20), nullable=False)
+reason = Column(Text, nullable=True)
+```
+
+### 3. DateTime 함수 개선 (3개 파일)
+```python
+# Before
+created_at = Column(DateTime(timezone=True), server_default=func.now())
+updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+# After
+created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
+updated_at = Column(DateTime(timezone=True), onupdate=func.current_timestamp())
+```
+
+## 📊 변경 통계
+
+### 파일 변경
+- **수정**: 3개
+  - `backend/app/models/bean.py`
+  - `backend/app/models/blend.py`
+  - `backend/app/models/inventory_log.py`
+
+### Git 커밋
+- **커밋 수**: 1개
+- **커밋 메시지**: `fix: PostgreSQL 호환성을 위한 모델 타입 개선`
+
+## 🎯 기대 효과
+
+1. **Database 테이블 생성 성공**
+   - PostgreSQL이 모델 정의를 정상적으로 해석
+   - `Base.metadata.create_all()` 정상 동작
+
+2. **Render.com 배포 안정화**
+   - Database 연결 후 자동으로 테이블 생성
+   - 원두 등록/조회 기능 정상 동작
+
+3. **향후 마이그레이션 안정성**
+   - SQLite ↔ PostgreSQL 간 호환성 확보
+   - 개발 환경(SQLite) → Production(PostgreSQL) 무중단 전환
+
+## 📝 문서 업데이트
+
+### 완료된 문서
+1. `logs/CHANGELOG.md` - PostgreSQL 호환성 개선 내용 추가
+2. `Documents/Progress/SESSION_SUMMARY_2025-11-26.md` - 현재 섹션 추가
+
+### 남은 문서
+- README.md (버전 유지, 업데이트 불필요)
+- .claude/CLAUDE.md (버전 유지, 업데이트 불필요)
+
+## 🚀 다음 단계
+
+### 즉시 확인 필요
+1. Render.com Backend 재배포
+   - Git push → 자동 배포 트리거
+   - 로그에서 테이블 생성 메시지 확인
+
+2. Production 테스트
+   - `/health` 엔드포인트 확인
+   - `/api/v1/beans` GET 요청 테스트
+   - 원두 등록 POST 요청 테스트
+
+### 추가 개선 사항
+- Database 마이그레이션 도구 (Alembic) 설정
+- 로컬 PostgreSQL 테스트 환경 구축
+- CI/CD 파이프라인에 DB 스키마 검증 추가
+
+---
+
+**세션 진행 중**
+**다음 작업**: 변경사항을 Remote Repository에 Push
