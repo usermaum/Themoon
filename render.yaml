@@ -25,7 +25,7 @@ services:
       - key: DEBUG
         value: "false"
       - key: BACKEND_CORS_ORIGINS
-        value: '["https://themoon-frontend.onrender.com", "https://themoon-frontend-0s4m.onrender.com", "http://localhost:3000"]'
+        value: '["https://themoon-frontend-0s4m.onrender.com"]'
     autoDeployTrigger: commit
 
   # Frontend (Next.js)
