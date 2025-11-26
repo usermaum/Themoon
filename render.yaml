@@ -33,7 +33,7 @@ services:
     name: themoon-frontend
     runtime: node
     repo: https://github.com/usermaum/Themoon
-    branch: main
+    branch: claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck
     plan: free
     region: oregon
     rootDir: frontend
