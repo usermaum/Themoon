@@ -41,7 +41,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://themoon-api.onrender.com
+        value: https://themoon-api-gv1u.onrender.com
       - key: NODE_ENV
         value: production
     autoDeployTrigger: commit
