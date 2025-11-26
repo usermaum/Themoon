@@ -4,7 +4,9 @@
 환경 변수 기반 설정 관리
 """
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import Optional
+import json
 
 
 class Settings(BaseSettings):
@@ -31,6 +33,17 @@ class Settings(BaseSettings):
 
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+
+    @field_validator('BACKEND_CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """JSON 문자열 또는 리스트를 파싱"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return [i.strip() for i in v.split(',')]
+        return v
 
     # AI API Keys
     GEMINI_API_KEY: Optional[str] = None
