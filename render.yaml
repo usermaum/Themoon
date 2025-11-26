@@ -8,7 +8,7 @@ services:
     name: themoon-api
     runtime: python
     repo: https://github.com/usermaum/Themoon
-    branch: main
+    branch: claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck
     plan: free
     region: oregon
     rootDir: backend
@@ -25,7 +25,7 @@ services:
       - key: DEBUG
         value: "false"
       - key: BACKEND_CORS_ORIGINS
-        value: '["https://themoon-frontend.onrender.com", "http://localhost:3000"]'
+        value: '["https://themoon-frontend-0s4m.onrender.com"]'
     autoDeployTrigger: commit
 
   # Frontend (Next.js)
@@ -33,7 +33,7 @@ services:
     name: themoon-frontend
     runtime: node
     repo: https://github.com/usermaum/Themoon
-    branch: main
+    branch: claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck
     plan: free
     region: oregon
     rootDir: frontend
@@ -41,7 +41,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://themoon-api.onrender.com
+        value: https://themoon-api-gv1u.onrender.com
       - key: NODE_ENV
         value: production
     autoDeployTrigger: commit
