@@ -11,6 +11,33 @@
 
 ---
 
+## [Unreleased] - 2025-11-29
+
+### 📄 Documentation
+
+**로스팅 문서 정리 및 최적화**
+- `Themoon_Rostings.md` 중복 제거 (625줄 → 466줄, 25% 감소)
+- 섹션 2, 3, 6 중복 내용 제거 및 통합
+- 명세서 데이터 4.2~4.11 복구 (11건 전체)
+
+**Word 보고서 생성**
+- 전문적인 Word 문서 `더문_로스팅_운영계획안.docx` 생성 (13KB)
+- 5개 메인 섹션: 개요, 원두 마스터, 블렌딩 레시피, 운영 시나리오, 명세서 데이터
+- 목차 자동 생성, 표 스타일, 색상 스키마 적용
+- docx 라이브러리 사용 (Node.js)
+
+**세션 관리**
+- `SESSION_SUMMARY_2025-11-29.md` 작성
+- 문서 정리 및 Word 생성 작업 기록
+
+### 🛠️ Technical
+
+**파일 생성**
+- `create_roasting_manual.js` - Word 문서 생성 스크립트
+- `package.json`, `package-lock.json` - Node.js 프로젝트 설정
+
+---
+
 ## [0.0.3] - 2025-11-26
 
 ### 🚀 Render.com 배포 완료 및 Production 환경 구축
