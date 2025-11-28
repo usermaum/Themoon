@@ -44,6 +44,18 @@
 
 #### 🎯 주요 작업
 
+**PostgreSQL 호환성 개선 (2025-11-26 추가)**
+- SQLite → PostgreSQL 마이그레이션을 위한 모델 타입 수정
+  - String 타입에 명시적 길이 지정 (PostgreSQL 필수)
+    - `blend.py`: name(200), target_roast_level(50)
+    - `inventory_log.py`: transaction_type(20)
+  - 긴 텍스트 필드를 Text 타입으로 변경
+    - `blend.py`: description, notes
+    - `inventory_log.py`: reason
+  - DateTime 타임스탬프 개선
+    - `func.now()` → `func.current_timestamp()`로 변경 (PostgreSQL 호환성)
+  - 영향 받는 파일: `bean.py`, `blend.py`, `inventory_log.py`
+
 **Render.com 배포 설정**
 - `render.yaml` 완전 구성 (Backend, Frontend, PostgreSQL 18)
 - Backend: `/health` 엔드포인트 추가
