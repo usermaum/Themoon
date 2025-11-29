@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Navbar from '@/components/layout/Navbar'
+import AppLayout from '@/components/layout/AppLayout'
 import Footer from '@/components/layout/Footer'
+import { cookies } from 'next/headers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,12 +17,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = cookies()
+  const sidebarState = cookieStore.get('sidebar:state')
+
   return (
     <html lang="ko">
-      <body className={`${inter.className} min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900`}>
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+      <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
+        <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
+          {children}
+          <Footer />
+        </AppLayout>
       </body>
     </html>
   )
