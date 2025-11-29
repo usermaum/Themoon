@@ -1,153 +1,147 @@
 # 세션 요약 - 2025-11-29
 
-## 🎯 오늘 한 일
-
-### 주요 작업
-1. **로스팅 문서 정리 및 최적화**
-   - Themoon_Rostings.md 중복 제거 (625줄 → 466줄, 25% 감소)
-   - 섹션 2, 3, 6 중복 제거
-   - 명세서 데이터 4.2~4.11 복구
-
-2. **전문적인 Word 문서 생성**
-   - 로스팅 운영계획안 Word 보고서 제작 (13KB)
-   - 목차, 표, 스타일 적용
-   - 5개 메인 섹션 구성
-
-3. **프론트엔드 레이아웃 시스템 개선**
-   - AppLayout 및 Sidebar 컴포넌트 추가
-   - 쿠키 기반 사이드바 상태 저장
-   - 반응형 모바일 지원
-
-## ✅ 완료된 작업
-
-### 1. 문서 정리 (Themoon_Rostings.md)
-- **중복 제거**:
-  - 섹션 2 (기준 정보) 중복 제거 → 상세 버전 유지
-  - 섹션 3 (운영 시나리오) 중복 제거 → 손실률 공식 포함 버전 유지
-  - 섹션 6 (다음 단계) 중복 제거
-
-- **데이터 복구**:
-  - 명세서 4.2~4.11 데이터 복구 (11건 전체)
-
-- **최종 결과**:
-  - 총 라인 수: 466줄
-  - 중복 섹션: 0개
-  - 명세서 데이터: 11건 완전 보존
-
-### 2. Word 문서 생성 (더문_로스팅_운영계획안.docx)
-- **문서 구조**:
-  - 표지 페이지 (제목, 부제목, 버전)
-  - 목차 (자동 생성, 하이퍼링크)
-  - 1. 개요 (용어 정의)
-  - 2. 원두 마스터 데이터 (15개 원두 테이블)
-  - 3. 블렌딩 레시피 (풀문, 뉴문, 이클립스문)
-  - 4. 운영 시나리오 (입고, 로스팅)
-  - 5. 명세서 입고 데이터 (11건 요약)
-
-- **디자인 특징**:
-  - 전문적인 폰트: 맑은 고딕
-  - 색상 스키마: 파란색 계열 (#2C5282, #4299e1)
-  - 표 스타일: 헤더 강조 + 줄무늬 행
-  - 자동 페이지 번호
-  - 1인치 표준 여백
-
-### 3. 프론트엔드 레이아웃 시스템 개선
-- **AppLayout 컴포넌트**:
-  - 사이드바 상태 관리 (열기/닫기)
-  - 쿠키 기반 상태 저장 (1년 유지)
-  - 반응형 동작 (모바일 < 1024px에서 자동 닫힘)
-  - 모바일 메뉴 버튼 추가
-
-- **Sidebar 컴포넌트**:
-  - lucide-react 아이콘 사용
-  - Home, Beans, Blends, Inventory 네비게이션
-  - Settings 및 User 프로필 영역
-  - 활성 페이지 하이라이트 (indigo 색상)
-  - 접힌 상태에서 아이콘만 표시 (70px)
-  - 펼친 상태에서 전체 메뉴 (256px)
-  - 모바일 백드롭 (어두운 오버레이)
-
-- **스타일 개선**:
-  - `globals.css`: scrollbar-hide, scrollbar-thin 유틸리티 추가
-  - 부드러운 트랜지션 (duration-300)
-  - 다크모드 지원
-
-## 🔧 기술 세부사항
-
-### 사용 도구
-- **docx 라이브러리**: Node.js 기반 Word 문서 생성
-- **JavaScript**: create_roasting_manual.js 스크립트 작성
-
-### 생성 파일
-1. `더문_로스팅_운영계획안.docx` - Word 보고서 (13KB)
-2. `create_roasting_manual.js` - 문서 생성 스크립트
-3. `package.json` - Node.js 프로젝트 설정
-4. `package-lock.json` - 패키지 잠금 파일
-5. `frontend/components/layout/AppLayout.tsx` - 메인 레이아웃 컨테이너
-6. `frontend/components/layout/Sidebar.tsx` - 사이드바 네비게이션
-
-### Git 커밋 내역
-```
-0b771f6 feat: 프론트엔드 레이아웃 시스템 개선
-5374a76 Merge branch 'main' of github.com:usermaum/Themoon
-e0965e0 docs: 세션 종료 - 2025-11-29
-b5fddd0 docs: 로스팅 운영계획안 Word 문서 생성 (목차, 표, 스타일 적용)
-b5c89b4 fix: 섹션 6 (다음 단계) 중복 제거
-571f1b1 fix: 명세서 4.2~4.11 데이터 복구 (11건 전체)
-7332f5f docs: 로스팅 문서 중복 제거 및 구조 최적화 (625줄 → 368줄)
-```
-
-## ⏳ 다음 세션에서 할 일
-
-1. **Excel 데이터 시트 생성** (옵션)
-   - 원두 마스터 데이터 Excel 버전
-   - 명세서 데이터 분석용 시트
-   - 블렌딩 레시피 계산 시트
-
-2. **시스템 구현 계획**
-   - Themoon_System_Implementation_Plan.md 연계
-   - Phase별 기능 개발 일정 수립
-
-3. **프론트엔드 개발 재개**
-   - Inventory 페이지 개선
-   - 컴포넌트 시스템 적용
-
-## 🛠️ 현재 설정 & 규칙
-
-### 버전 정보
-- 현재 버전: v0.0.3
-- 버전 관리: logs/VERSION_STRATEGY.md 참조
-- 누적 기준 도달 시에만 버전 업데이트
-
-### 문서 관리
-- 모든 문서: Documents/ 폴더
-  - Architecture/ - 아키텍처 문서
-  - Guides/ - 가이드
-  - Implementation/ - 구현 문서
-  - Planning/ - 계획 문서
-  - Progress/ - 진행 상황
-  - Resources/ - 자료
-
-### Git 전략
-- 커밋 타입: feat, fix, refactor, docs, chore
-- 세션 종료 시: 모든 변경사항 커밋
-- 원격 저장소: 정기적으로 푸시
-
-## 📊 프로젝트 현황
-
-### 완료율
-- ✅ 문서 정리: 100%
-- ✅ Word 보고서: 100%
-- ⏳ Excel 데이터 시트: 0%
-- ⏳ 시스템 구현: 10%
-
-### 다음 우선순위
-1. 세션 종료 문서 업데이트
-2. 버전 관리 (필요 시)
-3. 원격 저장소 푸시
+**날짜**: 2025-11-29  
+**시작**: 21:15  
+**종료**: 00:01  
+**소요 시간**: 약 2시간 45분
 
 ---
 
-**작성일**: 2025-11-29
-**작업 시간**: 약 1시간
-**상태**: 완료
+## 🎯 오늘 한 일
+
+### 1. Sidebar 토글 상태 쿠키 저장 기능 추가
+
+- **작업**: `AppLayout.tsx`와 `layout.tsx` 수정
+- **결과**: 사이드바 상태가 쿠키에 저장되어 페이지 새로고침 후에도 유지됨
+- **기술**: Next.js cookies, React useState
+
+### 2. 프로그래밍 규칙 문서화 및 AI 통합
+
+- **작업 1**: `Documents/Guides/PROGRAMMING_RULES.md` 생성
+  - 7단계 체계적 개발 방법론
+  - 작업 완료 3단계 필수
+  - 코딩 컨벤션 (Python/TypeScript)
+  - 버전 관리 규칙
+  - 체크리스트
+
+- **작업 2**: `.agent/instructions.md` 생성
+  - Antigravity AI Customizations 규칙
+  - 모든 AI 모델(Claude, Gemini 등)이 자동 참조
+  - PROGRAMMING_RULES.md 핵심 요약본
+
+### 3. COMMON_TASKS.md 현대화
+
+- **작업**: Streamlit → Next.js + FastAPI로 전면 수정
+- **변경사항**:
+  - 앱 실행/중지 명령어 업데이트 (uvicorn, npm)
+  - SQLite → PostgreSQL 명령어 변경
+  - 25개 작업 모두 현재 스택에 맞게 수정
+  - 새 페이지/API/컴포넌트 추가 가이드 업데이트
+
+### 4. Documents 폴더 대규모 정리
+
+- **분석**: 85개 MD 파일 검토
+- **정리 결과**:
+  - **삭제**: 17개 obsolete 파일 (Planning, Implementation, Root)
+  - **아카이브**: 30+ 개 오래된 SESSION_SUMMARY (Archive 폴더 생성)
+  - **보존**: 51개 활성 파일
+  - **감소율**: 47% 파일 감소 (98 → 51 active)
+
+---
+
+## ✅ 완료된 작업
+
+### Frontend 개발
+
+- [x] Sidebar 토글 상태 쿠키 저장
+- [x] `layout.tsx` 쿠키 읽기 구현
+- [x] `AppLayout.tsx` 쿠키 설정 구현
+
+### 문서化
+
+- [x] `PROGRAMMING_RULES.md` 생성 (400+ 라인)
+- [x] `.agent/instructions.md` 생성 (AI 규칙)
+- [x] `COMMON_TASKS.md` 현대화 (1000+ 라인)
+- [x] Documents 폴더 정리 및 아카이빙
+
+### 프로젝트 조직화
+
+- [x] Planning 폴더 정리 (21 → 6파일)
+- [x] Progress 폴더 아카이빙 (52 → 24 + Archive)
+- [x] Implementation 폴더 비우기
+- [x] 사용자 개인 파일 보존 (`문서.mdc`)
+
+---
+
+## 🔧 기술 세부사항
+
+### 버전
+
+- **프로젝트 버전**: 0.0.3 (변경 없음)
+- **버전 업데이트**: 진행하지 않음 (누적 기준 미달)
+
+### 파일 변경사항
+
+#### 생성된 파일 (4개)
+
+```
+.agent/instructions.md
+Documents/Guides/PROGRAMMING_RULES.md
+Documents/Progress/Archive/ (폴더)
+```
+
+#### 수정된 파일 (3개)
+
+```
+frontend/app/layout.tsx (쿠키 읽기 추가)
+frontend/components/layout/AppLayout.tsx (쿠키 저장 추가)
+Documents/Architecture/COMMON_TASKS.md (전면 수정)
+```
+
+#### 삭제/아카이브된 파일 (47개)
+
+```
+Planning/: 14개 삭제
+Implementation/: 2개 삭제
+Root: 2개 삭제
+Progress/Archive: 31개 아카이브
+```
+
+---
+
+## ⏳ 다음 세션에서 할 일
+
+### 우선순위 1: Architecture 문서 업데이트
+
+1. **FILE_STRUCTURE.md** 업데이트
+2. **PROJECT_SETUP_GUIDE.md** 업데이트
+3. **COMPONENT_DESIGN.md & COMPONENT_USAGE_GUIDE.md** 리뷰
+
+### 우선순위 2: Sidebar Tooltips (보류 중)
+
+- Sidebar 아이콘 hover 시 툴팁 표시
+
+### 우선순위 3: 실제 기능 개발
+
+- Bean Management 페이지 완성
+- Blend Management 페이지
+- Roasting Logs 기록 기능
+
+---
+
+## 🛠️ 현재 설정 & 규칙
+
+### AI 규칙
+
+- **프로그래밍 규칙**: `Documents/Guides/PROGRAMMING_RULES.md`
+- **AI Instructions**: `.agent/instructions.md`
+- **프로젝트 가이드**: `.claude/CLAUDE.md`
+
+### 개발 규칙
+
+- **7단계 방법론**: Constitution → Specify → Clarify → Plan → Tasks → Implement → Analyze
+- **작업 완료 3단계**: 코드 작성 → git commit → 문서 4종 업데이트
+
+---
+
+**세션 종료 완료!** 🎉
