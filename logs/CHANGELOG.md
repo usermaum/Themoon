@@ -13,6 +13,20 @@
 
 ## [Unreleased] - 2025-11-29
 
+### ✨ Features
+
+**프론트엔드 레이아웃 시스템 개선**
+- AppLayout 컴포넌트 추가 (사이드바 상태 관리)
+- Sidebar 컴포넌트 추가 (접기/펴기 기능, lucide-react 아이콘)
+- 쿠키 기반 사이드바 상태 저장 (1년 유지)
+- 반응형 모바일 지원 (모바일 메뉴 버튼, 백드롭)
+- 스크롤바 스타일 유틸리티 추가 (scrollbar-hide, scrollbar-thin)
+
+**네비게이션 구조**
+- Home, Beans, Blends, Inventory 메뉴 추가
+- Settings 및 User 프로필 영역 추가
+- 활성 페이지 하이라이트 (indigo 색상)
+
 ### 📄 Documentation
 
 **로스팅 문서 정리 및 최적화**
@@ -31,6 +45,11 @@
 - 문서 정리 및 Word 생성 작업 기록
 
 ### 🛠️ Technical
+
+**프론트엔드 컴포넌트**
+- `frontend/components/layout/AppLayout.tsx` - 메인 레이아웃 컨테이너
+- `frontend/components/layout/Sidebar.tsx` - 사이드바 네비게이션
+- `frontend/app/globals.css` - 커스텀 스크롤바 유틸리티
 
 **파일 생성**
 - `create_roasting_manual.js` - Word 문서 생성 스크립트

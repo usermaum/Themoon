@@ -241,7 +241,7 @@ Themoon/                    # 신규 프로젝트 (Next.js + FastAPI)
 │   ├── Progress/           # 진행 상황 (40+ 세션)
 │   └── Resources/          # 자료 (엑셀, 문서 등)
 ├── logs/                   # 버전 관리
-│   ├── VERSION            # 현재: 0.0.1
+│   ├── VERSION            # 현재: 0.0.3
 │   └── CHANGELOG.md       # 변경 로그
 ├── data/                   # 데이터베이스 (원본 참조용)
 ├── venv/                   # Python 가상환경 (원본 참조용)
