@@ -13,6 +13,11 @@
    - 목차, 표, 스타일 적용
    - 5개 메인 섹션 구성
 
+3. **프론트엔드 레이아웃 시스템 개선**
+   - AppLayout 및 Sidebar 컴포넌트 추가
+   - 쿠키 기반 사이드바 상태 저장
+   - 반응형 모바일 지원
+
 ## ✅ 완료된 작업
 
 ### 1. 문서 정리 (Themoon_Rostings.md)
@@ -46,6 +51,27 @@
   - 자동 페이지 번호
   - 1인치 표준 여백
 
+### 3. 프론트엔드 레이아웃 시스템 개선
+- **AppLayout 컴포넌트**:
+  - 사이드바 상태 관리 (열기/닫기)
+  - 쿠키 기반 상태 저장 (1년 유지)
+  - 반응형 동작 (모바일 < 1024px에서 자동 닫힘)
+  - 모바일 메뉴 버튼 추가
+
+- **Sidebar 컴포넌트**:
+  - lucide-react 아이콘 사용
+  - Home, Beans, Blends, Inventory 네비게이션
+  - Settings 및 User 프로필 영역
+  - 활성 페이지 하이라이트 (indigo 색상)
+  - 접힌 상태에서 아이콘만 표시 (70px)
+  - 펼친 상태에서 전체 메뉴 (256px)
+  - 모바일 백드롭 (어두운 오버레이)
+
+- **스타일 개선**:
+  - `globals.css`: scrollbar-hide, scrollbar-thin 유틸리티 추가
+  - 부드러운 트랜지션 (duration-300)
+  - 다크모드 지원
+
 ## 🔧 기술 세부사항
 
 ### 사용 도구
@@ -57,9 +83,14 @@
 2. `create_roasting_manual.js` - 문서 생성 스크립트
 3. `package.json` - Node.js 프로젝트 설정
 4. `package-lock.json` - 패키지 잠금 파일
+5. `frontend/components/layout/AppLayout.tsx` - 메인 레이아웃 컨테이너
+6. `frontend/components/layout/Sidebar.tsx` - 사이드바 네비게이션
 
 ### Git 커밋 내역
 ```
+0b771f6 feat: 프론트엔드 레이아웃 시스템 개선
+5374a76 Merge branch 'main' of github.com:usermaum/Themoon
+e0965e0 docs: 세션 종료 - 2025-11-29
 b5fddd0 docs: 로스팅 운영계획안 Word 문서 생성 (목차, 표, 스타일 적용)
 b5c89b4 fix: 섹션 6 (다음 단계) 중복 제거
 571f1b1 fix: 명세서 4.2~4.11 데이터 복구 (11건 전체)

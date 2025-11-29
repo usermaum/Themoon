@@ -71,7 +71,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.0.2)
+### 현재 구조 (v0.0.3)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -115,7 +115,7 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   └── Resources/             # 자료 (엑셀, 문서 등)
 │
 ├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.0.1
+│   ├── VERSION                # 현재: 0.0.3
 │   └── CHANGELOG.md           # 변경 로그
 │
 ├── data/                      # 데이터베이스 (원본 참조용)
