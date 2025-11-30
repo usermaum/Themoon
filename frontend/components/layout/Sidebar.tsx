@@ -99,15 +99,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 </div>
 
                 {/* Navigation Links */}
-                <div className="flex-1 py-4 overflow-y-auto scrollbar-hide">
-                    <ul className="space-y-2 px-3">
+                <div className="flex-1 overflow-visible">
+                    <div className="h-full py-4 overflow-y-auto scrollbar-hide">
+                        <div className="space-y-2 px-3">
                         {navItems.map((item) => {
                             const Icon = item.icon
                             const active = isActive(item.href)
 
                             return (
-                                <li key={item.name}>
-                                    <div className="relative group">
+                                <div key={item.name} className="relative group">
                                         <Link
                                             href={item.href}
                                             className={`
@@ -133,11 +133,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                                 {item.name}
                                             </div>
                                         )}
-                                    </div>
-                                </li>
+                                </div>
                             )
                         })}
-                    </ul>
+                        </div>
+                    </div>
                 </div>
 
                 {/* User Profile Area */}
