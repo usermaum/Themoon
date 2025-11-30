@@ -68,22 +68,32 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                     The Moon
                                 </span>
                             </Link>
+                            <div className="relative group">
+                                <button
+                                    onClick={onToggle}
+                                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
+                                    aria-label="Collapse sidebar"
+                                >
+                                    <PanelLeft className="w-5 h-5" />
+                                </button>
+                                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                    사이드바 접기
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="relative group">
                             <button
                                 onClick={onToggle}
                                 className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
-                                aria-label="Collapse sidebar"
+                                aria-label="Expand sidebar"
                             >
                                 <PanelLeft className="w-5 h-5" />
                             </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={onToggle}
-                            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
-                            aria-label="Expand sidebar"
-                        >
-                            <PanelLeft className="w-5 h-5" />
-                        </button>
+                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                사이드바 펼치기
+                            </div>
+                        </div>
                     )}
                 </div>
 
