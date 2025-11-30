@@ -105,12 +105,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             const active = isActive(item.href)
 
                             return (
-                                <li key={item.name}>
+                                <li key={item.name} className="relative group">
                                     <Link
                                         href={item.href}
                                         className={`
-                                            flex items-center 
-                                            ${isOpen ? 'gap-3 px-3' : 'justify-center'} 
+                                            flex items-center
+                                            ${isOpen ? 'gap-3 px-3' : 'justify-center'}
                                             py-2.5 rounded-lg
                                             transition-all duration-200
                                             ${active
@@ -118,7 +118,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                                             }
                                         `}
-                                        title={!isOpen ? item.name : ''}
                                     >
                                         <Icon className="w-5 h-5 flex-shrink-0" />
                                         {isOpen && (
@@ -127,6 +126,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                             </span>
                                         )}
                                     </Link>
+                                    {!isOpen && (
+                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                            {item.name}
+                                        </div>
+                                    )}
                                 </li>
                             )
                         })}
@@ -135,20 +139,26 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
                 {/* User Profile Area */}
                 <div className="border-t border-gray-200 dark:border-gray-800 p-3">
-                    <button
-                        className={`
-                            w-full flex items-center 
-                            ${isOpen ? 'gap-3 px-3' : 'justify-center'} 
-                            py-2.5 rounded-lg
-                            text-gray-700 dark:text-gray-300 
-                            hover:bg-gray-100 dark:hover:bg-gray-800
-                            transition-all duration-200
-                        `}
-                        title={!isOpen ? 'Settings' : ''}
-                    >
-                        <Settings className="w-5 h-5 flex-shrink-0" />
-                        {isOpen && <span className="font-medium">Settings</span>}
-                    </button>
+                    <div className="relative group">
+                        <button
+                            className={`
+                                w-full flex items-center
+                                ${isOpen ? 'gap-3 px-3' : 'justify-center'}
+                                py-2.5 rounded-lg
+                                text-gray-700 dark:text-gray-300
+                                hover:bg-gray-100 dark:hover:bg-gray-800
+                                transition-all duration-200
+                            `}
+                        >
+                            <Settings className="w-5 h-5 flex-shrink-0" />
+                            {isOpen && <span className="font-medium">Settings</span>}
+                        </button>
+                        {!isOpen && (
+                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                Settings
+                            </div>
+                        )}
+                    </div>
 
                     <div
                         className={`
