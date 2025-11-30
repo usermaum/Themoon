@@ -11,6 +11,60 @@
 
 ---
 
+## [Unreleased] - 2025-11-30
+
+### ✨ Features
+
+**사이드바 툴팁 시스템**
+- 토글 버튼 툴팁 추가 (사이드바 펼치기/접기)
+- 모든 메뉴 아이템 툴팁 추가 (Home, Beans, Blends, Inventory)
+- Settings 버튼 툴팁 추가
+- CSS group-hover 기반 커스텀 툴팁 구현
+- 다크모드 완벽 대응
+- z-index 계층 구조 정립 (Backdrop: 90, Sidebar: 100, Tooltips: 200)
+
+### 🐛 Bug Fixes
+
+**툴팁 표시 문제 해결**
+- overflow-y-auto와 overflow-x-visible 동시 사용 불가 문제 해결
+- nav/ul/li 태그의 overflow 제약 제거 (→ div로 교체)
+- PageHero 컴포넌트 z-index 조정 (툴팁 가려짐 해결)
+- main 요소 z-index 설정 (Sidebar보다 낮게)
+- 불필요한 overflow-y-auto 완전 제거 (메뉴 4개로 스크롤 불필요)
+
+**.gitignore 수정**
+- logs/ 폴더 제외 → logs/*.log 파일만 제외
+- 버전 관리 파일들은 정상 추적되도록 수정
+
+### 🔧 Refactoring
+
+**사이드바 구조 개선**
+- nav 태그 → div 태그로 교체 (의미론적 HTML보다 실용성 우선)
+- ul/li 태그 → div 태그로 교체 (overflow 문제 해결)
+- 3중 구조 → 2중 구조로 단순화
+- 메뉴 아이템 group 구조 개선 (li → div.relative.group)
+
+### 📄 Documentation
+
+**세션 문서**
+- `SESSION_SUMMARY_2025-11-30.md` 상세 작성
+- 툴팁 구현 및 문제 해결 과정 9단계 기록
+- CSS overflow/z-index 관련 학습 내용 정리
+
+### 🛠️ Technical Details
+
+**변경된 파일** (5개)
+- `.gitignore` - logs/ 폴더 제외 규칙 수정
+- `frontend/components/layout/Sidebar.tsx` - 툴팁 추가 및 구조 개선
+- `frontend/components/layout/AppLayout.tsx` - main z-index 설정
+- `frontend/components/ui/PageHero.tsx` - z-index 조정
+
+**커밋 통계**
+- 총 커밋: 13개
+- feat: 2개, fix: 10개, refactor: 1개
+
+---
+
 ## [Unreleased] - 2025-11-29
 
 ### ✨ Features
