@@ -47,12 +47,13 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed top-0 left-0 h-screen bg-white dark:bg-gray-900 
+                    fixed top-0 left-0 h-screen bg-white dark:bg-gray-900
                     border-r border-gray-200 dark:border-gray-800
                     transition-all duration-300 ease-in-out z-50
                     flex flex-col
                     ${isOpen ? 'w-64' : 'w-[70px]'}
                 `}
+                style={{ overflow: 'visible' }}
             >
                 {/* Header / Logo Area */}
                 <div className={`
@@ -98,7 +99,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 </div>
 
                 {/* Navigation Links */}
-                <nav className="flex-1 overflow-y-auto py-4 scrollbar-hide">
+                <nav className="flex-1 py-4 scrollbar-hide" style={{ overflowY: 'auto', overflowX: 'visible' }}>
                     <ul className="space-y-2 px-3">
                         {navItems.map((item) => {
                             const Icon = item.icon
@@ -126,11 +127,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                             </span>
                                         )}
                                     </Link>
-                                    {!isOpen && (
-                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                            {item.name}
-                                        </div>
-                                    )}
+                                    <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                        {item.name}
+                                    </div>
                                 </li>
                             )
                         })}
@@ -153,11 +152,9 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             <Settings className="w-5 h-5 flex-shrink-0" />
                             {isOpen && <span className="font-medium">Settings</span>}
                         </button>
-                        {!isOpen && (
-                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                Settings
-                            </div>
-                        )}
+                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                            Settings
+                        </div>
                     </div>
 
                     <div
