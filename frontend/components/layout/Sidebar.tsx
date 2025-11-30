@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             {/* Backdrop for mobile */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/50 z-[90] lg:hidden"
                     onClick={onToggle}
                 />
             )}
@@ -49,7 +49,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 className={`
                     fixed top-0 left-0 h-screen bg-white dark:bg-gray-900
                     border-r border-gray-200 dark:border-gray-800
-                    transition-all duration-300 ease-in-out z-50
+                    transition-all duration-300 ease-in-out z-[100]
                     flex flex-col
                     ${isOpen ? 'w-64' : 'w-[70px]'}
                 `}
@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 >
                                     <PanelLeft className="w-5 h-5" />
                                 </button>
-                                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[9999]">
+                                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                     사이드바 접기
                                 </div>
                             </div>
@@ -91,7 +91,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             >
                                 <PanelLeft className="w-5 h-5" />
                             </button>
-                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[9999]">
+                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                 사이드바 펼치기
                             </div>
                         </div>
@@ -128,7 +128,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                         )}
                                     </Link>
                                     {!isOpen && (
-                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[9999]">
+                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                             {item.name}
                                         </div>
                                     )}
@@ -155,7 +155,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             {isOpen && <span className="font-medium">Settings</span>}
                         </button>
                         {!isOpen && (
-                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[9999]">
+                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                 Settings
                             </div>
                         )}
