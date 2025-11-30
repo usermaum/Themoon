@@ -99,9 +99,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 </div>
 
                 {/* Navigation Links */}
-                <nav className="flex-1 overflow-visible">
-                    <div className="h-full py-4 overflow-y-auto scrollbar-hide">
-                        <ul className="space-y-2 px-3">
+                <div className="flex-1 py-4 overflow-y-auto scrollbar-hide">
+                    <ul className="space-y-2 px-3">
                         {navItems.map((item) => {
                             const Icon = item.icon
                             const active = isActive(item.href)
@@ -138,9 +137,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 </li>
                             )
                         })}
-                        </ul>
-                    </div>
-                </nav>
+                    </ul>
+                </div>
 
                 {/* User Profile Area */}
                 <div className="border-t border-gray-200 dark:border-gray-800 p-3" style={{ overflow: 'visible' }}>
