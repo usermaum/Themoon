@@ -48,6 +48,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                     flex-1 overflow-auto scrollbar-thin
                     transition-all duration-300 ease-in-out
                     ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
+                    relative z-0
                 `}
             >
                 {/* Mobile menu button */}
