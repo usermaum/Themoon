@@ -106,32 +106,34 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             const active = isActive(item.href)
 
                             return (
-                                <li key={item.name} className="relative group">
-                                    <Link
-                                        href={item.href}
-                                        className={`
-                                            flex items-center
-                                            ${isOpen ? 'gap-3 px-3' : 'justify-center'}
-                                            py-2.5 rounded-lg
-                                            transition-all duration-200
-                                            ${active
-                                                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                                            }
-                                        `}
-                                    >
-                                        <Icon className="w-5 h-5 flex-shrink-0" />
-                                        {isOpen && (
-                                            <span className="font-medium whitespace-nowrap">
+                                <li key={item.name}>
+                                    <div className="relative group">
+                                        <Link
+                                            href={item.href}
+                                            className={`
+                                                flex items-center
+                                                ${isOpen ? 'gap-3 px-3' : 'justify-center'}
+                                                py-2.5 rounded-lg
+                                                transition-all duration-200
+                                                ${active
+                                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                }
+                                            `}
+                                        >
+                                            <Icon className="w-5 h-5 flex-shrink-0" />
+                                            {isOpen && (
+                                                <span className="font-medium whitespace-nowrap">
+                                                    {item.name}
+                                                </span>
+                                            )}
+                                        </Link>
+                                        {!isOpen && (
+                                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                                 {item.name}
-                                            </span>
+                                            </div>
                                         )}
-                                    </Link>
-                                    {!isOpen && (
-                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
-                                            {item.name}
-                                        </div>
-                                    )}
+                                    </div>
                                 </li>
                             )
                         })}
