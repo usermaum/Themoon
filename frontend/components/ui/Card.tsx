@@ -1,25 +1,101 @@
-import Image from 'next/image'
+import * as React from "react"
+import { cn } from "@/lib/utils"
 import Link from 'next/link'
 
-interface CardProps {
+// --- Compound Components (shadcn style) ---
+const CardRoot = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+    <div
+        ref={ref}
+        className={cn(
+            "rounded-xl border bg-card text-card-foreground shadow",
+            className
+        )}
+        {...props}
+    />
+))
+CardRoot.displayName = "Card"
+
+const CardHeader = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+    <div
+        ref={ref}
+        className={cn("flex flex-col space-y-1.5 p-6", className)}
+        {...props}
+    />
+))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<
+    HTMLParagraphElement,
+    React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+    <h3
+        ref={ref}
+        className={cn("font-semibold leading-none tracking-tight", className)}
+        {...props}
+    />
+))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<
+    HTMLParagraphElement,
+    React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+    <p
+        ref={ref}
+        className={cn("text-sm text-muted-foreground", className)}
+        {...props}
+    />
+))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+    <div
+        ref={ref}
+        className={cn("flex items-center p-6 pt-0", className)}
+        {...props}
+    />
+))
+CardFooter.displayName = "CardFooter"
+
+// --- Legacy Functional Component (Original Design) ---
+interface LegacyCardProps {
     title: string
     description: string
     imageUrl?: string
     tags?: string[]
     href?: string
     actionText?: string
+    className?: string
 }
 
-export default function Card({
+function LegacyCard({
     title,
     description,
     imageUrl,
     tags = [],
     href,
     actionText = '자세히 보기',
-}: CardProps) {
+    className,
+}: LegacyCardProps) {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col h-full">
+        <div className={cn("bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700 flex flex-col h-full", className)}>
             {imageUrl && (
                 <div className="relative h-48 w-full">
                     <img
@@ -63,3 +139,6 @@ export default function Card({
         </div>
     )
 }
+
+export { CardRoot as Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export default LegacyCard

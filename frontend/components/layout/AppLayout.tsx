@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
+import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
 interface AppLayoutProps {
     children: React.ReactNode
@@ -40,44 +41,46 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
     }
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+        <LanguageProvider>
+            <div className="flex h-screen overflow-hidden">
+                <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
 
-            <main
-                className={`
-                    flex-1 overflow-auto scrollbar-thin
-                    transition-all duration-300 ease-in-out
-                    ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
-                    relative z-0
-                `}
-            >
-                {/* Mobile menu button */}
-                <div className="lg:hidden fixed top-4 left-4 z-30">
-                    <button
-                        onClick={toggleSidebar}
-                        className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
-                        aria-label="Toggle menu"
-                    >
-                        <svg
-                            className="w-6 h-6 text-gray-600 dark:text-gray-300"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                <main
+                    className={`
+                        flex-1 overflow-auto scrollbar-thin
+                        transition-all duration-300 ease-in-out
+                        ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
+                        relative z-0
+                    `}
+                >
+                    {/* Mobile menu button */}
+                    <div className="lg:hidden fixed top-4 left-4 z-30">
+                        <button
+                            onClick={toggleSidebar}
+                            className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
+                            aria-label="Toggle menu"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        </svg>
-                    </button>
-                </div>
+                            <svg
+                                className="w-6 h-6 text-gray-600 dark:text-gray-300"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            </svg>
+                        </button>
+                    </div>
 
-                <div className="pt-4 lg:pt-0">
-                    {children}
-                </div>
-            </main>
-        </div>
+                    <div className="pt-4 lg:pt-0">
+                        {children}
+                    </div>
+                </main>
+            </div>
+        </LanguageProvider>
     )
 }

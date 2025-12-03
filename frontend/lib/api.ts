@@ -216,3 +216,41 @@ export const InventoryLogAPI = {
     await api.delete(`/api/v1/inventory-logs/${id}`)
   },
 }
+
+// --- Dashboard API ---
+
+export interface DashboardStats {
+  total_beans: number
+  total_weight: number
+  total_value: number
+}
+
+export interface LowStockBean {
+  id: number
+  name: string
+  quantity_kg: number
+  threshold: number
+}
+
+export interface RecentActivity {
+  id: number
+  bean_name: string
+  type: string
+  amount: number
+  date: string
+}
+
+export const DashboardAPI = {
+  getStats: async () => {
+    const response = await api.get<DashboardStats>('/api/v1/dashboard/stats')
+    return response.data
+  },
+  getLowStock: async (threshold: number = 5.0) => {
+    const response = await api.get<LowStockBean[]>('/api/v1/dashboard/low-stock', { params: { threshold } })
+    return response.data
+  },
+  getRecentActivity: async (limit: number = 5) => {
+    const response = await api.get<RecentActivity[]>('/api/v1/dashboard/recent-activity', { params: { limit } })
+    return response.data
+  },
+}
