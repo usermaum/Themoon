@@ -61,3 +61,6 @@ node_modules/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# 커피 명세표 배포금지
+.coffee_bean_receiving_Specification/
