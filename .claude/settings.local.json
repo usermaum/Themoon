@@ -69,7 +69,8 @@
       "Bash(du -sh:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(git clean:*)"
+      "Bash(git clean:*)",
+      "Bash(git reflog:*)"
     ],
     "deny": [],
     "ask": []

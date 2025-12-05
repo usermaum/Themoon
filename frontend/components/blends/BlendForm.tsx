@@ -1,16 +1,34 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Bean, BeanAPI, BlendCreateData, Blend } from '@/lib/api'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import { Bean, BeanAPI, BlendCreateData, Blend } from '@/lib/api';
+import Link from 'next/link';
+import {
+    TextInput,
+    Textarea,
+    Select,
+    NumberInput,
+    Button,
+    Group,
+    Stack,
+    Paper,
+    Title,
+    Text,
+    ActionIcon,
+    Box,
+    Divider,
+    LoadingOverlay
+} from '@mantine/core';
+import { Trash2, Plus, ArrowLeft } from 'lucide-react';
+import { notifications } from '@mantine/notifications';
 
 interface BlendFormProps {
-    initialData?: Blend
-    onSubmit: (data: BlendCreateData) => Promise<void>
-    onDelete?: () => Promise<void>
-    isSubmitting: boolean
-    title: string
-    submitLabel: string
+    initialData?: Blend;
+    onSubmit: (data: BlendCreateData) => Promise<void>;
+    onDelete?: () => Promise<void>;
+    isSubmitting: boolean;
+    title: string;
+    submitLabel: string;
 }
 
 export default function BlendForm({
@@ -21,270 +39,235 @@ export default function BlendForm({
     title,
     submitLabel,
 }: BlendFormProps) {
-    const [beans, setBeans] = useState<Bean[]>([])
-    const [loadingBeans, setLoadingBeans] = useState(true)
+    const [beans, setBeans] = useState<Bean[]>([]);
+    const [loadingBeans, setLoadingBeans] = useState(true);
 
     // Form State
-    const [name, setName] = useState('')
-    const [description, setDescription] = useState('')
-    const [targetRoastLevel, setTargetRoastLevel] = useState('Medium')
-    const [notes, setNotes] = useState('')
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [targetRoastLevel, setTargetRoastLevel] = useState<string | null>('Medium');
+    const [notes, setNotes] = useState('');
 
-    // Recipe State: [{ beanId: string, ratio: string }]
-    const [recipe, setRecipe] = useState<{ beanId: string; ratio: string }[]>([
-        { beanId: '', ratio: '' },
-    ])
+    // Recipe State: [{ beanId: string, ratio: number }]
+    const [recipe, setRecipe] = useState<{ beanId: string; ratio: number }[]>([
+        { beanId: '', ratio: 0 },
+    ]);
 
     useEffect(() => {
         const fetchBeans = async () => {
             try {
-                const data = await BeanAPI.getAll({ size: 100 })
-                setBeans(data.items)
+                const data = await BeanAPI.getAll({ size: 100 });
+                setBeans(data.items);
             } catch (err) {
-                console.error('Failed to fetch beans:', err)
+                console.error('Failed to fetch beans:', err);
+                notifications.show({
+                    title: 'Error',
+                    message: 'Failed to load beans list',
+                    color: 'red',
+                });
             } finally {
-                setLoadingBeans(false)
+                setLoadingBeans(false);
             }
-        }
-        fetchBeans()
-    }, [])
+        };
+        fetchBeans();
+    }, []);
 
     useEffect(() => {
         if (initialData) {
-            setName(initialData.name)
-            setDescription(initialData.description || '')
-            setTargetRoastLevel(initialData.target_roast_level || 'Medium')
-            setNotes(initialData.notes || '')
+            setName(initialData.name);
+            setDescription(initialData.description || '');
+            setTargetRoastLevel(initialData.target_roast_level || 'Medium');
+            setNotes(initialData.notes || '');
 
             if (initialData.recipe && initialData.recipe.length > 0) {
                 setRecipe(
                     initialData.recipe.map((item) => ({
                         beanId: item.bean_id.toString(),
-                        ratio: (item.ratio * 100).toString(), // 0.5 -> 50
+                        ratio: item.ratio * 100, // 0.5 -> 50
                     }))
-                )
+                );
             }
         }
-    }, [initialData])
+    }, [initialData]);
 
-    const handleRecipeChange = (index: number, field: 'beanId' | 'ratio', value: string) => {
-        const newRecipe = [...recipe]
-        newRecipe[index] = { ...newRecipe[index], [field]: value }
-        setRecipe(newRecipe)
-    }
+    const handleRecipeChange = (index: number, field: 'beanId' | 'ratio', value: string | number) => {
+        const newRecipe = [...recipe];
+        if (field === 'ratio') {
+            newRecipe[index] = { ...newRecipe[index], ratio: value as number };
+        } else {
+            newRecipe[index] = { ...newRecipe[index], beanId: value as string };
+        }
+        setRecipe(newRecipe);
+    };
 
     const addBeanRow = () => {
-        setRecipe([...recipe, { beanId: '', ratio: '' }])
-    }
+        setRecipe([...recipe, { beanId: '', ratio: 0 }]);
+    };
 
     const removeBeanRow = (index: number) => {
-        if (recipe.length === 1) return
-        const newRecipe = recipe.filter((_, i) => i !== index)
-        setRecipe(newRecipe)
-    }
+        if (recipe.length > 1) {
+            setRecipe(recipe.filter((_, i) => i !== index));
+        }
+    };
 
     const calculateTotalRatio = () => {
-        return recipe.reduce((sum, item) => sum + (parseFloat(item.ratio) || 0), 0)
-    }
+        return recipe.reduce((sum, item) => sum + (Number(item.ratio) || 0), 0);
+    };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-        // Validation
-        const totalRatio = calculateTotalRatio()
-        if (Math.abs(totalRatio - 100) > 0.1) {
-            alert(`비율의 합은 100%가 되어야 합니다. (현재: ${totalRatio}%)`)
-            return
+        if (Math.abs(calculateTotalRatio() - 100) > 0.1) {
+            notifications.show({
+                title: 'Invalid Ratio',
+                message: 'Total blend ratio must be 100%',
+                color: 'red',
+            });
+            return;
         }
 
-        const validRecipe = recipe.map((item) => ({
+        const validRecipe = recipe.map(item => ({
             bean_id: parseInt(item.beanId),
-            ratio: parseFloat(item.ratio) / 100,
-        }))
+            ratio: Number(item.ratio) / 100
+        }));
 
-        if (validRecipe.some((item) => isNaN(item.bean_id) || isNaN(item.ratio))) {
-            alert('모든 원두와 비율을 올바르게 입력해주세요.')
-            return
-        }
-
-        onSubmit({
+        await onSubmit({
             name,
             description,
-            target_roast_level: targetRoastLevel,
+            target_roast_level: targetRoastLevel || 'Medium',
             notes,
             recipe: validRecipe,
-        })
-    }
+        });
+    };
 
     if (loadingBeans) {
-        return <div className="p-8 text-center">원두 목록을 불러오는 중...</div>
+        return <LoadingOverlay visible={true} />;
     }
 
+    const beanOptions = beans.map(b => ({ value: b.id.toString(), label: `${b.name} (${b.origin})` }));
+
     return (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-            <div className="mb-8 flex justify-between items-start">
-                <div>
-                    <Link
-                        href="/blends"
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 mb-4 inline-block"
-                    >
-                        ← 목록으로 돌아가기
+        <Box maw={800} mx="auto" py="xl">
+            <Group justify="space-between" mb="lg">
+                <Group>
+                    <Link href="/blends" style={{ textDecoration: 'none' }}>
+                        <Button variant="subtle" color="gray" leftSection={<ArrowLeft size={16} />}>
+                            Back
+                        </Button>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        {title}
-                    </h1>
-                </div>
+                    <Title order={2}>{title}</Title>
+                </Group>
                 {onDelete && (
-                    <button
-                        type="button"
-                        onClick={onDelete}
-                        className="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors"
-                    >
-                        삭제하기
-                    </button>
+                    <Button color="red" variant="light" leftSection={<Trash2 size={16} />} onClick={onDelete}>
+                        Delete
+                    </Button>
                 )}
-            </div>
+            </Group>
 
-            <form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                {/* 기본 정보 섹션 */}
-                <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">기본 정보</h2>
+            <Paper withBorder p="xl" radius="md" shadow="sm">
+                <form onSubmit={handleSubmit}>
+                    <Stack gap="lg">
+                        <Title order={4}>Basic Information</Title>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            블렌드 이름 *
-                        </label>
-                        <input
-                            type="text"
+                        <TextInput
+                            label="Blend Name"
                             required
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
+                            placeholder="e.g., Summer Breeze Blend"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="예: Summer Breeze Blend"
+                            onChange={(e) => setName(e.currentTarget.value)}
                         />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            설명
-                        </label>
-                        <input
-                            type="text"
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
+                        <TextInput
+                            label="Description"
+                            placeholder="Brief description of the blend"
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="블렌드의 특징을 간단히 설명해주세요"
+                            onChange={(e) => setDescription(e.currentTarget.value)}
                         />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            목표 로스팅 포인트
-                        </label>
-                        <select
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
+                        <Select
+                            label="Target Roast Level"
+                            data={[
+                                'Light',
+                                'Medium-Light',
+                                'Medium',
+                                'Medium-Dark',
+                                'Dark'
+                            ]}
                             value={targetRoastLevel}
-                            onChange={(e) => setTargetRoastLevel(e.target.value)}
-                        >
-                            <option value="Light">Light</option>
-                            <option value="Medium-Light">Medium-Light</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Medium-Dark">Medium-Dark</option>
-                            <option value="Dark">Dark</option>
-                        </select>
-                    </div>
-                </section>
+                            onChange={setTargetRoastLevel}
+                        />
 
-                {/* 레시피 구성 섹션 */}
-                <section className="space-y-4">
-                    <div className="flex justify-between items-center border-b pb-2">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">레시피 구성</h2>
-                        <span className={`font-bold ${Math.abs(calculateTotalRatio() - 100) < 0.1 ? 'text-green-600' : 'text-red-500'}`}>
-                            총 비율: {calculateTotalRatio()}%
-                        </span>
-                    </div>
+                        <Divider my="sm" />
 
-                    <div className="space-y-3">
-                        {recipe.map((item, index) => (
-                            <div key={index} className="flex gap-4 items-start">
-                                <div className="flex-grow">
-                                    <select
-                                        required
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
+                        <Group justify="space-between" align="center">
+                            <Title order={4}>Recipe Composition</Title>
+                            <Text
+                                fw={700}
+                                c={Math.abs(calculateTotalRatio() - 100) < 0.1 ? 'teal' : 'red'}
+                            >
+                                Total: {calculateTotalRatio()}%
+                            </Text>
+                        </Group>
+
+                        <Stack gap="md">
+                            {recipe.map((item, index) => (
+                                <Group key={index} grow align="flex-start">
+                                    <Select
+                                        placeholder="Select Bean"
+                                        data={beanOptions}
                                         value={item.beanId}
-                                        onChange={(e) => handleRecipeChange(index, 'beanId', e.target.value)}
-                                    >
-                                        <option value="">원두 선택</option>
-                                        {beans.map((bean) => (
-                                            <option key={bean.id} value={bean.id}>
-                                                {bean.name} ({bean.origin})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="w-32 relative">
-                                    <input
-                                        type="number"
+                                        onChange={(val) => handleRecipeChange(index, 'beanId', val || '')}
+                                        searchable
                                         required
-                                        min="0"
-                                        max="100"
-                                        step="0.1"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent pr-8"
-                                        value={item.ratio}
-                                        onChange={(e) => handleRecipeChange(index, 'ratio', e.target.value)}
-                                        placeholder="비율"
+                                        w={'60%'}
                                     />
-                                    <span className="absolute right-3 top-2 text-gray-500">%</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => removeBeanRow(index)}
-                                    className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg border border-red-200"
-                                    disabled={recipe.length === 1}
-                                >
-                                    삭제
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                                    <NumberInput
+                                        placeholder="Ratio"
+                                        value={item.ratio}
+                                        onChange={(val) => handleRecipeChange(index, 'ratio', val as number)}
+                                        min={0}
+                                        max={100}
+                                        suffix="%"
+                                        required
+                                        w={'25%'}
+                                    />
+                                    <ActionIcon
+                                        color="red"
+                                        variant="subtle"
+                                        onClick={() => removeBeanRow(index)}
+                                        disabled={recipe.length === 1}
+                                        mt={4}
+                                    >
+                                        <Trash2 size={18} />
+                                    </ActionIcon>
+                                </Group>
+                            ))}
+                            <Button variant="outline" onClick={addBeanRow} fullWidth style={{ borderStyle: 'dashed' }}>
+                                + Add Bean
+                            </Button>
+                        </Stack>
 
-                    <button
-                        type="button"
-                        onClick={addBeanRow}
-                        className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-500 transition-colors"
-                    >
-                        + 원두 추가하기
-                    </button>
-                </section>
+                        <Divider my="sm" />
 
-                {/* 메모 섹션 */}
-                <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white border-b pb-2">메모</h2>
-                    <textarea
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="추가적인 메모사항을 입력하세요"
-                    />
-                </section>
+                        <Title order={4}>Notes</Title>
+                        <Textarea
+                            placeholder="Any additional notes"
+                            value={notes}
+                            onChange={(e) => setNotes(e.currentTarget.value)}
+                            minRows={3}
+                        />
 
-                <div className="flex justify-end gap-4 pt-4">
-                    <Link
-                        href="/blends"
-                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-                    >
-                        취소
-                    </Link>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSubmitting ? '처리 중...' : submitLabel}
-                    </button>
-                </div>
-            </form>
-        </div>
-    )
+                        <Group justify="flex-end" mt="xl">
+                            <Link href="/blends" style={{ textDecoration: 'none' }}>
+                                <Button variant="default">Cancel</Button>
+                            </Link>
+                            <Button type="submit" color="orange" loading={isSubmitting}>
+                                {submitLabel}
+                            </Button>
+                        </Group>
+                    </Stack>
+                </form>
+            </Paper>
+        </Box>
+    );
 }

@@ -18,9 +18,10 @@ def get_beans(
     db: Session,
     skip: int = 0,
     limit: int = 100,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    roast_level: Optional[str] = None
 ) -> List[Bean]:
-    """원두 목록 조회 (페이징 및 검색 지원)"""
+    """원두 목록 조회 (페이징, 검색, 필터링 지원)"""
     query = db.query(Bean)
     
     if search:
@@ -29,6 +30,17 @@ def get_beans(
             (Bean.origin.contains(search)) |
             (Bean.variety.contains(search))
         )
+    
+    if roast_level:
+        if roast_level == "Green":
+            # 생두: roast_level이 'Green'이거나 NULL인 경우 (초기 데이터 고려)
+            query = query.filter((Bean.roast_level == "Green") | (Bean.roast_level.is_(None)))
+        elif roast_level == "Roasted":
+            # 원두: roast_level이 'Green'이 아니고 NULL도 아닌 경우
+            query = query.filter((Bean.roast_level != "Green") & (Bean.roast_level.isnot(None)))
+        else:
+            # 특정 로스팅 포인트 검색 (예: 'Medium', 'Dark')
+            query = query.filter(Bean.roast_level == roast_level)
     
     return query.offset(skip).limit(limit).all()
 
@@ -69,9 +81,30 @@ def delete_bean(db: Session, bean_id: int) -> bool:
     return True
 
 
-def get_beans_count(db: Session) -> int:
-    """전체 원두 개수 조회"""
-    return db.query(Bean).count()
+def get_beans_count(
+    db: Session,
+    search: Optional[str] = None,
+    roast_level: Optional[str] = None
+) -> int:
+    """원두 개수 조회 (검색 및 필터링 지원)"""
+    query = db.query(Bean)
+    
+    if search:
+        query = query.filter(
+            (Bean.name.contains(search)) |
+            (Bean.origin.contains(search)) |
+            (Bean.variety.contains(search))
+        )
+    
+    if roast_level:
+        if roast_level == "Green":
+            query = query.filter((Bean.roast_level == "Green") | (Bean.roast_level.is_(None)))
+        elif roast_level == "Roasted":
+            query = query.filter((Bean.roast_level != "Green") & (Bean.roast_level.isnot(None)))
+        else:
+            query = query.filter(Bean.roast_level == roast_level)
+            
+    return query.count()
 
 
 def update_bean_quantity(

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.v1.endpoints import beans, blends, inventory_logs
+from app.api.v1.endpoints import beans, blends, inventory_logs, dashboard
 from app.database import engine, Base
 from app.models import bean, blend, inventory_log
 from app.config import settings
@@ -29,7 +29,7 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,6 +39,7 @@ app.add_middleware(
 app.include_router(beans.router, prefix="/api/v1/beans", tags=["beans"])
 app.include_router(blends.router, prefix="/api/v1/blends", tags=["blends"])
 app.include_router(inventory_logs.router, prefix="/api/v1/inventory-logs", tags=["inventory"])
+app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 
 @app.get("/")
 def read_root():

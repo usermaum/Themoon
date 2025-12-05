@@ -1,454 +1,426 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
-import PageHero from '@/components/ui/PageHero'
+import React, { useState, useEffect } from 'react';
+import {
+    Container,
+    Paper,
+    Title,
+    Table,
+    Badge,
+    Button,
+    Group,
+    Text,
+    Modal,
+    NumberInput,
+    TextInput,
+    Stack,
+    LoadingOverlay,
+    ActionIcon,
+    ScrollArea,
+    Center
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+
+import { Package, Edit, Trash2, Plus, Minus } from 'lucide-react';
+
+import PageHero from '@/components/ui/PageHero';
+import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function InventoryPage() {
-    const [beans, setBeans] = useState<Bean[]>([])
-    const [logs, setLogs] = useState<InventoryLog[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const { t } = useLanguage();
+    const [beans, setBeans] = useState<Bean[]>([]);
+    const [logs, setLogs] = useState<InventoryLog[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Modal state
-    const [showModal, setShowModal] = useState(false)
-    const [selectedBean, setSelectedBean] = useState<Bean | null>(null)
-    const [transactionType, setTransactionType] = useState<'IN' | 'OUT'>('IN')
-    const [quantity, setQuantity] = useState('')
-    const [reason, setReason] = useState('')
-    const [submitting, setSubmitting] = useState(false)
+    // Modal States
+    const [opened, { open, close }] = useDisclosure(false);
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 
-    // Edit modal state
-    const [showEditModal, setShowEditModal] = useState(false)
-    const [selectedLog, setSelectedLog] = useState<InventoryLog | null>(null)
-    const [editQuantity, setEditQuantity] = useState('')
-    const [editReason, setEditReason] = useState('')
+    // Form States
+    const [selectedBean, setSelectedBean] = useState<Bean | null>(null);
+    const [transactionType, setTransactionType] = useState<'IN' | 'OUT'>('IN');
+    const [quantity, setQuantity] = useState<number | string>('');
+    const [reason, setReason] = useState('');
+
+    // Edit Form States
+    const [selectedLog, setSelectedLog] = useState<InventoryLog | null>(null);
+    const [editQuantity, setEditQuantity] = useState<number | string>('');
+    const [editReason, setEditReason] = useState('');
 
     const fetchData = async () => {
         try {
-            setLoading(true)
+            setLoading(true);
             const [beansData, logsData] = await Promise.all([
                 BeanAPI.getAll({ size: 100 }),
                 InventoryLogAPI.getAll({ limit: 50 })
-            ])
-            setBeans(beansData.items)
-            setLogs(logsData)
-            setError(null)
+            ]);
+            setBeans(beansData.items);
+            setLogs(logsData);
         } catch (err) {
-            console.error('Failed to fetch data:', err)
-            setError('데이터를 불러오는데 실패했습니다.')
+            console.error('Failed to fetch data:', err);
+            notifications.show({
+                title: 'Error',
+                message: 'Failed to fetch inventory data.',
+                color: 'red',
+            });
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        fetchData()
-    }, [])
+        fetchData();
+    }, []);
 
-    const openModal = (bean: Bean, type: 'IN' | 'OUT') => {
-        setSelectedBean(bean)
-        setTransactionType(type)
-        setQuantity('')
-        setReason('')
-        setShowModal(true)
-    }
+    // Handlers
+    const handleOpenModal = (bean: Bean, type: 'IN' | 'OUT') => {
+        setSelectedBean(bean);
+        setTransactionType(type);
+        setQuantity('');
+        setReason('');
+        open();
+    };
 
-    const closeModal = () => {
-        setShowModal(false)
-        setSelectedBean(null)
-    }
+    const handleOpenEditModal = (log: InventoryLog) => {
+        setSelectedLog(log);
+        setEditQuantity(Math.abs(log.quantity_change));
+        setEditReason(log.reason || '');
+        openEdit();
+    };
 
-    const openEditModal = (log: InventoryLog) => {
-        setSelectedLog(log)
-        setEditQuantity(Math.abs(log.quantity_change).toString())
-        setEditReason(log.reason || '')
-        setShowEditModal(true)
-    }
+    const handleSubmit = async () => {
+        if (!selectedBean) return;
+        const qty = typeof quantity === 'number' ? quantity : parseFloat(quantity);
 
-    const closeEditModal = () => {
-        setShowEditModal(false)
-        setSelectedLog(null)
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!selectedBean) return
-
-        const quantityNum = parseFloat(quantity)
-        if (isNaN(quantityNum) || quantityNum <= 0) {
-            alert('올바른 수량을 입력해주세요.')
-            return
+        if (!qty || qty <= 0) {
+            notifications.show({
+                title: 'Invalid Input',
+                message: 'Please enter a valid quantity.',
+                color: 'red',
+            });
+            return;
         }
 
-        const logData: InventoryLogCreateData = {
-            bean_id: selectedBean.id,
-            transaction_type: transactionType,
-            quantity_change: transactionType === 'IN' ? quantityNum : -quantityNum,
-            reason: reason || undefined,
-        }
-
+        setIsSubmitting(true);
         try {
-            setSubmitting(true)
-            await InventoryLogAPI.create(logData)
-            await fetchData()
-            closeModal()
+            const logData: InventoryLogCreateData = {
+                bean_id: selectedBean.id,
+                transaction_type: transactionType,
+                quantity_change: transactionType === 'IN' ? qty : -qty,
+                reason: reason || undefined,
+            };
+
+            await InventoryLogAPI.create(logData);
+            await fetchData();
+            close();
+            notifications.show({
+                title: 'Success',
+                message: t('inventory.success'),
+                color: 'green',
+            });
         } catch (err: any) {
-            console.error('Failed to create inventory log:', err)
-            alert(err.response?.data?.detail || '재고 처리에 실패했습니다.')
+            notifications.show({
+                title: 'Error',
+                message: err.response?.data?.detail || 'Failed to update inventory.',
+                color: 'red',
+            });
         } finally {
-            setSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
-    const handleEdit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!selectedLog) return
+    const handleEditSubmit = async () => {
+        if (!selectedLog) return;
+        const qty = typeof editQuantity === 'number' ? editQuantity : parseFloat(editQuantity);
 
-        const quantityNum = parseFloat(editQuantity)
-        if (isNaN(quantityNum) || quantityNum <= 0) {
-            alert('올바른 수량을 입력해주세요.')
-            return
+        if (!qty || qty <= 0) {
+            notifications.show({
+                title: 'Invalid Input',
+                message: 'Please enter a valid quantity.',
+                color: 'red',
+            });
+            return;
         }
 
-        const finalQuantity = selectedLog.transaction_type === 'IN' ? quantityNum : -quantityNum
+        const finalQuantity = selectedLog.transaction_type === 'IN' ? qty : -qty;
 
+        setIsSubmitting(true);
         try {
-            setSubmitting(true)
-            await InventoryLogAPI.update(selectedLog.id, finalQuantity, editReason || undefined)
-            await fetchData()
-            closeEditModal()
+            await InventoryLogAPI.update(selectedLog.id, finalQuantity, editReason || undefined);
+            await fetchData();
+            closeEdit();
+            notifications.show({
+                title: 'Success',
+                message: t('inventory.success'),
+                color: 'green',
+            });
         } catch (err: any) {
-            console.error('Failed to update inventory log:', err)
-            alert(err.response?.data?.detail || '수정에 실패했습니다.')
+            notifications.show({
+                title: 'Error',
+                message: err.response?.data?.detail || 'Failed to update log.',
+                color: 'red',
+            });
         } finally {
-            setSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('정말로 이 입출고 기록을 삭제하시겠습니까?')) return
+        if (!confirm(t('inventory.deleteConfirm'))) return;
 
         try {
-            await InventoryLogAPI.delete(id)
-            await fetchData()
+            await InventoryLogAPI.delete(id);
+            await fetchData();
+            notifications.show({
+                title: 'Deleted',
+                message: 'Record deleted successfully',
+                color: 'blue',
+            });
         } catch (err: any) {
-            console.error('Failed to delete inventory log:', err)
-            alert(err.response?.data?.detail || '삭제에 실패했습니다.')
+            notifications.show({
+                title: 'Error',
+                message: err.response?.data?.detail || 'Failed to delete record.',
+                color: 'red',
+            });
         }
-    }
+    };
 
     const getBeanName = (beanId: number) => {
-        const bean = beans.find(b => b.id === beanId)
-        return bean ? bean.name : `Bean #${beanId}`
-    }
+        const bean = beans.find(b => b.id === beanId);
+        return bean ? bean.name : `Bean #${beanId}`;
+    };
+
+    // Render Rows
+    const stockRows = beans.map((bean) => (
+        <Table.Tr key={bean.id}>
+            <Table.Td fw={500}>{bean.name}</Table.Td>
+            <Table.Td>{bean.origin}</Table.Td>
+            <Table.Td fw={700}>{bean.quantity_kg.toFixed(1)} kg</Table.Td>
+            <Table.Td>
+                {bean.quantity_kg < 5 ? (
+                    <Badge color="red" variant="light">Shortage</Badge>
+                ) : bean.quantity_kg < 10 ? (
+                    <Badge color="yellow" variant="light">Warning</Badge>
+                ) : (
+                    <Badge color="green" variant="light">Good</Badge>
+                )}
+            </Table.Td>
+            <Table.Td style={{ textAlign: 'right' }}>
+                <Group gap="xs" justify="flex-end">
+                    <Button
+                        size="xs"
+                        variant="light"
+                        color="indigo"
+                        leftSection={<Plus size={14} />}
+                        onClick={() => handleOpenModal(bean, 'IN')}
+                    >
+                        {t('inventory.inbound')}
+                    </Button>
+                    <Button
+                        size="xs"
+                        variant="light"
+                        color="red"
+                        leftSection={<Minus size={14} />}
+                        onClick={() => handleOpenModal(bean, 'OUT')}
+                    >
+                        {t('inventory.outbound')}
+                    </Button>
+                </Group>
+            </Table.Td>
+        </Table.Tr>
+    ));
+
+    const logRows = logs.length === 0 ? (
+        <Table.Tr>
+            <Table.Td colSpan={6}>
+                <Center p="xl" c="dimmed">{t('inventory.noHistory')}</Center>
+            </Table.Td>
+        </Table.Tr>
+    ) : (
+        logs.map((log) => (
+            <Table.Tr key={log.id}>
+                <Table.Td c="dimmed" fz="sm">{new Date(log.created_at).toLocaleString()}</Table.Td>
+                <Table.Td fw={500}>{getBeanName(log.bean_id)}</Table.Td>
+                <Table.Td>
+                    <Badge
+                        color={log.transaction_type === 'IN' ? 'teal' : 'orange'}
+                        variant="dot"
+                    >
+                        {log.transaction_type === 'IN' ? t('inventory.inbound') : t('inventory.outbound')}
+                    </Badge>
+                </Table.Td>
+                <Table.Td fw={600} c={log.transaction_type === 'IN' ? 'teal' : 'orange'}>
+                    {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
+                </Table.Td>
+                <Table.Td>{log.reason || '-'}</Table.Td>
+                <Table.Td style={{ textAlign: 'right' }}>
+                    <Group gap={4} justify="flex-end">
+                        <ActionIcon variant="subtle" color="gray" onClick={() => handleOpenEditModal(log)}>
+                            <Edit size={16} />
+                        </ActionIcon>
+                        <ActionIcon variant="subtle" color="red" onClick={() => handleDelete(log.id)}>
+                            <Trash2 size={16} />
+                        </ActionIcon>
+                    </Group>
+                </Table.Td>
+            </Table.Tr>
+        ))
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div>
             <PageHero
-                title="재고 관리"
-                description="원두의 입출고를 관리하고 현재 재고 현황을 확인하세요"
-                icon="📦"
-                backgroundImage="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&q=80"
+                title={t('inventory.title')}
+                description={t('inventory.description')}
+                icon={<Package className="w-10 h-10" />}
+                backgroundImage="/images/hero/inventory-hero.png"
             />
 
-            <div className="container mx-auto px-4 py-8">
-                {error && (
-                    <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
-                        {error}
-                    </div>
-                )}
+            <Container size="xl" py="xl">
+                <Stack gap="xl">
+                    {/* Stock Status Section */}
+                    <Paper shadow="sm" radius="md" p="md" withBorder>
+                        <Group justify="space-between" mb="md">
+                            <Title order={3}>{t('inventory.currentStock')}</Title>
+                        </Group>
+                        <ScrollArea>
+                            <Table verticalSpacing="sm" highlightOnHover>
+                                <Table.Thead bg="gray.0">
+                                    <Table.Tr>
+                                        <Table.Th>{t('inventory.beanName')}</Table.Th>
+                                        <Table.Th>{t('inventory.origin')}</Table.Th>
+                                        <Table.Th>{t('inventory.current')}</Table.Th>
+                                        <Table.Th>{t('inventory.status')}</Table.Th>
+                                        <Table.Th style={{ textAlign: 'right' }}>{t('inventory.actions')}</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {loading ? (
+                                        <Table.Tr>
+                                            <Table.Td colSpan={5}>
+                                                <Center p="xl"><LoadingOverlay visible={true} /></Center>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    ) : stockRows}
+                                </Table.Tbody>
+                            </Table>
+                        </ScrollArea>
+                    </Paper>
 
-                {loading ? (
-                    <div className="text-center py-12 text-gray-500">
-                        데이터를 불러오는 중입니다...
-                    </div>
-                ) : (
-                    <>
-                        {/* 재고 현황 테이블 */}
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">현재 재고 현황</h2>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-900">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원두명
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원산지
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                현재 재고
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                상태
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                작업
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {beans.map((bean) => (
-                                            <tr key={bean.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                                    {bean.name}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {bean.origin}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                    <span className="font-semibold">{bean.quantity_kg.toFixed(1)} kg</span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {bean.quantity_kg < 5 ? (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                            재고 부족
-                                                        </span>
-                                                    ) : bean.quantity_kg < 10 ? (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                            주의
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                            충분
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                    <button
-                                                        onClick={() => openModal(bean, 'IN')}
-                                                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        입고
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openModal(bean, 'OUT')}
-                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        출고
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
+                    {/* History Section */}
+                    <Paper shadow="sm" radius="md" p="md" withBorder>
+                        <Title order={3} mb="md">{t('inventory.history')}</Title>
+                        <ScrollArea>
+                            <Table verticalSpacing="sm">
+                                <Table.Thead bg="gray.0">
+                                    <Table.Tr>
+                                        <Table.Th>{t('inventory.date')}</Table.Th>
+                                        <Table.Th>{t('inventory.beanName')}</Table.Th>
+                                        <Table.Th>{t('inventory.type')}</Table.Th>
+                                        <Table.Th>{t('inventory.amount')}</Table.Th>
+                                        <Table.Th>{t('inventory.reason')}</Table.Th>
+                                        <Table.Th style={{ textAlign: 'right' }}>{t('inventory.actions')}</Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {loading ? (
+                                        <Table.Tr>
+                                            <Table.Td colSpan={6}>
+                                                <Center p="xl"><LoadingOverlay visible={true} /></Center>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    ) : logRows}
+                                </Table.Tbody>
+                            </Table>
+                        </ScrollArea>
+                    </Paper>
+                </Stack>
+            </Container>
 
-                        {/* 입출고 기록 테이블 */}
-                        <section>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">입출고 기록</h2>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-900">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                날짜
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원두
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                유형
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                수량
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                사유
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                작업
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {logs.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                    입출고 기록이 없습니다.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            logs.map((log) => (
-                                                <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {new Date(log.created_at).toLocaleString('ko-KR')}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                        {getBeanName(log.bean_id)}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${log.transaction_type === 'IN'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {log.transaction_type === 'IN' ? '입고' : '출고'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                        {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {log.reason || '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                        <button
-                                                            onClick={() => openEditModal(log)}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            수정
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(log.id)}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            삭제
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
-                    </>
-                )}
+            {/* Create Modal */}
+            <Modal
+                opened={opened}
+                onClose={close}
+                title={transactionType === 'IN' ? t('inventory.inboundAction') : t('inventory.outboundAction')}
+                centered
+            >
+                <Stack>
+                    <Text size="sm" c="dimmed">
+                        {t('inventory.beanName')}: <Text span fw={700} c="bright">{selectedBean?.name}</Text>
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                        {t('inventory.current')}: <Text span fw={700} c="bright">{selectedBean?.quantity_kg.toFixed(1)} kg</Text>
+                    </Text>
 
-                {/* 입출고 등록 Modal */}
-                {showModal && selectedBean && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {transactionType === 'IN' ? '입고' : '출고'} 처리
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                원두: <span className="font-semibold">{selectedBean.name}</span>
-                                <br />
-                                현재 재고: <span className="font-semibold">{selectedBean.quantity_kg.toFixed(1)} kg</span>
-                            </p>
+                    <NumberInput
+                        label={t('inventory.amount') + " (kg)"}
+                        placeholder="0.0"
+                        value={quantity}
+                        onChange={setQuantity}
+                        min={0.1}
+                        step={0.1}
+                        required
+                        data-autofocus
+                    />
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        수량 (kg) *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0.1"
-                                        step="0.1"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        placeholder="예: 10.0"
-                                    />
-                                </div>
+                    <TextInput
+                        label={t('inventory.reason')}
+                        placeholder="e.g. New Purchase"
+                        value={reason}
+                        onChange={(e) => setReason(e.currentTarget.value)}
+                    />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        사유
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
-                                        value={reason}
-                                        onChange={(e) => setReason(e.target.value)}
-                                        placeholder="예: 신규 구매, 로스팅 사용"
-                                    />
-                                </div>
+                    <Group justify="flex-end" mt="md">
+                        <Button variant="default" onClick={close}>{t('inventory.cancel')}</Button>
+                        <Button
+                            color={transactionType === 'IN' ? 'indigo' : 'red'}
+                            onClick={handleSubmit}
+                            loading={isSubmitting}
+                        >
+                            {t('inventory.confirm')}
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
 
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={closeModal}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-                                    >
-                                        취소
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        className={`px-4 py-2 rounded-lg text-white ${transactionType === 'IN'
-                                            ? 'bg-indigo-600 hover:bg-indigo-700'
-                                            : 'bg-red-600 hover:bg-red-700'
-                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                    >
-                                        {submitting ? '처리 중...' : '확인'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
+            {/* Edit Modal */}
+            <Modal
+                opened={editOpened}
+                onClose={closeEdit}
+                title={t('inventory.editAction')}
+                centered
+            >
+                <Stack>
+                    <Text size="sm" c="dimmed">
+                        {t('inventory.beanName')}: <Text span fw={700} c="bright">{selectedLog && getBeanName(selectedLog.bean_id)}</Text>
+                    </Text>
 
-                {/* 입출고 수정 Modal */}
-                {showEditModal && selectedLog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                입출고 기록 수정
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                원두: <span className="font-semibold">{getBeanName(selectedLog.bean_id)}</span>
-                                <br />
-                                유형: <span className="font-semibold">{selectedLog.transaction_type === 'IN' ? '입고' : '출고'}</span>
-                            </p>
+                    <NumberInput
+                        label={t('inventory.amount') + " (kg)"}
+                        value={editQuantity}
+                        onChange={setEditQuantity}
+                        min={0.1}
+                        step={0.1}
+                        required
+                    />
 
-                            <form onSubmit={handleEdit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        수량 (kg) *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0.1"
-                                        step="0.1"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
-                                        value={editQuantity}
-                                        onChange={(e) => setEditQuantity(e.target.value)}
-                                        placeholder="예: 10.0"
-                                    />
-                                </div>
+                    <TextInput
+                        label={t('inventory.reason')}
+                        value={editReason}
+                        onChange={(e) => setEditReason(e.currentTarget.value)}
+                    />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        사유
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
-                                        value={editReason}
-                                        onChange={(e) => setEditReason(e.target.value)}
-                                        placeholder="예: 신규 구매, 로스팅 사용"
-                                    />
-                                </div>
-
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <button
-                                        type="button"
-                                        onClick={closeEditModal}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-                                    >
-                                        취소
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {submitting ? '처리 중...' : '수정 완료'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-            </div>
+                    <Group justify="flex-end" mt="md">
+                        <Button variant="default" onClick={closeEdit}>{t('inventory.cancel')}</Button>
+                        <Button onClick={handleEditSubmit} loading={isSubmitting}>
+                            {t('inventory.confirm')}
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
         </div>
-    )
+    );
 }

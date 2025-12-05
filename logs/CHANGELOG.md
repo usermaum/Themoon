@@ -11,6 +11,41 @@
 
 ---
 
+## [Unreleased] - 2025-12-05
+
+### ✨ Features
+
+**원두 목록 필터링 (Bean Filtering)**
+- 생두(Green Bean)와 원두(Roasted Bean) 구분 조회 기능 추가
+- Backend: `roast_level` 쿼리 파라미터 및 필터링 로직 구현 (`bean_service.py`, `beans.py`)
+- Frontend: 원두 관리 페이지 상단 필터 탭 UI 추가 (`beans/page.tsx`)
+
+**언어 전환기 (Language Switcher)**
+- 사이드바 하단에 언어 전환 버튼(KO/EN) 추가 (`Sidebar.tsx`)
+- `LanguageSwitcher` 컴포넌트 통합
+
+### 🐛 Bug Fixes
+
+**페이지네이션 카운트 수정**
+- 필터링 적용 시 전체 개수(`total`)가 갱신되지 않는 문제 해결 (`get_beans_count`)
+
+### 🔧 Configuration
+
+**IDE 설정**
+- `.vscode/settings.json` 추가: Tailwind CSS 경고 억제
+
+### 🚑 Hotfixes & UAT
+
+**Dashboard Hydration Fix**
+- `Dashboard` 컴포넌트 로직을 `app/page.tsx`로 이동하여 클라이언트 사이드 데이터 페칭 안정화.
+- 초기 로딩 시 레이아웃 깨짐 및 Hydration Error 완벽 해결.
+
+**UAT 최적화**
+- `BeanForm`: 자동화 테스트 호환성을 위해 표준 HTML Input/Select로 리팩토링 (UI 스타일은 유지).
+- `InventoryPage`: 로직 검증 완료 후 Premium UI (Mantine Button/ScrollArea) 복구.
+
+---
+
 ## [Unreleased] - 2025-11-30
 
 ### ✨ Features

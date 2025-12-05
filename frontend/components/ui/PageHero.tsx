@@ -2,7 +2,7 @@ interface PageHeroProps {
     title: string
     description: string
     backgroundImage?: string
-    icon?: string
+    icon?: React.ReactNode
     showBackground?: boolean
 }
 

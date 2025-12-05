@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
-import AppLayout from '@/components/layout/AppLayout'
-import Footer from '@/components/layout/Footer'
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import { Notifications } from '@mantine/notifications';
+import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core'
+import { MainShell } from '@/components/layout/MainShell'
 import { cookies } from 'next/headers'
+import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+
+import { theme } from '@/theme'
 
 export const metadata: Metadata = {
   title: 'The Moon Drip Bar',
@@ -18,15 +25,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const cookieStore = cookies()
-  const sidebarState = cookieStore.get('sidebar:state')
+  // const sidebarState = cookieStore.get('sidebar:state') // Mantine handles state internally or via other means if needed
 
   return (
     <html lang="ko">
-      <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
-        <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
-          {children}
-          <Footer />
-        </AppLayout>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body className={`${inter.className} ${playfair.variable} min-h-screen bg-[#FFF8F0] dark:bg-zinc-900`}>
+        <MantineProvider theme={theme}>
+          <Notifications />
+          <LanguageProvider>
+            <MainShell>
+              {children}
+            </MainShell>
+          </LanguageProvider>
+        </MantineProvider>
       </body>
     </html>
   )

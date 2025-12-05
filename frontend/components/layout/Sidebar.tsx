@@ -4,13 +4,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
     Home,
+    LayoutDashboard,
+    Flame,
     Coffee,
     Layers,
     Package,
+    Truck,
     Settings,
     User,
     PanelLeft
 } from 'lucide-react'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 
 interface SidebarProps {
     isOpen: boolean
@@ -22,9 +26,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
     const navItems = [
         { name: 'Home', href: '/', icon: Home },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Roasting', href: '/roasting', icon: Flame },
         { name: 'Beans', href: '/beans', icon: Coffee },
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
+        { name: 'Inbound', href: '/inbound', icon: Truck },
     ]
 
     const isActive = (href: string) => {
@@ -107,36 +114,43 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
                             return (
                                 <div key={item.name} className="relative group">
-                                        <Link
-                                            href={item.href}
-                                            className={`
+                                    <Link
+                                        href={item.href}
+                                        className={`
                                                 flex items-center
                                                 ${isOpen ? 'gap-3 px-3' : 'justify-center'}
                                                 py-2.5 rounded-lg
                                                 transition-all duration-200
                                                 ${active
-                                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
-                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                                                }
+                                                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                            }
                                             `}
-                                        >
-                                            <Icon className="w-5 h-5 flex-shrink-0" />
-                                            {isOpen && (
-                                                <span className="font-medium whitespace-nowrap">
-                                                    {item.name}
-                                                </span>
-                                            )}
-                                        </Link>
-                                        {!isOpen && (
-                                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
+                                    >
+                                        <Icon className="w-5 h-5 flex-shrink-0" />
+                                        {isOpen && (
+                                            <span className="font-medium whitespace-nowrap">
                                                 {item.name}
-                                            </div>
+                                            </span>
                                         )}
+                                    </Link>
+                                    {!isOpen && (
+                                        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
+                                            {item.name}
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}
                     </div>
                 </div>
+
+                {/* Language Switcher */}
+                {isOpen && (
+                    <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-800 flex justify-center">
+                        <LanguageSwitcher />
+                    </div>
+                )}
 
                 {/* User Profile Area */}
                 <div className="border-t border-gray-200 dark:border-gray-800 p-3" style={{ overflow: 'visible' }}>

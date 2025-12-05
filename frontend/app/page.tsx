@@ -1,213 +1,269 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Bean, BeanAPI, Blend, BlendAPI, InventoryLog, InventoryLogAPI } from '@/lib/api'
-import Link from 'next/link'
-import Card from '@/components/ui/Card'
-import Hero from '@/components/home/Hero'
+import React, { useEffect, useState } from 'react';
+import { DashboardAPI, DashboardStats, LowStockBean, RecentActivity, BlendAPI, Blend } from '@/lib/api';
+import {
+  Grid,
+  Card,
+  Text,
+  Group,
+  RingProgress,
+  ThemeIcon,
+  SimpleGrid,
+  Badge,
+  Paper,
+  Stack,
+  Center,
+  Loader,
+  Title
+} from '@mantine/core';
+import {
+  Package,
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
+  AlertTriangle,
+  LayoutDashboard,
+  Activity,
+  CheckCircle,
+  Layers
+} from 'lucide-react';
+import PageHero from '@/components/ui/PageHero';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { notifications } from '@mantine/notifications';
 
 export default function HomePage() {
-  const [beans, setBeans] = useState<Bean[]>([])
-  const [blends, setBlends] = useState<Blend[]>([])
-  const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
-  const [loading, setLoading] = useState(true)
+  const { t } = useLanguage();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [lowStock, setLowStock] = useState<LowStockBean[]>([]);
+  const [activity, setActivity] = useState<RecentActivity[]>([]);
+  const [blends, setBlends] = useState<Blend[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-        const [beansData, blendsData, logsData] = await Promise.all([
-          BeanAPI.getAll({ size: 100 }),
-          BlendAPI.getAll({ limit: 100 }),
-          InventoryLogAPI.getAll({ limit: 10 }),
-        ])
-
-        setBeans(beansData.items || [])
-        setBlends(blendsData || [])
-        setRecentLogs(logsData || [])
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err)
+        const [statsData, lowStockData, activityData, blendsData] = await Promise.all([
+          DashboardAPI.getStats(),
+          DashboardAPI.getLowStock(),
+          DashboardAPI.getRecentActivity(),
+          BlendAPI.getAll({ limit: 100 })
+        ]);
+        setStats(statsData);
+        setLowStock(lowStockData);
+        setActivity(activityData);
+        setBlends(blendsData || []);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+        notifications.show({
+          title: 'Error',
+          message: 'Failed to fetch dashboard data',
+          color: 'red',
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
+    fetchData();
+  }, []);
 
-    fetchData()
-  }, [])
-
-  const lowStockBeans = beans.filter((bean) => bean.quantity_kg < 5)
-  const totalStock = beans.reduce((sum, bean) => sum + bean.quantity_kg, 0)
+  if (loading) {
+    return (
+      <Center h="100vh">
+        <Loader size="xl" color="orange" type="dots" />
+      </Center>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <Hero />
+    <div>
+      <PageHero
+        title={t('dashboard.title')}
+        description={t('dashboard.description')}
+        icon={<LayoutDashboard className="w-10 h-10" />}
+        backgroundImage="/images/hero/home-hero.png"
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="text-center py-12 text-gray-500">
-            데이터를 불러오는 중입니다...
-          </div>
-        ) : (
-          <>
-            {/* 통계 카드 섹션 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">전체 원두</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{beans.length}</p>
-                  </div>
-                  <div className="text-4xl">☕</div>
-                </div>
-              </div>
+      <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-8">
+        {/* Stats Overview */}
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
+          {/* Total Value */}
+          <Card radius="xl" padding="xl" shadow="sm" className="hover:shadow-md transition-all">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed" fw={700} tt="uppercase">{t('dashboard.totalValue')}</Text>
+                <Text size="xl" fw={700} style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem' }}>
+                  ₩{stats?.total_value.toLocaleString()}
+                </Text>
+                <Text size="xs" c="green" fw={500} mt="sm">
+                  {t('dashboard.estimatedCost')}
+                </Text>
+              </Stack>
+              <ThemeIcon size={48} radius="xl" variant="light" color="indigo">
+                <DollarSign size={24} />
+              </ThemeIcon>
+            </Group>
+          </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">블렌드 레시피</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{blends.length}</p>
-                  </div>
-                  <div className="text-4xl">🎨</div>
-                </div>
-              </div>
+          {/* Total Weight */}
+          <Card radius="xl" padding="xl" shadow="sm" className="hover:shadow-md transition-all">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed" fw={700} tt="uppercase">{t('dashboard.totalWeight')}</Text>
+                <Text size="xl" fw={700} style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem' }}>
+                  {stats?.total_weight.toLocaleString()} kg
+                </Text>
+                <Text size="xs" c="dimmed" mt="sm">
+                  {t('dashboard.acrossTypes').replace('{count}', stats?.total_beans.toString() || '0')}
+                </Text>
+              </Stack>
+              <ThemeIcon size={48} radius="xl" variant="light" color="orange">
+                <Package size={24} />
+              </ThemeIcon>
+            </Group>
+          </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">총 재고량</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{totalStock.toFixed(1)} kg</p>
-                  </div>
-                  <div className="text-4xl">📦</div>
-                </div>
-              </div>
+          {/* Blends Count - Added to match old home page data */}
+          <Card radius="xl" padding="xl" shadow="sm" className="hover:shadow-md transition-all">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed" fw={700} tt="uppercase">{t('blends.title') || 'Blend Recipes'}</Text>
+                <Text size="xl" fw={700} style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem' }}>
+                  {blends.length}
+                </Text>
+                <Text size="xs" c="dimmed" mt="sm">
+                  Active Recipes
+                </Text>
+              </Stack>
+              <ThemeIcon size={48} radius="xl" variant="light" color="grape">
+                <Layers size={24} />
+              </ThemeIcon>
+            </Group>
+          </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-red-200 dark:border-red-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-red-600 dark:text-red-400 text-sm font-medium">재고 부족</p>
-                    <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">{lowStockBeans.length}</p>
-                  </div>
-                  <div className="text-4xl">⚠️</div>
-                </div>
-              </div>
-            </div>
+          {/* Low Stock */}
+          <Card radius="xl" padding="xl" shadow="sm" className="hover:shadow-md transition-all">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed" fw={700} tt="uppercase">{t('dashboard.lowStockItems')}</Text>
+                <Text size="xl" fw={700} c={lowStock.length > 0 ? "red" : "green"} style={{ fontFamily: 'var(--font-playfair)', fontSize: '2rem' }}>
+                  {lowStock.length}
+                </Text>
+                <Text size="xs" c={lowStock.length > 0 ? "red" : "green"} mt="sm" fw={500}>
+                  {lowStock.length > 0 ? t('dashboard.itemsBelowThreshold') : t('dashboard.allStockHealthy')}
+                </Text>
+              </Stack>
+              <RingProgress
+                size={60}
+                thickness={6}
+                roundCaps
+                sections={[
+                  { value: lowStock.length * 10, color: lowStock.length > 0 ? 'red' : 'green' }
+                ]}
+                label={
+                  <Center>
+                    <AlertTriangle size={16} color={lowStock.length > 0 ? 'var(--mantine-color-red-6)' : 'var(--mantine-color-green-6)'} />
+                  </Center>
+                }
+              />
+            </Group>
+          </Card>
+        </SimpleGrid>
 
-            {/* 재고 부족 알림 */}
-            {lowStockBeans.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  재고 부족 알림
-                </h2>
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <ul className="space-y-2">
-                    {lowStockBeans.map((bean) => (
-                      <li key={bean.id} className="flex justify-between items-center">
-                        <span className="text-gray-900 dark:text-white font-medium">
-                          {bean.name} ({bean.origin})
-                        </span>
-                        <span className="text-red-600 dark:text-red-400 font-semibold">
-                          {bean.quantity_kg.toFixed(1)} kg
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/inventory"
-                    className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    재고 관리로 이동 →
-                  </Link>
-                </div>
-              </section>
-            )}
+        <Grid gutter="lg">
+          {/* Recent Activity */}
+          <Grid.Col span={{ base: 12, md: 8 }}>
+            <Card radius="xl" padding="lg" shadow="sm" h="100%">
+              <Group justify="space-between" mb="lg">
+                <Group gap="xs">
+                  <Activity size={20} className="text-stone-500" />
+                  <Title order={4} style={{ fontFamily: 'var(--font-playfair)' }}>{t('dashboard.recentActivity')}</Title>
+                </Group>
+              </Group>
 
-            {/* 최근 활동 */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                최근 입출고 내역
-              </h2>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                {recentLogs.length === 0 ? (
-                  <p className="p-6 text-center text-gray-500">최근 활동이 없습니다.</p>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                          날짜
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                          유형
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                          수량
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                          사유
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {recentLogs.map((log) => (
-                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {new Date(log.created_at).toLocaleString('ko-KR')}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${log.transaction_type === 'IN'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                              }`}>
-                              {log.transaction_type === 'IN' ? '입고' : '출고'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {log.reason || '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <Stack gap="md">
+                {activity.map((item) => (
+                  <Paper key={item.id} p="md" radius="lg" bg="gray.0" withBorder>
+                    <Group justify="space-between">
+                      <Group>
+                        <ThemeIcon
+                          radius="xl"
+                          size="lg"
+                          variant="light"
+                          color={item.type.includes('IN') ? 'green' : 'blue'}
+                        >
+                          {item.type.includes('IN') ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                        </ThemeIcon>
+                        <div>
+                          <Text fw={600} size="sm">{item.bean_name}</Text>
+                          <Text size="xs" c="dimmed" tt="uppercase">{item.type}</Text>
+                        </div>
+                      </Group>
+                      <Group gap="xl">
+                        <Text size="sm" c="dimmed" visibleFrom="xs">
+                          {new Date(item.date).toLocaleDateString()}
+                        </Text>
+                        <Badge
+                          size="lg"
+                          variant="light"
+                          color={item.type.includes('IN') ? 'green' : 'blue'}
+                        >
+                          {item.type.includes('IN') ? '+' : '-'}{item.amount} kg
+                        </Badge>
+                      </Group>
+                    </Group>
+                  </Paper>
+                ))}
+                {activity.length === 0 && (
+                  <Center py="xl">
+                    <Text c="dimmed">No recent activity.</Text>
+                  </Center>
                 )}
-              </div>
-            </section>
+              </Stack>
+            </Card>
+          </Grid.Col>
 
-            {/* 빠른 링크 */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                빠른 작업
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card
-                  title="원두 관리"
-                  description="새로운 원두를 등록하거나 기존 원두 정보를 관리합니다."
-                  tags={['CRUD', 'Beans']}
-                  href="/beans"
-                  actionText="관리하기"
-                />
-                <Card
-                  title="블렌드 레시피"
-                  description="나만의 커피 블렌드 레시피를 만들고 관리합니다."
-                  tags={['Recipe', 'Blends']}
-                  href="/blends"
-                  actionText="관리하기"
-                />
-                <Card
-                  title="재고 관리"
-                  description="원두의 입고/출고를 처리하고 재고 현황을 확인합니다."
-                  tags={['Inventory', 'Stock']}
-                  href="/inventory"
-                  actionText="관리하기"
-                />
-              </div>
-            </section>
-          </>
-        )}
+          {/* Low Stock Alerts */}
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card radius="xl" padding="lg" shadow="sm" h="100%" bg="red.0" style={{ borderColor: 'var(--mantine-color-red-2)' }}>
+              <Group justify="space-between" mb="lg">
+                <Group gap="xs">
+                  <AlertTriangle size={20} className="text-red-500" />
+                  <Title order={4} c="red.9" style={{ fontFamily: 'var(--font-playfair)' }}>{t('dashboard.lowStockAlerts')}</Title>
+                </Group>
+              </Group>
+
+              <Stack>
+                {lowStock.length > 0 ? (
+                  lowStock.map((bean) => (
+                    <Paper key={bean.id} p="md" radius="lg" bg="white" shadow="xs">
+                      <Group justify="space-between" align="center">
+                        <div>
+                          <Text fw={600} c="red.9">{bean.name}</Text>
+                          <Text size="xs" c="red.5">{t('dashboard.threshold')}: {bean.threshold}kg</Text>
+                        </div>
+                        <Stack align="flex-end" gap={0}>
+                          <Text fw={700} c="red.7" size="lg">{bean.quantity_kg}</Text>
+                          <Text size="xs" c="red.5">kg remaining</Text>
+                        </Stack>
+                      </Group>
+                    </Paper>
+                  ))
+                ) : (
+                  <Center h="100%" py="xl" style={{ flexDirection: 'column', gap: 16 }}>
+                    <ThemeIcon radius="50%" size={60} color="green" variant="light">
+                      <CheckCircle size={30} />
+                    </ThemeIcon>
+                    <Text ta="center" c="green.8" fw={500}>
+                      All stock levels are healthy!
+                    </Text>
+                  </Center>
+                )}
+              </Stack>
+            </Card>
+          </Grid.Col>
+        </Grid>
       </div>
     </div>
-  )
+  );
 }

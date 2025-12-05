@@ -17,9 +17,8 @@ def get_inventory_stats(db: Session = Depends(get_db)):
     total_weight = db.query(func.sum(Bean.quantity_kg)).scalar() or 0.0
     
     # Total Value = Sum(quantity * avg_cost_price)
-    # This might be slow if many beans, but fine for MVP
-    beans = db.query(Bean).all()
-    total_value = sum(b.quantity_kg * b.avg_cost_price for b in beans)
+    # Optimized to use SQL aggregation
+    total_value = db.query(func.sum(func.coalesce(Bean.quantity_kg, 0) * func.coalesce(Bean.avg_cost_price, 0))).scalar() or 0.0
     
     return {
         "total_beans": total_beans,
