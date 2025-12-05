@@ -19,7 +19,8 @@ def get_beans(
     skip: int = 0,
     limit: int = 100,
     search: Optional[str] = None,
-    roast_level: Optional[str] = None
+    roast_level: Optional[str] = None,
+    bean_type: Optional[str] = None
 ) -> List[Bean]:
     """원두 목록 조회 (페이징, 검색, 필터링 지원)"""
     query = db.query(Bean)
@@ -31,23 +32,44 @@ def get_beans(
             (Bean.variety.contains(search))
         )
     
+    # Phase 2: Filter by Bean Type (Green/Roasted)
+    if bean_type:
+        query = query.filter(Bean.type == bean_type)
+        
+    # Legacy Support (mapped to new fields)
     if roast_level:
         if roast_level == "Green":
-            # 생두: roast_level이 'Green'이거나 NULL인 경우 (초기 데이터 고려)
-            query = query.filter((Bean.roast_level == "Green") | (Bean.roast_level.is_(None)))
+            query = query.filter(Bean.type == "GREEN_BEAN")
         elif roast_level == "Roasted":
-            # 원두: roast_level이 'Green'이 아니고 NULL도 아닌 경우
-            query = query.filter((Bean.roast_level != "Green") & (Bean.roast_level.isnot(None)))
+            query = query.filter(Bean.type == "ROASTED_BEAN")
         else:
-            # 특정 로스팅 포인트 검색 (예: 'Medium', 'Dark')
-            query = query.filter(Bean.roast_level == roast_level)
+            # Map roast_level string to RoastProfile enum if possible
+            # Assuming 'Medium' -> 'MEDIUM', 'Dark' -> 'DARK'
+            try:
+                uppercase_level = roast_level.upper()
+                query = query.filter(Bean.roast_profile == uppercase_level)
+            except:
+                pass 
     
     return query.offset(skip).limit(limit).all()
 
 
 def create_bean(db: Session, bean: BeanCreate) -> Bean:
-    """새 원두 등록"""
-    db_bean = Bean(**bean.model_dump())
+    """원두 생성"""
+    db_bean = Bean(
+        name=bean.name,
+        type=bean.type,
+        roast_profile=bean.roast_profile,
+        origin=bean.origin,
+        variety=bean.variety,
+        processing_method=bean.processing_method,
+        purchase_date=bean.purchase_date,
+        purchase_price_per_kg=bean.purchase_price_per_kg,
+        cost_price=bean.cost_price or bean.purchase_price_per_kg or 0.0,
+        quantity_kg=bean.quantity_kg or 0.0,
+        parent_bean_id=bean.parent_bean_id,
+        notes=bean.notes
+    )
     db.add(db_bean)
     db.commit()
     db.refresh(db_bean)
@@ -55,12 +77,11 @@ def create_bean(db: Session, bean: BeanCreate) -> Bean:
 
 
 def update_bean(db: Session, bean_id: int, bean: BeanUpdate) -> Optional[Bean]:
-    """원두 정보 수정"""
+    """원두 수정"""
     db_bean = get_bean(db, bean_id)
     if not db_bean:
         return None
     
-    # 제공된 필드만 업데이트
     update_data = bean.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_bean, field, value)
@@ -84,7 +105,8 @@ def delete_bean(db: Session, bean_id: int) -> bool:
 def get_beans_count(
     db: Session,
     search: Optional[str] = None,
-    roast_level: Optional[str] = None
+    roast_level: Optional[str] = None,
+    bean_type: Optional[str] = None
 ) -> int:
     """원두 개수 조회 (검색 및 필터링 지원)"""
     query = db.query(Bean)
@@ -96,13 +118,20 @@ def get_beans_count(
             (Bean.variety.contains(search))
         )
     
+    if bean_type:
+        query = query.filter(Bean.type == bean_type)
+    
     if roast_level:
         if roast_level == "Green":
-            query = query.filter((Bean.roast_level == "Green") | (Bean.roast_level.is_(None)))
+            query = query.filter(Bean.type == "GREEN_BEAN")
         elif roast_level == "Roasted":
-            query = query.filter((Bean.roast_level != "Green") & (Bean.roast_level.isnot(None)))
+            query = query.filter(Bean.type == "ROASTED_BEAN")
         else:
-            query = query.filter(Bean.roast_level == roast_level)
+            try:
+                uppercase_level = roast_level.upper()
+                query = query.filter(Bean.roast_profile == uppercase_level)
+            except:
+                pass
             
     return query.count()
 

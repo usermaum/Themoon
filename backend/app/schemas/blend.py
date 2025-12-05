@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -30,3 +30,23 @@ class Blend(BlendBase):
 
     class Config:
         from_attributes = True
+
+    @field_validator('recipe', mode='before')
+    @classmethod
+    def transform_recipes(cls, v):
+        # If v is a list of SQLAlchemy objects (Recipe model)
+        if v and isinstance(v, list) and not isinstance(v[0], dict) and hasattr(v[0], 'ingredient_bean_id'):
+            return [
+                {"bean_id": r.ingredient_bean_id, "ratio": r.ratio_percent / 100.0}
+                for r in v
+            ]
+        return v
+
+class BlendingProduction(BaseModel):
+    amount: float = Field(..., gt=0, description="생산량 (kg)")
+    note: Optional[str] = Field(None, description="메모")
+
+class BlendingResponse(BaseModel):
+    transaction_ids: List[int]
+    cost_price: float
+    produced_amount: float

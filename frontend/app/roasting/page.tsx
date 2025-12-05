@@ -1,326 +1,381 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
-    Grid,
+    Container,
     Paper,
-    Text,
     Title,
-    Group,
-    Button,
-    Select,
-    NumberInput,
     TextInput,
+    NumberInput,
+    Select,
+    Button,
+    Group,
     Stack,
-    Progress,
-    Alert,
+    Text,
     LoadingOverlay,
-    SegmentedControl
+    Divider,
+    Alert,
+    Radio
 } from '@mantine/core';
-
-import { Flame, Calculator, Info } from 'lucide-react';
-import PageHero from '@/components/ui/PageHero';
-import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { notifications } from '@mantine/notifications';
+import { Flame, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-
-interface Bean {
-    id: number;
-    name: string;
-    english_name?: string;
-    origin: string;
-    grade?: string;
-    type: string;
-    quantity_kg: number;
-    avg_cost_price: number;
-}
+import PageHero from '@/components/ui/PageHero';
+import { Bean, BeanAPI, RoastingAPI, RoastingCreateData } from '@/lib/api';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function RoastingPage() {
     const { t } = useLanguage();
+
+    // Data States
     const [greenBeans, setGreenBeans] = useState<Bean[]>([]);
     const [roastedBeans, setRoastedBeans] = useState<Bean[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isFetching, setIsFetching] = useState(true);
+    const [loading, setLoading] = useState(false);
 
-    // Form State
+    // Form States
     const [selectedGreenBeanId, setSelectedGreenBeanId] = useState<string | null>(null);
     const [inputAmount, setInputAmount] = useState<number | string>('');
+    const [roastProfile, setRoastProfile] = useState<string>('MEDIUM');
+
+    // Output Strategy
+    const [outputStrategy, setOutputStrategy] = useState<string>('new'); // 'new' or 'existing'
+    const [existingRoastedBeanId, setExistingRoastedBeanId] = useState<string | null>(null);
+    const [newBeanName, setNewBeanName] = useState<string>('');
+
     const [outputAmount, setOutputAmount] = useState<number | string>('');
-    const [roastLevel, setRoastLevel] = useState<string | null>("Medium");
-    const [targetMode, setTargetMode] = useState<string>("new");
-    const [newBeanName, setNewBeanName] = useState<string>("");
-    const [selectedRoastedBeanId, setSelectedRoastedBeanId] = useState<string | null>(null);
+    const [note, setNote] = useState<string>('');
+
+    // Derived States
+    const [lossRate, setLossRate] = useState<number | null>(null);
 
     useEffect(() => {
         fetchBeans();
     }, []);
 
+    useEffect(() => {
+        // Auto-calculate loss rate
+        const inp = typeof inputAmount === 'number' ? inputAmount : parseFloat(inputAmount);
+        const out = typeof outputAmount === 'number' ? outputAmount : parseFloat(outputAmount);
+
+        if (inp > 0 && out > 0 && inp >= out) {
+            const rate = ((inp - out) / inp) * 100;
+            setLossRate(rate);
+        } else {
+            setLossRate(null);
+        }
+    }, [inputAmount, outputAmount]);
+
     const fetchBeans = async () => {
-        setIsFetching(true);
+        setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/beans?size=100`);
-            const allBeans = response.data.items;
-            setGreenBeans(allBeans.filter((b: Bean) => b.type === 'GREEN_BEAN'));
-            setRoastedBeans(allBeans.filter((b: Bean) => b.type === 'ROASTED_SINGLE'));
-        } catch (err) {
-            console.error("Failed to fetch beans", err);
+            const [greens, roasteds] = await Promise.all([
+                BeanAPI.getAll({ type: 'GREEN_BEAN', size: 100 }),
+                BeanAPI.getAll({ type: 'ROASTED_BEAN', size: 100 })
+            ]);
+            setGreenBeans(greens.items);
+            setRoastedBeans(roasteds.items);
+        } catch (error) {
+            console.error(error);
             notifications.show({
                 title: 'Error',
-                message: 'Failed to fetch beans data.',
-                color: 'red',
+                message: 'Failed to load bean lists',
+                color: 'red'
             });
         } finally {
-            setIsFetching(false);
+            setLoading(false);
         }
     };
 
-    const selectedGreenBean = greenBeans.find(b => b.id.toString() === selectedGreenBeanId);
-
-    // Calculations
-    const inputVal = typeof inputAmount === 'number' ? inputAmount : parseFloat(inputAmount as string) || 0;
-    const outputVal = typeof outputAmount === 'number' ? outputAmount : parseFloat(outputAmount as string) || 0;
-    const lossRate = inputVal > 0 ? ((inputVal - outputVal) / inputVal * 100) : 0;
-    const estimatedCost = (selectedGreenBean && outputVal > 0)
-        ? (selectedGreenBean.avg_cost_price * inputVal) / outputVal
-        : 0;
-
-    // Auto-fill new name suggestion
-    useEffect(() => {
-        if (selectedGreenBean && targetMode === 'new' && !newBeanName) {
-            const suggestedName = selectedGreenBean.name
-                .replace("G1", "")
-                .replace("G2", "")
-                .replace("G4", "")
-                .trim() + " Roasted";
-            setNewBeanName(suggestedName);
-        }
-    }, [selectedGreenBeanId, targetMode]);
-
     const handleSubmit = async () => {
-        if (!selectedGreenBeanId || inputVal <= 0 || outputVal <= 0) return;
-        if (targetMode === 'new' && !newBeanName) return;
-        if (targetMode === 'existing' && !selectedRoastedBeanId) return;
+        if (!selectedGreenBeanId) {
+            notifications.show({ title: 'Error', message: 'Please select a green bean', color: 'red' });
+            return;
+        }
 
-        setIsLoading(true);
+        const inp = typeof inputAmount === 'number' ? inputAmount : parseFloat(inputAmount);
+        const out = typeof outputAmount === 'number' ? outputAmount : parseFloat(outputAmount);
+
+        if (!inp || inp <= 0) {
+            notifications.show({ title: 'Error', message: 'Invalid input amount', color: 'red' });
+            return;
+        }
+        if (!out || out <= 0) {
+            notifications.show({ title: 'Error', message: 'Invalid output amount', color: 'red' });
+            return;
+        }
+        if (out > inp) {
+            notifications.show({ title: 'Warning', message: 'Output amount cannot be greater than input amount (typically)', color: 'orange' });
+            // Proceeding is allowed but usually indicates error
+        }
+
+        if (outputStrategy === 'new' && !newBeanName) {
+            notifications.show({ title: 'Error', message: 'Please enter a name for the new roasted bean', color: 'red' });
+            return;
+        }
+        if (outputStrategy === 'existing' && !existingRoastedBeanId) {
+            notifications.show({ title: 'Error', message: 'Please select an existing roasted bean', color: 'red' });
+            return;
+        }
+
+        setLoading(true);
         try {
-            const payload = {
+            const data: RoastingCreateData = {
                 green_bean_id: parseInt(selectedGreenBeanId),
-                input_amount: inputVal,
-                output_amount: outputVal,
-                roast_level: roastLevel,
-                ...(targetMode === 'new' ? { new_bean_name: newBeanName } : { roasted_bean_id: parseInt(selectedRoastedBeanId!) })
+                input_amount: inp,
+                output_amount: out,
+                roast_profile: roastProfile as any,
+                note: note,
+                ...(outputStrategy === 'new'
+                    ? { new_bean_name: newBeanName }
+                    : { roasted_bean_id: parseInt(existingRoastedBeanId!) }
+                )
             };
 
-            await axios.post(`${API_BASE_URL}/roasting/`, payload);
+            await RoastingAPI.create(data);
 
             notifications.show({
                 title: 'Success',
-                message: 'Roasting batch recorded successfully!',
+                message: 'Roasting completed successfully! Inventory updated.',
                 color: 'green',
-                icon: <Flame size={16} />,
+                icon: <CheckCircle />
             });
 
-            // Reset form
+            // Reset Form (Partial)
+            fetchBeans(); // Refresh stocks
             setInputAmount('');
             setOutputAmount('');
-            setNewBeanName("");
-            setSelectedRoastedBeanId(null);
+            setNewBeanName('');
+            setNote('');
 
-            // 재검색
-            fetchBeans();
-        } catch (err: any) {
-            console.error("Roasting failed", err);
+        } catch (error: any) {
+            console.error(error);
             notifications.show({
-                title: 'Roasting Failed',
-                message: err.response?.data?.detail || "Failed to record roasting.",
-                color: 'red',
+                title: 'Error',
+                message: error.response?.data?.detail || 'Roasting failed',
+                color: 'red'
             });
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    const greenBeanOptions = greenBeans.map(bean => ({
-        value: bean.id.toString(),
-        label: `${bean.name} (${bean.quantity_kg}kg)`
-    }));
-
-    const roastedBeanOptions = roastedBeans.map(bean => ({
-        value: bean.id.toString(),
-        label: bean.name
-    }));
+    // Helper to find Bean
+    const selectedGreenBean = greenBeans.find(b => b.id.toString() === selectedGreenBeanId);
 
     return (
         <div>
             <PageHero
-                title={t('roasting.title')}
-                description={t('roasting.description')}
+                title="Roasting Management"
+                description="Process Green Beans into Roasted Beans"
                 icon={<Flame className="w-10 h-10" />}
-                backgroundImage="/images/hero/roasting-hero.png"
+                backgroundImage="/images/hero/roasting-hero.png" // Ensure this image exists or is handled
             />
 
-            <div className="p-4 md:p-8 max-w-7xl mx-auto">
-                <Grid gutter="xl">
-                    {/* Left: Input Form */}
-                    <Grid.Col span={{ base: 12, md: 8 }}>
-                        <Paper shadow="sm" radius="md" p="xl" withBorder className="relative">
-                            <LoadingOverlay visible={isFetching || isLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+            <Container size="md" py="xl">
+                <Paper shadow="sm" radius="md" p="xl" withBorder pos="relative">
+                    <LoadingOverlay visible={loading} />
 
-                            <Title order={3} mb="lg" c="dimmed">{t('roasting.newBatch')}</Title>
+                    <Stack gap="lg">
+                        <Title order={3}>New Roasting Session</Title>
 
-                            <Stack gap="lg">
-                                {/* 1. Select Green Bean */}
+                        {/* 1. Input Section */}
+                        <Paper withBorder p="md" bg="gray.0">
+                            <Stack>
+                                <Group>
+                                    <Text fw={700} c="green">Step 1: Input (Green Bean)</Text>
+                                </Group>
                                 <Select
-                                    label={t('roasting.sourceGreenBean')}
-                                    placeholder={t('roasting.selectGreenBean')}
-                                    data={greenBeanOptions}
+                                    label="Select Green Bean"
+                                    placeholder="Choose a green bean"
+                                    data={greenBeans.map(b => ({ value: b.id.toString(), label: `${b.name} (Qty: ${b.quantity_kg}kg)` }))}
                                     value={selectedGreenBeanId}
                                     onChange={setSelectedGreenBeanId}
                                     searchable
-                                    nothingFoundMessage="No green beans found"
-                                    maxDropdownHeight={280}
-                                    size="md"
                                     required
                                 />
 
-                                <Group grow align="flex-start">
-                                    {/* 2. Input Amount */}
-                                    <NumberInput
-                                        label={t('roasting.inputAmount')}
-                                        placeholder="0.0"
-                                        suffix=" kg"
-                                        value={inputAmount}
-                                        onChange={setInputAmount}
-                                        min={0}
-                                        max={selectedGreenBean?.quantity_kg}
-                                        error={selectedGreenBean && inputVal > selectedGreenBean.quantity_kg ? t('roasting.exceedsStock').replace('{stock}', selectedGreenBean.quantity_kg.toString()) : null}
-                                        required
-                                        size="md"
-                                    />
+                                {selectedGreenBean && (
+                                    <Text size="xs" c="dimmed">
+                                        Origin: {selectedGreenBean.origin} | Variety: {selectedGreenBean.variety}
+                                    </Text>
+                                )}
 
-                                    {/* 3. Output Amount */}
-                                    <NumberInput
-                                        label={t('roasting.outputAmount')}
-                                        placeholder="0.0"
-                                        suffix=" kg"
-                                        value={outputAmount}
-                                        onChange={setOutputAmount}
-                                        min={0}
-                                        required
-                                        size="md"
-                                    />
-                                </Group>
-
-                                {/* 4. Target Mode Selection */}
-                                <SegmentedControl
-                                    value={targetMode}
-                                    onChange={setTargetMode}
-                                    data={[
-                                        { label: t('roasting.newRoastedBean'), value: 'new' },
-                                        { label: t('roasting.existingRoastedBean'), value: 'existing' },
-                                    ]}
-                                    fullWidth
-                                    size="md"
+                                <NumberInput
+                                    label="Input Amount (kg)"
+                                    placeholder="0.0"
+                                    min={0}
+                                    max={selectedGreenBean?.quantity_kg}
+                                    value={inputAmount}
+                                    onChange={setInputAmount}
+                                    required
                                 />
+                            </Stack>
+                        </Paper>
 
-                                {targetMode === 'new' ? (
+                        <CenterIcon />
+
+                        {/* 2. Process Section */}
+                        <Paper withBorder p="md" bg="gray.0">
+                            <Stack>
+                                <Text fw={700} c="orange">Step 2: Roasting Profile</Text>
+                                <Select
+                                    label="Roast Profile"
+                                    data={['LIGHT', 'MEDIUM', 'DARK']}
+                                    value={roastProfile}
+                                    onChange={(v) => setRoastProfile(v || 'MEDIUM')}
+                                    required
+                                />
+                            </Stack>
+                        </Paper>
+
+                        <CenterIcon />
+
+                        {/* 3. Output Section */}
+                        <Paper withBorder p="md" bg="gray.0">
+                            <Stack>
+                                <Text fw={700} c="brown">Step 3: Output (Roasted Bean)</Text>
+
+                                <Radio.Group value={outputStrategy} onChange={setOutputStrategy} label="Target Bean">
+                                    <Group mt="xs">
+                                        <Radio value="new" label="Create New Bean" />
+                                        <Radio value="existing" label="Add to Existing Bean" />
+                                    </Group>
+                                </Radio.Group>
+
+                                {outputStrategy === 'new' ? (
                                     <TextInput
-                                        label={t('roasting.newBeanName')}
-                                        placeholder={t('roasting.enterNewBeanName')}
+                                        label="New Bean Name"
+                                        placeholder="e.g. Ethiopia Yirgacheffe G2 Medium"
                                         value={newBeanName}
-                                        onChange={(event) => setNewBeanName(event.currentTarget.value)}
+                                        onChange={(e) => setNewBeanName(e.currentTarget.value)}
                                         required
-                                        size="md"
                                     />
                                 ) : (
                                     <Select
-                                        label={t('roasting.selectRoastedBean')}
-                                        placeholder={t('roasting.selectExistingRoastedBean')}
-                                        data={roastedBeanOptions}
-                                        value={selectedRoastedBeanId}
-                                        onChange={setSelectedRoastedBeanId}
+                                        label="Select Existing Roasted Bean"
+                                        placeholder="Choose a roasted bean"
+                                        data={roastedBeans.map(b => ({ value: b.id.toString(), label: b.name }))}
+                                        value={existingRoastedBeanId}
+                                        onChange={setExistingRoastedBeanId}
                                         searchable
-                                        nothingFoundMessage="No roasted beans found"
-                                        size="md"
+                                        required
                                     />
                                 )}
 
-                                <Select
-                                    label={t('roasting.roastLevel')}
-                                    data={[
-                                        { value: 'Light', label: 'Light (Cinnamon/New England)' },
-                                        { value: 'Medium', label: 'Medium (American/City)' },
-                                        { value: 'Medium-Dark', label: 'Medium-Dark (Full City)' },
-                                        { value: 'Dark', label: 'Dark (Vienna/French)' },
-                                    ]}
-                                    value={roastLevel}
-                                    onChange={setRoastLevel}
-                                    size="md"
+                                <NumberInput
+                                    label="Output Amount (kg)"
+                                    placeholder="0.0"
+                                    min={0}
+                                    value={outputAmount}
+                                    onChange={setOutputAmount}
+                                    required
                                 />
-
-                                <Button
-                                    size="xl"
-                                    color="orange"
-                                    fullWidth
-                                    mt="md"
-                                    onClick={handleSubmit}
-                                    loading={isLoading}
-                                    leftSection={<Flame size={20} />}
-                                >
-                                    {t('roasting.startRoasting')}
-                                </Button>
                             </Stack>
                         </Paper>
-                    </Grid.Col>
 
-                    {/* Right: Real-time Stats */}
-                    <Grid.Col span={{ base: 12, md: 4 }}>
-                        <Stack gap="md">
-                            <Paper shadow="md" p="xl" radius="md" bg="dark.7" c="white">
-                                <Group mb="xl">
-                                    <Calculator size={24} className="text-amber-400" />
-                                    <Text fw={700} size="lg">{t('roasting.batchAnalysis')}</Text>
-                                </Group>
-
-                                <Stack gap="xs" mb="xl">
-                                    <Text size="sm" c="dimmed">{t('roasting.lossRate')}</Text>
-                                    <Group align="flex-end" gap={4}>
-                                        <Text size="xl" fw={700} c={lossRate > 20 ? 'red.4' : 'teal.4'}>
-                                            {lossRate.toFixed(1)}%
-                                        </Text>
-                                        <Text size="sm" c="dimmed" mb={4}>{t('roasting.weightLoss')}</Text>
-                                    </Group>
-                                    <Progress
-                                        value={lossRate}
-                                        color={lossRate > 20 ? 'red' : 'teal'}
-                                        size="sm"
-                                        radius="sm"
-                                    />
-                                </Stack>
-
-                                <Stack gap="xs" pt="lg" style={{ borderTop: '1px solid #444' }}>
-                                    <Text size="sm" c="dimmed">{t('roasting.estCostPrice')}</Text>
-                                    <Group align="flex-end" gap={4}>
-                                        <Text size="xl" fw={700} c="amber.4">
-                                            ₩{Math.round(estimatedCost).toLocaleString()}
-                                        </Text>
-                                        <Text size="sm" c="dimmed" mb={4}>/ kg</Text>
-                                    </Group>
-                                    <Text size="xs" c="dimmed">
-                                        {t('roasting.basedOnGreenBean').replace('{cost}', selectedGreenBean ? Math.round(selectedGreenBean.avg_cost_price).toLocaleString() : '0')}
-                                    </Text>
-                                </Stack>
-                            </Paper>
-
-                            <Alert variant="light" color="orange" title={t('roasting.roastingTip')} icon={<Info size={16} />}>
-                                {t('roasting.roastingTipContent')}
+                        {/* 4. Review & Support */}
+                        {lossRate !== null && (
+                            <Alert icon={<AlertCircle size={16} />} title="Performance" color={lossRate > 20 ? 'red' : 'blue'}>
+                                Calculated Loss Rate: <strong>{lossRate.toFixed(1)}%</strong>
+                                {lossRate > 20 && " (High loss rate, please check)"}
                             </Alert>
-                        </Stack>
-                    </Grid.Col>
-                </Grid>
-            </div>
+                        )}
+
+                        <TextInput
+                            label="Notes"
+                            placeholder="Optional notes (e.g. batch number, weather)"
+                            value={note}
+                            onChange={(e) => setNote(e.currentTarget.value)}
+                        />
+
+                        <Button size="lg" color="orange" onClick={handleSubmit} fullWidth mt="xl">
+                            Confirm Roasting
+                        </Button>
+                    </Stack>
+                </Paper>
+
+                {/* Roasting History Section */}
+                <Stack mt={50} gap="md">
+                    <Title order={3}>Recent Roasting Logs</Title>
+                    <RoastingHistory />
+                </Stack>
+            </Container>
         </div>
+    );
+}
+
+function CenterIcon() {
+    return (
+        <Group justify="center">
+            <ArrowRight size={24} color="gray" style={{ transform: 'rotate(90deg)' }} />
+        </Group>
+    )
+}
+
+import { Table, Badge } from '@mantine/core';
+import { RoastingLog } from '@/lib/api';
+
+function RoastingHistory() {
+    const [logs, setLogs] = useState<RoastingLog[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const data = await RoastingAPI.getHistory(10);
+            setLogs(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <Text size="sm">Loading logs...</Text>;
+    if (logs.length === 0) return <Text size="sm" c="dimmed">No roasting history found.</Text>;
+
+    return (
+        <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
+            <Table striped highlightOnHover>
+                <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th>Date</Table.Th>
+                        <Table.Th>Input (Green)</Table.Th>
+                        <Table.Th>Output (Roasted)</Table.Th>
+                        <Table.Th>Loss Rate</Table.Th>
+                        <Table.Th>Note</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                    {logs.map((log) => (
+                        <Table.Tr key={log.id}>
+                            <Table.Td>{new Date(log.roast_date).toLocaleDateString()}</Table.Td>
+                            <Table.Td>
+                                <Text size="sm" fw={500}>{log.green_bean_name}</Text>
+                                <Text size="xs" c="dimmed">In: {log.input_quantity.toFixed(1)}kg</Text>
+                            </Table.Td>
+                            <Table.Td>
+                                <Text size="sm" fw={500}>{log.roasted_bean_name}</Text>
+                                <Text size="xs" c="dimmed">Out: {log.output_quantity.toFixed(1)}kg</Text>
+                            </Table.Td>
+                            <Table.Td>
+                                <Badge
+                                    color={log.loss_rate > 20 ? 'red' : log.loss_rate > 15 ? 'orange' : 'green'}
+                                    variant="light"
+                                >
+                                    {log.loss_rate.toFixed(1)}%
+                                </Badge>
+                            </Table.Td>
+                            <Table.Td>
+                                <Text size="sm" span>{log.note || '-'}</Text>
+                            </Table.Td>
+                        </Table.Tr>
+                    ))}
+                </Table.Tbody>
+            </Table>
+        </Paper>
     );
 }

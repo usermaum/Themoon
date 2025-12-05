@@ -11,6 +11,40 @@
 
 ---
 
+## [0.1.1] - 2025-12-06
+
+### 🚑 Hotfixes
+- **Inbound**: API 라우터 누락 수정 (404 Not Found 해결) 및 Mock OCR 모드 추가.
+- **Server**: `BeanService` CRUD 함수 구현 및 의존성 라이브러리(`google-generativeai`) 설치.
+- **UI**: 다크모드 문제 해결을 위한 Light Mode 강제 설정.
+- **Database**: SQLite 스키마 동기화 (재구축).
+
+---
+
+## [0.1.0] - 2025-12-06
+
+### ✨ Features (Major Update)
+
+**블렌딩 관리 시스템 (Blending Management)**
+- **UI**: 블렌드 레시피 생성 및 생산 관리 페이지 (`/blends`) 구현.
+- **Backend**: `BlendService` 리팩토링 (Bean+Recipe 관계), 가중 평균 단가(Weighted Average Cost) 기반 생산 로직 적용.
+- **Stock**: 생산 시 실시간 재료 재고 차감 및 블렌드 입고 처리 자동화.
+
+**대시보드 고도화 (Advanced Dashboard)**
+- **UI**: 실시간 재고 가치/중량, 안전 재고 경고, 최근 활동 로그 시각화.
+- **Analytics**: `InventoryLog` 데이터 기반 정확한 자산 가치 산정.
+- **Inbound**: 입고 시 영수증 OCR 품목명 자동 매칭 (Fuzzy Matching) 도입.
+
+**기타 개선 사항 (Stabilization)**
+- **Roasting**: 로스팅 이력(History) 조회 기능 및 손실률(Loss Rate) 표시 테이블 추가.
+- **Settings**: 언어 설정 및 시스템 정보를 확인할 수 있는 설정 페이지(`settings/page.tsx`) 구현.
+
+### 🛠️ Data Model
+- **InventoryLog**: `TransactionType` 확장 (`BLENDING_IN/OUT`, `ROASTING_IN/OUT` 등 상세 구분).
+- **Bean**: `cost_price` 필드 표준화 및 `avg_cost_price` 레거시 로직 제거.
+
+---
+
 ## [Unreleased] - 2025-12-05
 
 ### ✨ Features

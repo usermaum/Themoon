@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.0.3** | Next.js + FastAPI로 완전히 재작성
+> **v0.1.0** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -32,11 +32,11 @@
 ### 핵심 기능
 
 - ☕ **원두 관리** - 생두 정보, 가격, 로스팅 레벨 관리
-- 🧪 **블렌드 관리** - 블렌드 레시피 및 원가 계산
+- 🧪 **블렌드 관리** - 블렌드 레시피 및 원가 계산 (생산 로직 포함)
 - 📦 **재고 관리** - 실시간 재고 추적 및 입출고 관리
 - 📊 **로스팅 기록** - 로스팅 로그 및 손실률 분석
-- 💰 **비용 계산** - 정확한 원가 계산 및 가격 제안
-- 📈 **분석 및 리포트** - 손실률, 비용 추이, 재고 분석
+- 💰 **비용 계산** - 정확한 원가 계산 및 가격 제안 (가중 평균)
+- 📈 **분석 및 리포트** - 손실률, 비용 추이, 재고 분석 대시보드
 
 ---
 
@@ -71,7 +71,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.0.3)
+### 현재 구조 (v0.1.0)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -80,42 +80,36 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   ├── instructions.md        # 상세 지침
 │   └── settings.local.json
 │
-├── backend/                   # FastAPI 백엔드 (8개 파일, 20KB)
+├── backend/                   # FastAPI 백엔드
 │   ├── app/
-│   │   ├── __init__.py        # 버전 정보
-│   │   ├── main.py            # FastAPI 앱 (50줄, 간결)
-│   │   ├── config.py          # 설정 관리
+│   │   ├── api/v1/endpoints/  # API (Beans, Blends, Inbound, Dashboard)
+│   │   ├── models/            # DB 모델 (Relational)
+│   │   ├── schemas/           # Pydantic 스키마
+│   │   ├── services/          # 비즈니스 로직 (Blending, Roasting, Inbound)
+│   │   ├── main.py            # FastAPI 앱
 │   │   └── database.py        # DB 연결
-│   ├── tests/                 # 테스트 (추후 추가)
 │   ├── requirements.txt       # 필수 의존성만
 │   └── README.md              # 개발 가이드
 │
-├── frontend/                  # Next.js 프론트엔드 (9개 파일, 16KB)
+├── frontend/                  # Next.js 프론트엔드
 │   ├── app/
-│   │   ├── page.tsx           # 메인 페이지
-│   │   ├── layout.tsx         # 레이아웃
-│   │   └── globals.css        # 글로벌 스타일
-│   ├── components/            # UI 컴포넌트 (추후 추가)
-│   │   └── ui/
+│   │   ├── blends/            # 블렌드 관리 (New)
+│   │   ├── beans/             # 원두 관리
+│   │   ├── inventory/         # 재고 관리
+│   │   ├── page.tsx           # 대시보드 (Updated)
+│   │   └── layout.tsx         # 레이아웃
 │   ├── lib/
 │   │   └── api.ts             # API 클라이언트
-│   ├── public/
 │   ├── package.json
-│   ├── next.config.js
-│   ├── tailwind.config.js
-│   ├── tsconfig.json
 │   └── README.md
 │
-├── Documents/                 # 프로젝트 문서 (80+ 파일)
-│   ├── Architecture/          # 아키텍처 문서 (8개)
-│   ├── Guides/                # 가이드 (4개)
-│   ├── Implementation/        # 구현 문서 (2개)
-│   ├── Planning/              # 계획 문서 (15개)
-│   ├── Progress/              # 진행 상황 (40+ 세션)
-│   └── Resources/             # 자료 (엑셀, 문서 등)
+├── Documents/                 # 프로젝트 문서
+│   ├── Planning/              # 계획 문서 (Implementation Plan 등)
+│   ├── Progress/              # 진행 상황 (Daily Summaries)
+│   └── Resources/             # 자료
 │
 ├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.0.3
+│   ├── VERSION                # 현재: 0.1.0
 │   └── CHANGELOG.md           # 변경 로그
 │
 ├── data/                      # 데이터베이스 (원본 참조용)

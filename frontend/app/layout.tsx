@@ -30,10 +30,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="light" forceColorScheme="light" />
       </head>
-      <body className={`${inter.className} ${playfair.variable} min-h-screen bg-[#FFF8F0] dark:bg-zinc-900`}>
-        <MantineProvider theme={theme}>
+      <body className={`${inter.className} ${playfair.variable} min-h-screen bg-[#FFF8F0]`}>
+        <MantineProvider theme={theme} defaultColorScheme="light" forceColorScheme="light">
           <Notifications />
           <LanguageProvider>
             <MainShell>

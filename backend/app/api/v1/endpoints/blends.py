@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.schemas.blend import Blend, BlendCreate, BlendUpdate
+from app.schemas.blend import Blend, BlendCreate, BlendUpdate, BlendingProduction, BlendingResponse
 from app.services.blend_service import blend_service
 
 router = APIRouter()
@@ -50,3 +50,17 @@ def delete_blend(blend_id: int, db: Session = Depends(get_db)):
     success = blend_service.delete_blend(db, blend_id)
     if not success:
         raise HTTPException(status_code=404, detail="Blend not found")
+
+@router.post("/{blend_id}/production", response_model=BlendingResponse)
+def produce_blend(
+    blend_id: int, 
+    production_data: BlendingProduction, 
+    db: Session = Depends(get_db)
+):
+    """
+    블렌드 제품 생산 (재료 소모 -> 블렌드 재고 증가)
+    """
+    try:
+        return blend_service.process_production(db, blend_id, production_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

@@ -262,6 +262,27 @@ export default function InboundPage() {
                                         {t('inbound.analyzeReceipt')}
                                     </Button>
                                 )}
+
+                                <Button
+                                    variant="outline"
+                                    color="gray"
+                                    size="xs"
+                                    onClick={() => {
+                                        setOcrResult({
+                                            supplier_name: "Test Supplier",
+                                            invoice_number: `TEST-${Date.now()}`,
+                                            date: new Date().toISOString().split('T')[0],
+                                            total_amount: 150000,
+                                            items: [
+                                                { name: "Test Item 1", quantity: 10, unit_price: 10000, total_price: 100000 },
+                                                { name: "Test Item 2", quantity: 5, unit_price: 10000, total_price: 50000 }
+                                            ],
+                                            temp_file_path: "mock_test_path"
+                                        });
+                                    }}
+                                >
+                                    Test (Mock Data)
+                                </Button>
                             </Stack>
                         </Paper>
                     </Grid.Col>

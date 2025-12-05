@@ -16,9 +16,9 @@ def get_inventory_stats(db: Session = Depends(get_db)):
     total_beans = db.query(func.count(Bean.id)).scalar()
     total_weight = db.query(func.sum(Bean.quantity_kg)).scalar() or 0.0
     
-    # Total Value = Sum(quantity * avg_cost_price)
+    # Total Value = Sum(quantity * cost_price)
     # Optimized to use SQL aggregation
-    total_value = db.query(func.sum(func.coalesce(Bean.quantity_kg, 0) * func.coalesce(Bean.avg_cost_price, 0))).scalar() or 0.0
+    total_value = db.query(func.sum(func.coalesce(Bean.quantity_kg, 0) * func.coalesce(Bean.cost_price, 0))).scalar() or 0.0
     
     return {
         "total_beans": total_beans,
@@ -50,6 +50,6 @@ def get_recent_activity(limit: int = 5, db: Session = Depends(get_db)):
         "id": log.id,
         "bean_name": log.bean.name,
         "type": log.transaction_type,
-        "amount": log.amount_kg,
+        "amount": log.quantity_change,
         "date": log.created_at
     } for log in logs]

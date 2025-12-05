@@ -155,7 +155,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 {/* User Profile Area */}
                 <div className="border-t border-gray-200 dark:border-gray-800 p-3" style={{ overflow: 'visible' }}>
                     <div className="relative group">
-                        <button
+                        <Link
+                            href="/settings"
                             className={`
                                 w-full flex items-center
                                 ${isOpen ? 'gap-3 px-3' : 'justify-center'}
@@ -163,11 +164,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                 text-gray-700 dark:text-gray-300
                                 hover:bg-gray-100 dark:hover:bg-gray-800
                                 transition-all duration-200
+                                ${isActive('/settings')
+                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                                    : ''
+                                }
                             `}
                         >
                             <Settings className="w-5 h-5 flex-shrink-0" />
                             {isOpen && <span className="font-medium">Settings</span>}
-                        </button>
+                        </Link>
                         {!isOpen && (
                             <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[200]">
                                 Settings

@@ -100,28 +100,25 @@ async def confirm_inbound(request: InboundConfirmRequest, db: Session = Depends(
         if not bean:
             continue
             
-        # 재고 증가
-        bean.quantity_kg += item.quantity
-        
         # 평균 단가 갱신 (가중 평균)
-        # 기존 재고 가치 + 신규 입고 가치 / 총 재고량
-        # (단, 초기 재고가 0이거나 마이너스인 경우 로직 주의)
-        current_value = (bean.quantity_kg - item.quantity) * bean.avg_cost_price
-        new_value = item.quantity * item.unit_price
+        # 기존 재고 가치 + 신규 입고 가치 / 총 재고량 (bean.quantity_kg는 이미 증가된 상태)
+        current_value = (bean.quantity_kg - item.quantity) * (bean.cost_price or 0.0)
+        new_value = item.quantity * (item.unit_price or 0.0)
         
         if bean.quantity_kg > 0:
-            bean.avg_cost_price = (current_value + new_value) / bean.quantity_kg
+            bean.cost_price = (current_value + new_value) / bean.quantity_kg
         
         # InventoryLog 생성
         log = InventoryLog(
             bean_id=bean.id,
             transaction_type=TransactionType.INBOUND,
-            amount_kg=item.quantity,
-            cost_price=item.unit_price,
+            quantity_change=item.quantity,
             current_quantity=bean.quantity_kg,
-            related_doc_id=inbound_doc.id,
             reason=f"Inbound from {request.supplier_name or 'Unknown'}"
         )
+        # Note: Cost price is updated on Bean, separate log for cost history not in current model schema except via Bean updates? 
+        # Plan says Transaction has cost_price. I will check model update next. 
+        # For now, align with current model.
         db.add(log)
     
     db.commit()

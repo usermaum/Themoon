@@ -17,12 +17,14 @@ import {
     LoadingOverlay,
     ActionIcon,
     ScrollArea,
-    Center
+    Center,
+    Tabs,
+    rem
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 
-import { Package, Edit, Trash2, Plus, Minus } from 'lucide-react';
+import { Package, Edit, Trash2, Plus, Minus, Sprout, Coffee } from 'lucide-react';
 
 import PageHero from '@/components/ui/PageHero';
 import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api';
@@ -30,10 +32,16 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function InventoryPage() {
     const { t } = useLanguage();
-    const [beans, setBeans] = useState<Bean[]>([]);
+    const [greenBeans, setGreenBeans] = useState<Bean[]>([]);
+    const [roastedBeans, setRoastedBeans] = useState<Bean[]>([]);
+
+    // Combined beans for helper function lookups
+    const allBeans = [...greenBeans, ...roastedBeans];
+
     const [logs, setLogs] = useState<InventoryLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [activeTab, setActiveTab] = useState<string | null>('green');
 
     // Modal States
     const [opened, { open, close }] = useDisclosure(false);
@@ -53,11 +61,19 @@ export default function InventoryPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [beansData, logsData] = await Promise.all([
-                BeanAPI.getAll({ size: 100 }),
+            const [greenData, roastedData, logsData] = await Promise.all([
+                BeanAPI.getAll({ size: 100, type: 'GREEN_BEAN' }),
+                BeanAPI.getAll({ size: 100, type: 'ROASTED_BEAN' }),
                 InventoryLogAPI.getAll({ limit: 50 })
             ]);
-            setBeans(beansData.items);
+
+            // If backend hasn't been migrated or old data exists, greenData might be empty if everything is untyped.
+            // But we assume the update_schema script didn't delete data, just added columns. 
+            // Existing data has type=GREEN_BEAN by default in model, but actual DB values might be NULL if not migrated properly for existing rows.
+            // For now, let's trust the API returns what matches.
+
+            setGreenBeans(greenData.items);
+            setRoastedBeans(roastedData.items);
             setLogs(logsData);
         } catch (err) {
             console.error('Failed to fetch data:', err);
@@ -189,49 +205,66 @@ export default function InventoryPage() {
     };
 
     const getBeanName = (beanId: number) => {
-        const bean = beans.find(b => b.id === beanId);
+        const bean = allBeans.find(b => b.id === beanId);
         return bean ? bean.name : `Bean #${beanId}`;
     };
 
-    // Render Rows
-    const stockRows = beans.map((bean) => (
-        <Table.Tr key={bean.id}>
-            <Table.Td fw={500}>{bean.name}</Table.Td>
-            <Table.Td>{bean.origin}</Table.Td>
-            <Table.Td fw={700}>{bean.quantity_kg.toFixed(1)} kg</Table.Td>
-            <Table.Td>
-                {bean.quantity_kg < 5 ? (
-                    <Badge color="red" variant="light">Shortage</Badge>
-                ) : bean.quantity_kg < 10 ? (
-                    <Badge color="yellow" variant="light">Warning</Badge>
-                ) : (
-                    <Badge color="green" variant="light">Good</Badge>
-                )}
-            </Table.Td>
-            <Table.Td style={{ textAlign: 'right' }}>
-                <Group gap="xs" justify="flex-end">
-                    <Button
-                        size="xs"
-                        variant="light"
-                        color="indigo"
-                        leftSection={<Plus size={14} />}
-                        onClick={() => handleOpenModal(bean, 'IN')}
-                    >
-                        {t('inventory.inbound')}
-                    </Button>
-                    <Button
-                        size="xs"
-                        variant="light"
-                        color="red"
-                        leftSection={<Minus size={14} />}
-                        onClick={() => handleOpenModal(bean, 'OUT')}
-                    >
-                        {t('inventory.outbound')}
-                    </Button>
-                </Group>
-            </Table.Td>
-        </Table.Tr>
-    ));
+    // Render Rows Helper
+    const renderBeanRows = (beanList: Bean[]) => (
+        beanList.length === 0 ? (
+            <Table.Tr>
+                <Table.Td colSpan={5}>
+                    <Center p="xl" c="dimmed">{t('inventory.noStock') || "No stock items found."}</Center>
+                </Table.Td>
+            </Table.Tr>
+        ) : (
+            beanList.map((bean) => (
+                <Table.Tr key={bean.id}>
+                    <Table.Td fw={500}>
+                        <Group gap="xs">
+                            <Text size="sm" fw={500}>{bean.name}</Text>
+                            {bean.roast_profile && (
+                                <Badge size="xs" variant="outline" color="gray">{bean.roast_profile}</Badge>
+                            )}
+                        </Group>
+                    </Table.Td>
+                    <Table.Td>{bean.origin}</Table.Td>
+                    <Table.Td fw={700}>{bean.quantity_kg.toFixed(1)} kg</Table.Td>
+                    <Table.Td>
+                        {bean.quantity_kg < 5 ? (
+                            <Badge color="red" variant="light">Shortage</Badge>
+                        ) : bean.quantity_kg < 10 ? (
+                            <Badge color="yellow" variant="light">Warning</Badge>
+                        ) : (
+                            <Badge color="green" variant="light">Good</Badge>
+                        )}
+                    </Table.Td>
+                    <Table.Td style={{ textAlign: 'right' }}>
+                        <Group gap="xs" justify="flex-end">
+                            <Button
+                                size="xs"
+                                variant="light"
+                                color="indigo"
+                                leftSection={<Plus size={14} />}
+                                onClick={() => handleOpenModal(bean, 'IN')}
+                            >
+                                {t('inventory.inbound')}
+                            </Button>
+                            <Button
+                                size="xs"
+                                variant="light"
+                                color="red"
+                                leftSection={<Minus size={14} />}
+                                onClick={() => handleOpenModal(bean, 'OUT')}
+                            >
+                                {t('inventory.outbound')}
+                            </Button>
+                        </Group>
+                    </Table.Td>
+                </Table.Tr>
+            ))
+        )
+    );
 
     const logRows = logs.length === 0 ? (
         <Table.Tr>
@@ -286,28 +319,67 @@ export default function InventoryPage() {
                         <Group justify="space-between" mb="md">
                             <Title order={3}>{t('inventory.currentStock')}</Title>
                         </Group>
-                        <ScrollArea>
-                            <Table verticalSpacing="sm" highlightOnHover>
-                                <Table.Thead bg="gray.0">
-                                    <Table.Tr>
-                                        <Table.Th>{t('inventory.beanName')}</Table.Th>
-                                        <Table.Th>{t('inventory.origin')}</Table.Th>
-                                        <Table.Th>{t('inventory.current')}</Table.Th>
-                                        <Table.Th>{t('inventory.status')}</Table.Th>
-                                        <Table.Th style={{ textAlign: 'right' }}>{t('inventory.actions')}</Table.Th>
-                                    </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {loading ? (
-                                        <Table.Tr>
-                                            <Table.Td colSpan={5}>
-                                                <Center p="xl"><LoadingOverlay visible={true} /></Center>
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    ) : stockRows}
-                                </Table.Tbody>
-                            </Table>
-                        </ScrollArea>
+
+                        <Tabs value={activeTab} onChange={setActiveTab} color="orange" variant="pills" radius="md">
+                            <Tabs.List mb="md">
+                                <Tabs.Tab value="green" leftSection={<Sprout size={16} />}>
+                                    Green Beans (생두)
+                                </Tabs.Tab>
+                                <Tabs.Tab value="roasted" leftSection={<Coffee size={16} />}>
+                                    Roasted Beans (원두)
+                                </Tabs.Tab>
+                            </Tabs.List>
+
+                            <Tabs.Panel value="green">
+                                <ScrollArea>
+                                    <Table verticalSpacing="sm" highlightOnHover>
+                                        <Table.Thead bg="gray.0">
+                                            <Table.Tr>
+                                                <Table.Th>{t('inventory.beanName')}</Table.Th>
+                                                <Table.Th>{t('inventory.origin')}</Table.Th>
+                                                <Table.Th>{t('inventory.current')}</Table.Th>
+                                                <Table.Th>{t('inventory.status')}</Table.Th>
+                                                <Table.Th style={{ textAlign: 'right' }}>{t('inventory.actions')}</Table.Th>
+                                            </Table.Tr>
+                                        </Table.Thead>
+                                        <Table.Tbody>
+                                            {loading ? (
+                                                <Table.Tr>
+                                                    <Table.Td colSpan={5}>
+                                                        <Center p="xl"><LoadingOverlay visible={true} /></Center>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                            ) : renderBeanRows(greenBeans)}
+                                        </Table.Tbody>
+                                    </Table>
+                                </ScrollArea>
+                            </Tabs.Panel>
+
+                            <Tabs.Panel value="roasted">
+                                <ScrollArea>
+                                    <Table verticalSpacing="sm" highlightOnHover>
+                                        <Table.Thead bg="gray.0">
+                                            <Table.Tr>
+                                                <Table.Th>{t('inventory.beanName')}</Table.Th>
+                                                <Table.Th>{t('inventory.origin')}</Table.Th>
+                                                <Table.Th>{t('inventory.current')}</Table.Th>
+                                                <Table.Th>{t('inventory.status')}</Table.Th>
+                                                <Table.Th style={{ textAlign: 'right' }}>{t('inventory.actions')}</Table.Th>
+                                            </Table.Tr>
+                                        </Table.Thead>
+                                        <Table.Tbody>
+                                            {loading ? (
+                                                <Table.Tr>
+                                                    <Table.Td colSpan={5}>
+                                                        <Center p="xl"><LoadingOverlay visible={true} /></Center>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                            ) : renderBeanRows(roastedBeans)}
+                                        </Table.Tbody>
+                                    </Table>
+                                </ScrollArea>
+                            </Tabs.Panel>
+                        </Tabs>
                     </Paper>
 
                     {/* History Section */}

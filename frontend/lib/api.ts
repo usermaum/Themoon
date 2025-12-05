@@ -43,14 +43,24 @@ export default api
 export interface Bean {
   id: number
   name: string
+  // Phase 2: Type & Profile
+  type: 'GREEN_BEAN' | 'ROASTED_BEAN'
+  roast_profile?: 'LIGHT' | 'MEDIUM' | 'DARK'
+
   origin: string
   variety: string
   processing_method: string
-  roast_level: string
+  roast_level?: string // Deprecated, kept for backward compat
+
   purchase_date: string
   purchase_price_per_kg: number
+
+  cost_price?: number
   quantity_kg: number
+
+  parent_bean_id?: number
   notes?: string
+
   created_at: string
   updated_at: string
 }
@@ -65,13 +75,21 @@ export interface BeanListResponse {
 
 export interface BeanCreateData {
   name: string
-  origin: string
-  variety: string
-  processing_method: string
-  roast_level: string
-  purchase_date: string
-  purchase_price_per_kg: number
-  quantity_kg: number
+  type?: 'GREEN_BEAN' | 'ROASTED_BEAN'
+  roast_profile?: 'LIGHT' | 'MEDIUM' | 'DARK'
+
+  origin?: string
+  variety?: string
+  processing_method?: string
+  roast_level?: string
+
+  purchase_date?: string
+  purchase_price_per_kg?: number
+
+  cost_price?: number
+  quantity_kg?: number
+  parent_bean_id?: number
+
   notes?: string
 }
 
@@ -85,6 +103,7 @@ export const BeanAPI = {
     size?: number
     search?: string
     roast_level?: string
+    type?: 'GREEN_BEAN' | 'ROASTED_BEAN'
   }) => {
     const response = await api.get<BeanListResponse>('/api/v1/beans', { params })
     return response.data
@@ -171,6 +190,22 @@ export const BlendAPI = {
   delete: async (id: number) => {
     await api.delete(`/api/v1/blends/${id}`)
   },
+
+  produce: async (id: number, data: BlendingProduction) => {
+    const response = await api.post<BlendingResponse>(`/api/v1/blends/${id}/production`, data)
+    return response.data
+  },
+}
+
+export interface BlendingProduction {
+  amount: number
+  note?: string
+}
+
+export interface BlendingResponse {
+  transaction_ids: number[]
+  cost_price: number
+  produced_amount: number
 }
 
 // --- Types (InventoryLog) ---
@@ -253,4 +288,48 @@ export const DashboardAPI = {
     const response = await api.get<RecentActivity[]>('/api/v1/dashboard/recent-activity', { params: { limit } })
     return response.data
   },
+}
+
+// --- Roasting API ---
+
+export interface RoastingCreateData {
+  green_bean_id: number
+  roasted_bean_id?: number
+  new_bean_name?: string
+  input_amount: number
+  output_amount: number
+  roast_profile: 'LIGHT' | 'MEDIUM' | 'DARK'
+  note?: string
+}
+
+export interface RoastingResponse {
+  roasting_log_id: number
+  loss_rate: number
+  cost_price: number
+  roasted_bean_id: number
+}
+
+export interface RoastingLog {
+  id: number
+  green_bean_id: number
+  green_bean_name: string
+  roasted_bean_id: number
+  roasted_bean_name: string
+  input_quantity: number
+  output_quantity: number
+  loss_rate: number
+  roast_date: string
+  note?: string
+}
+
+export const RoastingAPI = {
+  create: async (data: RoastingCreateData) => {
+    const response = await api.post<RoastingResponse>('/api/v1/roasting/', data)
+    return response.data
+  },
+
+  getHistory: async (limit: number = 20) => {
+    const response = await api.get<RoastingLog[]>('/api/v1/roasting/history', { params: { limit } })
+    return response.data
+  }
 }
