@@ -22,6 +22,7 @@ load_dotenv(env_path)
 from app.database import engine, Base, SessionLocal
 from app.models.bean import Bean, BeanType
 from app.models.inventory_log import InventoryLog, InventoryChangeType
+from app.models.blend import Blend
 
 def init_db():
     print("🗑️  Dropping all tables...")
@@ -91,8 +92,45 @@ def seed_data():
                 )
                 db.add(log)
         
+        # 2.2 블렌드 마스터 (Blend Master List)
+        print("🌱 Seeding initial blends...")
+        initial_blends = [
+            {
+                "name": "더 문 시그니처 블렌드",
+                "description": "깊은 바디감과 화사한 산미의 조화",
+                "recipe": [
+                    {"bean_id": 1, "ratio": 0.4}, # 예가체프
+                    {"bean_id": 8, "ratio": 0.3}, # 후일라
+                    {"bean_id": 11, "ratio": 0.3} # 파젠다 카르모
+                ],
+                "target_roast_level": "Medium Dark",
+                "notes": "대표 블렌드"
+            },
+            {
+                "name": "에스프레소 다크",
+                "description": "강렬한 바디와 스모키한 후미",
+                "recipe": [
+                    {"bean_id": 11, "ratio": 0.5}, # 파젠다 카르모
+                    {"bean_id": 12, "ratio": 0.3}, # 산토스
+                    {"bean_id": 9, "ratio": 0.2}   # 안티구아
+                ],
+                "target_roast_level": "Dark",
+                "notes": "라떼용 추천"
+            }
+        ]
+
+        for blend_data in initial_blends:
+            blend = Blend(
+                name=blend_data["name"],
+                description=blend_data["description"],
+                recipe=blend_data["recipe"],
+                target_roast_level=blend_data["target_roast_level"],
+                notes=blend_data["notes"]
+            )
+            db.add(blend)
+
         db.commit()
-        print(f"🌱 Seeded {len(initial_beans)} green beans successfully.")
+        print(f"🌱 Seeded {len(initial_beans)} green beans and {len(initial_blends)} blends successfully.")
         
     except Exception as e:
         print(f"❌ Error seeding data: {e}")
