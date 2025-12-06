@@ -153,6 +153,7 @@ export default function InventoryPage() {
                 title="재고 관리"
                 description="원두의 입출고를 관리하고 현재 재고 현황을 확인하세요"
                 icon={<Package />}
+                image="/images/hero/inventory-hero.png"
                 className="mb-8"
             />
 

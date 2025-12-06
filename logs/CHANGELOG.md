@@ -11,11 +11,38 @@
 
 ---
 
+## [0.1.0] - 2025-12-06
+
+### ✨ Features
+
+**Cafe Latte Art Theme Integration**
+
+- **Global Theme**: 전체 프론트엔드에 'Cafe Latte Art' 디자인 테마 적용 (크림색 배경, Serif 폰트, 둥근 모서리).
+- **Shadcn UI**: `Button`, `Input`, `Badge`, `Card` 등 핵심 컴포넌트를 Shadcn UI 기반으로 새로 구현 및 테마 스타일링.
+- **Design System**: Tailwind CSS 설정에 `latte` 색상 팔레트 및 `blob` 포인트 컬러 추가.
+
+### 🔧 Refactoring
+
+**Page Refactoring**
+
+- **Home**: 대시보드 통계 카드 및 최근 활동 테이블에 새로운 디자인 적용.
+- **Beans**: 원두 관리 페이지 테이블 및 검색 UI 개선.
+- **Blends**: 블렌드 레시피 카드 디자인 고도화.
+- **Inventory**: 재고 관리 페이지 모달 및 테이블 UI를 Shadcn 컴포넌트로 전면 교체.
+
+**Component Upgrades**
+
+- **PageHero**: 배경 블롭(Blob) 효과 및 아이콘 통합으로 시각적 퀄리티 향상.
+- **Card**: Compound Component 패턴(`CardHeader`, `CardContent` 등) 도입으로 유연성 확보.
+
+---
+
 ## [Unreleased] - 2025-11-30
 
 ### ✨ Features
 
 **사이드바 툴팁 시스템**
+
 - 토글 버튼 툴팁 추가 (사이드바 펼치기/접기)
 - 모든 메뉴 아이템 툴팁 추가 (Home, Beans, Blends, Inventory)
 - Settings 버튼 툴팁 추가
@@ -26,6 +53,7 @@
 ### 🐛 Bug Fixes
 
 **툴팁 표시 문제 해결**
+
 - overflow-y-auto와 overflow-x-visible 동시 사용 불가 문제 해결
 - nav/ul/li 태그의 overflow 제약 제거 (→ div로 교체)
 - PageHero 컴포넌트 z-index 조정 (툴팁 가려짐 해결)
@@ -33,12 +61,14 @@
 - 불필요한 overflow-y-auto 완전 제거 (메뉴 4개로 스크롤 불필요)
 
 **.gitignore 수정**
+
 - logs/ 폴더 제외 → logs/*.log 파일만 제외
 - 버전 관리 파일들은 정상 추적되도록 수정
 
 ### 🔧 Refactoring
 
 **사이드바 구조 개선**
+
 - nav 태그 → div 태그로 교체 (의미론적 HTML보다 실용성 우선)
 - ul/li 태그 → div 태그로 교체 (overflow 문제 해결)
 - 3중 구조 → 2중 구조로 단순화
@@ -47,6 +77,7 @@
 ### 📄 Documentation
 
 **세션 문서**
+
 - `SESSION_SUMMARY_2025-11-30.md` 상세 작성
 - 툴팁 구현 및 문제 해결 과정 9단계 기록
 - CSS overflow/z-index 관련 학습 내용 정리
@@ -54,12 +85,14 @@
 ### 🛠️ Technical Details
 
 **변경된 파일** (5개)
+
 - `.gitignore` - logs/ 폴더 제외 규칙 수정
 - `frontend/components/layout/Sidebar.tsx` - 툴팁 추가 및 구조 개선
 - `frontend/components/layout/AppLayout.tsx` - main z-index 설정
 - `frontend/components/ui/PageHero.tsx` - z-index 조정
 
 **커밋 통계**
+
 - 총 커밋: 13개
 - feat: 2개, fix: 10개, refactor: 1개
 
@@ -70,6 +103,7 @@
 ### ✨ Features
 
 **프론트엔드 레이아웃 시스템 개선**
+
 - AppLayout 컴포넌트 추가 (사이드바 상태 관리)
 - Sidebar 컴포넌트 추가 (접기/펴기 기능, lucide-react 아이콘)
 - 쿠키 기반 사이드바 상태 저장 (1년 유지)
@@ -77,6 +111,7 @@
 - 스크롤바 스타일 유틸리티 추가 (scrollbar-hide, scrollbar-thin)
 
 **네비게이션 구조**
+
 - Home, Beans, Blends, Inventory 메뉴 추가
 - Settings 및 User 프로필 영역 추가
 - 활성 페이지 하이라이트 (indigo 색상)
@@ -84,28 +119,33 @@
 ### 📄 Documentation
 
 **로스팅 문서 정리 및 최적화**
+
 - `Themoon_Rostings.md` 중복 제거 (625줄 → 466줄, 25% 감소)
 - 섹션 2, 3, 6 중복 내용 제거 및 통합
 - 명세서 데이터 4.2~4.11 복구 (11건 전체)
 
 **Word 보고서 생성**
+
 - 전문적인 Word 문서 `더문_로스팅_운영계획안.docx` 생성 (13KB)
 - 5개 메인 섹션: 개요, 원두 마스터, 블렌딩 레시피, 운영 시나리오, 명세서 데이터
 - 목차 자동 생성, 표 스타일, 색상 스키마 적용
 - docx 라이브러리 사용 (Node.js)
 
 **세션 관리**
+
 - `SESSION_SUMMARY_2025-11-29.md` 작성
 - 문서 정리 및 Word 생성 작업 기록
 
 ### 🛠️ Technical
 
 **프론트엔드 컴포넌트**
+
 - `frontend/components/layout/AppLayout.tsx` - 메인 레이아웃 컨테이너
 - `frontend/components/layout/Sidebar.tsx` - 사이드바 네비게이션
 - `frontend/app/globals.css` - 커스텀 스크롤바 유틸리티
 
 **파일 생성**
+
 - `create_roasting_manual.js` - Word 문서 생성 스크립트
 - `package.json`, `package-lock.json` - Node.js 프로젝트 설정
 
@@ -118,6 +158,7 @@
 #### 🎯 주요 작업
 
 **PostgreSQL 호환성 개선 (2025-11-26 추가)**
+
 - SQLite → PostgreSQL 마이그레이션을 위한 모델 타입 수정
   - String 타입에 명시적 길이 지정 (PostgreSQL 필수)
     - `blend.py`: name(200), target_roast_level(50)
@@ -130,12 +171,14 @@
   - 영향 받는 파일: `bean.py`, `blend.py`, `inventory_log.py`
 
 **Render.com 배포 설정**
+
 - `render.yaml` 완전 구성 (Backend, Frontend, PostgreSQL 18)
 - Backend: `/health` 엔드포인트 추가
 - Frontend: `NEXT_PUBLIC_API_URL` 환경 변수 설정
 - Database: PostgreSQL 18 + 자동 연결 (`themoon_p922`)
 
 **Production 빌드 오류 해결**
+
 1. PostgreSQL 버전: 16 → 18로 변경
 2. Backend 의존성 단순화: 38개 → 10개 필수 패키지
 3. Frontend 의존성 구조 개선: devDependencies → dependencies 이동
@@ -147,20 +190,24 @@
    - `next.config.js`: 명시적 webpack alias
 
 **Database 연결 및 검증 로직**
+
 - `backend/app/database.py`: postgres:// → postgresql:// 자동 변환
 - `backend/app/main.py`: lifespan 이벤트 (테이블 자동 생성)
 - 연결 정보 디버그 로깅 추가
 
 **Data Validation 개선**
+
 - `backend/app/schemas/bean.py`: @field_validator 추가
   - 빈 문자열('') → None 자동 변환
   - Optional 필드 검증 강화
 
 **UI 개선**
+
 - 메뉴: "Dashboard" → "Home" 변경
 - `frontend/components/layout/Navbar.tsx` 수정
 
 **개발 환경 최적화**
+
 - `start_backend.sh`: venv 자동 관리, 포트 충돌 해결
 - `start_frontend.sh`: 캐시 삭제 옵션, 대화형 메뉴
 - `start_all.sh`: Backend + Frontend 동시 실행
@@ -178,12 +225,14 @@
 8. **스크립트 라인 엔딩**: CRLF → LF
 
 #### 📊 통계
+
 - 수정된 파일: 12개
 - 추가된 파일: 6개 (스크립트 3개, 설정 파일 3개)
 - 해결된 배포 오류: 8건
 - Git 커밋: 15개
 
 #### 🔗 배포 URL
+
 - Backend: `https://themoon-api.onrender.com`
 - Frontend: `https://themoon-frontend.onrender.com`
 - Database: `dpg-d4is05qli9vc73epqth0-a.oregon-postgres.render.com/themoon_p922`
@@ -197,6 +246,7 @@
 #### 🎯 주요 기능
 
 **Backend (FastAPI)**
+
 - 블렌드 레시피 관리 API (CRUD)
   - `backend/app/api/v1/endpoints/blends.py` - 블렌드 엔드포인트
   - `backend/app/models/blend.py` - 블렌드 모델
@@ -210,6 +260,7 @@
   - `backend/app/services/inventory_log_service.py` - 재고 비즈니스 로직
 
 **Frontend (Next.js)**
+
 - 블렌드 레시피 페이지
   - `frontend/app/blends/page.tsx` - 블렌드 목록
   - `frontend/app/blends/new/page.tsx` - 블렌드 등록
@@ -226,6 +277,7 @@
   - `frontend/components/beans/BeanForm.tsx` - 원두 폼 컴포넌트
 
 **UI/UX 개선**
+
 - 배경 이미지 적용
   - `frontend/public/beans_background.png` - 원두 관리 배경
   - `frontend/public/blends_background.png` - 블렌드 배경
@@ -240,6 +292,7 @@
   - `frontend/components/home/Hero.tsx` - 홈 히어로
 
 **배포 설정**
+
 - `DEPLOYMENT.md` - 배포 가이드
 - `DEPLOYMENT_FREE.md` - 무료 배포 가이드
 - `backend/Procfile` - Heroku 배포 설정
@@ -248,6 +301,7 @@
 - `render.yaml` - Render.com 배포 설정
 
 #### 📊 통계
+
 - 추가된 파일: 37개
 - 수정된 파일: 13개
 - 추가된 코드: 9,446줄
@@ -294,6 +348,7 @@ Gemini 3 Pro가 작성한 복잡한 마이그레이션 구조를 완전히 제�
 #### ✅ 생성된 깨끗한 구조
 
 **Backend (FastAPI) - 8개 파일, 20KB**
+
 ```
 backend/
 ├── app/
@@ -306,6 +361,7 @@ backend/
 ```
 
 **Frontend (Next.js) - 9개 파일, 16KB**
+
 ```
 frontend/
 ├── app/
@@ -358,6 +414,7 @@ frontend/
 #### 🛠️ 기술 스택
 
 **Backend:**
+
 - FastAPI 0.109+
 - Python 3.12+
 - PostgreSQL 15+
@@ -366,6 +423,7 @@ frontend/
 - JWT 인증
 
 **Frontend:**
+
 - Next.js 14.1+
 - TypeScript 5.3+
 - React 18.2+
@@ -386,6 +444,7 @@ frontend/
 #### 🚀 다음 단계
 
 **Week 1-2: Backend 기초**
+
 - [ ] Bean 모델 (원본 참조)
 - [ ] Bean 스키마 (Pydantic)
 - [ ] Bean 서비스 (원본 로직)
@@ -393,6 +452,7 @@ frontend/
 - [ ] Bean 테스트
 
 **Week 3-4: Frontend 기초**
+
 - [ ] Bean 관리 페이지
 - [ ] API 연동
 - [ ] UI 컴포넌트
@@ -401,4 +461,19 @@ frontend/
 ---
 
 **참고:**
+
 - 이전 버전 기록 (0.50.4 이하)은 원본 프로젝트 참조: `/mnt/d/Ai/WslProject/TheMoon_Project/logs/CHANGELOG.md`
+
+## [0.0.4] - 2025-12-06
+
+### 추가됨 (Added)
+- **Green Bean Vault**: 생두 재고 현황 시각화 페이지 구현 (app/design-sample/green-bean-vault).
+- **Bean Prompts V2/V3**: 생두(V2) 및 원두(V3) 이미지 생성을 위한 고해상도 프롬프트 문서 작성.
+- **Server Scripts Enhancement**: WSL 내부 IP 접속 지원 및 포트 3500 변경 (dev.sh, start_all.sh).
+
+### 변경됨 (Changed)
+- **Frontend Engine**: Next.js 14, React 18, Tailwind CSS 3로 엔진 업데이트 및 안정화.
+- **Network Config**: 로컬호스트 바인딩 오류 해결을 위해 0.0.0.0 호스트 설정 적용.
+
+### 수정됨 (Fixed)
+- WSL2 환경에서 윈도우 업데이트 후 발생한 localhost 연결 거부 문제 해결.

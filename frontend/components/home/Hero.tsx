@@ -8,7 +8,7 @@ export default function Hero() {
             <div className="absolute inset-0">
                 <img
                     className="w-full h-full object-cover"
-                    src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1920&q=80"
+                    src="/images/hero/home-hero.png"
                     alt="Hand drip coffee brewing"
                 />
                 <div className="absolute inset-0 bg-latte-900/40 backdrop-blur-[2px]"></div>

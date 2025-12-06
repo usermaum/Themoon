@@ -69,7 +69,12 @@
       "Bash(du -sh:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(git clean:*)"
+      "Bash(git clean:*)",
+      "Bash(npm run dev:*)",
+      "Bash(uvicorn:*)",
+      "Bash(pip install:*)",
+      "Bash(./venv/bin/uvicorn app.main:app --reload --port 8000)",
+      "Read(//mnt/wsl/**)"
     ],
     "deny": [],
     "ask": []

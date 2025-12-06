@@ -1,9 +1,11 @@
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
+import Link from 'next/link'
 
-const Card = React.forwardRef<
+// --- Compound Components (shadcn style) ---
+// Note: CardRoot is exported as Card to maintain compatibility with Shadcn imports
+const CardRoot = React.forwardRef<
     HTMLDivElement,
     React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -16,7 +18,7 @@ const Card = React.forwardRef<
         {...props}
     />
 ))
-Card.displayName = "Card"
+CardRoot.displayName = "Card"
 
 const CardHeader = React.forwardRef<
     HTMLDivElement,
@@ -77,4 +79,73 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+// --- Legacy Functional Component (Adapter) ---
+// This allows using the Card component as a single prop-based component if needed
+// while favoring the Composition pattern for new code.
+interface LegacyCardProps {
+    title: string
+    description: string
+    imageUrl?: string
+    tags?: string[]
+    href?: string
+    actionText?: string
+    className?: string
+}
+
+function LegacyCard({
+    title,
+    description,
+    imageUrl,
+    tags = [],
+    href,
+    actionText = '자세히 보기',
+    className,
+}: LegacyCardProps) {
+    return (
+        <CardRoot className={cn("overflow-hidden flex flex-col h-full", className)}>
+            {imageUrl && (
+                <div className="relative h-48 w-full">
+                    <img
+                        src={imageUrl}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            )}
+            <CardContent className="p-6 flex-1 flex flex-col">
+                <div className="flex-1">
+                    {tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {tags.map((tag) => (
+                                <span
+                                    key={tag}
+                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-latte-100 text-latte-800"
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                    <CardTitle className="mb-2">{title}</CardTitle>
+                    <CardDescription className="line-clamp-3">
+                        {description}
+                    </CardDescription>
+                </div>
+                {href && (
+                    <div className="mt-6">
+                        <Link
+                            href={href}
+                            className="text-latte-600 hover:text-latte-900 font-medium text-sm inline-flex items-center gap-1 group"
+                        >
+                            {actionText}
+                            <span className="group-hover:translate-x-1 transition-transform">→</span>
+                        </Link>
+                    </div>
+                )}
+            </CardContent>
+        </CardRoot>
+    )
+}
+
+export { CardRoot as Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export default LegacyCard
