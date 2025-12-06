@@ -82,6 +82,32 @@ export interface BeanCreateData {
   avg_price?: number
 }
 
+// --- Blend Types ---
+
+export interface BlendRecipeItem {
+  bean_id: number
+  ratio: number
+}
+
+export interface Blend {
+  id: number
+  name: string
+  description?: string
+  recipe: BlendRecipeItem[]
+  target_roast_level?: string
+  notes?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface BlendCreateData {
+  name: string
+  description?: string
+  recipe: BlendRecipeItem[]
+  target_roast_level?: string
+  notes?: string
+}
+
 // --- Roasting Types ---
 
 export interface SingleOriginRoastingRequest {
@@ -121,6 +147,11 @@ export const BeanAPI = {
     const response = await api.post<Bean>('/api/v1/beans', data)
     return response.data
   },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/v1/beans/${id}`)
+    return response.data
+  },
 }
 
 // --- Roasting API ---
@@ -130,4 +161,37 @@ export const RoastingAPI = {
     const response = await api.post<RoastingResponse>('/api/v1/roasting/single-origin', data)
     return response.data
   }
+}
+
+// --- Blend API ---
+
+export const BlendAPI = {
+  getAll: async (params?: {
+    skip?: number
+    limit?: number
+    search?: string
+  }) => {
+    const response = await api.get<Blend[]>('/api/v1/blends', { params })
+    return response.data
+  },
+
+  getOne: async (id: number) => {
+    const response = await api.get<Blend>(`/api/v1/blends/${id}`)
+    return response.data
+  },
+
+  create: async (data: BlendCreateData) => {
+    const response = await api.post<Blend>('/api/v1/blends', data)
+    return response.data
+  },
+
+  update: async (id: number, data: Partial<BlendCreateData>) => {
+    const response = await api.put<Blend>(`/api/v1/blends/${id}`, data)
+    return response.data
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/v1/blends/${id}`)
+    return response.data
+  },
 }

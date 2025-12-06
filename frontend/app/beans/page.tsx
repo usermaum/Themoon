@@ -13,7 +13,7 @@ import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag } from 'lucide-react'
 // Helper to resolve bean images
 const getBeanImage = (bean: Bean) => {
     const nameLower = bean.name.toLowerCase();
-    const originLower = bean.origin.toLowerCase();
+    const originLower = (bean.origin || '').toLowerCase();
 
     // Mapping logic based on available images
     if (nameLower.includes('ethiopia') || originLower.includes('ethiopia')) return '/images/beans/ethiopia.png';
@@ -43,13 +43,29 @@ export default function BeanManagementPage() {
     const fetchBeans = async () => {
         try {
             setLoading(true)
+            // 백엔드가 현재 skip, limit을 지원하지만 search는 지원 여부 불확실
+            // 페이지네이션 계산: page 1 -> skip 0, page 2 -> skip 12
+            const limit = 12
+            const skip = (page - 1) * limit
+
             const data = await BeanAPI.getAll({
-                page,
-                size: 12, // Grid view allows showing more items
+                skip,
+                limit,
                 search: search || undefined,
             })
-            setBeans(data.items)
-            setTotalPages(data.pages)
+
+            // 백엔드 응답이 배열인 경우 (현재 상태)
+            if (Array.isArray(data)) {
+                setBeans(data)
+                // 전체 개수를 알 수 없으므로, 데이터가 limit보다 적으면 마지막 페이지로 간주
+                setTotalPages(data.length < limit ? page : page + 1)
+            }
+            // 백엔드 응답이 페이지네이션 객체인 경우 (향후 대응)
+            else if ((data as any).items) {
+                setBeans((data as any).items)
+                setTotalPages((data as any).pages)
+            }
+
             setError(null)
         } catch (err) {
             console.error('Failed to fetch beans:', err)
@@ -143,7 +159,7 @@ export default function BeanManagementPage() {
                                     />
                                     <div className="absolute top-4 left-4">
                                         <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-sm font-serif border-0">
-                                            {bean.roast_level}
+                                            {bean.roast_profile || bean.grade || 'Raw Bean'}
                                         </Badge>
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
