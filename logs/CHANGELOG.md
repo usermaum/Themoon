@@ -11,6 +11,24 @@
 
 ---
 
+## [0.0.5] - 2025-12-07
+
+### ✨ Features
+
+- **Roasting Menu**: 사이드바에 'Roasting' 메뉴 추가 (`/roasting/single-origin`).
+
+### 🐛 Fixed
+
+- **Database Synchronization**: `recreate_db.py` 실행 시 작업 디렉토리 불일치로 인한 DB 파일 위치 오류 해결. (이제 `backend` 폴더 내에 정확히 생성됨)
+- **CORS Configuration**: 프론트엔드 포트(3500)가 백엔드 CORS 설정에 누락되어 발생한 `AxiosError: Network Error` 해결.
+- **Port Conflict Management**: `dev.sh` 실행 시 기존 프로세스 잔존으로 인한 `EADDRINUSE` 에러 해결을 위한 프로세스 정리 가이드 제공.
+
+### 📄 Documentation
+
+- **Development Guide**: WSL 환경에서의 터미널 명령어 실행 및 DB 데이터 확인 방법에 대한 트러블슈팅 가이드 보완 (`Documents/Progress/SESSION_SUMMARY_2025-12-06.md`).
+
+---
+
 ## [0.1.0] - 2025-12-06
 
 ### ✨ Features
@@ -467,13 +485,22 @@ frontend/
 ## [0.0.4] - 2025-12-06
 
 ### 추가됨 (Added)
+
 - **Green Bean Vault**: 생두 재고 현황 시각화 페이지 구현 (app/design-sample/green-bean-vault).
 - **Bean Prompts V2/V3**: 생두(V2) 및 원두(V3) 이미지 생성을 위한 고해상도 프롬프트 문서 작성.
 - **Server Scripts Enhancement**: WSL 내부 IP 접속 지원 및 포트 3500 변경 (dev.sh, start_all.sh).
 
 ### 변경됨 (Changed)
+
 - **Frontend Engine**: Next.js 14, React 18, Tailwind CSS 3로 엔진 업데이트 및 안정화.
 - **Network Config**: 로컬호스트 바인딩 오류 해결을 위해 0.0.0.0 호스트 설정 적용.
 
 ### 수정됨 (Fixed)
+
 - WSL2 환경에서 윈도우 업데이트 후 발생한 localhost 연결 거부 문제 해결.
+
+- **Roasting Process Implementation**:
+  - Backend: `Bean`(고도화), `InventoryLog`(Enum 적용) 모델 및 스키마 업데이트.
+  - Backend: `create_single_origin_roasting` 서비스 로직 및 API 엔드포인트 구현.
+  - Frontend: `roasting/single-origin` 로스팅 UI 페이지 구현 (생두 선택, 손실률 계산).
+  - Database: `recreate_db` 스크립트 작성 및 자동 시딩 로직(`lifespan`) 추가.

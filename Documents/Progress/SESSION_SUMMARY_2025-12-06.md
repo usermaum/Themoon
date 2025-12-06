@@ -1,46 +1,54 @@
-# 세션 요약: The Green Bean Vault 및 서버 최적화 (2025-12-06)
+# 세션 요약: 로스팅 프로세스 구현 및 안정화 (0.0.5)
 
-## 1. 🎯 오늘 한 일
+**날짜**: 2025-12-06 (심야)
+**버전**: 0.0.5
 
-* **Green Bean Vault (생두 보관소) 컨셉 페이지 구현**:
-  * `Themoon_Rostings_v2.md` 데이터를 기반으로 한 생두 재고 현황 페이지 (`/design-sample/green-bean-vault`) 개발.
-  * High-Fidelity CSS & SVG Implementation: 이미지 생성 제한에 대응하기 위해 CSS 텍스처(마대자루, 크라프트지)와 CSS 필터(로스팅 원두 -> 생두 변환)를 사용하여 고품질 시각 효과 구현.
-  * 인터랙티브 UI: 마우스 호버 효과, 애니메이션 로고, 재고량에 따른 상태 표시 등.
-* **원두 이미지 프롬프트 체계화**:
-  * **V2 (생두)**: 질감 중심의 Full-frame Macro 스타일 프롬프트 작성.
-  * **V3 (원두)**: 로스팅 포인트(Light/Dark)별 시각적 차이를 반영한 프롬프트 작성. (블렌드 3종 포함)
-  * 폴더 구조 제안: `public/images/raw-material/` 및 `public/images/roasted/`로 이원화.
-* **서버 연결 문제 해결 및 최적화**:
-  * **WSL ↔ Windows 네트워크 문제 해결**: `0.0.0.0` 호스트 바인딩 적용 및 포트 충돌 해결.
-  * **Frontend 포트 변경**: 충돌 방지를 위해 `3000` -> `3500` 포트로 변경.
-  * **내부 IP 접속 지원**: `localhost` 연결 거부 시 사용할 수 있는 WSL 내부 IP 접속 링크 자동 생성 기능 추가 (`dev.sh`, `start_all.sh`).
-* **Frontend 엔진 대규모 업데이트**:
-  * **Clean Install**: `node_modules` 전체 삭제 후 재설치.
-  * **Version Update**: Next.js 14 (Stable), React 18, Tailwind CSS 3 등 안정적인 최신 버전으로 엔진 교체 (초기 Next 16 베타 호환성 문제 해결).
+## 1. 주요 성과
 
-## 2. ✅ 완료된 작업
+- **로스팅 메뉴 추가**: 사이드바에 'Roasting' 메뉴 생성 (`/roasting/single-origin`).
+- **DB 시딩 문제 해결**: `recreate_db.py` 실행 시 발생하는 경로 문제(루트 vs backend 폴더)를 해결하여 `themoon.db` 동기화 완료.
+- **API CORS 해결**: 프론트엔드(3500)와 백엔드(8000) 간의 통신 문제(`Network Error`)를 `config.py` 수정을 통해 해결.
+- **WSL 환경 이슈 해결**: 윈도우와 WSL 간의 명령어 혼선 및 포트 충돌(`EADDRINUSE`) 문제 해결 가이드 확립.
 
-* [x] `app/design-sample/green-bean-vault/page.tsx` 구현 완료
-* [x] `Documents/Planning/Bean_Image_Prompts_V2.md` (생두) 작성 완료
-* [x] `Documents/Planning/Bean_Image_Prompts_V3.md` (원두 Light/Dark) 작성 완료
-* [x] `dev.sh` 및 `start_all.sh` 서버 시작 스크립트 수정 (0.0.0.0 바인딩, 포트 3500, 내부 IP 출력)
-* [x] Frontend `package.json` 의존성 최신화 및 안정화
+## 2. 발생한 문제 및 해결책 (Troubleshooting)
 
-## 3. 🔧 기술 세부사항
+### Q1. DB에 데이터가 안 들어감 (No beans found)
 
-* **Visual Engineering**: AI 이미지 생성이 막힌 상황에서 CSS `filter: hue-rotate()`와 SVG `path` 조작을 통해 생두 이미지를 시뮬레이션하고 빈티지 로고를 직접 코드로 그림.
-* **Network Config**: WSL2 환경에서 `localhost` 포워딩 이슈 해결을 위해 `next dev -H 0.0.0.0 -p 3500` 옵션 사용.
-* **Dependency Management**: Next.js 16 (Canary/RC) 도입 시도 후 Peer Dependency 충돌 발생 -> Next.js 14 (LTS)로 롤백하여 안정성 확보.
+- **원인**: `recreate_db.py`를 프로젝트 루트에서 실행하면 루트에 `themoon.db`가 생기지만, 서버(`uvicorn`)는 `backend` 폴더에서 실행되어 `backend/themoon.db`를 참조함.
+- **해결**: 시딩 스크립트를 반드시 `backend` 폴더 내부에서 실행하도록 변경.
 
-## 4. ⏳ 다음 세션에서 할 일
+  ```bash
+  cd backend
+  ../venv/bin/python scripts/recreate_db.py
+  ```
 
-* **이미지 생성**: 할당량 리셋 후 V2(생두), V3(원두) 프롬프트를 사용하여 실제 고해상도 이미지 생성 및 적용.
-* **로스팅 프로세스 UI**: 실제 로스팅 기록 및 관리 기능을 위한 Dashboard UI 구현.
-* **블렌딩 시스템**: 싱글 오리진을 조합하여 블렌드(풀문, 뉴문 등)를 만드는 인터페이스 구현.
+### Q2. Axios Network Error
 
-## 5. 🛠️ 현재 설정 & 규칙
+- **원인**: `frontend`는 3500 포트, `backend`는 3000 포트만 CORS 허용함.
+- **해결**: `backend/app/config.py`의 `BACKEND_CORS_ORIGINS`에 `http://localhost:3500` 추가.
 
-* **Frontend Port**: `3500` (기존 3000에서 변경됨)
-* **Backend Port**: `8000`
-* **이미지 경로**: `public/images/beans/` (향후 `raw-material` 및 `roasted`로 분리 예정)
-* **서버 실행**: `wsl bash dev.sh` 또는 `wsl bash start_all.sh` (자동으로 내부 IP 안내됨)
+### Q3. EADDRINUSE (포트 충돌)
+
+- **원인**: 터미널을 여러 개 띄워놓고 `dev.sh`를 중복 실행하거나, 비정상 종료 후 프로세스가 남음.
+- **해결**: 모든 터미널 종료 후 프로세스 강제 정리.
+
+  ```bash
+  lsof -ti :3500,8000 | xargs kill -9
+  ```
+
+## 3. 남은 과제
+
+- **블렌드 기능**: 현재 `/blends` 페이지 및 API가 미구현 상태임. 다음 세션의 최우선 과제.
+- **테스트 코드**: 로스팅 로직에 대한 단위 테스트 추가 필요.
+- **배포**: 변경된 DB 스키마 및 설정을 프로덕션(Render.com)에 적용해야 함.
+
+## 4. 실행 가이드 (최종)
+
+```bash
+# 1. 서버 실행
+./dev.sh
+
+# 2. (필요 시) DB 데이터 초기화
+cd backend
+../venv/bin/python scripts/recreate_db.py
+```

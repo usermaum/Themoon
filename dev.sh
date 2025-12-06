@@ -35,6 +35,7 @@ trap cleanup SIGINT SIGTERM
 # 3. Backend 시작
 cd "$ROOT_DIR/backend"
 if [ -d "../venv" ]; then
+
     source "../venv/bin/activate"
 elif [ -d "venv" ]; then
     source "venv/bin/activate"

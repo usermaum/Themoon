@@ -107,3 +107,8 @@ npm run dev
 # Frontend 터미널에서 실행 (서버 중지 후)
 rm -rf .next
 npm run dev
+
+
+# 디비 초기화
+source venv/bin/activate
+python backend/scripts/recreate_db.py
