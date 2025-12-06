@@ -109,9 +109,9 @@ elif [ "package.json" -nt "node_modules/.modules.yaml" ] 2>/dev/null; then
 fi
 
 # 포트 충돌 확인
-if lsof -ti :3000 > /dev/null 2>&1; then
-    echo "🔄 [Frontend] 포트 3000 기존 프로세스 종료 중..."
-    lsof -ti :3000 | xargs kill -9
+if lsof -ti :3500 > /dev/null 2>&1; then
+    echo "🔄 [Frontend] 포트 3500 기존 프로세스 종료 중..."
+    lsof -ti :3500 | xargs kill -9
 fi
 
 echo ""
@@ -123,9 +123,13 @@ echo "========================================="
 echo "✅ 서버 시작"
 echo "========================================="
 echo ""
+# WSL IP 추출
+WSL_IP=$(hostname -I | awk '{print $1}')
+
 echo "📍 Backend:  http://localhost:8000"
 echo "📍 API Docs: http://localhost:8000/docs"
-echo "📍 Frontend: http://localhost:3000"
+echo "📍 Frontend: http://localhost:3500 (Local)"
+echo "📍 Frontend: http://$WSL_IP:3500 (Internal)"
 echo ""
 echo "🛑 종료하려면 Ctrl+C를 누르세요."
 echo "   (모든 서버가 동시에 종료됩니다)"
@@ -162,7 +166,7 @@ trap cleanup SIGINT SIGTERM
 # Backend 시작 (백그라운드)
 cd "$ROOT_DIR/backend"
 source "$ROOT_DIR/venv/bin/activate"
-uvicorn app.main:app --reload --port 8000 > /tmp/themoon_backend.log 2>&1 &
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /tmp/themoon_backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend 시작됨 (PID: $BACKEND_PID)"
 
@@ -171,7 +175,7 @@ sleep 2
 
 # Frontend 시작 (백그라운드)
 cd "$ROOT_DIR/frontend"
-npm run dev > /tmp/themoon_frontend.log 2>&1 &
+npm run dev -- -H 0.0.0.0 -p 3500 > /tmp/themoon_frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "✅ Frontend 시작됨 (PID: $FRONTEND_PID)"
 

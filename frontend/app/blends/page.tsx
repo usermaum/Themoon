@@ -42,6 +42,7 @@ export default function BlendsPage() {
                 title="블렌드 레시피"
                 description="나만의 커피 블렌드 레시피를 만들고 관리하세요"
                 icon={<Palette />}
+                image="/images/hero/blends-hero.png"
                 className="mb-8"
             />
 

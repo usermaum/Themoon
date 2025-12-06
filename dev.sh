@@ -7,9 +7,9 @@ ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 1. 정리 (Cleanup)
 # 기존 실행 중인 프로세스 정리
-if lsof -ti :3000,8000 > /dev/null 2>&1; then
+if lsof -ti :3500,8000 > /dev/null 2>&1; then
     echo "🔄 기존 서버 프로세스 종료 중..."
-    lsof -ti :3000,8000 | xargs kill -9 2>/dev/null
+    lsof -ti :3500,8000 | xargs kill -9 2>/dev/null
 fi
 
 # Frontend 캐시 삭제
@@ -42,7 +42,7 @@ fi
 
 # 로그 파일 비우기 및 시작
 > /tmp/themoon_backend.log
-uvicorn app.main:app --reload --port 8000 > /tmp/themoon_backend.log 2>&1 &
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /tmp/themoon_backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend 시작됨 (PID: $BACKEND_PID)"
 
@@ -52,15 +52,20 @@ cd ..
 cd "$ROOT_DIR/frontend"
 # 로그 파일 비우기 및 시작
 > /tmp/themoon_frontend.log
-npm run dev > /tmp/themoon_frontend.log 2>&1 &
+# 0.0.0.0으로 호스트 바인딩하여 외부 접속 허용하며 포트 3500 지정
+npm run dev -- -H 0.0.0.0 -p 3500 > /tmp/themoon_frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "✅ Frontend 시작됨 (PID: $FRONTEND_PID)"
 
 cd ..
 
+# WSL IP 추출 (첫 번째 IP)
+WSL_IP=$(hostname -I | awk '{print $1}')
+
 echo ""
-echo "🌍 Frontend: http://localhost:3000"
-echo "🌍 API Docs: http://localhost:8000/docs"
+echo "🌍 Frontend (Local):   http://localhost:3500"
+echo "🌍 Frontend (Internal): http://$WSL_IP:3500"
+echo "🌍 API Docs:           http://localhost:8000/docs"
 echo ""
 echo "📊 실시간 로그 출력 중... (종료하려면 Ctrl+C)"
 echo "========================================="

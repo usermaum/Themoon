@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.0.3** | Next.js + FastAPI로 완전히 재작성
+> **v0.0.4** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -14,11 +14,13 @@
 이 프로젝트는 Streamlit 기반의 원본 프로젝트를 **완전히 재작성**한 버전입니다.
 
 **원본 프로젝트 위치:**
+
 ```
 /mnt/d/Ai/WslProject/TheMoon_Project/
 ```
 
 **원본 프로젝트 참조 방법:**
+
 - **모델:** `/mnt/d/Ai/WslProject/TheMoon_Project/app/models/`
 - **서비스 로직:** `/mnt/d/Ai/WslProject/TheMoon_Project/app/services/`
 - **UI 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/app/pages/`
@@ -71,7 +73,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.0.3)
+### 현재 구조 (v0.0.4)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -115,7 +117,7 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   └── Resources/             # 자료 (엑셀, 문서 등)
 │
 ├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.0.3
+│   ├── VERSION                # 현재: 0.0.4
 │   └── CHANGELOG.md           # 변경 로그
 │
 ├── data/                      # 데이터베이스 (원본 참조용)
@@ -169,6 +171,7 @@ frontend/
 ```
 
 **기능:**
+
 - ✅ Backend + Frontend 동시 실행 (백그라운드)
 - ✅ Frontend 캐시 삭제 옵션 선택 가능
 - ✅ 자동 가상환경 및 의존성 관리
@@ -178,19 +181,20 @@ frontend/
 
 **접속:**
 
-http://localhost:8000
+<http://localhost:8000>
 
 (Backend API)
 
-http://localhost:8000/docs
+<http://localhost:8000/docs>
 
 (API 문서)
 
-http://localhost:3000
+<http://localhost:3000>
 
 (Frontend)
 
 **로그 확인:**
+
 ```bash
 # Backend 로그
 tail -f /tmp/themoon_backend.log
@@ -208,6 +212,7 @@ tail -f /tmp/themoon_frontend.log
 ```
 
 **기능:**
+
 - 자동 가상환경 확인 및 생성
 - 의존성 자동 설치
 - 포트 충돌 자동 해결
@@ -215,11 +220,11 @@ tail -f /tmp/themoon_frontend.log
 
 **접속:**
 
-http://localhost:8000
+<http://localhost:8000>
 
 **API 문서:**
 
-http://localhost:8000/docs
+<http://localhost:8000/docs>
 
 #### Frontend만 실행
 
@@ -228,13 +233,14 @@ http://localhost:8000/docs
 ```
 
 **옵션 선택:**
+
 1. 일반 시작 (캐시 유지)
 2. 캐시 삭제 후 시작 (`rm -rf .next`)
 3. 취소
 
 **접속:**
 
-http://localhost:3000
+<http://localhost:3000>
 
 ---
 
@@ -258,11 +264,11 @@ uvicorn app.main:app --reload --port 8000
 
 **접속:**
 
-http://localhost:8000
+<http://localhost:8000>
 
 **API 문서:**
 
-http://localhost:8000/docs
+<http://localhost:8000/docs>
 
 #### 2. Frontend (Next.js) 실행
 
@@ -282,7 +288,7 @@ npm run dev
 
 **접속:**
 
-http://localhost:3000
+<http://localhost:3000>
 
 ---
 
@@ -330,6 +336,7 @@ http://localhost:3000
 ```
 
 **개발 순서:**
+
 1. **모델 정의** (`app/models/`) - 원본 참조
 2. **스키마 정의** (`app/schemas/`) - Pydantic으로 작성
 3. **서비스 로직** (`app/services/`) - 원본 로직 이식
@@ -350,6 +357,7 @@ http://localhost:3000
 ```
 
 **개발 순서:**
+
 1. **페이지 작성** (`app/*/page.tsx`) - 원본 UI 참조
 2. **컴포넌트 작성** (`components/`) - 재사용 가능하게 설계
 3. **API 통신** (`lib/api.ts`) - Axios 사용
@@ -438,16 +446,19 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ## 🎯 개발 원칙
 
 ### 1. **완전 재작성 (Clean Slate)**
+
 - 원본 코드를 **참조용으로만** 사용
 - 모든 코드를 **최신 Best Practice**로 새로 작성
 - 기술 부채 없이 깨끗하게 시작
 
 ### 2. **원본 로직 보존**
+
 - 비즈니스 로직은 원본과 **동일하게** 작동
 - 계산 로직, 데이터 모델 구조 유지
 - 기능 동등성 (Feature Parity) 보장
 
 ### 3. **모던 아키텍처**
+
 - Frontend/Backend **완전 분리**
 - RESTful API 기반
 - TypeScript 타입 안정성
