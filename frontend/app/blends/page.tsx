@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Search, Plus, Trash2, Edit2, Hexagon, PieChart } from 'lucide-react'
+import { Search, Plus, Trash2, Edit2, Hexagon, PieChart, Layers } from 'lucide-react'
 
 // 블렌드 리스트 메인 페이지
 export default function BlendManagementPage() {
@@ -89,7 +89,7 @@ export default function BlendManagementPage() {
             <PageHero
                 title="Blend Recipes"
                 description="나만의 커피 경험을 위한 블렌딩 레시피를 관리하세요."
-                icon={<Hexagon />}
+                icon={<Layers />}
                 image="/images/hero/beans-hero.png" // 블렌드용 이미지 있으면 교체 추천
                 className="mb-8"
             />
@@ -129,7 +129,7 @@ export default function BlendManagementPage() {
                 ) : !blends || blends.length === 0 ? (
                     <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border border-latte-200">
                         <div className="bg-latte-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Hexagon className="w-10 h-10 text-latte-400" />
+                            <Layers className="w-10 h-10 text-latte-400" />
                         </div>
                         <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 블렌드가 없습니다</h3>
                         <p className="text-latte-500 mb-8">새로운 블렌드 레시피를 만들어보세요.</p>
@@ -141,68 +141,92 @@ export default function BlendManagementPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {blends.map((blend) => (
-                            <Card key={blend.id} className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300 flex flex-col">
-                                <CardHeader className="bg-latte-50/50 pb-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <Badge variant="outline" className="bg-white border-latte-300 text-latte-600">
-                                            {blend.target_roast_level || 'Custom Roast'}
-                                        </Badge>
-                                        <div className="flex gap-1">
-                                            <Button asChild size="icon" variant="ghost" className="h-8 w-8 hover:bg-white text-latte-500">
+                        {blends.map((blend) => {
+                            // 이미지 선택 로직
+                            let imageSrc = '/images/blends/new-moon.png' // default
+                            const nameLower = blend.name.toLowerCase()
+
+                            if (nameLower.includes('full') || nameLower.includes('풀문')) {
+                                imageSrc = '/images/blends/full-moon.png'
+                            } else if (nameLower.includes('eclipse') || nameLower.includes('이클립스')) {
+                                imageSrc = '/images/blends/eclipse-moon.png'
+                            }
+
+                            return (
+                                <Card key={blend.id} className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300 flex flex-col rounded-[1.5rem]">
+                                    {/* 이미지 영역 */}
+                                    <div className="relative h-48 w-full overflow-hidden bg-latte-100">
+                                        <div
+                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                                            style={{ backgroundImage: `url(${imageSrc})` }}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                                        {/* 오버레이 뱃지 & 액션 */}
+                                        <div className="absolute top-4 left-4">
+                                            <Badge className="bg-white/90 text-latte-900 font-serif backdrop-blur-sm border-0">
+                                                {blend.target_roast_level || 'Custom Roast'}
+                                            </Badge>
+                                        </div>
+                                        <div className="absolute top-4 right-4 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button asChild size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white text-latte-800 rounded-full shadow-lg">
                                                 <Link href={`/blends/${blend.id}`}>
                                                     <Edit2 className="w-4 h-4" />
                                                 </Link>
                                             </Button>
                                             <Button
                                                 size="icon"
-                                                variant="ghost"
-                                                className="h-8 w-8 hover:bg-red-50 text-latte-500 hover:text-red-500"
+                                                variant="destructive"
+                                                className="h-8 w-8 bg-red-500/90 hover:bg-red-600 rounded-full shadow-lg"
                                                 onClick={() => handleDelete(blend.id)}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
-                                    </div>
-                                    <CardTitle className="text-xl font-serif text-latte-900">
-                                        {blend.name}
-                                    </CardTitle>
-                                    <CardDescription className="line-clamp-2 mt-1">
-                                        {blend.description}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="pt-6 flex-grow">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2 text-sm font-semibold text-latte-700 mb-2">
-                                            <PieChart className="w-4 h-4" />
-                                            <span>블렌딩 비율</span>
+
+                                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                                            <h3 className="text-xl font-serif font-bold tracking-tight mb-1 drop-shadow-md">
+                                                {blend.name}
+                                            </h3>
+                                            <p className="text-xs text-white/80 line-clamp-1 drop-shadow-sm">
+                                                {blend.description}
+                                            </p>
                                         </div>
-                                        {blend.recipe.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center text-sm">
-                                                <span className="text-latte-600 truncate flex-1 pr-2">
-                                                    {getBeanName(item.bean_id)}
-                                                </span>
-                                                <div className="flex items-center gap-2 min-w-[3rem] justify-end">
-                                                    <div className="h-2 rounded-full bg-latte-200 w-16 overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-latte-600"
-                                                            style={{ width: `${item.ratio * 100}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className="font-mono font-bold text-latte-800">
-                                                        {Math.round(item.ratio * 100)}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
-                                </CardContent>
-                                <CardFooter className="bg-latte-50/30 border-t border-latte-100 pt-4 text-xs text-latte-400 flex justify-between">
-                                    <span>Created: {new Date(blend.created_at).toLocaleDateString()}</span>
-                                    <span>{blend.recipe.length} Origins</span>
-                                </CardFooter>
-                            </Card>
-                        ))}
+
+                                    {/* 상세 정보 (비율 그래프) */}
+                                    <CardContent className="pt-6 flex-grow">
+                                        <div className="space-y-4">
+                                            <div className="space-y-3">
+                                                {blend.recipe.map((item, idx) => (
+                                                    <div key={idx} className="space-y-1">
+                                                        <div className="flex justify-between items-center text-xs text-latte-600">
+                                                            <span className="truncate pr-2 font-medium">
+                                                                {getBeanName(item.bean_id)}
+                                                            </span>
+                                                            <span className="font-bold text-latte-800">
+                                                                {Math.round(item.ratio * 100)}%
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-1.5 rounded-full bg-latte-100 w-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-latte-600' : 'bg-latte-400'}`}
+                                                                style={{ width: `${item.ratio * 100}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </CardContent>
+
+                                    <CardFooter className="bg-latte-50/50 border-t border-latte-100 py-3 px-6 text-[10px] font-medium text-latte-400 flex justify-between uppercase tracking-wider">
+                                        <span>Since {new Date(blend.created_at).getFullYear()}</span>
+                                        <span>{blend.recipe.length} Origins</span>
+                                    </CardFooter>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </div>

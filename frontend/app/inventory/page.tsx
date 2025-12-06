@@ -32,7 +32,7 @@ export default function InventoryPage() {
         try {
             setLoading(true)
             const [beansData, logsData] = await Promise.all([
-                BeanAPI.getAll({ size: 100 }),
+                BeanAPI.getAll({ limit: 100 }),
                 InventoryLogAPI.getAll({ limit: 50 })
             ])
             setBeans(beansData.items)
@@ -65,8 +65,8 @@ export default function InventoryPage() {
 
     const openEditModal = (log: InventoryLog) => {
         setSelectedLog(log)
-        setEditQuantity(Math.abs(log.quantity_change).toString())
-        setEditReason(log.reason || '')
+        setEditQuantity(Math.abs(log.change_amount).toString())
+        setEditReason(log.notes || '')
         setShowEditModal(true)
     }
 
@@ -87,9 +87,9 @@ export default function InventoryPage() {
 
         const logData: InventoryLogCreateData = {
             bean_id: selectedBean.id,
-            transaction_type: transactionType,
-            quantity_change: transactionType === 'IN' ? quantityNum : -quantityNum,
-            reason: reason || undefined,
+            change_type: transactionType === 'IN' ? 'PURCHASE' : 'SALES',
+            change_amount: transactionType === 'IN' ? quantityNum : -quantityNum,
+            notes: reason || undefined,
         }
 
         try {
@@ -115,7 +115,7 @@ export default function InventoryPage() {
             return
         }
 
-        const finalQuantity = selectedLog.transaction_type === 'IN' ? quantityNum : -quantityNum
+        const finalQuantity = selectedLog.change_amount >= 0 ? quantityNum : -quantityNum
 
         try {
             setSubmitting(true)
@@ -290,16 +290,16 @@ export default function InventoryPage() {
                                                             {getBeanName(log.bean_id)}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            <Badge variant={log.transaction_type === 'IN' ? 'default' : 'destructive'}
-                                                                className={log.transaction_type === 'IN' ? 'bg-green-600 hover:bg-green-700' : ''}>
-                                                                {log.transaction_type === 'IN' ? '입고' : '출고'}
+                                                            <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                                                                className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                                                                {log.change_amount >= 0 ? '입고' : '출고'}
                                                             </Badge>
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
-                                                            {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
+                                                            {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                            {log.reason || '-'}
+                                                            {log.notes || '-'}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                                             <Button
@@ -424,9 +424,9 @@ export default function InventoryPage() {
                                     원두: <span className="font-bold text-latte-900 block text-lg">{getBeanName(selectedLog.bean_id)}</span>
                                 </p>
                                 <div className="mt-2 flex items-center gap-2">
-                                    <Badge variant={selectedLog.transaction_type === 'IN' ? 'default' : 'destructive'}
-                                        className={selectedLog.transaction_type === 'IN' ? 'bg-green-600' : ''}>
-                                        {selectedLog.transaction_type === 'IN' ? '입고' : '출고'}
+                                    <Badge variant={selectedLog.change_amount >= 0 ? 'default' : 'destructive'}
+                                        className={selectedLog.change_amount >= 0 ? 'bg-green-600' : ''}>
+                                        {selectedLog.change_amount >= 0 ? '입고' : '출고'}
                                     </Badge>
                                 </div>
                             </div>

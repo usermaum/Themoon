@@ -14,22 +14,43 @@ import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag } from 'lucide-react'
 const getBeanImage = (bean: Bean) => {
     const nameLower = bean.name.toLowerCase();
     const originLower = (bean.origin || '').toLowerCase();
+    const varietyLower = (bean.variety || '').toLowerCase();
 
-    // Mapping logic based on available images
-    if (nameLower.includes('ethiopia') || originLower.includes('ethiopia')) return '/images/beans/ethiopia.png';
-    if (nameLower.includes('colombia') || originLower.includes('colombia')) return '/images/beans/colombia.png';
-    if (nameLower.includes('brazil') || originLower.includes('brazil')) return '/images/beans/brazil.png';
-    if (nameLower.includes('guatemala') || originLower.includes('guatemala')) return '/images/beans/guatemala.png';
-    if (nameLower.includes('kenya') || originLower.includes('kenya')) return '/images/beans/kenya.png';
-    if (nameLower.includes('geisha') || originLower.includes('geisha')) return '/images/beans/geisha.png';
-    if (nameLower.includes('santos') || originLower.includes('santos')) return '/images/beans/santos.png';
-    if (nameLower.includes('yirgacheffe') || originLower.includes('yirgacheffe')) return '/images/beans/yirgacheffe.png';
-    if (nameLower.includes('sidamo') || originLower.includes('sidamo')) return '/images/beans/sidamo.png';
-    if (nameLower.includes('sumatra') || originLower.includes('sumatra')) return '/images/beans/sumatra.png';
-    if (nameLower.includes('decaf') || originLower.includes('decaf')) return '/images/beans/decaf-sm.png';
+    // Mapping logic based on actual images in /images/raw_material/
+    if (nameLower.includes('예가체프') || nameLower.includes('yirgacheffe') || varietyLower.includes('yirgacheffe'))
+        return '/images/raw_material/01_yirgacheffe_raw.png';
+    if (nameLower.includes('모르모라') || nameLower.includes('mormora'))
+        return '/images/raw_material/02_mormora_raw.png';
+    if (nameLower.includes('코케') || nameLower.includes('koke'))
+        return '/images/raw_material/03_koke_honey_raw.png';
+    if (nameLower.includes('우라가') || nameLower.includes('uraga'))
+        return '/images/raw_material/04_uraga_raw.png';
+    if (nameLower.includes('시다모') || nameLower.includes('sidamo'))
+        return '/images/raw_material/05_sidamo_raw.png';
+    if (nameLower.includes('마사이') || nameLower.includes('masai') || originLower.includes('kenya'))
+        return '/images/raw_material/06_masai_raw.png';
+    if (nameLower.includes('키리냐가') || nameLower.includes('kirinyaga'))
+        return '/images/raw_material/07_kirinyaga_raw.png';
+    if (nameLower.includes('우일라') || nameLower.includes('huila') || originLower.includes('colombia'))
+        return '/images/raw_material/08_huila_raw.png';
+    if (nameLower.includes('안티구아') || nameLower.includes('antigua') || originLower.includes('guatemala'))
+        return '/images/raw_material/09_antigua_raw.png';
+    if (nameLower.includes('엘탄케') || nameLower.includes('eltanque') || nameLower.includes('el tanque'))
+        return '/images/raw_material/10_eltanque_raw.png';
+    if (nameLower.includes('파젠다') || nameLower.includes('fazenda'))
+        return '/images/raw_material/11_fazenda_raw.png';
+    if (nameLower.includes('산토스') || nameLower.includes('santos') || originLower.includes('brazil'))
+        return '/images/raw_material/12_santos_raw.png';
+    if (nameLower.includes('디카페인') || nameLower.includes('decaf')) {
+        if (nameLower.includes('sdm')) return '/images/raw_material/13_decaf_sdm_raw.png';
+        if (nameLower.includes('sm')) return '/images/raw_material/14_decaf_sm_raw.png';
+        return '/images/raw_material/15_swiss_water_raw.png';
+    }
+    if (nameLower.includes('게이샤') || nameLower.includes('geisha'))
+        return '/images/raw_material/16_geisha_raw.png';
 
-    // Default placeholder if no match
-    return '/images/beans/placeholder.png';
+    // Default - use yirgacheffe as fallback
+    return '/images/raw_material/01_yirgacheffe_raw.png';
 }
 
 export default function BeanManagementPage() {

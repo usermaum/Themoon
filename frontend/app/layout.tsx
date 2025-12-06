@@ -29,8 +29,12 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-latte-50 text-latte-800`}>
         <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
-          {children}
-          <Footer />
+          <div className="flex flex-col min-h-screen">
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer />
+          </div>
         </AppLayout>
       </body>
     </html>

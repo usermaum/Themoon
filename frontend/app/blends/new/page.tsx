@@ -28,11 +28,8 @@ export default function NewBlendPage() {
         const fetchBeans = async () => {
             try {
                 const data = await BeanAPI.getAll({ limit: 100 })
-                if (Array.isArray(data)) {
-                    setAvailableBeans(data)
-                } else if ((data as any).items) {
-                    setAvailableBeans((data as any).items)
-                }
+                // BeanListResponse { items: Bean[], ... }
+                setAvailableBeans(data.items)
             } catch (err) {
                 console.error('Failed to fetch beans', err)
             }

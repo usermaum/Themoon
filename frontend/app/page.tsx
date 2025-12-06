@@ -27,7 +27,7 @@ export default function HomePage() {
       try {
         setLoading(true)
         const [beansData, blendsData, logsData] = await Promise.all([
-          BeanAPI.getAll({ size: 100 }),
+          BeanAPI.getAll({ limit: 100 }),
           BlendAPI.getAll({ limit: 100 }),
           InventoryLogAPI.getAll({ limit: 10 }),
         ])
@@ -168,16 +168,16 @@ export default function HomePage() {
                             {new Date(log.created_at).toLocaleString('ko-KR')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={log.transaction_type === 'IN' ? 'default' : 'destructive'}
-                              className={log.transaction_type === 'IN' ? 'bg-green-600 hover:bg-green-700' : ''}>
-                              {log.transaction_type === 'IN' ? '입고' : '출고'}
+                            <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                              className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                              {log.change_amount >= 0 ? '입고' : '출고'}
                             </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">
-                            {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
+                            {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                            {log.reason || '-'}
+                            {log.notes || '-'}
                           </td>
                         </tr>
                       ))}

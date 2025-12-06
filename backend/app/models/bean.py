@@ -59,6 +59,9 @@ class Bean(Base):
     description = Column(Text, nullable=True, comment="설명")
     notes = Column(Text, nullable=True, comment="내부 메모")
     
+    # 예상 로스팅 손실률 (Pre-roast Blending 계산용)
+    expected_loss_rate = Column(Float, default=0.15, nullable=False, comment="예상 로스팅 손실률 (0.0 ~ 1.0)")
+    
     # 타임스탬프
     created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
     updated_at = Column(DateTime(timezone=True), onupdate=func.current_timestamp())

@@ -19,13 +19,23 @@
 
 ### 🐛 Fixed
 
-- **Database Synchronization**: `recreate_db.py` 실행 시 작업 디렉토리 불일치로 인한 DB 파일 위치 오류 해결. (이제 `backend` 폴더 내에 정확히 생성됨)
+- **Inventory API 404**: `inventory_logs` 라우터가 메인 API에 등록되지 않아 404 에러 발생 → 라우터 등록 완료.
+- **Inventory Schema Mismatch**: Pydantic 스키마와 SQLAlchemy 모델 필드명 불일치 (`transaction_type`→`change_type`, `quantity_change`→`change_amount`, `reason`→`notes`) 해결.
+- **Frontend API Types**: `InventoryLog`, `InventoryLogCreateData` 타입 및 API 메서드 완전 구현.
+- **Bean Image Mapping**: 원두 카드에 잘못된 이미지 표시 → 실제 `/images/raw_material/` 경로와 매칭.
+- **Sidebar Border/Shadow**: 사이드바 접힘 시 세로 줄무늬 발생 → border/shadow를 `isOpen` 상태에서만 표시.
+- **Database Synchronization**: `recreate_db.py` 실행 시 작업 디렉토리 불일치로 인한 DB 파일 위치 오류 해결.
 - **CORS Configuration**: 프론트엔드 포트(3500)가 백엔드 CORS 설정에 누락되어 발생한 `AxiosError: Network Error` 해결.
-- **Port Conflict Management**: `dev.sh` 실행 시 기존 프로세스 잔존으로 인한 `EADDRINUSE` 에러 해결을 위한 프로세스 정리 가이드 제공.
+- **Port Conflict Management**: `dev.sh` 실행 시 기존 프로세스 잔존으로 인한 `EADDRINUSE` 에러 해결.
+
+### 🔧 Refactoring
+
+- **Home Hero**: 메인 페이지 Hero 컴포넌트를 PageHero와 동일한 스타일로 통일 (`min-h-[400px]`, `shadow-md`, `hover:shadow-lg` 등).
+- **Sidebar Styling**: 배경색 완전 불투명 처리 (`bg-white`), 메뉴 호버 색상 개선 (`hover:bg-latte-100`).
 
 ### 📄 Documentation
 
-- **Development Guide**: WSL 환경에서의 터미널 명령어 실행 및 DB 데이터 확인 방법에 대한 트러블슈팅 가이드 보완 (`Documents/Progress/SESSION_SUMMARY_2025-12-06.md`).
+- **Session Summary**: 2025-12-07 세션 요약 작성 (`Documents/Progress/SESSION_SUMMARY_2025-12-07.md`).
 
 ---
 
