@@ -11,11 +11,19 @@
 
 ---
 
-## [Unreleased] - 2025-11-29
+## [Unreleased] - 2025-12-06
+
+### 📄 Documentation
+
+**언어 정책 강화**
+
+- `instructions.md`, `CLAUDE.md`: 사용자가 영어를 읽지 못하므로 모든 진행 상황, 결과, 체크리스트 확인 등을 반드시 한글로 작성하도록 규칙 강화.
+- `.gitignore`: logs/ 디렉토리 내의 문서 파일들(`CHANGELOG.md` 등)이 무시되지 않도록 허용 규칙 추가.
 
 ### ✨ Features
 
 **프론트엔드 레이아웃 시스템 개선**
+
 - AppLayout 컴포넌트 추가 (사이드바 상태 관리)
 - Sidebar 컴포넌트 추가 (접기/펴기 기능, lucide-react 아이콘)
 - 쿠키 기반 사이드바 상태 저장 (1년 유지)
@@ -23,6 +31,7 @@
 - 스크롤바 스타일 유틸리티 추가 (scrollbar-hide, scrollbar-thin)
 
 **네비게이션 구조**
+
 - Home, Beans, Blends, Inventory 메뉴 추가
 - Settings 및 User 프로필 영역 추가
 - 활성 페이지 하이라이트 (indigo 색상)
@@ -30,28 +39,33 @@
 ### 📄 Documentation
 
 **로스팅 문서 정리 및 최적화**
+
 - `Themoon_Rostings.md` 중복 제거 (625줄 → 466줄, 25% 감소)
 - 섹션 2, 3, 6 중복 내용 제거 및 통합
 - 명세서 데이터 4.2~4.11 복구 (11건 전체)
 
 **Word 보고서 생성**
+
 - 전문적인 Word 문서 `더문_로스팅_운영계획안.docx` 생성 (13KB)
 - 5개 메인 섹션: 개요, 원두 마스터, 블렌딩 레시피, 운영 시나리오, 명세서 데이터
 - 목차 자동 생성, 표 스타일, 색상 스키마 적용
 - docx 라이브러리 사용 (Node.js)
 
 **세션 관리**
+
 - `SESSION_SUMMARY_2025-11-29.md` 작성
 - 문서 정리 및 Word 생성 작업 기록
 
 ### 🛠️ Technical
 
 **프론트엔드 컴포넌트**
+
 - `frontend/components/layout/AppLayout.tsx` - 메인 레이아웃 컨테이너
 - `frontend/components/layout/Sidebar.tsx` - 사이드바 네비게이션
 - `frontend/app/globals.css` - 커스텀 스크롤바 유틸리티
 
 **파일 생성**
+
 - `create_roasting_manual.js` - Word 문서 생성 스크립트
 - `package.json`, `package-lock.json` - Node.js 프로젝트 설정
 
@@ -64,6 +78,7 @@
 #### 🎯 주요 작업
 
 **PostgreSQL 호환성 개선 (2025-11-26 추가)**
+
 - SQLite → PostgreSQL 마이그레이션을 위한 모델 타입 수정
   - String 타입에 명시적 길이 지정 (PostgreSQL 필수)
     - `blend.py`: name(200), target_roast_level(50)
@@ -76,12 +91,14 @@
   - 영향 받는 파일: `bean.py`, `blend.py`, `inventory_log.py`
 
 **Render.com 배포 설정**
+
 - `render.yaml` 완전 구성 (Backend, Frontend, PostgreSQL 18)
 - Backend: `/health` 엔드포인트 추가
 - Frontend: `NEXT_PUBLIC_API_URL` 환경 변수 설정
 - Database: PostgreSQL 18 + 자동 연결 (`themoon_p922`)
 
 **Production 빌드 오류 해결**
+
 1. PostgreSQL 버전: 16 → 18로 변경
 2. Backend 의존성 단순화: 38개 → 10개 필수 패키지
 3. Frontend 의존성 구조 개선: devDependencies → dependencies 이동
@@ -93,20 +110,24 @@
    - `next.config.js`: 명시적 webpack alias
 
 **Database 연결 및 검증 로직**
+
 - `backend/app/database.py`: postgres:// → postgresql:// 자동 변환
 - `backend/app/main.py`: lifespan 이벤트 (테이블 자동 생성)
 - 연결 정보 디버그 로깅 추가
 
 **Data Validation 개선**
+
 - `backend/app/schemas/bean.py`: @field_validator 추가
   - 빈 문자열('') → None 자동 변환
   - Optional 필드 검증 강화
 
 **UI 개선**
+
 - 메뉴: "Dashboard" → "Home" 변경
 - `frontend/components/layout/Navbar.tsx` 수정
 
 **개발 환경 최적화**
+
 - `start_backend.sh`: venv 자동 관리, 포트 충돌 해결
 - `start_frontend.sh`: 캐시 삭제 옵션, 대화형 메뉴
 - `start_all.sh`: Backend + Frontend 동시 실행
@@ -124,12 +145,14 @@
 8. **스크립트 라인 엔딩**: CRLF → LF
 
 #### 📊 통계
+
 - 수정된 파일: 12개
 - 추가된 파일: 6개 (스크립트 3개, 설정 파일 3개)
 - 해결된 배포 오류: 8건
 - Git 커밋: 15개
 
 #### 🔗 배포 URL
+
 - Backend: `https://themoon-api.onrender.com`
 - Frontend: `https://themoon-frontend.onrender.com`
 - Database: `dpg-d4is05qli9vc73epqth0-a.oregon-postgres.render.com/themoon_p922`
@@ -143,6 +166,7 @@
 #### 🎯 주요 기능
 
 **Backend (FastAPI)**
+
 - 블렌드 레시피 관리 API (CRUD)
   - `backend/app/api/v1/endpoints/blends.py` - 블렌드 엔드포인트
   - `backend/app/models/blend.py` - 블렌드 모델
@@ -156,6 +180,7 @@
   - `backend/app/services/inventory_log_service.py` - 재고 비즈니스 로직
 
 **Frontend (Next.js)**
+
 - 블렌드 레시피 페이지
   - `frontend/app/blends/page.tsx` - 블렌드 목록
   - `frontend/app/blends/new/page.tsx` - 블렌드 등록
@@ -172,6 +197,7 @@
   - `frontend/components/beans/BeanForm.tsx` - 원두 폼 컴포넌트
 
 **UI/UX 개선**
+
 - 배경 이미지 적용
   - `frontend/public/beans_background.png` - 원두 관리 배경
   - `frontend/public/blends_background.png` - 블렌드 배경
@@ -186,6 +212,7 @@
   - `frontend/components/home/Hero.tsx` - 홈 히어로
 
 **배포 설정**
+
 - `DEPLOYMENT.md` - 배포 가이드
 - `DEPLOYMENT_FREE.md` - 무료 배포 가이드
 - `backend/Procfile` - Heroku 배포 설정
@@ -194,6 +221,7 @@
 - `render.yaml` - Render.com 배포 설정
 
 #### 📊 통계
+
 - 추가된 파일: 37개
 - 수정된 파일: 13개
 - 추가된 코드: 9,446줄
@@ -240,6 +268,7 @@ Gemini 3 Pro가 작성한 복잡한 마이그레이션 구조를 완전히 제�
 #### ✅ 생성된 깨끗한 구조
 
 **Backend (FastAPI) - 8개 파일, 20KB**
+
 ```
 backend/
 ├── app/
@@ -252,6 +281,7 @@ backend/
 ```
 
 **Frontend (Next.js) - 9개 파일, 16KB**
+
 ```
 frontend/
 ├── app/
@@ -304,6 +334,7 @@ frontend/
 #### 🛠️ 기술 스택
 
 **Backend:**
+
 - FastAPI 0.109+
 - Python 3.12+
 - PostgreSQL 15+
@@ -312,6 +343,7 @@ frontend/
 - JWT 인증
 
 **Frontend:**
+
 - Next.js 14.1+
 - TypeScript 5.3+
 - React 18.2+
@@ -332,6 +364,7 @@ frontend/
 #### 🚀 다음 단계
 
 **Week 1-2: Backend 기초**
+
 - [ ] Bean 모델 (원본 참조)
 - [ ] Bean 스키마 (Pydantic)
 - [ ] Bean 서비스 (원본 로직)
@@ -339,6 +372,7 @@ frontend/
 - [ ] Bean 테스트
 
 **Week 3-4: Frontend 기초**
+
 - [ ] Bean 관리 페이지
 - [ ] API 연동
 - [ ] UI 컴포넌트
@@ -347,4 +381,5 @@ frontend/
 ---
 
 **참고:**
+
 - 이전 버전 기록 (0.50.4 이하)은 원본 프로젝트 참조: `/mnt/d/Ai/WslProject/TheMoon_Project/logs/CHANGELOG.md`
