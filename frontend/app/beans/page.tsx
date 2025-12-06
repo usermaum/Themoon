@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Bean, BeanAPI } from '@/lib/api'
 import Link from 'next/link'
 import PageHero from '@/components/ui/PageHero'
@@ -122,7 +123,12 @@ export default function BeanManagementPage() {
             />
 
             <div className="container mx-auto px-4 py-8">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4"
+                >
                     <div className="w-full md:w-96 relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-latte-400" />
                         <Input
@@ -139,7 +145,7 @@ export default function BeanManagementPage() {
                             <Plus className="w-5 h-5" /> 새 원두 등록
                         </Link>
                     </Button>
-                </div>
+                </motion.div>
 
                 {/* Error Message */}
                 {error && (
@@ -169,67 +175,79 @@ export default function BeanManagementPage() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {beans.map((bean) => (
-                            <Card key={bean.id} className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300">
-                                <div className="h-64 relative overflow-hidden bg-latte-100">
-                                    <img
-                                        src={getBeanImage(bean)}
-                                        alt={bean.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute top-4 left-4">
-                                        <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-sm font-serif border-0">
-                                            {bean.roast_profile || bean.grade || 'Raw Bean'}
-                                        </Badge>
-                                    </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
-                                        <div className="flex gap-2">
-                                            <Button asChild size="icon" variant="secondary" className="bg-white/90 hover:bg-white text-latte-800 rounded-full h-10 w-10">
-                                                <Link href={`/beans/${bean.id}`}>
-                                                    <Edit2 className="w-4 h-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="destructive"
-                                                className="rounded-full h-10 w-10"
-                                                onClick={() => handleDelete(bean.id)}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                    >
+                        {beans.map((bean, index) => (
+                            <motion.div
+                                key={bean.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: index * 0.05 }}
+                            >
+                                <Card className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300 h-full">
+                                    <div className="h-64 relative overflow-hidden bg-latte-100">
+                                        <img
+                                            src={getBeanImage(bean)}
+                                            alt={bean.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute top-4 left-4">
+                                            <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm shadow-sm font-serif border-0">
+                                                {bean.roast_profile || bean.grade || 'Raw Bean'}
+                                            </Badge>
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
+                                            <div className="flex gap-2">
+                                                <Button asChild size="icon" variant="secondary" className="bg-white/90 hover:bg-white text-latte-800 rounded-full h-10 w-10">
+                                                    <Link href={`/beans/${bean.id}`}>
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="destructive"
+                                                    className="rounded-full h-10 w-10"
+                                                    onClick={() => handleDelete(bean.id)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <CardHeader className="pb-2">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <Badge variant="outline" className="border-latte-300 text-latte-600 bg-latte-50/50">
-                                            {bean.variety || 'Unknown'}
-                                        </Badge>
-                                        <span className={`font-mono font-bold text-sm ${bean.quantity_kg < 5 ? 'text-red-500' : 'text-latte-400'}`}>
-                                            {bean.quantity_kg.toFixed(1)}kg
-                                        </span>
-                                    </div>
-                                    <CardTitle className="leading-tight group-hover:text-latte-600 transition-colors">
-                                        <Link href={`/beans/${bean.id}`} className="hover:underline decoration-latte-400 underline-offset-4">
-                                            {bean.name}
-                                        </Link>
-                                    </CardTitle>
-                                    <CardDescription className="flex items-center gap-1 mt-1 text-latte-500">
-                                        <MapPin className="w-3 h-3" /> {bean.origin}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardFooter className="pt-2 border-t border-latte-50 mt-auto bg-latte-50/30">
-                                    <div className="w-full flex justify-between items-center text-sm">
-                                        <span className="text-latte-400">단가 (kg)</span>
-                                        <span className="font-mono font-bold text-latte-800">
-                                            ₩{bean.purchase_price_per_kg?.toLocaleString() || '0'}
-                                        </span>
-                                    </div>
-                                </CardFooter>
-                            </Card>
+                                    <CardHeader className="pb-2">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <Badge variant="outline" className="border-latte-300 text-latte-600 bg-latte-50/50">
+                                                {bean.variety || 'Unknown'}
+                                            </Badge>
+                                            <span className={`font-mono font-bold text-sm ${bean.quantity_kg < 5 ? 'text-red-500' : 'text-latte-400'}`}>
+                                                {bean.quantity_kg.toFixed(1)}kg
+                                            </span>
+                                        </div>
+                                        <CardTitle className="leading-tight group-hover:text-latte-600 transition-colors">
+                                            <Link href={`/beans/${bean.id}`} className="hover:underline decoration-latte-400 underline-offset-4">
+                                                {bean.name}
+                                            </Link>
+                                        </CardTitle>
+                                        <CardDescription className="flex items-center gap-1 mt-1 text-latte-500">
+                                            <MapPin className="w-3 h-3" /> {bean.origin}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardFooter className="pt-2 border-t border-latte-50 mt-auto bg-latte-50/30">
+                                        <div className="w-full flex justify-between items-center text-sm">
+                                            <span className="text-latte-400">단가 (kg)</span>
+                                            <span className="font-mono font-bold text-latte-800">
+                                                ₩{bean.purchase_price_per_kg?.toLocaleString() || '0'}
+                                            </span>
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Pagination */}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
 import PageHero from '@/components/ui/PageHero'
 import { Button } from '@/components/ui/Button'
@@ -171,7 +172,12 @@ export default function InventoryPage() {
                 ) : (
                     <>
                         {/* 재고 현황 테이블 */}
-                        <section className="mb-12">
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className="mb-12"
+                        >
                             <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
                                 <Package className="w-6 h-6 text-latte-400" />
                                 현재 재고 현황
@@ -243,10 +249,14 @@ export default function InventoryPage() {
                                     </table>
                                 </div>
                             </div>
-                        </section>
+                        </motion.section>
 
                         {/* 입출고 기록 테이블 */}
-                        <section>
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.2 }}
+                        >
                             <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">입출고 기록</h2>
                             <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
                                 <div className="overflow-x-auto">
@@ -326,7 +336,7 @@ export default function InventoryPage() {
                                     </table>
                                 </div>
                             </div>
-                        </section>
+                        </motion.section>
                     </>
                 )}
 
