@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Bean, BeanAPI, Blend, BlendAPI, InventoryLog, InventoryLogAPI } from '@/lib/api'
 import Link from 'next/link'
 import {
@@ -61,7 +62,12 @@ export default function HomePage() {
         ) : (
           <>
             {/* 통계 카드 섹션 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+            >
               <Card className="hover:border-latte-400">
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
@@ -101,11 +107,16 @@ export default function HomePage() {
                   <AlertTriangle className="w-10 h-10 text-red-300" />
                 </CardContent>
               </Card>
-            </div>
+            </motion.div>
 
             {/* 재고 부족 알림 */}
             {lowStockBeans.length > 0 && (
-              <section className="mb-8">
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="mb-8"
+              >
                 <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
                   <AlertTriangle className="w-6 h-6 text-red-500" />
                   재고 부족 알림
@@ -132,11 +143,16 @@ export default function HomePage() {
                     </Button>
                   </div>
                 </div>
-              </section>
+              </motion.section>
             )}
 
             {/* 최근 활동 */}
-            <section className="mb-8">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="mb-8"
+            >
               <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
                 최근 입출고 내역
               </h2>
@@ -185,10 +201,14 @@ export default function HomePage() {
                   </table>
                 )}
               </div>
-            </section>
+            </motion.section>
 
             {/* 빠른 링크 */}
-            <section>
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
               <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
                 빠른 작업
               </h2>
@@ -247,7 +267,7 @@ export default function HomePage() {
                   </Card>
                 </Link>
               </div>
-            </section>
+            </motion.section>
           </>
         )}
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Blend, BlendAPI, Bean, BeanAPI } from '@/lib/api'
 import Link from 'next/link'
 import PageHero from '@/components/ui/PageHero'
@@ -95,7 +96,12 @@ export default function BlendManagementPage() {
             />
 
             <div className="container mx-auto px-4 py-8">
-                <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4"
+                >
                     <div className="w-full md:w-96 relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-latte-400" />
                         <Input
@@ -112,7 +118,7 @@ export default function BlendManagementPage() {
                             <Plus className="w-5 h-5" /> 새 블렌드 생성
                         </Link>
                     </Button>
-                </div>
+                </motion.div>
 
                 {error && (
                     <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6 flex items-center gap-2">
@@ -140,8 +146,13 @@ export default function BlendManagementPage() {
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {blends.map((blend) => {
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    >
+                        {blends.map((blend, index) => {
                             // 이미지 선택 로직
                             let imageSrc = '/images/blends/new-moon.png' // default
                             const nameLower = blend.name.toLowerCase()
@@ -153,81 +164,88 @@ export default function BlendManagementPage() {
                             }
 
                             return (
-                                <Card key={blend.id} className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300 flex flex-col rounded-[1.5rem]">
-                                    {/* 이미지 영역 */}
-                                    <div className="relative h-48 w-full overflow-hidden bg-latte-100">
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                                            style={{ backgroundImage: `url(${imageSrc})` }}
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                <motion.div
+                                    key={blend.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                                >
+                                    <Card className="group overflow-hidden border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all duration-300 flex flex-col rounded-[1.5rem] h-full">
+                                        {/* 이미지 영역 */}
+                                        <div className="relative h-48 w-full overflow-hidden bg-latte-100">
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                                                style={{ backgroundImage: `url(${imageSrc})` }}
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-                                        {/* 오버레이 뱃지 & 액션 */}
-                                        <div className="absolute top-4 left-4">
-                                            <Badge className="bg-white/90 text-latte-900 font-serif backdrop-blur-sm border-0">
-                                                {blend.target_roast_level || 'Custom Roast'}
-                                            </Badge>
-                                        </div>
-                                        <div className="absolute top-4 right-4 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button asChild size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white text-latte-800 rounded-full shadow-lg">
-                                                <Link href={`/blends/${blend.id}`}>
-                                                    <Edit2 className="w-4 h-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="destructive"
-                                                className="h-8 w-8 bg-red-500/90 hover:bg-red-600 rounded-full shadow-lg"
-                                                onClick={() => handleDelete(blend.id)}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        </div>
+                                            {/* 오버레이 뱃지 & 액션 */}
+                                            <div className="absolute top-4 left-4">
+                                                <Badge className="bg-white/90 text-latte-900 font-serif backdrop-blur-sm border-0">
+                                                    {blend.target_roast_level || 'Custom Roast'}
+                                                </Badge>
+                                            </div>
+                                            <div className="absolute top-4 right-4 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button asChild size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white text-latte-800 rounded-full shadow-lg">
+                                                    <Link href={`/blends/${blend.id}`}>
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="destructive"
+                                                    className="h-8 w-8 bg-red-500/90 hover:bg-red-600 rounded-full shadow-lg"
+                                                    onClick={() => handleDelete(blend.id)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
 
-                                        <div className="absolute bottom-4 left-4 right-4 text-white">
-                                            <h3 className="text-xl font-serif font-bold tracking-tight mb-1 drop-shadow-md">
-                                                {blend.name}
-                                            </h3>
-                                            <p className="text-xs text-white/80 line-clamp-1 drop-shadow-sm">
-                                                {blend.description}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* 상세 정보 (비율 그래프) */}
-                                    <CardContent className="pt-6 flex-grow">
-                                        <div className="space-y-4">
-                                            <div className="space-y-3">
-                                                {blend.recipe.map((item, idx) => (
-                                                    <div key={idx} className="space-y-1">
-                                                        <div className="flex justify-between items-center text-xs text-latte-600">
-                                                            <span className="truncate pr-2 font-medium">
-                                                                {getBeanName(item.bean_id)}
-                                                            </span>
-                                                            <span className="font-bold text-latte-800">
-                                                                {Math.round(item.ratio * 100)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1.5 rounded-full bg-latte-100 w-full overflow-hidden">
-                                                            <div
-                                                                className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-latte-600' : 'bg-latte-400'}`}
-                                                                style={{ width: `${item.ratio * 100}%` }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            <div className="absolute bottom-4 left-4 right-4 text-white">
+                                                <h3 className="text-xl font-serif font-bold tracking-tight mb-1 drop-shadow-md">
+                                                    {blend.name}
+                                                </h3>
+                                                <p className="text-xs text-white/80 line-clamp-1 drop-shadow-sm">
+                                                    {blend.description}
+                                                </p>
                                             </div>
                                         </div>
-                                    </CardContent>
 
-                                    <CardFooter className="bg-latte-50/50 border-t border-latte-100 py-3 px-6 text-[10px] font-medium text-latte-400 flex justify-between uppercase tracking-wider">
-                                        <span>Since {new Date(blend.created_at).getFullYear()}</span>
-                                        <span>{blend.recipe.length} Origins</span>
-                                    </CardFooter>
-                                </Card>
+                                        {/* 상세 정보 (비율 그래프) */}
+                                        <CardContent className="pt-6 flex-grow">
+                                            <div className="space-y-4">
+                                                <div className="space-y-3">
+                                                    {blend.recipe.map((item, idx) => (
+                                                        <div key={idx} className="space-y-1">
+                                                            <div className="flex justify-between items-center text-xs text-latte-600">
+                                                                <span className="truncate pr-2 font-medium">
+                                                                    {getBeanName(item.bean_id)}
+                                                                </span>
+                                                                <span className="font-bold text-latte-800">
+                                                                    {Math.round(item.ratio * 100)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 rounded-full bg-latte-100 w-full overflow-hidden">
+                                                                <div
+                                                                    className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-latte-600' : 'bg-latte-400'}`}
+                                                                    style={{ width: `${item.ratio * 100}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+
+                                        <CardFooter className="bg-latte-50/50 border-t border-latte-100 py-3 px-6 text-[10px] font-medium text-latte-400 flex justify-between uppercase tracking-wider">
+                                            <span>Since {new Date(blend.created_at).getFullYear()}</span>
+                                            <span>{blend.recipe.length} Origins</span>
+                                        </CardFooter>
+                                    </Card>
+                                </motion.div>
                             )
                         })}
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>
