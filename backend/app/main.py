@@ -46,9 +46,18 @@ app = FastAPI(
 )
 
 # CORS 설정
+# CORS 설정 (개발 환경 강력 허용)
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3500",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3500",
+    "*"  # 개발 편의를 위해 모든 Origin 허용
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

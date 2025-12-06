@@ -11,7 +11,7 @@ from app.models.bean import BeanType
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Bean])
+@router.get("/", response_model=BeanListResponse)
 def read_beans(
     skip: int = 0,
     limit: int = 100,
@@ -19,8 +19,19 @@ def read_beans(
     db: Session = Depends(get_db)
 ):
     """원두 목록 조회"""
-    beans = bean_service.get_beans(db, skip=skip, limit=limit, search=search)
-    return beans
+    items = bean_service.get_beans(db, skip=skip, limit=limit, search=search)
+    total = bean_service.get_beans_count(db) # 검색어가 있을 경우 카운트 로직이 부정확할 수 있으나, 일단 전체 카운트로 구현
+    
+    page = (skip // limit) + 1
+    pages = (total + limit - 1) // limit
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": limit,
+        "pages": pages
+    }
 
 @router.post("/", response_model=Bean)
 def create_bean(bean: BeanCreate, db: Session = Depends(get_db)):

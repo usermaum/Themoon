@@ -19,7 +19,7 @@ export default function PageHero({
 }: PageHeroProps) {
     return (
         <div className={cn(
-            "relative w-full rounded-[2rem] overflow-hidden bg-latte-900 text-white shadow-md mb-8 transition-transform hover:shadow-lg",
+            "relative w-full min-h-[400px] flex items-center overflow-hidden bg-latte-900 text-white shadow-md transition-transform hover:shadow-lg",
             className
         )}>
             {image && (
@@ -41,19 +41,19 @@ export default function PageHero({
                 </>
             )}
 
-            <div className="relative z-10 p-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="relative z-10 container mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-10 justify-center h-full">
                 {icon && (
-                    <div className="p-4 rounded-full bg-white/20 backdrop-blur-md shadow-sm text-latte-50 border border-white/30">
-                        {React.cloneElement(icon as React.ReactElement, { size: 48 })}
+                    <div className="p-6 rounded-full bg-white/10 backdrop-blur-md shadow-2xl text-latte-50 border border-white/20">
+                        {React.cloneElement(icon as React.ReactElement, { size: 64 })}
                     </div>
                 )}
 
-                <div className="flex-1 text-center md:text-left">
-                    <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4 tracking-tight text-white drop-shadow-sm">
+                <div className="flex-1 text-center md:text-left max-w-3xl">
+                    <h1 className="font-serif text-5xl md:text-6xl font-bold mb-6 tracking-tight text-white drop-shadow-lg">
                         {title}
                     </h1>
                     {description && (
-                        <p className="text-lg text-latte-100 max-w-2xl leading-relaxed drop-shadow-sm">
+                        <p className="text-xl md:text-2xl text-latte-100 leading-relaxed drop-shadow-md font-light">
                             {description}
                         </p>
                     )}

@@ -35,6 +35,9 @@ class BeanBase(BaseModel):
     # 메타 데이터
     description: Optional[str] = Field(None, description="설명")
     notes: Optional[str] = Field(None, description="메모")
+    
+    # 로스팅 정보
+    expected_loss_rate: Optional[float] = Field(None, ge=0.0, le=1.0, description="예상 로스팅 손실률")
 
     @field_validator('origin', 'variety', 'grade', 'processing_method', 'description', 'notes', mode='before')
     @classmethod
@@ -71,7 +74,10 @@ class BeanUpdate(BaseModel):
     cost_price: Optional[float] = Field(None, ge=0)
     
     description: Optional[str] = Field(None)
+
     notes: Optional[str] = Field(None)
+    
+    expected_loss_rate: Optional[float] = Field(None, ge=0.0, le=1.0)
 
     @field_validator('origin', 'variety', 'grade', 'processing_method', 'description', 'notes', mode='before')
     @classmethod

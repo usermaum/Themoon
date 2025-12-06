@@ -36,15 +36,15 @@ def create_inventory_log(log: InventoryLogCreate, db: Session = Depends(get_db))
 @router.put("/{log_id}", response_model=InventoryLog)
 def update_inventory_log(
     log_id: int,
-    quantity_change: float,
-    reason: Optional[str] = None,
+    change_amount: float,
+    notes: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
     재고 입출고 기록 수정
     """
     try:
-        updated_log = inventory_log_service.update_log(db, log_id, quantity_change, reason)
+        updated_log = inventory_log_service.update_log(db, log_id, change_amount, notes)
         if not updated_log:
             raise HTTPException(status_code=404, detail="Inventory log not found")
         return updated_log

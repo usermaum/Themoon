@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const navItems = [
         { name: 'Home', href: '/', icon: Home },
         { name: 'Beans', href: '/beans', icon: Coffee },
-        { name: 'Roasting', href: '/roasting/single-origin', icon: Flame },
+        { name: 'Roasting', href: '/roasting', icon: Flame },
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
     ]
@@ -51,12 +51,11 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <aside
                 className={`
                     fixed top-0 left-0 h-screen 
-                    bg-white/60 backdrop-blur-xl
-                    border-r border-latte-200
+                    bg-white backdrop-blur-xl
+                    ${isOpen ? 'border-r border-latte-200 shadow-[0_4px_30px_rgba(0,0,0,0.03)]' : ''}
                     transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) z-[100]
                     flex flex-col
                     ${isOpen ? 'w-64' : 'w-[80px]'}
-                    shadow-[0_4px_30px_rgba(0,0,0,0.03)]
                 `}
             >
                 {/* Header / Logo Area */}
@@ -76,8 +75,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     {isOpen ? (
                         <div className="flex items-center justify-between w-full relative z-10">
                             <Link href="/" className="flex flex-col">
-                                <h1 className="font-serif text-2xl text-latte-800 tracking-tight">The Moon</h1>
-                                <p className="text-[10px] text-latte-600 tracking-[0.2em] uppercase">Artisan Coffee</p>
+                                <h1 className="font-serif text-3xl font-bold text-latte-900 tracking-tighter leading-none">The Moon</h1>
+                                <p className="text-xs font-bold text-latte-600 tracking-[0.3em] uppercase ml-1">Drip Bar</p>
                             </Link>
                             <button
                                 onClick={onToggle}
@@ -113,7 +112,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                                         transition-all duration-300
                                         ${active
                                             ? 'bg-white shadow-md text-latte-800'
-                                            : 'text-latte-600 hover:bg-white/50 hover:text-latte-800'
+                                            : 'text-latte-600 hover:bg-latte-100 hover:text-latte-800'
                                         }
                                     `}
                                 >

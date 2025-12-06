@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.inventory_log import InventoryLog
+from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.bean import Bean
 from app.schemas.inventory_log import InventoryLogCreate
 from typing import List, Optional
@@ -18,7 +18,7 @@ class InventoryLogService:
             raise ValueError("Bean not found")
         
         # 재고량 업데이트
-        new_quantity = bean.quantity_kg + log.quantity_change
+        new_quantity = bean.quantity_kg + log.change_amount
         if new_quantity < 0:
             raise ValueError("Insufficient inventory")
         
@@ -27,10 +27,10 @@ class InventoryLogService:
         # 로그 생성
         db_log = InventoryLog(
             bean_id=log.bean_id,
-            transaction_type=log.transaction_type,
-            quantity_change=log.quantity_change,
+            change_type=log.change_type,
+            change_amount=log.change_amount,
             current_quantity=new_quantity,
-            reason=log.reason
+            notes=log.notes
         )
         
         db.add(db_log)
@@ -38,7 +38,7 @@ class InventoryLogService:
         db.refresh(db_log)
         return db_log
 
-    def update_log(self, db: Session, log_id: int, quantity_change: float, reason: Optional[str] = None) -> Optional[InventoryLog]:
+    def update_log(self, db: Session, log_id: int, change_amount: float, notes: Optional[str] = None) -> Optional[InventoryLog]:
         # 기존 로그 조회
         db_log = db.query(InventoryLog).filter(InventoryLog.id == log_id).first()
         if not db_log:
@@ -50,20 +50,20 @@ class InventoryLogService:
             raise ValueError("Bean not found")
         
         # 기존 변경량 되돌리기
-        bean.quantity_kg -= db_log.quantity_change
+        bean.quantity_kg -= db_log.change_amount
         
         # 새 변경량 적용
-        new_quantity = bean.quantity_kg + quantity_change
+        new_quantity = bean.quantity_kg + change_amount
         if new_quantity < 0:
             raise ValueError("Insufficient inventory")
         
         bean.quantity_kg = new_quantity
         
         # 로그 업데이트
-        db_log.quantity_change = quantity_change
+        db_log.change_amount = change_amount
         db_log.current_quantity = new_quantity
-        if reason is not None:
-            db_log.reason = reason
+        if notes is not None:
+            db_log.notes = notes
         
         db.commit()
         db.refresh(db_log)
@@ -81,7 +81,7 @@ class InventoryLogService:
             raise ValueError("Bean not found")
         
         # 변경량 되돌리기
-        new_quantity = bean.quantity_kg - db_log.quantity_change
+        new_quantity = bean.quantity_kg - db_log.change_amount
         if new_quantity < 0:
             raise ValueError("Cannot delete: would result in negative inventory")
         

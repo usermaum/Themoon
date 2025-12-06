@@ -58,6 +58,7 @@ export interface Bean {
   // 메타
   description?: string
   notes?: string
+  expected_loss_rate?: number
   created_at: string
   updated_at?: string
 }
@@ -134,7 +135,7 @@ export const BeanAPI = {
     limit?: number
     search?: string
   }) => {
-    const response = await api.get<Bean[]>('/api/v1/beans', { params })
+    const response = await api.get<BeanListResponse>('/api/v1/beans', { params })
     return response.data
   },
 
@@ -194,4 +195,53 @@ export const BlendAPI = {
     const response = await api.delete(`/api/v1/blends/${id}`)
     return response.data
   },
+}
+
+// --- Inventory Types ---
+
+export interface InventoryLog {
+  id: number
+  bean_id: number
+  change_type: string  // "PURCHASE", "ROASTING_INPUT", "ROASTING_OUTPUT", "SALES", "LOSS", "ADJUSTMENT", "BLENDING_INPUT"
+  change_amount: number  // +: 증가, -: 감소
+  current_quantity: number
+  notes?: string
+  created_at: string
+}
+
+export interface InventoryLogCreateData {
+  bean_id: number
+  change_type: string
+  change_amount: number
+  notes?: string
+}
+
+// --- Inventory API ---
+
+export const InventoryLogAPI = {
+  getAll: async (params?: { bean_id?: number; limit?: number }) => {
+    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params })
+    return response.data
+  },
+
+  create: async (data: InventoryLogCreateData) => {
+    const response = await api.post<InventoryLog>('/api/v1/inventory-logs', data)
+    return response.data
+  },
+
+  update: async (id: number, change_amount: number, notes?: string) => {
+    const response = await api.put<InventoryLog>(`/api/v1/inventory-logs/${id}`, null, {
+      params: { change_amount, notes }
+    })
+    return response.data
+  },
+
+  delete: async (id: number) => {
+    await api.delete(`/api/v1/inventory-logs/${id}`)
+  },
+
+  getByBeanId: async (beanId: number) => {
+    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params: { bean_id: beanId } })
+    return response.data
+  }
 }

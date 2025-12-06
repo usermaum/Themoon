@@ -78,7 +78,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                     </button>
                 </div>
 
-                <div className="pt-4 lg:pt-0">
+                <div className="pt-4 lg:pt-0 min-h-full">
                     {children}
                 </div>
             </main>
