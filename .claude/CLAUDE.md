@@ -26,6 +26,7 @@
 ```
 
 **📌 참고**:
+
 - `logs/VERSION_STRATEGY.md` - 상세 전략
 - `logs/VERSION_MANAGEMENT.md` - 사용법
 
@@ -34,12 +35,14 @@
 ## 🔗 URL 작성 규칙 (MANDATORY - 절대 위반 금지!)
 
 **❌ 절대 하지 말 것:**
+
 ```
 웹앱은 http://localhost:8501에서 실행 중입니다!  ← URL 뒤에 한글 붙음 (클릭 불가)
 - URL: http://localhost:8501                        ← URL 뒤에 줄바꿈 없음
 ```
 
 **✅ 반드시 할 것:**
+
 ```
 웹앱이 실행되었습니다:
 
@@ -49,6 +52,7 @@ http://localhost:8501
 ```
 
 **또는:**
+
 ```
 접속 정보:
 
@@ -57,6 +61,7 @@ http://localhost:8501
 ```
 
 **핵심 규칙:**
+
 1. URL 앞: 최소 1개 공백 또는 줄바꿈
 2. URL 뒤: 최소 1개 공백 또는 줄바꿈
 3. URL 바로 뒤에 한글/특수문자/이모지 절대 금지
@@ -86,11 +91,13 @@ http://localhost:8501
 ```
 
 **❌ 절대 하지 말 것:**
+
 - 커밋 후 문서 업데이트 없이 다음 작업으로 넘어가기
 - "나중에 한 번에 업데이트하면 되지" 생각하기
 - 사용자가 지적하기 전까지 잊고 있기
 
 **✅ 반드시 할 것:**
+
 - 커밋 직후 바로 문서 4종 세트 체크
 - 하나라도 빠뜨리면 TodoWrite로 "문서 업데이트" 태스크 추가
 - 세션 종료 전 반드시 모든 문서 동기화 확인
@@ -132,24 +139,28 @@ http://localhost:8501
 ```
 
 **❌ 절대 하지 말 것:**
+
 - 명세 없이 바로 코딩 시작
 - 불명확한 부분을 추측으로 진행
 - 큰 작업을 분해 없이 한 번에 구현
 - 검증 없이 완료 처리
 
 **✅ 반드시 할 것:**
+
 - 각 단계의 산출물 확인
 - Clarify 단계에서 모든 불확실성 제거
 - Tasks 단계에서 TodoWrite 사용
 - Analyze 단계에서 명세 대비 검증
 
 **참고 문서:**
+
 - 구현 레벨 가이드: `Documents/Architecture/DEVELOPMENT_GUIDE.md` (5단계 개발 프로세스)
 - 이 7단계는 상위 레벨 방법론으로, DEVELOPMENT_GUIDE의 5단계는 6️⃣ Implement 단계의 세부 절차
 
 ---
 
 ✅ **개발 환경 구성**
+
 ```bash
 # Backend (FastAPI)
 cd backend
@@ -162,8 +173,11 @@ npm install
 npm run dev
 ```
 
-✅ **모든 응답은 한글로 작성** (코드/오류는 원본 유지)
+✅ **모든 응답 및 상태/결과 설명은 반드시 한글로 작성** (MANDATORY)
 
+- 사용자는 영어를 읽지 못함
+- 체크 상황, 진행 상태, 결과 리포트 등 모든 "설명" 텍스트는 한글 필수
+- 코드/오류 메시지 원본은 유지하되 한글 설명 추가
 ✅ **원본 프로젝트 참조** (코드 복사 금지)
 - 원본 위치: `/mnt/d/Ai/WslProject/TheMoon_Project/`
 - 참조용으로만 사용, 모든 코드는 새로 작성
@@ -249,6 +263,7 @@ Themoon/                    # 신규 프로젝트 (Next.js + FastAPI)
 ```
 
 **원본 프로젝트 (참조용):**
+
 ```
 /mnt/d/Ai/WslProject/TheMoon_Project/  # Streamlit 기반 원본
 ├── app/                    # Streamlit 애플리케이션
@@ -266,6 +281,7 @@ Themoon/                    # 신규 프로젝트 (Next.js + FastAPI)
 ## 🔗 문서 로드 전략
 
 새로운 세션에서는 다음 순서로 확인:
+
 1. **SESSION_SUMMARY_*.md** - 지난 세션 진행 상황
 2. **필요한 아키텍처 문서** 로드 (위의 표 참조)
 3. **COMMON_TASKS.md** - 자주 하는 작업 참고
@@ -336,10 +352,12 @@ CURRENT_VERSION=$(cat logs/VERSION)
 ```
 
 **💡 중요**:
+
 - README.md의 모든 버전이 logs/VERSION과 일치해야 함
 - CLAUDE.md(Line 4)의 버전도 logs/VERSION과 일치해야 함
 
 **커밋 타입**:
+
 - `feat`: 새로운 기능
 - `fix`: 버그 수정
 - `refactor`: 코드 정리/리팩토링
@@ -349,6 +367,7 @@ CURRENT_VERSION=$(cat logs/VERSION)
 ### 📌 버전 업데이트 규칙 (명시적)
 
 **각 작업 완료 후:**
+
 ```bash
 # ✅ 커밋만 한다 (버전 업데이트 ❌)
 git add .
@@ -356,6 +375,7 @@ git commit -m "type: 설명"
 ```
 
 **세션 종료 시 (최종 1회만):**
+
 ```bash
 # ✅ 이번 세션의 모든 변경사항을 합쳐서 버전 한 번에 업데이트
 # logs/VERSION_MANAGEMENT.md 참조하여 적절한 타입 선택 (patch/minor/major)
@@ -368,6 +388,7 @@ git commit -m "type: 설명"
 ```
 
 **⚠️ 중요**:
+
 - 작업마다 → **커밋만**
 - 세션 종료 → **버전 업데이트** (logs/VERSION_MANAGEMENT.md 참조)
 
@@ -389,12 +410,14 @@ git status
 ### 버전 관리 규칙 (핵심 3가지)
 
 모든 버전 업데이트는 다음 파일을 따릅니다:
+
 - **logs/VERSION_STRATEGY.md** - 📌 효율적인 버전관리 전략 (우선 읽기!)
 - **logs/VERSION_MANAGEMENT.md** - 공식 버전 관리 가이드 사용법
 - **logs/CHANGELOG.md** - 변경 로그 기록
 - **logs/VERSION** - 현재 버전 저장
 
 **버전 올리기 기준** (필수 암기):
+
 ```
 PATCH: 버그 3개 이상 OR 문서 5개 이상 누적 (주 1~3회)
 MINOR: 새 기능 3~4개 이상 추가 (월 1회)
@@ -408,7 +431,7 @@ MAJOR: 호환성 변경 (년 1~2회)
 
 ## ⚠️ 중요한 주의사항
 
-### 새로운 파일을 만들지 말 것!
+### 새로운 파일을 만들지 말 것
 
 ❌ **하지 말 것**: 위의 6개 파일 외에 새로운 세션 관리 파일을 만드는 것
 
