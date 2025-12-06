@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
     Home,
     Coffee,
+    Flame,
     Layers,
     Package,
     Settings,
@@ -24,6 +25,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const navItems = [
         { name: 'Home', href: '/', icon: Home },
         { name: 'Beans', href: '/beans', icon: Coffee },
+        { name: 'Roasting', href: '/roasting/single-origin', icon: Flame },
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
     ]

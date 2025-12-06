@@ -519,6 +519,6 @@ MIT License - 자유롭게 사용 가능
 
 ---
 
-**버전:** 1.0.0 (Clean Slate)
-**최종 업데이트:** 2024-11-23
+**버전:** 0.0.4 (Clean Slate)
+**최종 업데이트:** 2025-12-06
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

@@ -1,46 +1,75 @@
 """
 Bean 모델 - 원두 정보 관리
-
-원본 참조: /mnt/d/Ai/WslProject/TheMoon_Project/app/models/bean.py
+Ref: Documents/Planning/Themoon_Rostings_v2.md
 """
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text
+import enum
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, ForeignKey, Enum
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from app.database import Base
 
 
+class BeanType(str, enum.Enum):
+    """원두 유형 (생두/원두/블렌드)"""
+    GREEN_BEAN = "GREEN_BEAN"      # 생두
+    ROASTED_BEAN = "ROASTED_BEAN"  # 싱글 오리진 원두
+    BLEND_BEAN = "BLEND_BEAN"      # 블렌드 원두
+
+
+class RoastProfile(str, enum.Enum):
+    """로스팅 프로필 (신콩/탄콩)"""
+    LIGHT = "LIGHT"   # 신콩 (약~중볶음, 산미)
+    MEDIUM = "MEDIUM" # (사용 여부 검토 필요, 현재는 LIGHT/DARK 위주)
+    DARK = "DARK"     # 탄콩 (강볶음, 바디감)
+
+
 class Bean(Base):
-    """원두 정보 모델"""
-    
+    """
+    원두 통합 모델
+    - 생두, 싱글 오리진 원두, 블렌드 원두를 하나의 테이블에서 관리
+    - type 컬럼으로 구분
+    """
     __tablename__ = "beans"
     
     # Primary Key
     id = Column(Integer, primary_key=True, index=True)
     
-    # 기본 정보
-    name = Column(String(100), nullable=False, index=True, comment="원두명")
-    origin = Column(String(100), comment="원산지")
-    variety = Column(String(50), comment="품종 (Arabica, Robusta 등)")
-    processing_method = Column(String(50), comment="가공 방식 (Washed, Natural, Honey 등)")
+    # --- 핵심 식별 정보 ---
+    name = Column(String(100), nullable=False, index=True, comment="품목명 (예: 예가체프, 풀문)")
+    type = Column(Enum(BeanType), nullable=False, default=BeanType.GREEN_BEAN, comment="품목 유형")
+    sku = Column(String(100), unique=True, index=True, comment="SKU 코드 (예: Yirga-LIGHT)")
+
+    # --- 생두 정보 (Green Bean) ---
+    origin = Column(String(100), nullable=True, comment="원산지 (생두용)")
+    variety = Column(String(50), nullable=True, comment="품종")
+    grade = Column(String(50), nullable=True, comment="등급 (G1, G2, AA 등)")
+    processing_method = Column(String(50), nullable=True, comment="가공 방식")
     
-    # 구매 정보
-    purchase_date = Column(Date, comment="구매일")
-    purchase_price_per_kg = Column(Float, comment="kg당 구매 가격")
-    quantity_kg = Column(Float, default=0.0, comment="재고량 (kg)")
+    # --- 원두 정보 (Roasted Bean) ---
+    roast_profile = Column(Enum(RoastProfile), nullable=True, comment="로스팅 프로필 (신콩/탄콩)")
+    parent_bean_id = Column(Integer, ForeignKey('beans.id'), nullable=True, comment="원재료 생두 ID")
     
-    # 로스팅 정보
-    roast_level = Column(String(20), comment="로스팅 단계 (Light, Medium, Dark)")
+    # --- 재고 및 가격 정보 ---
+    quantity_kg = Column(Float, default=0.0, nullable=False, comment="현재 재고량 (kg)")
+    avg_price = Column(Float, default=0.0, nullable=False, comment="kg당 평균 단가 (매입가/원가)")
+    purchase_price_per_kg = Column(Float, nullable=True, comment="최근 매입가 (참조용)")
+    cost_price = Column(Float, nullable=True, comment="생산 원가 (로스팅 비용 포함)")
     
-    # 추가 정보
-    notes = Column(Text, comment="메모")
+    # --- 메타 데이터 ---
+    description = Column(Text, nullable=True, comment="설명")
+    notes = Column(Text, nullable=True, comment="내부 메모")
     
     # 타임스탬프
     created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
     updated_at = Column(DateTime(timezone=True), onupdate=func.current_timestamp())
 
-    # Relationships
+    # --- Relationships ---
+    # Self-referential relationship (원두 -> 생두)
+    parent_bean = relationship("Bean", remote_side=[id], backref=backref("roasted_variants", lazy="dynamic"))
+    
+    # 재고 로그
     inventory_logs = relationship("InventoryLog", back_populates="bean", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<Bean(id={self.id}, name='{self.name}', origin='{self.origin}')>"
+        return f"<Bean(id={self.id}, name='{self.name}', type='{self.type}', sku='{self.sku}')>"
+
