@@ -23,8 +23,7 @@
 
 2. **Frontend Tech Stack**:
     * **Framework**: Next.js (App Router)
-    * **UI Library**: **Mantine UI** (v7, CSS Modules)
-        > *Note: 사용자 요청에 따라 Shadcn UI 대신 Mantine UI를 주력 디자인 시스템으로 사용합니다.*
+    * **UI Library**: **Shadcn UI** (v2, CSS Modules)
 
 ---
 
@@ -32,7 +31,6 @@
 
 모든 작업 시 **반드시** 다음 문서를 참조하세요:
 
-1. **프로그래밍 규칙**: `Documents/Guides/PROGRAMMING_RULES.md`
 1. **프로그래밍 규칙**: `Documents/Guides/PROGRAMMING_RULES.md`
 2. **프로젝트 가이드**: `.gemini/GEMINI.md`
 3. **개발 가이드**: `Documents/Architecture/DEVELOPMENT_GUIDE.md`
