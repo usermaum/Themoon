@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Hero from '@/components/home/Hero'
+import { ErrorState, LoadingSkeleton } from '@/components/ui/error-state'
 import { Coffee, Palette, Package, AlertTriangle, ArrowRight } from 'lucide-react'
 
 export default function HomePage() {
@@ -22,27 +23,30 @@ export default function HomePage() {
   const [blends, setBlends] = useState<Blend[]>([])
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<any>(null)
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const [beansData, blendsData, logsData] = await Promise.all([
+        BeanAPI.getAll({ limit: 100 }),
+        BlendAPI.getAll({ limit: 100 }),
+        InventoryLogAPI.getAll({ limit: 10 }),
+      ])
+
+      setBeans(beansData.items || [])
+      setBlends(blendsData || [])
+      setRecentLogs(logsData || [])
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+      setError(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const [beansData, blendsData, logsData] = await Promise.all([
-          BeanAPI.getAll({ limit: 100 }),
-          BlendAPI.getAll({ limit: 100 }),
-          InventoryLogAPI.getAll({ limit: 10 }),
-        ])
-
-        setBeans(beansData.items || [])
-        setBlends(blendsData || [])
-        setRecentLogs(logsData || [])
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [])
 
@@ -56,9 +60,9 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
-          <div className="text-center py-12 text-latte-500 animate-pulse">
-            데이터를 불러오는 중입니다...
-          </div>
+          <LoadingSkeleton count={4} />
+        ) : error ? (
+          <ErrorState error={error} onRetry={fetchData} />
         ) : (
           <>
             {/* 통계 카드 섹션 */}
