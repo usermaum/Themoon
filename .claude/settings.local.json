@@ -69,7 +69,10 @@
       "Bash(du -sh:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(git clean:*)"
+      "Bash(git clean:*)",
+      "Bash(git config:*)",
+      "Bash(ssh:*)",
+      "Bash(git remote:*)"
     ],
     "deny": [],
     "ask": []
