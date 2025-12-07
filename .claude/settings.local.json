@@ -72,7 +72,9 @@
       "Bash(git clean:*)",
       "Bash(git config:*)",
       "Bash(ssh:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(git mv:*)",
+      "Bash(xargs sed:*)"
     ],
     "deny": [],
     "ask": []

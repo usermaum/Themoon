@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BlendAPI, Bean, BeanAPI, Blend, BlendRecipeItem } from '@/lib/api'
-import PageHero from '@/components/ui/PageHero'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Card, CardContent } from '@/components/ui/Card'
+import PageHero from '@/components/ui/page-hero'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
 import { Trash2, Layers, Save, ArrowLeft, Plus } from 'lucide-react'
 import {
     AlertDialog,

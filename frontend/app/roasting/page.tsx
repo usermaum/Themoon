@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import PageHero from '@/components/ui/PageHero'
+import PageHero from '@/components/ui/page-hero'
 import { Flame, Layers, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 

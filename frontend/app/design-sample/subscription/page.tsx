@@ -4,9 +4,9 @@ import React from 'react'
 import Link from 'next/link'
 import { Progress } from "@/components/ui/progress"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/Label"
-import { Button } from "@/components/ui/Button"
-import { Card } from "@/components/ui/Card"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { ArrowLeft, Check, Package, Coffee, Truck } from 'lucide-react'
 
 export default function SubscriptionPage() {

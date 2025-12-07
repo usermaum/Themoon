@@ -38,7 +38,7 @@ export default function BlendForm({
     useEffect(() => {
         const fetchBeans = async () => {
             try {
-                const data = await BeanAPI.getAll({ size: 100 })
+                const data = await BeanAPI.getAll({ limit: 100 })
                 setBeans(data.items)
             } catch (err) {
                 console.error('Failed to fetch beans:', err)

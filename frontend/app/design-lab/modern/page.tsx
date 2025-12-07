@@ -164,7 +164,7 @@ function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label
                 ? 'bg-gradient-to-r from-amber-500/10 to-transparent text-amber-500 border-l-2 border-amber-500'
                 : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
     `}>
-            {React.cloneElement(icon as React.ReactElement, {
+            {React.cloneElement(icon as React.ReactElement<any>, {
                 className: `transition-colors ${active ? 'text-amber-500' : 'group-hover:text-slate-200'}`
             })}
             <span className="font-medium hidden lg:block">{label}</span>

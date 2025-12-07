@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BeanAPI, BeanCreateData } from '@/lib/api'
 import BeanForm from '@/components/beans/BeanForm'
-import PageHero from '@/components/ui/PageHero'
+import PageHero from '@/components/ui/page-hero'
 import { Coffee } from 'lucide-react'
 
 export default function NewBeanPage() {

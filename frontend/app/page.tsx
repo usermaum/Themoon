@@ -11,9 +11,9 @@ import {
   CardDescription,
   CardContent,
   CardFooter
-} from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import Hero from '@/components/home/Hero'
 import { Coffee, Palette, Package, AlertTriangle, ArrowRight } from 'lucide-react'
 

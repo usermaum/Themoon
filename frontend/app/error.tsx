@@ -1,7 +1,7 @@
 'use client' // Error components must be Client Components
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
 
 export default function Error({
