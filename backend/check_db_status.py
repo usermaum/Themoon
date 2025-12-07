@@ -39,6 +39,11 @@ def check_db_status():
                 else:
                      print("   ❌ 'expected_loss_rate' column missing!")
 
+            if 'inventory_logs' in tables:
+                columns = conn.execute(text("PRAGMA table_info(inventory_logs);")).fetchall()
+                col_names = [col[1] for col in columns]
+                print(f"   'inventory_logs' Columns: {col_names}")
+
         # Check Data Count
         print("\n[2] Checking Data Count:")
         bean_count = db.query(Bean).count()
