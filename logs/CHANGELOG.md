@@ -32,6 +32,7 @@
 
 - **Home Hero**: 메인 페이지 Hero 컴포넌트를 PageHero와 동일한 스타일로 통일 (`min-h-[400px]`, `shadow-md`, `hover:shadow-lg` 등).
 - **Sidebar Styling**: 배경색 완전 불투명 처리 (`bg-white`), 메뉴 호버 색상 개선 (`hover:bg-latte-100`).
+- **Single Origin Roasting**: 목표 생산량 기반 자동 계산 로직 적용 및 UI 개선 (2-Column Layout, Shadcn Select).
 
 ### 📄 Documentation
 
