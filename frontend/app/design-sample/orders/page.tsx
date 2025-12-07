@@ -11,9 +11,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/Badge"
-import { Button } from "@/components/ui/Button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Download, Filter, MoreHorizontal } from 'lucide-react'
 

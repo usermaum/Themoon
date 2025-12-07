@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
-import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
-import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { ArrowLeft, Save, Coffee } from 'lucide-react'
 
 export default function RoastingJournalPage() {

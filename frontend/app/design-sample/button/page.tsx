@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Coffee, ArrowRight, ShoppingBag, Plus, Sparkles, Mail, ArrowLeft } from 'lucide-react'
 
 export default function ButtonSamplePage() {

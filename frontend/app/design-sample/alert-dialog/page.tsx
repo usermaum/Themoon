@@ -13,8 +13,8 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Trash2, ShoppingBag, LogOut, CheckCircle2, ArrowLeft } from 'lucide-react'
 
 export default function AlertDialogSamplePage() {

@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/Badge'
+import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Info, Plus } from 'lucide-react'
 
 export default function MenuPage() {

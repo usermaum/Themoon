@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BeanAPI, BeanCreateData, Bean } from '@/lib/api'
 import BeanForm from '@/components/beans/BeanForm'
-import PageHero from '@/components/ui/PageHero'
+import PageHero from '@/components/ui/page-hero'
 import { Edit2 } from 'lucide-react'
 
 export default function EditBeanPage({ params }: { params: { id: string } }) {

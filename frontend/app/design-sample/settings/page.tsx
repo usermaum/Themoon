@@ -2,11 +2,11 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Label } from '@/components/ui/Label'
+import { Label } from '@/components/ui/label'
 import { ArrowLeft, Bell, Moon, Volume2, Shield, CreditCard, Smartphone } from 'lucide-react'
 
 export default function SettingsPage() {

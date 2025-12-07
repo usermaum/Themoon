@@ -6,10 +6,10 @@ import { Bean, BeanAPI, RoastingAPI, RoastProfile, RoastingResponse } from '@/li
 import { Loader2, Bean as BeanIcon, Flame, ArrowRight, ArrowLeft, Scale, Calculator, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Pie, PieChart, Label } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import PageHero from '@/components/ui/PageHero'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
+import PageHero from '@/components/ui/page-hero'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import {
     AlertDialog,
     AlertDialogAction,

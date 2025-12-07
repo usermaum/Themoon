@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Bean, BeanAPI, Blend, BlendAPI, RoastingAPI } from '@/lib/api'
 import { Loader2, Bean as BeanIcon, Flame, ArrowRight, ArrowLeft, Scale, Calculator, Layers } from 'lucide-react'
-import PageHero from '@/components/ui/PageHero'
+import PageHero from '@/components/ui/page-hero'
 import BlendRatioChart from '@/components/charts/BlendRatioChart'
 import {
     AlertDialog,

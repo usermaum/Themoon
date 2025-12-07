@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Leaf, Flame, Droplets, Star, ArrowLeft } from 'lucide-react'
 
 export default function BadgeSamplePage() {

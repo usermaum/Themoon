@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { BeanCreateData, Bean, BeanAPI } from '@/lib/api'
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
-import { Label } from '@/components/ui/Label'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Check, Coffee } from 'lucide-react'
 
 interface BeanFormProps {

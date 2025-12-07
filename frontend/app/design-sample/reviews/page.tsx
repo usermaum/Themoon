@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader } from "@/components/ui/Card"
-import { Button } from "@/components/ui/Button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/Badge"
+import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Quote, Star, ThumbsUp } from 'lucide-react'
 
 export default function ReviewsPage() {

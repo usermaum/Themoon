@@ -3,8 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { ArrowLeft, MapPin, Calendar, Award } from 'lucide-react'
 
 export default function OriginsPage() {

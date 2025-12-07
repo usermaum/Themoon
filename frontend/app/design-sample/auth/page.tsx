@@ -2,10 +2,10 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Card, CardContent } from "@/components/ui/Card"
-import { Input } from "@/components/ui/Input"
-import { Label } from "@/components/ui/Label"
-import { Button } from "@/components/ui/Button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Coffee, Facebook, Instagram, Twitter } from 'lucide-react'
 

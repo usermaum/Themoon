@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import PageHero from '@/components/ui/PageHero'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card'
-import { Label } from '@/components/ui/Label'
-import { Textarea } from '@/components/ui/Textarea'
+import PageHero from '@/components/ui/page-hero'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Coffee, Palette, Package, Plus, Trash2, Edit2, Search, Check, Mail, ArrowRight } from 'lucide-react'
 
 export default function ComponentsDemoPage() {
