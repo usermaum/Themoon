@@ -1,7 +1,7 @@
 # CLAUDE.md - 프로젝트 가이드 네비게이터
 
 > **TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)**
-> 버전: 0.0.6 · 스택: Next.js + FastAPI + PostgreSQL · Clean Slate
+> 버전: 0.0.3 · 스택: Next.js + FastAPI + PostgreSQL · Clean Slate
 
 ---
 
@@ -178,9 +178,7 @@ npm run dev
 - 사용자는 영어를 읽지 못함
 - 체크 상황, 진행 상태, 결과 리포트 등 모든 "설명" 텍스트는 한글 필수
 - 코드/오류 메시지 원본은 유지하되 한글 설명 추가
-
 ✅ **원본 프로젝트 참조** (코드 복사 금지)
-
 - 원본 위치: `/mnt/d/Ai/WslProject/TheMoon_Project/`
 - 참조용으로만 사용, 모든 코드는 새로 작성
 

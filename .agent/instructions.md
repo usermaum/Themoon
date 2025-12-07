@@ -2,27 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.1.0
-
----
-
-## 🗣️ 언어 규칙 (MANDATORY)
-
-**중요**: 사용자는 영어를 전혀 읽지 못합니다. 모든 대화, **결과 설명, 체크 상황, 진행 상태** 등 사용자가 읽어야 하는 모든 텍스트는 **반드시 한글**로 작성해야 합니다.
-
-* 코드, 로그, 에러 메시지 원본은 영어로 유지하되, **반드시 한글 설명**을 덧붙여야 합니다.
-* "Checking..." 같은 진행 상황도 "확인 중..."과 같이 한글로 표현해야 합니다.
-
-## 🛠️ 핵심 도구 및 기술 스택 (MANDATORY)
-
-작업 시 다음 도구와 기술을 **무조건** 사용해야 합니다:
-
-1. **AI 도구 & MCP**:
-    * **Context7**: 라이브러리 문서 및 컨텍스트 검색 시 필수 사용.
-
-2. **Frontend Tech Stack**:
-    * **Framework**: Next.js (App Router)
-    * **UI Library**: **Shadcn UI** (v2, CSS Modules)
+> **버전**: 0.0.3
 
 ---
 
@@ -31,7 +11,7 @@
 모든 작업 시 **반드시** 다음 문서를 참조하세요:
 
 1. **프로그래밍 규칙**: `Documents/Guides/PROGRAMMING_RULES.md`
-2. **프로젝트 가이드**: `.gemini/GEMINI.md`
+2. **프로젝트 가이드**: `.claude/CLAUDE.md`
 3. **개발 가이드**: `Documents/Architecture/DEVELOPMENT_GUIDE.md`
 4. **시스템 아키텍처**: `Documents/Architecture/SYSTEM_ARCHITECTURE.md`
 
@@ -70,7 +50,7 @@
    ✅ logs/CHANGELOG.md
    ✅ Documents/Progress/SESSION_SUMMARY_YYYY-MM-DD.md
    ✅ README.md (버전 동기화)
-   ✅ .gemini/GEMINI.md (버전 동기화)
+   ✅ .claude/CLAUDE.md (버전 동기화)
 ```
 
 **❌ 금지**: 커밋 후 문서 업데이트 없이 다음 작업으로 넘어가기
@@ -103,19 +83,19 @@ http://localhost:3000
 
 ### Backend (Python/FastAPI)
 
-* **타입 힌팅 필수**: `def get_user(user_id: int) -> User:`
-* **Docstring**: 중요 함수에 작성
-* **파일명**: `snake_case` (예: `bean_service.py`)
-* **클래스**: `PascalCase` (예: `BeanService`)
-* **함수**: `snake_case` (예: `get_bean_by_id`)
+- **타입 힌팅 필수**: `def get_user(user_id: int) -> User:`
+- **Docstring**: 중요 함수에 작성
+- **파일명**: `snake_case` (예: `bean_service.py`)
+- **클래스**: `PascalCase` (예: `BeanService`)
+- **함수**: `snake_case` (예: `get_bean_by_id`)
 
 ### Frontend (TypeScript/Next.js)
 
-* **타입 정의 필수**: `interface`, `type` 활용
-* **함수형 컴포넌트** 사용
-* **컴포넌트**: `PascalCase` (예: `BeanCard.tsx`)
-* **유틸**: `camelCase` (예: `formatPrice.ts`)
-* **에러 핸들링**: try-catch 필수
+- **타입 정의 필수**: `interface`, `type` 활용
+- **함수형 컴포넌트** 사용
+- **컴포넌트**: `PascalCase` (예: `BeanCard.tsx`)
+- **유틸**: `camelCase` (예: `formatPrice.ts`)
+- **에러 핸들링**: try-catch 필수
 
 ---
 
@@ -168,7 +148,7 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 # Documents/Progress/SESSION_SUMMARY_YYYY-MM-DD.md
 
 # 3. 버전 업데이트 (누적 기준 충족 시)
-# ./venv/bin/python logs/update_version.py --type patch --summary "요약"
+./venv/bin/python logs/update_version.py --type patch --summary "요약"
 
 # 4. 모든 문서 버전 동기화 (필수!)
 ```
@@ -178,16 +158,16 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 ## 🚫 절대 금지 사항
 
 1. **원본 프로젝트 코드 복사 금지**
-   * 참조 위치: `/mnt/d/Ai/WslProject/TheMoon_Project/`
-   * 용도: 참조용으로만 사용, 모든 코드는 새로 작성
+   - 참조 위치: `/mnt/d/Ai/WslProject/TheMoon_Project/`
+   - 용도: 참조용으로만 사용, 모든 코드는 새로 작성
 
 2. **새로운 세션 관리 파일 생성 금지**
-   * ❌ `.gemini/SESSION_CONTEXT.md`
-   * ❌ `.gemini/RULES_CHECKLIST.md`
-   * ✅ 기존 6개 파일만 사용
+   - ❌ `.claude/SESSION_CONTEXT.md`
+   - ❌ `.claude/RULES_CHECKLIST.md`
+   - ✅ 기존 6개 파일만 사용
 
 3. **작은 변경사항마다 버전 올리기 금지**
-   * 누적 기준 확인 후 세션 종료 시에만 업데이트
+   - 누적 기준 확인 후 세션 종료 시에만 업데이트
 
 ---
 
@@ -195,28 +175,28 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 ### 코딩 전
 
-* [ ] 명세서 작성 완료?
-* [ ] 불명확한 부분 질문으로 해소? (Clarify)
-* [ ] 작업 분해 완료? (TodoWrite)
+- [ ] 명세서 작성 완료?
+- [ ] 불명확한 부분 질문으로 해소? (Clarify)
+- [ ] 작업 분해 완료? (TodoWrite)
 
 ### 커밋 전
 
-* [ ] 타입 힌팅/정의 추가?
-* [ ] 테스트 통과?
-* [ ] 커밋 메시지 작성? (type: 설명)
+- [ ] 타입 힌팅/정의 추가?
+- [ ] 테스트 통과?
+- [ ] 커밋 메시지 작성? (type: 설명)
 
 ### 커밋 후 (필수!)
 
-* [ ] logs/CHANGELOG.md 업데이트?
-* [ ] SESSION_SUMMARY 업데이트?
-* [ ] README.md 확인? (버전 동기화)
-* [ ] .gemini/GEMINI.md 확인? (버전 동기화)
+- [ ] logs/CHANGELOG.md 업데이트?
+- [ ] SESSION_SUMMARY 업데이트?
+- [ ] README.md 확인? (버전 동기화)
+- [ ] .claude/CLAUDE.md 확인? (버전 동기화)
 
 ### 세션 종료 전
 
-* [ ] SESSION_END_CHECKLIST 완료?
-* [ ] 버전 업데이트 필요? (누적 기준)
-* [ ] 모든 문서 버전 동기화?
+- [ ] SESSION_END_CHECKLIST 완료?
+- [ ] 버전 업데이트 필요? (누적 기준)
+- [ ] 모든 문서 버전 동기화?
 
 ---
 
