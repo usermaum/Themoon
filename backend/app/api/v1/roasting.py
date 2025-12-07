@@ -5,7 +5,7 @@ Ref: Documents/Planning/Themoon_Rostings_v2.md
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.roasting import SingleOriginRoastingRequest, RoastingResponse
+from app.schemas.roasting import SingleOriginRoastingRequest, BlendRoastingRequest, RoastingResponse
 from app.services import roasting_service
 
 router = APIRouter()
@@ -44,4 +44,34 @@ def roast_single_origin(
     except HTTPException as e:
         raise e
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/blend", response_model=RoastingResponse)
+def roast_blend(
+    request: BlendRoastingRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    블렌드 로스팅 기록
+    """
+    try:
+        roasted_bean = roasting_service.create_blend_roasting(
+            db=db,
+            blend_id=request.blend_id,
+            output_weight=request.output_weight,
+            notes=request.notes
+        )
+        
+        return RoastingResponse(
+            message="Blend roasting logged successfully",
+            roasted_bean=roasted_bean,
+            loss_rate_percent=0.0, # 복잡한 역산 생략 (로그 확인)
+            production_cost=round(roasted_bean.cost_price, 2) if roasted_bean.cost_price else 0.0
+        )
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        # 디버깅을 위해 에러 상세 출력
+        print(f"Error in roast_blend: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

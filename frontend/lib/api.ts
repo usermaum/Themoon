@@ -119,6 +119,12 @@ export interface SingleOriginRoastingRequest {
   notes?: string
 }
 
+export interface BlendRoastingRequest {
+  blend_id: number
+  output_weight: number
+  notes?: string
+}
+
 export interface RoastingResponse {
   success: boolean
   message: string
@@ -160,6 +166,11 @@ export const BeanAPI = {
 export const RoastingAPI = {
   roastSingleOrigin: async (data: SingleOriginRoastingRequest) => {
     const response = await api.post<RoastingResponse>('/api/v1/roasting/single-origin', data)
+    return response.data
+  },
+
+  roastBlend: async (data: BlendRoastingRequest) => {
+    const response = await api.post<RoastingResponse>('/api/v1/roasting/blend', data)
     return response.data
   }
 }

@@ -15,6 +15,12 @@ class SingleOriginRoastingRequest(BaseModel):
     roast_profile: RoastProfile = Field(..., description="로스팅 프로필 (LIGHT/DARK)")
     notes: Optional[str] = Field(None, description="로스팅 노트")
 
+class BlendRoastingRequest(BaseModel):
+    """블렌드 로스팅 요청"""
+    blend_id: int = Field(..., description="블렌드 ID")
+    output_weight: float = Field(..., gt=0, description="원두 목표 생산량 (kg)")
+    notes: Optional[str] = Field(None, description="로스팅 노트")
+
 class RoastingResponse(BaseModel):
     """로스팅 결과 응답"""
     success: bool = True

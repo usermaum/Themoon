@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.bean import Bean, BeanType, RoastProfile
 from app.models.inventory_log import InventoryLog, InventoryChangeType
+from app.models.blend import Blend
 
 def generate_roasted_bean_sku(green_bean: Bean, profile: RoastProfile) -> str:
     """원두 SKU 생성 (예: Yirgacheffe-LIGHT)"""
@@ -100,6 +101,130 @@ def create_single_origin_roasting(
     )
     db.add(output_log)
     
+    db.commit()
+    db.refresh(roasted_bean)
+    
+    return roasted_bean
+
+def create_blend_roasting(
+    db: Session,
+    blend_id: int,
+    output_weight: float,
+    notes: str = None
+):
+    """
+    블렌드 로스팅 로직
+    1. 블렌드 레시피 기반 생두 투입량 자동 계산 및 차감
+    2. 블렌드 원두(Roasted) 생성 및 입고
+    """
+    # 1. 블렌드 조회
+    blend = db.query(Blend).filter(Blend.id == blend_id).first()
+    if not blend:
+        raise HTTPException(status_code=404, detail="Blend not found")
+
+    recipe = blend.recipe
+    if not recipe:
+        raise HTTPException(status_code=400, detail="Blend recipe is empty")
+
+    # 2. 투입량 계산 및 재고 검증
+    input_items = []
+    total_input_cost = 0.0
+    total_input_weight = 0.0
+
+    for item in recipe:
+        bean_id = item['bean_id']
+        ratio = item['ratio']
+        
+        bean = db.query(Bean).filter(Bean.id == bean_id).first()
+        if not bean:
+            raise HTTPException(status_code=404, detail=f"Bean ID {bean_id} in recipe not found")
+
+        # 필요량 계산: (목표량 * 비율) / (1 - 손실률)
+        loss_rate = bean.expected_loss_rate if bean.expected_loss_rate is not None else 0.15
+        target_part_weight = output_weight * ratio
+        required_input = target_part_weight / (1 - loss_rate)
+        
+        if bean.quantity_kg < required_input:
+            raise HTTPException(status_code=400, detail=f"Not enough stock for {bean.name}. Required: {required_input:.2f}kg, Available: {bean.quantity_kg:.2f}kg")
+            
+        input_items.append({
+            "bean": bean,
+            "required_input": required_input,
+            "cost": required_input * bean.avg_price
+        })
+        
+        total_input_cost += required_input * bean.avg_price
+        total_input_weight += required_input
+
+    # 3. 재고 차감 실행
+    for item in input_items:
+        bean = item['bean']
+        amount = item['required_input']
+        
+        bean.quantity_kg -= amount
+        
+        log = InventoryLog(
+            bean_id=bean.id,
+            change_type=InventoryChangeType.ROASTING_INPUT,
+            change_amount=-amount,
+            current_quantity=bean.quantity_kg,
+            notes=f"Used for Blend: {blend.name}"  
+        )
+        db.add(log)
+
+    # 4. 블렌드 원두 생성/업데이트
+    # 프로필 매핑 (단순화: 문자열 포함 여부)
+    roast_profile = RoastProfile.MEDIUM
+    if blend.target_roast_level:
+        level_upper = blend.target_roast_level.upper()
+        if "LIGHT" in level_upper:
+            roast_profile = RoastProfile.LIGHT
+        elif "DARK" in level_upper:
+            roast_profile = RoastProfile.DARK
+
+    sku = f"BLEND-{blend.id}-{roast_profile.value}"
+    
+    roasted_bean = db.query(Bean).filter(Bean.sku == sku).first()
+    
+    production_cost = total_input_cost / output_weight if output_weight > 0 else 0
+    
+    if not roasted_bean:
+        roasted_bean = Bean(
+            name=f"{blend.name} {roast_profile.value}",
+            type=BeanType.ROASTED_BEAN,
+            sku=sku,
+            origin="Blend",
+            roast_profile=roast_profile,
+            quantity_kg=0.0,
+            avg_price=production_cost,
+            cost_price=production_cost,
+            notes=f"Blend based on {blend.name}"
+        )
+        db.add(roasted_bean)
+        db.flush()
+    else:
+        # 이동평균법 단가 갱신
+        current_val = roasted_bean.quantity_kg * roasted_bean.avg_price
+        new_val = output_weight * production_cost
+        total_qty = roasted_bean.quantity_kg + output_weight
+        
+        if total_qty > 0:
+            roasted_bean.avg_price = (current_val + new_val) / total_qty
+            roasted_bean.cost_price = production_cost
+
+    roasted_bean.quantity_kg += output_weight
+    
+    # 생산 로그
+    loss_p = (total_input_weight - output_weight) / total_input_weight * 100 if total_input_weight > 0 else 0
+    out_log = InventoryLog(
+        bean_id=roasted_bean.id,
+        change_type=InventoryChangeType.ROASTING_OUTPUT,
+        change_amount=output_weight,
+        current_quantity=roasted_bean.quantity_kg,
+        notes=f"Blend Roasting: {blend.name} (Loss: {loss_p:.1f}%)"
+    )
+    db.add(out_log)
+
     db.commit()
     db.refresh(roasted_bean)
     
