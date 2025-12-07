@@ -1,80 +1,41 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Blend, BlendAPI, Bean, BeanAPI } from '@/lib/api'
+import { Blend, Bean } from '@/lib/api'
+import { useBlends, useBeans, deleteBlend } from '@/hooks'
 import Link from 'next/link'
 import PageHero from '@/components/ui/PageHero'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Search, Plus, Trash2, Edit2, Hexagon, PieChart, Layers } from 'lucide-react'
+import { Search, Plus, Trash2, Edit2, Hexagon, PieChart, Layers, RefreshCw } from 'lucide-react'
 
 // 블렌드 리스트 메인 페이지
 export default function BlendManagementPage() {
-    const [blends, setBlends] = useState<Blend[]>([])
-    const [beans, setBeans] = useState<Bean[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
     const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(1)
     const [search, setSearch] = useState('')
 
-    // 원두 정보 캐싱 (ID로 이름 찾기 위함)
-    const fetchBeans = async () => {
-        try {
-            // 모든 원두를 가져옵니다 (최적화 필요 시 변경)
-            const data = await BeanAPI.getAll({ limit: 100 })
-            if (Array.isArray(data)) {
-                setBeans(data)
-            } else if ((data as any).items) {
-                setBeans((data as any).items)
-            }
-        } catch (err) {
-            console.error('Failed to fetch beans:', err)
-        }
-    }
+    const limit = 12
+    const skip = (page - 1) * limit
 
-    const fetchBlends = async () => {
-        try {
-            setLoading(true)
-            const limit = 12
-            const skip = (page - 1) * limit
+    // SWR 훅 사용 - 자동 재시도, 포커스 시 재검증, 네트워크 복구 시 재갱신
+    const { blends, isLoading, isValidating, error, refresh } = useBlends({
+        skip,
+        limit,
+        search: search || undefined,
+    })
 
-            const data = await BlendAPI.getAll({
-                skip,
-                limit,
-                search: search || undefined,
-            })
-
-            if (Array.isArray(data)) {
-                setBlends(data)
-                setTotalPages(data.length < limit ? page : page + 1)
-            } else if ((data as any).items) {
-                setBlends((data as any).items)
-                setTotalPages((data as any).pages)
-            }
-            setError(null)
-        } catch (err) {
-            console.error('Failed to fetch blends:', err)
-            setError('블렌드 목록을 불러오는데 실패했습니다.')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchBeans()
-        fetchBlends()
-    }, [page, search])
+    // 원두 이름 조회를 위한 훅
+    const { beans } = useBeans({ limit: 100 })
 
     const handleDelete = async (id: number) => {
         if (!confirm('정말로 이 블렌드 레시피를 삭제하시겠습니까?')) return
 
         try {
-            await BlendAPI.delete(id)
-            fetchBlends()
+            await deleteBlend(id)
+            // SWR이 자동으로 캐시를 무효화하고 새로고침
         } catch (err) {
             alert('삭제에 실패했습니다.')
         }
@@ -122,11 +83,22 @@ export default function BlendManagementPage() {
 
                 {error && (
                     <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6 flex items-center gap-2">
-                        <span>⚠️</span> {error}
+                        <span>⚠️</span> 블렌드 목록을 불러오는데 실패했습니다.
+                        <Button variant="ghost" size="sm" onClick={refresh} className="ml-auto">
+                            <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
+                        </Button>
                     </div>
                 )}
 
-                {loading ? (
+                {/* 백그라운드 재검증 중 표시 */}
+                {isValidating && !isLoading && (
+                    <div className="flex items-center gap-2 text-latte-500 mb-4">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">데이터 동기화 중...</span>
+                    </div>
+                )}
+
+                {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[1, 2, 3].map((n) => (
                             <div key={n} className="h-64 bg-latte-50 rounded-[2rem] animate-pulse"></div>

@@ -150,7 +150,7 @@ export const BeanAPI = {
     limit?: number
     search?: string
   }) => {
-    const response = await api.get<BeanListResponse>('/api/v1/beans', { params })
+    const response = await api.get<BeanListResponse>('/api/v1/beans/', { params })
     return response.data
   },
 
@@ -160,7 +160,7 @@ export const BeanAPI = {
   },
 
   create: async (data: BeanCreateData) => {
-    const response = await api.post<Bean>('/api/v1/beans', data)
+    const response = await api.post<Bean>('/api/v1/beans/', data)
     return response.data
   },
 
@@ -197,7 +197,7 @@ export const BlendAPI = {
     limit?: number
     search?: string
   }) => {
-    const response = await api.get<Blend[]>('/api/v1/blends', { params })
+    const response = await api.get<Blend[]>('/api/v1/blends/', { params })
     return response.data
   },
 
@@ -207,7 +207,7 @@ export const BlendAPI = {
   },
 
   create: async (data: BlendCreateData) => {
-    const response = await api.post<Blend>('/api/v1/blends', data)
+    const response = await api.post<Blend>('/api/v1/blends/', data)
     return response.data
   },
 
@@ -245,12 +245,12 @@ export interface InventoryLogCreateData {
 
 export const InventoryLogAPI = {
   getAll: async (params?: { bean_id?: number; limit?: number }) => {
-    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params })
+    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs/', { params })
     return response.data
   },
 
   create: async (data: InventoryLogCreateData) => {
-    const response = await api.post<InventoryLog>('/api/v1/inventory-logs', data)
+    const response = await api.post<InventoryLog>('/api/v1/inventory-logs/', data)
     return response.data
   },
 
@@ -266,7 +266,7 @@ export const InventoryLogAPI = {
   },
 
   getByBeanId: async (beanId: number) => {
-    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params: { bean_id: beanId } })
+    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs/', { params: { bean_id: beanId } })
     return response.data
   }
 }

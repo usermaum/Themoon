@@ -13,39 +13,51 @@
 
 ## [0.0.6] - 2025-12-07
 
-### 🐛 패치 (Bug Fix): UI Design Standardization (Hero, Border Radius) & Fix Bean Update Functionality
-
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
-
-## [0.0.6] - 2025-12-07
-
 ### ✨ Features
+
+- **SWR Data Fetching**: 프론트엔드 데이터 페칭 시스템 도입
+  - `swr` 패키지 설치 및 전역 설정 (`lib/swr-config.tsx`)
+  - 커스텀 훅: `use-beans.ts`, `use-blends.ts`, `use-inventory.ts`
+  - 자동 재검증, 에러 재시도, 포커스 시 리프레시 기능
+  - 백엔드 재시작 시 프론트엔드 자동 데이터 갱신
 
 - **Roasting Menu**: 사이드바에 'Roasting' 메뉴 추가 (`/roasting/single-origin`).
 
+- **Roasted Bean Images**: V3 프롬프트 기반 로스팅 원두 이미지 생성
+  - 16개 완료 (1~8번 품목 신콩/탄콩)
+  - 저장 경로: `frontend/public/images/roasted/`
+
 ### 🐛 Fixed
 
-- **Inventory API 404**: `inventory_logs` 라우터가 메인 API에 등록되지 않아 404 에러 발생 → 라우터 등록 완료.
-- **Inventory Schema Mismatch**: Pydantic 스키마와 SQLAlchemy 모델 필드명 불일치 (`transaction_type`→`change_type`, `quantity_change`→`change_amount`, `reason`→`notes`) 해결.
-- **Frontend API Types**: `InventoryLog`, `InventoryLogCreateData` 타입 및 API 메서드 완전 구현.
-- **Bean Image Mapping**: 원두 카드에 잘못된 이미지 표시 → 실제 `/images/raw_material/` 경로와 매칭.
-- **Sidebar Border/Shadow**: 사이드바 접힘 시 세로 줄무늬 발생 → border/shadow를 `isOpen` 상태에서만 표시.
-- **Database Synchronization**: `recreate_db.py` 실행 시 작업 디렉토리 불일치로 인한 DB 파일 위치 오류 해결.
-- **CORS Configuration**: 프론트엔드 포트(3500)가 백엔드 CORS 설정에 누락되어 발생한 `AxiosError: Network Error` 해결.
-- **Port Conflict Management**: `dev.sh` 실행 시 기존 프로세스 잔존으로 인한 `EADDRINUSE` 에러 해결.
+- **Variety Data Normalization**: 품종 필드 "한글 (영문)" 형식으로 통일
+  - `fix_variety.py` 스크립트로 16개 품목 DB 직접 수정
+  - 예: `Mormora` → `모모라 (Mormora)`
+
+- **Bean Image Matching**: `getBeanImage()` 함수 개선
+  - 키린야가/마사이 구분 (둘 다 Kenya origin)
+  - 모모라 검색어 추가 (모모라, 모르모라 둘 다 체크)
+  - 후일라 검색어 추가 (후일라, 우일라)
+
+- **Inventory API 404**: `inventory_logs` 라우터 등록 완료.
+- **Inventory Schema Mismatch**: Pydantic/SQLAlchemy 필드명 불일치 해결.
+- **Frontend API Types**: `InventoryLog`, `InventoryLogCreateData` 완전 구현.
+- **Sidebar Border/Shadow**: 사이드바 접힘 시 세로 줄무늬 해결.
+- **Database Synchronization**: DB 파일 위치 오류 해결.
+- **CORS Configuration**: 프론트엔드 포트 CORS 설정 추가.
 
 ### 🔧 Refactoring
 
-- **Home Hero**: 메인 페이지 Hero 컴포넌트를 PageHero와 동일한 스타일로 통일 (`min-h-[400px]`, `shadow-md`, `hover:shadow-lg` 등).
-- **Sidebar Styling**: 배경색 완전 불투명 처리 (`bg-white`), 메뉴 호버 색상 개선 (`hover:bg-latte-100`).
-- **Single Origin Roasting**: 목표 생산량 기반 자동 계산 로직 적용 및 UI 개선 (2-Column Layout, Shadcn Select).
-- **Blend Roasting**:  블렌드 로스팅 기능 구현 (입력된 레시피 비율대로 생두 자동 차감 및 원가 계산).
-- **UI Improvements**: 블렌드 관리 화면의 드롭다운을 Shadcn Select로 교체하여 UX 개선.
+- **Home Hero**: 메인 페이지 Hero 컴포넌트 스타일 통일.
+- **Single Origin Roasting**: 목표 생산량 기반 자동 계산 로직 및 UI 개선.
+- **Blend Roasting**: 블렌드 로스팅 기능 구현.
 
 ### 📄 Documentation
 
-- **Session Summary**: 2025-12-07 세션 요약 작성 (`Documents/Progress/SESSION_SUMMARY_2025-12-07.md`).
+- **Documents 폴더 재구조화**: 6개 분류 체계 정립
+  - Architecture, Guides, Planning, Progress, Reports, Resources
+- **Documents/README.md**: 문서 인덱스 생성
+- **루트 문서 이동**: DEPLOYMENT.md, TEST_REPORT.md 등 적절한 폴더로 이동
+- **Session Summary**: 2025-12-07 세션 요약 작성
 
 ---
 

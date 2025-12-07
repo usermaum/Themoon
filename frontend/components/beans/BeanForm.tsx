@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BeanCreateData, Bean } from '@/lib/api'
+import { BeanCreateData, Bean, BeanAPI } from '@/lib/api'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -37,6 +37,33 @@ export default function BeanForm({
         quantity_kg: 0,
         notes: '',
     })
+
+    // 데이터베이스에서 가져온 고유 옵션들
+    const [varietyOptions, setVarietyOptions] = useState<string[]>([])
+    const [originOptions, setOriginOptions] = useState<string[]>([])
+    const [processingOptions, setProcessingOptions] = useState<string[]>([])
+
+    // DB에서 기존 원두 정보를 가져와 고유 값 추출
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const response = await BeanAPI.getAll({ limit: 100 })
+                const beans = response.items || response
+
+                // 고유 값 추출 (빈 값 제외, 정렬)
+                const varieties = Array.from(new Set(beans.map((b: Bean) => b.variety).filter((v): v is string => !!v))).sort()
+                const origins = Array.from(new Set(beans.map((b: Bean) => b.origin).filter((v): v is string => !!v))).sort()
+                const processings = Array.from(new Set(beans.map((b: Bean) => b.processing_method).filter((v): v is string => !!v))).sort()
+
+                setVarietyOptions(varieties)
+                setOriginOptions(origins)
+                setProcessingOptions(processings)
+            } catch (err) {
+                console.error('Failed to fetch bean options:', err)
+            }
+        }
+        fetchOptions()
+    }, [])
 
     useEffect(() => {
         if (initialData) {
@@ -132,16 +159,9 @@ export default function BeanForm({
                                                 onChange={handleChange}
                                             >
                                                 <option value="">원산지 선택</option>
-                                                <option value="Ethiopia">Ethiopia (에티오피아)</option>
-                                                <option value="Colombia">Colombia (콜롬비아)</option>
-                                                <option value="Guatemala">Guatemala (과테말라)</option>
-                                                <option value="Brazil">Brazil (브라질)</option>
-                                                <option value="Kenya">Kenya (케냐)</option>
-                                                <option value="Costa Rica">Costa Rica (코스타리카)</option>
-                                                <option value="Indonesia">Indonesia (인도네시아)</option>
-                                                <option value="Vietnam">Vietnam (베트남)</option>
-                                                <option value="Panama">Panama (파나마)</option>
-                                                <option value="El Salvador">El Salvador (엘살바도르)</option>
+                                                {originOptions.map(origin => (
+                                                    <option key={origin} value={origin}>{origin}</option>
+                                                ))}
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-latte-500">
                                                 <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
@@ -167,12 +187,9 @@ export default function BeanForm({
                                                 onChange={handleChange}
                                             >
                                                 <option value="">품종 선택</option>
-                                                <option value="Arabica">Arabica (아라비카)</option>
-                                                <option value="Robusta">Robusta (로부스타)</option>
-                                                <option value="Geisha">Geisha (게이샤)</option>
-                                                <option value="Typica">Typica (티피카)</option>
-                                                <option value="Bourbon">Bourbon (버번)</option>
-                                                <option value="Caturra">Caturra (카투라)</option>
+                                                {varietyOptions.map(variety => (
+                                                    <option key={variety} value={variety}>{variety}</option>
+                                                ))}
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-latte-500">
                                                 <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
@@ -191,10 +208,9 @@ export default function BeanForm({
                                                 onChange={handleChange}
                                             >
                                                 <option value="">가공 방식 선택</option>
-                                                <option value="Washed">Washed (워시드)</option>
-                                                <option value="Natural">Natural (내추럴)</option>
-                                                <option value="Honey">Honey (허니)</option>
-                                                <option value="Anaerobic">Anaerobic (무산소)</option>
+                                                {processingOptions.map(method => (
+                                                    <option key={method} value={method}>{method}</option>
+                                                ))}
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-latte-500">
                                                 <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
