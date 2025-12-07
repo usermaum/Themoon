@@ -161,7 +161,7 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
             })
 
             showDialog('수정 완료', '블렌드 수정사항이 저장되었습니다.', () => {
-                router.refresh()
+                router.push('/blends')
             })
         } catch (err) {
             console.error('Failed to update blend:', err)
