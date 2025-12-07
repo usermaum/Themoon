@@ -4,32 +4,21 @@ from sqlalchemy.sql import func
 from app.database import Base
 import enum
 
-class InventoryChangeType(str, enum.Enum):
-    """재고 변동 유형"""
-    PURCHASE = "PURCHASE"             # 구매 입고
-    ROASTING_INPUT = "ROASTING_INPUT" # 로스팅 투입 (차감)
-    ROASTING_OUTPUT = "ROASTING_OUTPUT"# 로스팅 생산 (증가)
-    SALES = "SALES"                   # 판매 출고
-    LOSS = "LOSS"                     # 손실/폐기
-    ADJUSTMENT = "ADJUSTMENT"         # 재고 조정 (실사 반영)
-    BLENDING_INPUT = "BLENDING_INPUT" # 블렌딩 투입
+class TransactionType(str, enum.Enum):
+    IN = "IN"   # 입고
+    OUT = "OUT" # 출고
+    ADJUST = "ADJUST" # 조정 (재고 실사 등)
 
 class InventoryLog(Base):
     __tablename__ = "inventory_logs"
 
     id = Column(Integer, primary_key=True, index=True)
     bean_id = Column(Integer, ForeignKey("beans.id"), nullable=False)
-    
-    # 변동 유형 (Enum)
-    change_type = Column(Enum(InventoryChangeType), nullable=False) 
-    
-    change_amount = Column(Float, nullable=False, comment="변동량") # +: 증가, -: 감소
-    current_quantity = Column(Float, nullable=False, comment="변동 후 잔고")
-    
-    notes = Column(Text, nullable=True, comment="비고/사유")
-    related_id = Column(Integer, nullable=True, comment="관련 ID (로스팅ID 등)")
+    transaction_type = Column(String(20), nullable=False) # IN, OUT, ADJUST
+    quantity_change = Column(Float, nullable=False) # 변동량 (+ 또는 -)
+    current_quantity = Column(Float, nullable=False) # 변동 후 잔고
+    reason = Column(Text, nullable=True) # 사유 (예: 로스팅 사용, 구매 입고)
     
     created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
 
-    bean = relationship("app.models.bean.Bean", back_populates="inventory_logs")
-
+    bean = relationship("Bean", back_populates="inventory_logs")

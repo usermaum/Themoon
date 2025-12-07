@@ -32,18 +32,15 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7일
 
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3500"]
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     # AI API Keys
     GEMINI_API_KEY: Optional[str] = None
-    GOOGLE_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
-    CONTEXT7_API_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"
         case_sensitive = True
-        extra = "ignore"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

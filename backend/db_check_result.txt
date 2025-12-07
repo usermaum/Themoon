@@ -1,1 +1,0 @@
-Error: When initializing mapper Mapper[Bean(beans)], expression 'InventoryLog' failed to locate a name ('InventoryLog'). If this is a class name, consider adding this relationship() to the <class 'app.models.bean.Bean'> class after both dependent classes have been defined.

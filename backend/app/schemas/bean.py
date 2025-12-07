@@ -1,45 +1,27 @@
 """
 Bean 스키마 - 원두 정보 요청/응답 검증
 
-Ref: Documents/Planning/Themoon_Rostings_v2.md
+Pydantic 모델을 사용한 데이터 검증 및 직렬화
 """
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from app.models.bean import BeanType, RoastProfile
 
 
 class BeanBase(BaseModel):
     """Bean 공통 필드"""
 
-    name: str = Field(..., min_length=1, max_length=100, description="품목명")
-    type: BeanType = Field(default=BeanType.GREEN_BEAN, description="품목 유형")
-    sku: Optional[str] = Field(None, description="SKU 코드")
-    
-    # 생두 정보
+    name: str = Field(..., min_length=1, max_length=100, description="원두명")
     origin: Optional[str] = Field(None, max_length=100, description="원산지")
     variety: Optional[str] = Field(None, max_length=50, description="품종")
-    grade: Optional[str] = Field(None, max_length=50, description="등급")
     processing_method: Optional[str] = Field(None, max_length=50, description="가공 방식")
-    
-    # 원두 정보
-    roast_profile: Optional[RoastProfile] = Field(None, description="로스팅 프로필")
-    parent_bean_id: Optional[int] = Field(None, description="원재료 생두 ID")
-    
-    # 재고 및 가격
-    quantity_kg: float = Field(default=0.0, ge=0, description="현재 재고량 (kg)")
-    avg_price: float = Field(default=0.0, ge=0, description="평균 단가 (매입가/생산원가)")
-    purchase_price_per_kg: Optional[float] = Field(None, ge=0, description="최근 매입가")
-    cost_price: Optional[float] = Field(None, ge=0, description="생산 원가")
-    
-    # 메타 데이터
-    description: Optional[str] = Field(None, description="설명")
+    purchase_date: Optional[date] = Field(None, description="구매일")
+    purchase_price_per_kg: Optional[float] = Field(None, ge=0, description="kg당 구매 가격")
+    quantity_kg: Optional[float] = Field(None, ge=0, description="재고량 (kg)")
+    roast_level: Optional[str] = Field(None, max_length=20, description="로스팅 단계")
     notes: Optional[str] = Field(None, description="메모")
-    
-    # 로스팅 정보
-    expected_loss_rate: Optional[float] = Field(None, ge=0.0, le=1.0, description="예상 로스팅 손실률")
 
-    @field_validator('origin', 'variety', 'grade', 'processing_method', 'description', 'notes', mode='before')
+    @field_validator('origin', 'variety', 'processing_method', 'roast_level', 'notes', mode='before')
     @classmethod
     def empty_str_to_none(cls, v):
         """빈 문자열을 None으로 변환"""
@@ -54,34 +36,22 @@ class BeanCreate(BeanBase):
 
 
 class BeanUpdate(BaseModel):
-    """Bean 수정 요청"""
+    """Bean 수정 요청 - 모든 필드 선택적"""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    type: Optional[BeanType] = Field(None)
-    sku: Optional[str] = Field(None)
-    
-    origin: Optional[str] = Field(None)
-    variety: Optional[str] = Field(None)
-    grade: Optional[str] = Field(None)
-    processing_method: Optional[str] = Field(None)
-    
-    roast_profile: Optional[RoastProfile] = Field(None)
-    parent_bean_id: Optional[int] = Field(None)
-    
-    quantity_kg: Optional[float] = Field(None, ge=0)
-    avg_price: Optional[float] = Field(None, ge=0)
-    purchase_price_per_kg: Optional[float] = Field(None, ge=0)
-    cost_price: Optional[float] = Field(None, ge=0)
-    
-    description: Optional[str] = Field(None)
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="원두명")
+    origin: Optional[str] = Field(None, max_length=100, description="원산지")
+    variety: Optional[str] = Field(None, max_length=50, description="품종")
+    processing_method: Optional[str] = Field(None, max_length=50, description="가공 방식")
+    purchase_date: Optional[date] = Field(None, description="구매일")
+    purchase_price_per_kg: Optional[float] = Field(None, ge=0, description="kg당 구매 가격")
+    quantity_kg: Optional[float] = Field(None, ge=0, description="재고량 (kg)")
+    roast_level: Optional[str] = Field(None, max_length=20, description="로스팅 단계")
+    notes: Optional[str] = Field(None, description="메모")
 
-    notes: Optional[str] = Field(None)
-    
-    expected_loss_rate: Optional[float] = Field(None, ge=0.0, le=1.0)
-
-    @field_validator('origin', 'variety', 'grade', 'processing_method', 'description', 'notes', mode='before')
+    @field_validator('name', 'origin', 'variety', 'processing_method', 'roast_level', 'notes', mode='before')
     @classmethod
     def empty_str_to_none(cls, v):
+        """빈 문자열을 None으로 변환"""
         if v == '':
             return None
         return v
@@ -98,9 +68,9 @@ class Bean(BeanBase):
 
 
 class BeanListResponse(BaseModel):
-    """Bean 목록 응답"""
+    """Bean 목록 응답 (페이지네이션 정보 포함)"""
     
-    items: List[Bean]
+    items: list[Bean]
     total: int
     page: int
     size: int
