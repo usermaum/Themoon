@@ -59,13 +59,18 @@ def roast_blend(
             db=db,
             blend_id=request.blend_id,
             output_weight=request.output_weight,
+            input_weight=request.input_weight,
             notes=request.notes
         )
         
+        loss_rate = 0.0
+        if request.input_weight and request.input_weight > 0:
+            loss_rate = (request.input_weight - request.output_weight) / request.input_weight * 100
+
         return RoastingResponse(
             message="Blend roasting logged successfully",
             roasted_bean=roasted_bean,
-            loss_rate_percent=0.0, # 복잡한 역산 생략 (로그 확인)
+            loss_rate_percent=round(loss_rate, 2),
             production_cost=round(roasted_bean.cost_price, 2) if roasted_bean.cost_price else 0.0
         )
         

@@ -19,6 +19,7 @@ class BlendRoastingRequest(BaseModel):
     """블렌드 로스팅 요청"""
     blend_id: int = Field(..., description="블렌드 ID")
     output_weight: float = Field(..., gt=0, description="원두 목표 생산량 (kg)")
+    input_weight: Optional[float] = Field(None, gt=0, description="실제 투입량 (kg)")
     notes: Optional[str] = Field(None, description="로스팅 노트")
 
 class RoastingResponse(BaseModel):

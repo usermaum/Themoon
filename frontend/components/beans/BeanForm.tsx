@@ -27,6 +27,7 @@ export default function BeanForm({
 }: BeanFormProps) {
     const [formData, setFormData] = useState<BeanCreateData>({
         name: '',
+        type: 'GREEN_BEAN', // Default type
         origin: '',
         variety: '',
         processing_method: '',
@@ -41,13 +42,14 @@ export default function BeanForm({
         if (initialData) {
             setFormData({
                 name: initialData.name,
+                type: initialData.type,
                 origin: initialData.origin,
                 variety: initialData.variety,
                 processing_method: initialData.processing_method,
                 roast_level: initialData.roast_level,
                 purchase_date: initialData.purchase_date,
                 purchase_price_per_kg: initialData.purchase_price_per_kg,
-                quantity_kg: initialData.quantity_kg,
+                quantity_kg: parseFloat(initialData.quantity_kg.toFixed(2)),
                 notes: initialData.notes || '',
             })
         }
@@ -76,19 +78,16 @@ export default function BeanForm({
     return (
         <div className="container mx-auto px-4 py-4 max-w-4xl">
             <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button asChild variant="ghost" size="icon" className="rounded-full hover:bg-latte-100">
-                        <Link href="/beans">
-                            <ArrowLeft className="w-6 h-6 text-latte-700" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-3xl font-serif font-bold text-latte-900">
-                        {title}
-                    </h1>
-                </div>
+                <Link
+                    href="/beans"
+                    className="flex items-center gap-2 text-latte-600 hover:text-latte-900 font-bold transition-colors"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                    이전으로
+                </Link>
             </div>
 
-            <Card className="border-latte-100 shadow-lg">
+            <Card className="border-latte-100 shadow-lg rounded-[1em]">
                 <CardContent className="p-8">
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -203,27 +202,7 @@ export default function BeanForm({
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="roast_level">로스팅 포인트</Label>
-                                        <div className="relative">
-                                            <select
-                                                id="roast_level"
-                                                name="roast_level"
-                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-white"
-                                                value={formData.roast_level}
-                                                onChange={handleChange}
-                                            >
-                                                <option value="Light">Light (약배전)</option>
-                                                <option value="Medium-Light">Medium-Light (중약배전)</option>
-                                                <option value="Medium">Medium (중배전)</option>
-                                                <option value="Medium-Dark">Medium-Dark (중강배전)</option>
-                                                <option value="Dark">Dark (강배전)</option>
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-latte-500">
-                                                <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {/* 로스팅 포인트 선택 섹션 삭제됨 */}
                                 </div>
                             </div>
 
@@ -298,7 +277,7 @@ export default function BeanForm({
                                 asChild
                                 className="px-6"
                             >
-                                <Link href="/beans">취소</Link>
+                                <Link href="/beans">이전으로</Link>
                             </Button>
                             <Button
                                 type="submit"

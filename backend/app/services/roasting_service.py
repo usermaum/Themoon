@@ -9,10 +9,10 @@ from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.blend import Blend
 
 def generate_roasted_bean_sku(green_bean: Bean, profile: RoastProfile) -> str:
-    """원두 SKU 생성 (예: Yirgacheffe-LIGHT)"""
-    # 기본적으로 '이름-프로필' 형식을 따름 (영문 변환 로직이 필요할 수 있으나 현재는 이름 사용)
-    # 실제로는 영문명이나 별도 코드를 쓰는게 좋음. 일단은 임시로 이름 사용
-    return f"{green_bean.name}-{profile.value}"
+    """원두 SKU 생성 (예: Yirgacheffe-신콩)"""
+    # 우리 드립바는 두 가지 맛(신콩, 탄콩)을 주로 사용
+    profile_kr = "신콩" if profile == RoastProfile.LIGHT else "탄콩" if profile == RoastProfile.DARK else "미디엄"
+    return f"{green_bean.name}-{profile_kr}"
 
 def create_single_origin_roasting(
     db: Session,
@@ -61,8 +61,9 @@ def create_single_origin_roasting(
     
     if not roasted_bean:
         # 원두 신규 생성
+        profile_kr = "신콩" if roast_profile == RoastProfile.LIGHT else "탄콩" if roast_profile == RoastProfile.DARK else "미디엄"
         roasted_bean = Bean(
-            name=f"{green_bean.name} {roast_profile.value}",
+            name=f"{green_bean.name} {profile_kr}",
             type=BeanType.ROASTED_BEAN,
             sku=sku,
             origin=green_bean.origin,    # 생두 정보 상속
@@ -110,6 +111,7 @@ def create_blend_roasting(
     db: Session,
     blend_id: int,
     output_weight: float,
+    input_weight: float = None,
     notes: str = None
 ):
     """
@@ -139,10 +141,15 @@ def create_blend_roasting(
         if not bean:
             raise HTTPException(status_code=404, detail=f"Bean ID {bean_id} in recipe not found")
 
-        # 필요량 계산: (목표량 * 비율) / (1 - 손실률)
-        loss_rate = bean.expected_loss_rate if bean.expected_loss_rate is not None else 0.15
-        target_part_weight = output_weight * ratio
-        required_input = target_part_weight / (1 - loss_rate)
+        # 필요량 계산
+        if input_weight:
+            # 실제 투입량이 주어진 경우 비율대로 배분
+            required_input = input_weight * ratio
+        else:
+            # 목표 생산량 역산: (목표량 * 비율) / (1 - 손실률)
+            loss_rate = bean.expected_loss_rate if bean.expected_loss_rate is not None else 0.15
+            target_part_weight = output_weight * ratio
+            required_input = target_part_weight / (1 - loss_rate)
         
         if bean.quantity_kg < required_input:
             raise HTTPException(status_code=400, detail=f"Not enough stock for {bean.name}. Required: {required_input:.2f}kg, Available: {bean.quantity_kg:.2f}kg")
@@ -173,24 +180,16 @@ def create_blend_roasting(
         db.add(log)
 
     # 4. 블렌드 원두 생성/업데이트
-    # 프로필 매핑 (단순화: 문자열 포함 여부)
-    roast_profile = RoastProfile.MEDIUM
-    if blend.target_roast_level:
-        level_upper = blend.target_roast_level.upper()
-        if "LIGHT" in level_upper:
-            roast_profile = RoastProfile.LIGHT
-        elif "DARK" in level_upper:
-            roast_profile = RoastProfile.DARK
-
-    sku = f"BLEND-{blend.id}-{roast_profile.value}"
+    production_cost = total_input_cost / output_weight if output_weight > 0 else 0
+    sku = f"BLEND-{blend.id}-{blend.name.replace(' ', '')}"
     
+    # Check if roasted blend bean exists
     roasted_bean = db.query(Bean).filter(Bean.sku == sku).first()
     
-    production_cost = total_input_cost / output_weight if output_weight > 0 else 0
-    
     if not roasted_bean:
+        roast_profile = RoastProfile.MEDIUM
         roasted_bean = Bean(
-            name=f"{blend.name} {roast_profile.value}",
+            name=f"{blend.name}",
             type=BeanType.ROASTED_BEAN,
             sku=sku,
             origin="Blend",

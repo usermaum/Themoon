@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BeanAPI, BeanCreateData, Bean } from '@/lib/api'
 import BeanForm from '@/components/beans/BeanForm'
+import PageHero from '@/components/ui/PageHero'
+import { Edit2 } from 'lucide-react'
 
 export default function EditBeanPage({ params }: { params: { id: string } }) {
     const router = useRouter()
@@ -59,7 +61,15 @@ export default function EditBeanPage({ params }: { params: { id: string } }) {
     }
 
     return (
-        <>
+        <div className="min-h-screen">
+            <PageHero
+                title="원두 정보 수정"
+                description="등록된 원두의 상세 정보를 수정하고 관리합니다."
+                icon={<Edit2 />}
+                image="/images/hero/bean_edit_hero.png"
+                className="mb-8 min-h-[280px]"
+            />
+
             {error && (
                 <div className="container mx-auto px-4 mt-8 max-w-2xl">
                     <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
@@ -72,6 +82,6 @@ export default function EditBeanPage({ params }: { params: { id: string } }) {
                 title="원두 정보 수정"
                 submitLabel="수정 완료"
             />
-        </>
+        </div>
     )
 }

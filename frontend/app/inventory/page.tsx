@@ -11,13 +11,14 @@ import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle } from 'lucide-re
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
-    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
+    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-latte-100">
                 <thead className="bg-latte-50/50">
                     <tr>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
@@ -26,7 +27,7 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
                 </thead>
                 <tbody className="bg-white divide-y divide-latte-100">
                     {beans.length === 0 ? (
-                        <tr><td colSpan={6} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
                     ) : beans.map((bean) => (
                         <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
@@ -35,7 +36,13 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
                                     bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
                                         <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50">원두</Badge>}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">
+                                {bean.roast_profile === 'LIGHT' ? <Badge className="bg-lime-500 hover:bg-lime-600 border-none text-white">신콩(Light)</Badge> :
+                                    bean.roast_profile === 'DARK' ? <Badge className="bg-slate-800 hover:bg-slate-900 border-none text-white">탄콩(Dark)</Badge> :
+                                        bean.roast_profile === 'MEDIUM' ? <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none">미디엄</Badge> :
+                                            '-'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 {bean.quantity_kg < 5 ? <Badge variant="destructive">재고 부족</Badge> :
@@ -257,7 +264,7 @@ export default function InventoryPage() {
                             transition={{ duration: 0.4, delay: 0.2 }}
                         >
                             <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">입출고 기록</h2>
-                            <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
+                            <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-latte-100">
                                         <thead className="bg-latte-50/50">
