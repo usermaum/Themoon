@@ -11,14 +11,132 @@
 
 ---
 
-## [Unreleased] - 2025-12-06
+## [0.0.6] - 2025-12-07
+
+### 🐛 패치 (Bug Fix): UI Design Standardization (Hero, Border Radius) & Fix Bean Update Functionality
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
+## [0.0.6] - 2025-12-07
+
+### ✨ Features
+
+- **Roasting Menu**: 사이드바에 'Roasting' 메뉴 추가 (`/roasting/single-origin`).
+
+### 🐛 Fixed
+
+- **Inventory API 404**: `inventory_logs` 라우터가 메인 API에 등록되지 않아 404 에러 발생 → 라우터 등록 완료.
+- **Inventory Schema Mismatch**: Pydantic 스키마와 SQLAlchemy 모델 필드명 불일치 (`transaction_type`→`change_type`, `quantity_change`→`change_amount`, `reason`→`notes`) 해결.
+- **Frontend API Types**: `InventoryLog`, `InventoryLogCreateData` 타입 및 API 메서드 완전 구현.
+- **Bean Image Mapping**: 원두 카드에 잘못된 이미지 표시 → 실제 `/images/raw_material/` 경로와 매칭.
+- **Sidebar Border/Shadow**: 사이드바 접힘 시 세로 줄무늬 발생 → border/shadow를 `isOpen` 상태에서만 표시.
+- **Database Synchronization**: `recreate_db.py` 실행 시 작업 디렉토리 불일치로 인한 DB 파일 위치 오류 해결.
+- **CORS Configuration**: 프론트엔드 포트(3500)가 백엔드 CORS 설정에 누락되어 발생한 `AxiosError: Network Error` 해결.
+- **Port Conflict Management**: `dev.sh` 실행 시 기존 프로세스 잔존으로 인한 `EADDRINUSE` 에러 해결.
+
+### 🔧 Refactoring
+
+- **Home Hero**: 메인 페이지 Hero 컴포넌트를 PageHero와 동일한 스타일로 통일 (`min-h-[400px]`, `shadow-md`, `hover:shadow-lg` 등).
+- **Sidebar Styling**: 배경색 완전 불투명 처리 (`bg-white`), 메뉴 호버 색상 개선 (`hover:bg-latte-100`).
+- **Single Origin Roasting**: 목표 생산량 기반 자동 계산 로직 적용 및 UI 개선 (2-Column Layout, Shadcn Select).
+- **Blend Roasting**:  블렌드 로스팅 기능 구현 (입력된 레시피 비율대로 생두 자동 차감 및 원가 계산).
+- **UI Improvements**: 블렌드 관리 화면의 드롭다운을 Shadcn Select로 교체하여 UX 개선.
 
 ### 📄 Documentation
 
-**언어 정책 강화**
+- **Session Summary**: 2025-12-07 세션 요약 작성 (`Documents/Progress/SESSION_SUMMARY_2025-12-07.md`).
 
-- `instructions.md`, `CLAUDE.md`: 사용자가 영어를 읽지 못하므로 모든 진행 상황, 결과, 체크리스트 확인 등을 반드시 한글로 작성하도록 규칙 강화.
-- `.gitignore`: logs/ 디렉토리 내의 문서 파일들(`CHANGELOG.md` 등)이 무시되지 않도록 허용 규칙 추가.
+---
+
+## [0.1.0] - 2025-12-06
+
+### ✨ Features
+
+**Cafe Latte Art Theme Integration**
+
+- **Global Theme**: 전체 프론트엔드에 'Cafe Latte Art' 디자인 테마 적용 (크림색 배경, Serif 폰트, 둥근 모서리).
+- **Shadcn UI**: `Button`, `Input`, `Badge`, `Card` 등 핵심 컴포넌트를 Shadcn UI 기반으로 새로 구현 및 테마 스타일링.
+- **Design System**: Tailwind CSS 설정에 `latte` 색상 팔레트 및 `blob` 포인트 컬러 추가.
+
+### 🔧 Refactoring
+
+**Page Refactoring**
+
+- **Home**: 대시보드 통계 카드 및 최근 활동 테이블에 새로운 디자인 적용.
+- **Beans**: 원두 관리 페이지 테이블 및 검색 UI 개선.
+- **Blends**: 블렌드 레시피 카드 디자인 고도화.
+- **Inventory**: 재고 관리 페이지 모달 및 테이블 UI를 Shadcn 컴포넌트로 전면 교체.
+
+**Component Upgrades**
+
+- **PageHero**: 배경 블롭(Blob) 효과 및 아이콘 통합으로 시각적 퀄리티 향상.
+- **Card**: Compound Component 패턴(`CardHeader`, `CardContent` 등) 도입으로 유연성 확보.
+
+---
+
+## [Unreleased] - 2025-11-30
+
+### ✨ Features
+
+**사이드바 툴팁 시스템**
+
+- 토글 버튼 툴팁 추가 (사이드바 펼치기/접기)
+- 모든 메뉴 아이템 툴팁 추가 (Home, Beans, Blends, Inventory)
+- Settings 버튼 툴팁 추가
+- CSS group-hover 기반 커스텀 툴팁 구현
+- 다크모드 완벽 대응
+- z-index 계층 구조 정립 (Backdrop: 90, Sidebar: 100, Tooltips: 200)
+
+### 🐛 Bug Fixes
+
+**툴팁 표시 문제 해결**
+
+- overflow-y-auto와 overflow-x-visible 동시 사용 불가 문제 해결
+- nav/ul/li 태그의 overflow 제약 제거 (→ div로 교체)
+- PageHero 컴포넌트 z-index 조정 (툴팁 가려짐 해결)
+- main 요소 z-index 설정 (Sidebar보다 낮게)
+- 불필요한 overflow-y-auto 완전 제거 (메뉴 4개로 스크롤 불필요)
+
+**.gitignore 수정**
+
+- logs/ 폴더 제외 → logs/*.log 파일만 제외
+- 버전 관리 파일들은 정상 추적되도록 수정
+
+### 🔧 Refactoring
+
+**사이드바 구조 개선**
+
+- nav 태그 → div 태그로 교체 (의미론적 HTML보다 실용성 우선)
+- ul/li 태그 → div 태그로 교체 (overflow 문제 해결)
+- 3중 구조 → 2중 구조로 단순화
+- 메뉴 아이템 group 구조 개선 (li → div.relative.group)
+
+### 📄 Documentation
+
+**세션 문서**
+
+- `SESSION_SUMMARY_2025-11-30.md` 상세 작성
+- 툴팁 구현 및 문제 해결 과정 9단계 기록
+- CSS overflow/z-index 관련 학습 내용 정리
+
+### 🛠️ Technical Details
+
+**변경된 파일** (5개)
+
+- `.gitignore` - logs/ 폴더 제외 규칙 수정
+- `frontend/components/layout/Sidebar.tsx` - 툴팁 추가 및 구조 개선
+- `frontend/components/layout/AppLayout.tsx` - main z-index 설정
+- `frontend/components/ui/PageHero.tsx` - z-index 조정
+
+**커밋 통계**
+
+- 총 커밋: 13개
+- feat: 2개, fix: 10개, refactor: 1개
+
+---
+
+## [Unreleased] - 2025-11-29
 
 ### ✨ Features
 
@@ -383,3 +501,26 @@ frontend/
 **참고:**
 
 - 이전 버전 기록 (0.50.4 이하)은 원본 프로젝트 참조: `/mnt/d/Ai/WslProject/TheMoon_Project/logs/CHANGELOG.md`
+
+## [0.0.4] - 2025-12-06
+
+### 추가됨 (Added)
+
+- **Green Bean Vault**: 생두 재고 현황 시각화 페이지 구현 (app/design-sample/green-bean-vault).
+- **Bean Prompts V2/V3**: 생두(V2) 및 원두(V3) 이미지 생성을 위한 고해상도 프롬프트 문서 작성.
+- **Server Scripts Enhancement**: WSL 내부 IP 접속 지원 및 포트 3500 변경 (dev.sh, start_all.sh).
+
+### 변경됨 (Changed)
+
+- **Frontend Engine**: Next.js 14, React 18, Tailwind CSS 3로 엔진 업데이트 및 안정화.
+- **Network Config**: 로컬호스트 바인딩 오류 해결을 위해 0.0.0.0 호스트 설정 적용.
+
+### 수정됨 (Fixed)
+
+- WSL2 환경에서 윈도우 업데이트 후 발생한 localhost 연결 거부 문제 해결.
+
+- **Roasting Process Implementation**:
+  - Backend: `Bean`(고도화), `InventoryLog`(Enum 적용) 모델 및 스키마 업데이트.
+  - Backend: `create_single_origin_roasting` 서비스 로직 및 API 엔드포인트 구현.
+  - Frontend: `roasting/single-origin` 로스팅 UI 페이지 구현 (생두 선택, 손실률 계산).
+  - Database: `recreate_db` 스크립트 작성 및 자동 시딩 로직(`lifespan`) 추가.

@@ -14,24 +14,14 @@ export const api = axios.create({
   },
 })
 
-// 요청 인터셉터 (인증 토큰 추가)
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+// 요청 인터셉터 (인증 토큰 추가 - 미사용 시에도 구조 유지)
+// api.interceptors.request.use(...)
 
-// 응답 인터셉터 (에러 처리)
+// 응답 인터셉터
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // 인증 실패 처리
-      localStorage.removeItem('access_token')
-      window.location.href = '/login'
-    }
+    // 에러 처리 로직
     return Promise.reject(error)
   }
 )
@@ -40,19 +30,40 @@ export default api
 
 // --- Types ---
 
+export type BeanType = 'GREEN_BEAN' | 'ROASTED_BEAN' | 'BLEND_BEAN'
+export type RoastProfile = 'LIGHT' | 'MEDIUM' | 'DARK'
+
 export interface Bean {
   id: number
   name: string
-  origin: string
-  variety: string
-  processing_method: string
-  roast_level: string
-  purchase_date: string
-  purchase_price_per_kg: number
+  type: BeanType
+  sku?: string
+
+  // 생두 정보
+  origin?: string
+  variety?: string
+  grade?: string
+  processing_method?: string
+
+  // 원두 정보
+  roast_profile?: RoastProfile
+  parent_bean_id?: number
+
+  // 재고 및 가격
   quantity_kg: number
+  avg_price: number
+  purchase_price_per_kg?: number
+  cost_price?: number
+
+  // 메타
+  description?: string
+  // Missing properties added to fix lint errors
+  roast_level?: string
+  purchase_date?: string
   notes?: string
+  expected_loss_rate?: number
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export interface BeanListResponse {
@@ -65,59 +76,22 @@ export interface BeanListResponse {
 
 export interface BeanCreateData {
   name: string
-  origin: string
-  variety: string
-  processing_method: string
-  roast_level: string
-  purchase_date: string
-  purchase_price_per_kg: number
+  type: BeanType
+  origin?: string
+  variety?: string
+  grade?: string
+  processing_method?: string
+  roast_profile?: RoastProfile
+  // Missing properties added to fix lint errors
+  roast_level?: string
+  purchase_date?: string
+  purchase_price_per_kg?: number
   quantity_kg: number
   notes?: string
+  avg_price?: number
 }
 
-export interface BeanUpdateData extends Partial<BeanCreateData> { }
-
-// --- Bean API ---
-
-export const BeanAPI = {
-  getAll: async (params?: {
-    page?: number
-    size?: number
-    search?: string
-    roast_level?: string
-  }) => {
-    const response = await api.get<BeanListResponse>('/api/v1/beans', { params })
-    return response.data
-  },
-
-  getOne: async (id: number) => {
-    const response = await api.get<Bean>(`/api/v1/beans/${id}`)
-    return response.data
-  },
-
-  create: async (data: BeanCreateData) => {
-    const response = await api.post<Bean>('/api/v1/beans', data)
-    return response.data
-  },
-
-  update: async (id: number, data: BeanUpdateData) => {
-    const response = await api.put<Bean>(`/api/v1/beans/${id}`, data)
-    return response.data
-  },
-
-  delete: async (id: number) => {
-    await api.delete(`/api/v1/beans/${id}`)
-  },
-
-  updateQuantity: async (id: number, quantity_change: number) => {
-    const response = await api.patch<Bean>(`/api/v1/beans/${id}/quantity`, {
-      quantity_change,
-    })
-    return response.data
-  },
-}
-
-// --- Types (Blend) ---
+// --- Blend Types ---
 
 export interface BlendRecipeItem {
   bean_id: number
@@ -143,12 +117,86 @@ export interface BlendCreateData {
   notes?: string
 }
 
-export interface BlendUpdateData extends Partial<BlendCreateData> { }
+// --- Roasting Types ---
+
+export interface SingleOriginRoastingRequest {
+  green_bean_id: number
+  input_weight: number
+  output_weight: number
+  roast_profile: RoastProfile
+  notes?: string
+}
+
+export interface BlendRoastingRequest {
+  blend_id: number
+  output_weight: number
+  input_weight?: number
+  notes?: string
+}
+
+export interface RoastingResponse {
+  success: boolean
+  message: string
+  roasted_bean: Bean
+  loss_rate_percent: number
+  production_cost: number
+}
+
+// --- Bean API ---
+
+export const BeanAPI = {
+  getAll: async (params?: {
+    skip?: number
+    limit?: number
+    search?: string
+  }) => {
+    const response = await api.get<BeanListResponse>('/api/v1/beans', { params })
+    return response.data
+  },
+
+  getOne: async (id: number) => {
+    const response = await api.get<Bean>(`/api/v1/beans/${id}`)
+    return response.data
+  },
+
+  create: async (data: BeanCreateData) => {
+    const response = await api.post<Bean>('/api/v1/beans', data)
+    return response.data
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/api/v1/beans/${id}`)
+    return response.data
+  },
+
+  update: async (id: number, data: Partial<BeanCreateData>) => {
+    const response = await api.put<Bean>(`/api/v1/beans/${id}`, data)
+    return response.data
+  },
+}
+
+// --- Roasting API ---
+
+export const RoastingAPI = {
+  roastSingleOrigin: async (data: SingleOriginRoastingRequest) => {
+    const response = await api.post<RoastingResponse>('/api/v1/roasting/single-origin', data)
+    return response.data
+  },
+
+  roastBlend: async (data: BlendRoastingRequest) => {
+    const response = await api.post<RoastingResponse>('/api/v1/roasting/blend', data)
+    return response.data
+  }
+}
 
 // --- Blend API ---
 
 export const BlendAPI = {
-  getAll: async (params?: { skip?: number; limit?: number }) => {
+  getAll: async (params?: {
+    skip?: number
+    limit?: number
+    search?: string
+  }) => {
     const response = await api.get<Blend[]>('/api/v1/blends', { params })
     return response.data
   },
@@ -163,39 +211,40 @@ export const BlendAPI = {
     return response.data
   },
 
-  update: async (id: number, data: BlendUpdateData) => {
+  update: async (id: number, data: Partial<BlendCreateData>) => {
     const response = await api.put<Blend>(`/api/v1/blends/${id}`, data)
     return response.data
   },
 
   delete: async (id: number) => {
-    await api.delete(`/api/v1/blends/${id}`)
+    const response = await api.delete(`/api/v1/blends/${id}`)
+    return response.data
   },
 }
 
-// --- Types (InventoryLog) ---
+// --- Inventory Types ---
 
 export interface InventoryLog {
   id: number
   bean_id: number
-  transaction_type: 'IN' | 'OUT' | 'ADJUST'
-  quantity_change: number
+  change_type: string  // "PURCHASE", "ROASTING_INPUT", "ROASTING_OUTPUT", "SALES", "LOSS", "ADJUSTMENT", "BLENDING_INPUT"
+  change_amount: number  // +: 증가, -: 감소
   current_quantity: number
-  reason?: string
+  notes?: string
   created_at: string
 }
 
 export interface InventoryLogCreateData {
   bean_id: number
-  transaction_type: 'IN' | 'OUT' | 'ADJUST'
-  quantity_change: number
-  reason?: string
+  change_type: string
+  change_amount: number
+  notes?: string
 }
 
-// --- InventoryLog API ---
+// --- Inventory API ---
 
 export const InventoryLogAPI = {
-  getAll: async (params?: { bean_id?: number; skip?: number; limit?: number }) => {
+  getAll: async (params?: { bean_id?: number; limit?: number }) => {
     const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params })
     return response.data
   },
@@ -205,9 +254,9 @@ export const InventoryLogAPI = {
     return response.data
   },
 
-  update: async (id: number, quantity_change: number, reason?: string) => {
+  update: async (id: number, change_amount: number, notes?: string) => {
     const response = await api.put<InventoryLog>(`/api/v1/inventory-logs/${id}`, null, {
-      params: { quantity_change, reason }
+      params: { change_amount, notes }
     })
     return response.data
   },
@@ -215,4 +264,9 @@ export const InventoryLogAPI = {
   delete: async (id: number) => {
     await api.delete(`/api/v1/inventory-logs/${id}`)
   },
+
+  getByBeanId: async (beanId: number) => {
+    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs', { params: { bean_id: beanId } })
+    return response.data
+  }
 }

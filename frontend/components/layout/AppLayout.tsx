@@ -48,8 +48,13 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                     flex-1 overflow-auto scrollbar-thin
                     transition-all duration-300 ease-in-out
                     ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
+                    ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
+                    relative z-0
                 `}
             >
+                {/* Theme Decorations */}
+                <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blob-orange/30 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+                <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-blob-green/30 rounded-full blur-[100px] pointer-events-none -z-10"></div>
                 {/* Mobile menu button */}
                 <div className="lg:hidden fixed top-4 left-4 z-30">
                     <button
@@ -73,7 +78,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                     </button>
                 </div>
 
-                <div className="pt-4 lg:pt-0">
+                <div className="pt-4 lg:pt-0 min-h-full">
                     {children}
                 </div>
             </main>

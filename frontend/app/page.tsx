@@ -1,10 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Bean, BeanAPI, Blend, BlendAPI, InventoryLog, InventoryLogAPI } from '@/lib/api'
 import Link from 'next/link'
-import Card from '@/components/ui/Card'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
 import Hero from '@/components/home/Hero'
+import { Coffee, Palette, Package, AlertTriangle, ArrowRight } from 'lucide-react'
 
 export default function HomePage() {
   const [beans, setBeans] = useState<Bean[]>([])
@@ -17,7 +28,7 @@ export default function HomePage() {
       try {
         setLoading(true)
         const [beansData, blendsData, logsData] = await Promise.all([
-          BeanAPI.getAll({ size: 100 }),
+          BeanAPI.getAll({ limit: 100 }),
           BlendAPI.getAll({ limit: 100 }),
           InventoryLogAPI.getAll({ limit: 10 }),
         ])
@@ -39,134 +50,150 @@ export default function HomePage() {
   const totalStock = beans.reduce((sum, bean) => sum + bean.quantity_kg, 0)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <Hero />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-latte-500 animate-pulse">
             데이터를 불러오는 중입니다...
           </div>
         ) : (
           <>
             {/* 통계 카드 섹션 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+            >
+              <Card className="hover:border-latte-400">
+                <CardContent className="p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">전체 원두</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{beans.length}</p>
+                    <p className="text-latte-500 text-sm font-medium">전체 원두</p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">{beans.length}</p>
                   </div>
-                  <div className="text-4xl">☕</div>
-                </div>
-              </div>
+                  <Coffee className="w-10 h-10 text-latte-300" />
+                </CardContent>
+              </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
+              <Card className="hover:border-latte-400">
+                <CardContent className="p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">블렌드 레시피</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{blends.length}</p>
+                    <p className="text-latte-500 text-sm font-medium">블렌드 레시피</p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">{blends.length}</p>
                   </div>
-                  <div className="text-4xl">🎨</div>
-                </div>
-              </div>
+                  <Palette className="w-10 h-10 text-latte-300" />
+                </CardContent>
+              </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
+              <Card className="hover:border-latte-400">
+                <CardContent className="p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">총 재고량</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{totalStock.toFixed(1)} kg</p>
+                    <p className="text-latte-500 text-sm font-medium">총 재고량</p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalStock.toFixed(1)} <span className="text-lg text-latte-400">kg</span></p>
                   </div>
-                  <div className="text-4xl">📦</div>
-                </div>
-              </div>
+                  <Package className="w-10 h-10 text-latte-300" />
+                </CardContent>
+              </Card>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-red-200 dark:border-red-700">
-                <div className="flex items-center justify-between">
+              <Card className={`hover:border-red-300 ${lowStockBeans.length > 0 ? 'border-red-200 bg-red-50/50' : ''}`}>
+                <CardContent className="p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-red-600 dark:text-red-400 text-sm font-medium">재고 부족</p>
-                    <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">{lowStockBeans.length}</p>
+                    <p className="text-red-600/80 text-sm font-medium">재고 부족</p>
+                    <p className="text-3xl font-bold text-red-600 mt-1">{lowStockBeans.length}</p>
                   </div>
-                  <div className="text-4xl">⚠️</div>
-                </div>
-              </div>
-            </div>
+                  <AlertTriangle className="w-10 h-10 text-red-300" />
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* 재고 부족 알림 */}
             {lowStockBeans.length > 0 && (
-              <section className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="mb-8"
+              >
+                <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
                   재고 부족 알림
                 </h2>
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <ul className="space-y-2">
+                <div className="bg-white rounded-[2rem] border border-red-200 p-6 shadow-sm">
+                  <ul className="space-y-3">
                     {lowStockBeans.map((bean) => (
-                      <li key={bean.id} className="flex justify-between items-center">
-                        <span className="text-gray-900 dark:text-white font-medium">
-                          {bean.name} ({bean.origin})
+                      <li key={bean.id} className="flex justify-between items-center bg-red-50/50 p-3 rounded-xl">
+                        <span className="text-latte-800 font-medium flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                          {bean.name} <span className="text-latte-500 text-sm">({bean.origin})</span>
                         </span>
-                        <span className="text-red-600 dark:text-red-400 font-semibold">
+                        <span className="text-red-600 font-bold bg-white px-3 py-1 rounded-full shadow-sm">
                           {bean.quantity_kg.toFixed(1)} kg
                         </span>
                       </li>
                     ))}
                   </ul>
-                  <Link
-                    href="/inventory"
-                    className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    재고 관리로 이동 →
-                  </Link>
+                  <div className="mt-4 text-right">
+                    <Button variant="link" asChild className="text-red-600 hover:text-red-700 p-0">
+                      <Link href="/inventory" className="flex items-center gap-1">
+                        재고 관리로 이동 <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </section>
+              </motion.section>
             )}
 
             {/* 최근 활동 */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="mb-8"
+            >
+              <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
                 최근 입출고 내역
               </h2>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
                 {recentLogs.length === 0 ? (
-                  <p className="p-6 text-center text-gray-500">최근 활동이 없습니다.</p>
+                  <p className="p-8 text-center text-latte-500">최근 활동이 없습니다.</p>
                 ) : (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900">
+                  <table className="min-w-full divide-y divide-latte-100">
+                    <thead className="bg-latte-50/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           날짜
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           유형
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           수량
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           사유
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-latte-100 bg-white">
                       {recentLogs.map((log) => (
-                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-700">
                             {new Date(log.created_at).toLocaleString('ko-KR')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${log.transaction_type === 'IN'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                              }`}>
-                              {log.transaction_type === 'IN' ? '입고' : '출고'}
-                            </span>
+                            <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                              className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                              {log.change_amount >= 0 ? '입고' : '출고'}
+                            </Badge>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                            {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">
+                            {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {log.reason || '-'}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                            {log.notes || '-'}
                           </td>
                         </tr>
                       ))}
@@ -174,37 +201,73 @@ export default function HomePage() {
                   </table>
                 )}
               </div>
-            </section>
+            </motion.section>
 
             {/* 빠른 링크 */}
-            <section>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
                 빠른 작업
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card
-                  title="원두 관리"
-                  description="새로운 원두를 등록하거나 기존 원두 정보를 관리합니다."
-                  tags={['CRUD', 'Beans']}
-                  href="/beans"
-                  actionText="관리하기"
-                />
-                <Card
-                  title="블렌드 레시피"
-                  description="나만의 커피 블렌드 레시피를 만들고 관리합니다."
-                  tags={['Recipe', 'Blends']}
-                  href="/blends"
-                  actionText="관리하기"
-                />
-                <Card
-                  title="재고 관리"
-                  description="원두의 입고/출고를 처리하고 재고 현황을 확인합니다."
-                  tags={['Inventory', 'Stock']}
-                  href="/inventory"
-                  actionText="관리하기"
-                />
+                <Link href="/beans" className="block h-full">
+                  <Card className="h-full hover:border-latte-400 group cursor-pointer border-latte-200">
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        원두 관리
+                        <Coffee className="w-5 h-5 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                      </CardTitle>
+                      <CardDescription>새로운 원두를 등록하고 관리합니다.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary">CRUD</Badge>
+                        <Badge variant="secondary">Beans</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link href="/blends" className="block h-full">
+                  <Card className="h-full hover:border-latte-400 group cursor-pointer border-latte-200">
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        블렌드 레시피
+                        <Palette className="w-5 h-5 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                      </CardTitle>
+                      <CardDescription>나만의 커피 블렌드를 만듭니다.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary">Recipe</Badge>
+                        <Badge variant="secondary">Blends</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link href="/inventory" className="block h-full">
+                  <Card className="h-full hover:border-latte-400 group cursor-pointer border-latte-200">
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        재고 관리
+                        <Package className="w-5 h-5 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                      </CardTitle>
+                      <CardDescription>입출고 및 재고 현황을 확인합니다.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex gap-2">
+                        <Badge variant="secondary">Inventory</Badge>
+                        <Badge variant="secondary">Stock</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
-            </section>
+            </motion.section>
           </>
         )}
       </div>

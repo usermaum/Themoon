@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BeanAPI, BeanCreateData } from '@/lib/api'
 import BeanForm from '@/components/beans/BeanForm'
+import PageHero from '@/components/ui/PageHero'
+import { Coffee } from 'lucide-react'
 
 export default function NewBeanPage() {
     const router = useRouter()
@@ -25,18 +27,29 @@ export default function NewBeanPage() {
     }
 
     return (
-        <>
+        <div className="min-h-screen pb-12">
+            <PageHero
+                title="새 원두 등록"
+                description="새로운 원두 정보를 입력하여 컬렉션에 추가하세요."
+                icon={<Coffee />}
+                image="/images/hero/beans-hero.png" // Using bean hero image
+                className="mb-8"
+            />
+
             {error && (
-                <div className="container mx-auto px-4 mt-8 max-w-2xl">
-                    <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>
+                <div className="container mx-auto px-4 mb-6 max-w-4xl">
+                    <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex items-center gap-2">
+                        <span>⚠️</span> {error}
+                    </div>
                 </div>
             )}
+
             <BeanForm
                 onSubmit={handleSubmit}
                 isSubmitting={loading}
-                title="새 원두 등록"
-                submitLabel="원두 등록"
+                title="원두 정보 입력"
+                submitLabel="원두 등록 완료"
             />
-        </>
+        </div>
     )
 }
