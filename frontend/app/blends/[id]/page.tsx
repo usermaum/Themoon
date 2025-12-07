@@ -8,6 +8,22 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Trash2, Layers, Save, ArrowLeft, Plus } from 'lucide-react'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // 블렌드 상세 및 수정 페이지
 export default function BlendDetailPage({ params }: { params: { id: string } }) {
@@ -26,6 +42,19 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
     const [targetRoastLevel, setTargetRoastLevel] = useState('')
     const [notes, setNotes] = useState('')
     const [recipeItems, setRecipeItems] = useState<{ beanId: string, percent: string }[]>([])
+
+    // Dialog State
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [dialogConfig, setDialogConfig] = useState({ title: '', message: '', onConfirm: () => { } })
+
+    const showDialog = (title: string, message: string, onConfirm?: () => void) => {
+        setDialogConfig({
+            title,
+            message,
+            onConfirm: onConfirm || (() => { })
+        })
+        setDialogOpen(true)
+    }
 
     // 초기 데이터 로드
     useEffect(() => {
@@ -56,8 +85,7 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
 
             } catch (err) {
                 console.error('Failed to load blend data:', err)
-                alert('블렌드 정보를 불러올 수 없습니다.')
-                router.push('/blends')
+                showDialog('오류', '블렌드 정보를 불러올 수 없습니다.', () => router.push('/blends'))
             } finally {
                 setLoading(false)
             }
@@ -74,7 +102,7 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
 
     const removeRecipeItem = (index: number) => {
         if (recipeItems.length <= 1) {
-            alert('최소 하나의 원두는 포함되어야 합니다.')
+            showDialog('알림', '최소 하나의 원두는 포함되어야 합니다.')
             return
         }
         const newItems = [...recipeItems]
@@ -93,9 +121,9 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
 
         try {
             await BlendAPI.delete(blendId)
-            router.push('/blends')
+            showDialog('삭제 완료', '블렌드가 삭제되었습니다.', () => router.push('/blends'))
         } catch (err) {
-            alert('삭제 실패했습니다.')
+            showDialog('오류', '삭제에 실패했습니다.')
         }
     }
 
@@ -103,7 +131,7 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
         e.preventDefault()
 
         if (Math.abs(totalPercent - 100) > 0.1) {
-            alert(`비율의 합은 100%여야 합니다. (현재: ${totalPercent}%)`)
+            showDialog('비율 오류', `비율의 합은 100%여야 합니다. (현재: ${totalPercent}%)`)
             return
         }
 
@@ -132,11 +160,12 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
                 recipe
             })
 
-            alert('수정되었습니다.')
-            router.refresh() // 데이터 갱신
+            showDialog('수정 완료', '블렌드 수정사항이 저장되었습니다.', () => {
+                router.refresh()
+            })
         } catch (err) {
             console.error('Failed to update blend:', err)
-            alert('수정에 실패했습니다.')
+            showDialog('오류', '수정에 실패했습니다.')
         } finally {
             setSubmitting(false)
         }
@@ -225,19 +254,21 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
                                         <div key={index} className="flex gap-3 items-end p-4 bg-latte-50 rounded-xl relative group">
                                             <div className="flex-1">
                                                 <label className="text-xs text-latte-500 mb-1 block">원두 선택</label>
-                                                <select
-                                                    className="w-full h-10 rounded-md border border-latte-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-latte-400 focus:border-transparent bg-white"
+                                                <Select
                                                     value={item.beanId}
-                                                    onChange={(e) => updateRecipeItem(index, 'beanId', e.target.value)}
-                                                    required
+                                                    onValueChange={(value) => updateRecipeItem(index, 'beanId', value)}
                                                 >
-                                                    <option value="">원두를 선택하세요</option>
-                                                    {availableBeans.map(bean => (
-                                                        <option key={bean.id} value={bean.id}>
-                                                            {bean.name} ({bean.origin})
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    <SelectTrigger className="w-full h-10 bg-white">
+                                                        <SelectValue placeholder="원두를 선택하세요" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableBeans.map(bean => (
+                                                            <SelectItem key={bean.id} value={String(bean.id)}>
+                                                                {bean.name} <span className="text-latte-400 text-xs ml-1">({bean.origin})</span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                             <div className="w-24">
                                                 <label className="text-xs text-latte-500 mb-1 block">비율 (%)</label>
@@ -297,6 +328,25 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
                     </CardContent>
                 </Card>
             </div>
+            {/* 알림 대화상자 */}
+            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{dialogConfig.title}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {dialogConfig.message}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => {
+                            setDialogOpen(false)
+                            dialogConfig.onConfirm()
+                        }}>
+                            확인
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
