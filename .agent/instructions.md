@@ -19,7 +19,6 @@
 
 1. **AI 도구 & MCP**:
     * **Context7**: 라이브러리 문서 및 컨텍스트 검색 시 필수 사용.
-    * **Sequential Thinking**: 복잡한 작업, 계획 수립, 디버깅 시 **반드시** 이 도구를 사용하여 사고 과정을 전개할 것.
 
 2. **Frontend Tech Stack**:
     * **Framework**: Next.js (App Router)

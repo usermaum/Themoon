@@ -332,7 +332,7 @@ export default function BlendRoastingPage() {
                                                         {detail.requiredAmount.toFixed(2)} kg
                                                     </td>
                                                     <td className={`px-6 py-4 text-right font-medium ${detail.isStockShort ? 'text-red-600' : 'text-green-600'}`}>
-                                                        {detail.currentStock} kg
+                                                        {Number(detail.currentStock).toFixed(2)} kg
                                                         {detail.isStockShort && (
                                                             <span className="block text-[10px] text-red-500 font-bold">부족!</span>
                                                         )}

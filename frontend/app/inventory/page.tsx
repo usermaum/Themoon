@@ -8,6 +8,51 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
+    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-latte-100">
+                <thead className="bg-latte-50/50">
+                    <tr>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
+                        <th className="px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-latte-100">
+                    {beans.length === 0 ? (
+                        <tr><td colSpan={6} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                    ) : beans.map((bean) => (
+                        <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">생두</Badge> :
+                                    bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
+                                        <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50">원두</Badge>}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                {bean.quantity_kg < 5 ? <Badge variant="destructive">재고 부족</Badge> :
+                                    bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800">주의</Badge> :
+                                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">충분</Badge>}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'IN')} className="text-green-600 hover:bg-green-50"><Plus className="w-4 h-4 mr-1" /> 입고</Button>
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50"><Minus className="w-4 h-4 mr-1" /> 출고</Button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+)
 
 export default function InventoryPage() {
     const [beans, setBeans] = useState<Bean[]>([])
@@ -171,85 +216,39 @@ export default function InventoryPage() {
                     </div>
                 ) : (
                     <>
-                        {/* 재고 현황 테이블 */}
-                        <motion.section
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.1 }}
-                            className="mb-12"
-                        >
+                        {/* 재고 현황 테이블 (Tabs 적용) */}
+                        <section className="mb-12">
                             <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
                                 <Package className="w-6 h-6 text-latte-400" />
                                 현재 재고 현황
                             </h2>
-                            <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-latte-100">
-                                        <thead className="bg-latte-50/50">
-                                            <tr>
-                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
-                                                    원두명
-                                                </th>
-                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
-                                                    원산지
-                                                </th>
-                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
-                                                    현재 재고
-                                                </th>
-                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
-                                                    상태
-                                                </th>
-                                                <th className="px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
-                                                    작업
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-latte-100">
-                                            {beans.map((bean) => (
-                                                <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">
-                                                        {bean.name}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">
-                                                        {bean.origin}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">
-                                                        {bean.quantity_kg.toFixed(1)} kg
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        {bean.quantity_kg < 5 ? (
-                                                            <Badge variant="destructive">재고 부족</Badge>
-                                                        ) : bean.quantity_kg < 10 ? (
-                                                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200">주의</Badge>
-                                                        ) : (
-                                                            <Badge variant="default" className="bg-green-600 hover:bg-green-700">충분</Badge>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => openModal(bean, 'IN')}
-                                                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                                        >
-                                                            <Plus className="w-4 h-4 mr-1" /> 입고
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => openModal(bean, 'OUT')}
-                                                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                                        >
-                                                            <Minus className="w-4 h-4 mr-1" /> 출고
-                                                        </Button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+
+                            <Tabs defaultValue="all" className="w-full">
+                                <div className="flex justify-between items-center mb-4">
+                                    <TabsList className="bg-latte-100 p-1 rounded-xl">
+                                        <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체 보기</TabsTrigger>
+                                        <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">🌱 생두 (Green)</TabsTrigger>
+                                        <TabsTrigger value="roasted" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">☕ 원두/블렌드</TabsTrigger>
+                                    </TabsList>
                                 </div>
-                            </div>
-                        </motion.section>
+
+                                <TabsContent value="all" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                                <TabsContent value="green" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans.filter(b => b.type === 'GREEN_BEAN')} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                                <TabsContent value="roasted" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans.filter(b => b.type !== 'GREEN_BEAN')} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                            </Tabs>
+                        </section>
 
                         {/* 입출고 기록 테이블 */}
                         <motion.section
