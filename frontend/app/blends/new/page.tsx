@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Plus, Coffee, Trash2, Hexagon, Save, ArrowLeft } from 'lucide-react'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 export default function NewBlendPage() {
     const router = useRouter()
@@ -170,19 +177,21 @@ export default function NewBlendPage() {
                                         <div key={index} className="flex gap-3 items-end p-4 bg-latte-50 rounded-xl relative group">
                                             <div className="flex-1">
                                                 <label className="text-xs text-latte-500 mb-1 block">원두 선택</label>
-                                                <select
-                                                    className="w-full h-10 rounded-md border border-latte-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-latte-400 focus:border-transparent bg-white"
+                                                <Select
                                                     value={item.beanId}
-                                                    onChange={(e) => updateRecipeItem(index, 'beanId', e.target.value)}
-                                                    required
+                                                    onValueChange={(value) => updateRecipeItem(index, 'beanId', value)}
                                                 >
-                                                    <option value="">원두를 선택하세요</option>
-                                                    {availableBeans.map(bean => (
-                                                        <option key={bean.id} value={bean.id}>
-                                                            {bean.name} ({bean.origin}) - ₩{bean.purchase_price_per_kg?.toLocaleString()}/kg
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    <SelectTrigger className="w-full h-10 bg-white">
+                                                        <SelectValue placeholder="원두를 선택하세요" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {availableBeans.map(bean => (
+                                                            <SelectItem key={bean.id} value={String(bean.id)}>
+                                                                {bean.name} <span className="text-latte-400 text-xs ml-1">({bean.origin})</span>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                             <div className="w-24">
                                                 <label className="text-xs text-latte-500 mb-1 block">비율 (%)</label>

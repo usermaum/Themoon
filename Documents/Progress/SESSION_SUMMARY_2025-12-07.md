@@ -59,6 +59,16 @@
   - 재고 부족 경고 및 손실률 자동 반영 로직 추가
 - **파일**: `frontend/app/roasting/single-origin/page.tsx`
 
+### 6. 블렌드 로스팅 기능 구현
+
+- **목표**: 블렌드 레시피 기반 자동 원가 계산 및 재고 차감
+- **구현**:
+  - `backend/app/services/roasting_service.py`: `create_blend_roasting` 로직 구현 (레시피 순회, 재고 차감, 결과 로그 생성)
+  - `backend/app/api/v1/roasting.py`: `/blend` 엔드포인트 추가
+  - `frontend/app/roasting/blend/page.tsx`: API 연동 및 Shadcn Select UI 적용
+  - `frontend/app/blends/new/page.tsx`: 블렌드 생성 페이지 Select UI 버그 수정 (Native Select -> Shadcn Select)
+- **검증**: 실제 블렌드(풀문) 로스팅 시뮬레이션 및 실행 확인 완료
+
 ---
 
 ## 🐛 알려진 이슈 (미해결)
@@ -85,6 +95,8 @@
 - `backend/app/schemas/inventory_log.py`
 - `backend/app/services/inventory_log_service.py`
 - `backend/app/api/v1/endpoints/inventory_logs.py`
+- `backend/app/services/roasting_service.py` (New)
+- `backend/app/api/v1/roasting.py` (Mod)
 - `backend/test_api_response.py` (테스트용)
 
 ### Frontend
@@ -94,6 +106,8 @@
 - `frontend/app/page.tsx`
 - `frontend/app/beans/page.tsx`
 - `frontend/app/roasting/single-origin/page.tsx`
+- `frontend/app/roasting/blend/page.tsx` (New/Mod)
+- `frontend/app/blends/new/page.tsx` (Mod)
 - `frontend/components/layout/Sidebar.tsx`
 - `frontend/components/home/Hero.tsx`
 
@@ -108,9 +122,10 @@
 2. **Sticky Footer 이슈 (이전 세션에서 미해결)**
    - 콘텐츠가 짧을 때 Footer가 바닥에 붙지 않는 문제
 
-3. **기능 테스트 및 고도화**
-   - 블렌드 로스팅 기능 구현 (백엔드 연동)
+3. **고도화 및 안정화**
    - 재고 관리 대시보드 시각화 강화
+   - 블렌드 생성 시 원두 검색/필터링 기능 추가
+   - 로스팅 이력 조회 페이지 구현
 
 4. **버전 업데이트 고려**
    - 이번 세션에서 주요 버그 수정됨 (PATCH 버전 업데이트 고려)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bean, BeanAPI, Blend, BlendAPI } from '@/lib/api'
+import { Bean, BeanAPI, Blend, BlendAPI, RoastingAPI } from '@/lib/api'
 import { Loader2, Bean as BeanIcon, Flame, ArrowRight, Scale, Calculator, Layers } from 'lucide-react'
 import PageHero from '@/components/ui/PageHero'
 import {
@@ -14,6 +14,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // 블렌드 로스팅 (Pre-Roast Blending Simulator & Executor)
 export default function BlendRoastingPage() {
@@ -147,9 +154,31 @@ export default function BlendRoastingPage() {
 
         if (!selectedBlendId || targetWeight <= 0) return
 
-        const proceedRoasting = () => {
-            showDialog('준비 중', '기능 준비 중: 실제 로스팅 API 연결 필요 (재고 차감 로직)', 'alert')
-            // TODO: Call RoastingAPI.roastBlend(...)
+        const proceedRoasting = async () => {
+            setSubmitting(true)
+            try {
+                const res = await RoastingAPI.roastBlend({
+                    blend_id: Number(selectedBlendId),
+                    output_weight: targetWeight,
+                    notes: 'Started from Pre-Roast Blending Simulator'
+                })
+
+                showDialog(
+                    '로스팅 완료',
+                    `블렌드 로스팅이 성공적으로 기록되었습니다.\n\n생산된 원두: ${res.roasted_bean.name}\n생산 원가: ₩${Math.round(res.production_cost).toLocaleString()}/kg`,
+                    'alert',
+                    () => {
+                        setSelectedBlendId('')
+                        setTargetWeight(0)
+                        setSimulationResult(null)
+                    }
+                )
+            } catch (err) {
+                console.error(err)
+                showDialog('오류 발생', '로스팅을 기록하는 중 문제가 발생했습니다. 재고를 확인해주세요.')
+            } finally {
+                setSubmitting(false)
+            }
         }
 
         // 재고 부족 체크
@@ -198,19 +227,21 @@ export default function BlendRoastingPage() {
                             <form onSubmit={handleRoast} className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700">블렌드 선택</label>
-                                    <select
-                                        className="w-full p-2 border rounded-md"
+                                    <Select
                                         value={selectedBlendId}
-                                        onChange={(e) => setSelectedBlendId(e.target.value)}
-                                        required
+                                        onValueChange={(value) => setSelectedBlendId(value)}
                                     >
-                                        <option value="">블렌드를 선택하세요</option>
-                                        {blends.map(blend => (
-                                            <option key={blend.id} value={blend.id}>
-                                                {blend.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <SelectTrigger className="w-full h-12 text-lg bg-slate-50 border-slate-200">
+                                            <SelectValue placeholder="블렌드를 선택하세요" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {blends.map(blend => (
+                                                <SelectItem key={blend.id} value={String(blend.id)}>
+                                                    {blend.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-2">
