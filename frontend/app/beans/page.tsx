@@ -158,11 +158,11 @@ export default function BeanManagementPage() {
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {[1, 2, 3, 4].map((n) => (
-                            <div key={n} className="h-96 bg-latte-50 rounded-[2rem] animate-pulse"></div>
+                            <div key={n} className="h-96 bg-latte-50 rounded-[1em] animate-pulse"></div>
                         ))}
                     </div>
                 ) : !beans || beans.length === 0 ? (
-                    <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border border-latte-200">
+                    <div className="text-center py-24 bg-white rounded-[1em] shadow-sm border border-latte-200">
                         <div className="bg-latte-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Coffee className="w-10 h-10 text-latte-400" />
                         </div>

@@ -57,6 +57,9 @@ export interface Bean {
 
   // 메타
   description?: string
+  // Missing properties added to fix lint errors
+  roast_level?: string
+  purchase_date?: string
   notes?: string
   expected_loss_rate?: number
   created_at: string
@@ -79,7 +82,12 @@ export interface BeanCreateData {
   grade?: string
   processing_method?: string
   roast_profile?: RoastProfile
+  // Missing properties added to fix lint errors
+  roast_level?: string
+  purchase_date?: string
+  purchase_price_per_kg?: number
   quantity_kg: number
+  notes?: string
   avg_price?: number
 }
 
@@ -122,6 +130,7 @@ export interface SingleOriginRoastingRequest {
 export interface BlendRoastingRequest {
   blend_id: number
   output_weight: number
+  input_weight?: number
   notes?: string
 }
 
@@ -157,6 +166,11 @@ export const BeanAPI = {
 
   delete: async (id: number) => {
     const response = await api.delete(`/api/v1/beans/${id}`)
+    return response.data
+  },
+
+  update: async (id: number, data: Partial<BeanCreateData>) => {
+    const response = await api.put<Bean>(`/api/v1/beans/${id}`, data)
     return response.data
   },
 }

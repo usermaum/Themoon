@@ -13,6 +13,13 @@
 
 ## [0.0.6] - 2025-12-07
 
+### 🐛 패치 (Bug Fix): UI Design Standardization (Hero, Border Radius) & Fix Bean Update Functionality
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
+## [0.0.6] - 2025-12-07
+
 ### ✨ Features
 
 - **Roasting Menu**: 사이드바에 'Roasting' 메뉴 추가 (`/roasting/single-origin`).
