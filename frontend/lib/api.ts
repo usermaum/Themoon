@@ -12,6 +12,8 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Render.com 슬립 모드 대응: 첫 요청은 최대 60초까지 대기
+  timeout: 60000, // 60초
 })
 
 // 요청 인터셉터 (인증 토큰 추가 - 미사용 시에도 구조 유지)
