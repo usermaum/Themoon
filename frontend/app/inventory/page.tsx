@@ -1,8 +1,65 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
 import PageHero from '@/components/ui/PageHero'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Badge } from '@/components/ui/Badge'
+import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
+    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-latte-100">
+                <thead className="bg-latte-50/50">
+                    <tr>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
+                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
+                        <th className="px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-latte-100">
+                    {beans.length === 0 ? (
+                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                    ) : beans.map((bean) => (
+                        <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">생두</Badge> :
+                                    bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
+                                        <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50">원두</Badge>}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">
+                                {bean.roast_profile === 'LIGHT' ? <Badge className="bg-lime-500 hover:bg-lime-600 border-none text-white">신콩(Light)</Badge> :
+                                    bean.roast_profile === 'DARK' ? <Badge className="bg-slate-800 hover:bg-slate-900 border-none text-white">탄콩(Dark)</Badge> :
+                                        bean.roast_profile === 'MEDIUM' ? <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none">미디엄</Badge> :
+                                            '-'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                {bean.quantity_kg < 5 ? <Badge variant="destructive">재고 부족</Badge> :
+                                    bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800">주의</Badge> :
+                                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">충분</Badge>}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'IN')} className="text-green-600 hover:bg-green-50"><Plus className="w-4 h-4 mr-1" /> 입고</Button>
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50"><Minus className="w-4 h-4 mr-1" /> 출고</Button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+)
 
 export default function InventoryPage() {
     const [beans, setBeans] = useState<Bean[]>([])
@@ -28,7 +85,7 @@ export default function InventoryPage() {
         try {
             setLoading(true)
             const [beansData, logsData] = await Promise.all([
-                BeanAPI.getAll({ size: 100 }),
+                BeanAPI.getAll({ limit: 100 }),
                 InventoryLogAPI.getAll({ limit: 50 })
             ])
             setBeans(beansData.items)
@@ -61,8 +118,8 @@ export default function InventoryPage() {
 
     const openEditModal = (log: InventoryLog) => {
         setSelectedLog(log)
-        setEditQuantity(Math.abs(log.quantity_change).toString())
-        setEditReason(log.reason || '')
+        setEditQuantity(Math.abs(log.change_amount).toString())
+        setEditReason(log.notes || '')
         setShowEditModal(true)
     }
 
@@ -83,9 +140,9 @@ export default function InventoryPage() {
 
         const logData: InventoryLogCreateData = {
             bean_id: selectedBean.id,
-            transaction_type: transactionType,
-            quantity_change: transactionType === 'IN' ? quantityNum : -quantityNum,
-            reason: reason || undefined,
+            change_type: transactionType === 'IN' ? 'PURCHASE' : 'SALES',
+            change_amount: transactionType === 'IN' ? quantityNum : -quantityNum,
+            notes: reason || undefined,
         }
 
         try {
@@ -111,7 +168,7 @@ export default function InventoryPage() {
             return
         }
 
-        const finalQuantity = selectedLog.transaction_type === 'IN' ? quantityNum : -quantityNum
+        const finalQuantity = selectedLog.change_amount >= 0 ? quantityNum : -quantityNum
 
         try {
             setSubmitting(true)
@@ -144,241 +201,221 @@ export default function InventoryPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen">
             <PageHero
                 title="재고 관리"
                 description="원두의 입출고를 관리하고 현재 재고 현황을 확인하세요"
-                icon="📦"
-                backgroundImage="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&q=80"
+                icon={<Package />}
+                image="/images/hero/inventory-hero.png"
+                className="mb-8"
             />
 
             <div className="container mx-auto px-4 py-8">
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
-                        {error}
+                    <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6 flex items-center gap-2">
+                        <span>⚠️</span> {error}
                     </div>
                 )}
 
                 {loading ? (
-                    <div className="text-center py-12 text-gray-500">
+                    <div className="text-center py-12 text-latte-400 animate-pulse">
                         데이터를 불러오는 중입니다...
                     </div>
                 ) : (
                     <>
-                        {/* 재고 현황 테이블 */}
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">현재 재고 현황</h2>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-900">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원두명
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원산지
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                현재 재고
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                상태
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                작업
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {beans.map((bean) => (
-                                            <tr key={bean.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                                    {bean.name}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                    {bean.origin}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                    <span className="font-semibold">{bean.quantity_kg.toFixed(1)} kg</span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    {bean.quantity_kg < 5 ? (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                            재고 부족
-                                                        </span>
-                                                    ) : bean.quantity_kg < 10 ? (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                            주의
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                            충분
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                    <button
-                                                        onClick={() => openModal(bean, 'IN')}
-                                                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        입고
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openModal(bean, 'OUT')}
-                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        출고
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                        {/* 재고 현황 테이블 (Tabs 적용) */}
+                        <section className="mb-12">
+                            <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
+                                <Package className="w-6 h-6 text-latte-400" />
+                                현재 재고 현황
+                            </h2>
+
+                            <Tabs defaultValue="all" className="w-full">
+                                <div className="flex justify-between items-center mb-4">
+                                    <TabsList className="bg-latte-100 p-1 rounded-xl">
+                                        <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체 보기</TabsTrigger>
+                                        <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">🌱 생두 (Green)</TabsTrigger>
+                                        <TabsTrigger value="roasted" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">☕ 원두/블렌드</TabsTrigger>
+                                    </TabsList>
+                                </div>
+
+                                <TabsContent value="all" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                                <TabsContent value="green" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans.filter(b => b.type === 'GREEN_BEAN')} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                                <TabsContent value="roasted" className="mt-0">
+                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                        <InventoryTable beans={beans.filter(b => b.type !== 'GREEN_BEAN')} onOpenModal={openModal} />
+                                    </motion.div>
+                                </TabsContent>
+                            </Tabs>
                         </section>
 
                         {/* 입출고 기록 테이블 */}
-                        <section>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">입출고 기록</h2>
-                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-900">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                날짜
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                원두
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                유형
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                수량
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                사유
-                                            </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                                작업
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {logs.length === 0 ? (
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.2 }}
+                        >
+                            <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">입출고 기록</h2>
+                            <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-latte-100">
+                                        <thead className="bg-latte-50/50">
                                             <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                    입출고 기록이 없습니다.
-                                                </td>
+                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    날짜
+                                                </th>
+                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    원두
+                                                </th>
+                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    유형
+                                                </th>
+                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    수량
+                                                </th>
+                                                <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    사유
+                                                </th>
+                                                <th className="px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">
+                                                    작업
+                                                </th>
                                             </tr>
-                                        ) : (
-                                            logs.map((log) => (
-                                                <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {new Date(log.created_at).toLocaleString('ko-KR')}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                        {getBeanName(log.bean_id)}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${log.transaction_type === 'IN'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {log.transaction_type === 'IN' ? '입고' : '출고'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                        {log.quantity_change > 0 ? '+' : ''}{log.quantity_change.toFixed(1)} kg
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {log.reason || '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                        <button
-                                                            onClick={() => openEditModal(log)}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
-                                                            수정
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(log.id)}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            삭제
-                                                        </button>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-latte-100">
+                                            {logs.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-latte-400">
+                                                        입출고 기록이 없습니다.
                                                     </td>
                                                 </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                                            ) : (
+                                                logs.map((log) => (
+                                                    <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                            {new Date(log.created_at).toLocaleString('ko-KR')}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
+                                                            {getBeanName(log.bean_id)}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                                                                className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                                                                {log.change_amount >= 0 ? '입고' : '출고'}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
+                                                            {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                            {log.notes || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => openEditModal(log)}
+                                                                className="text-latte-400 hover:text-latte-700 hover:bg-latte-100"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => handleDelete(log.id)}
+                                                                className="text-latte-400 hover:text-red-600 hover:bg-red-50"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </section>
+                        </motion.section>
                     </>
                 )}
 
                 {/* 입출고 등록 Modal */}
                 {showModal && selectedBean && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {transactionType === 'IN' ? '입고' : '출고'} 처리
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                원두: <span className="font-semibold">{selectedBean.name}</span>
-                                <br />
-                                현재 재고: <span className="font-semibold">{selectedBean.quantity_kg.toFixed(1)} kg</span>
-                            </p>
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 border border-latte-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-serif font-bold text-latte-900">
+                                    {transactionType === 'IN' ? '입고' : '출고'} 처리
+                                </h2>
+                                <Button variant="ghost" size="icon" onClick={closeModal} className="rounded-full hover:bg-latte-100">
+                                    <X className="w-5 h-5 text-latte-500" />
+                                </Button>
+                            </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="bg-latte-50 p-4 rounded-xl mb-6">
+                                <p className="text-latte-600 text-sm">
+                                    원두: <span className="font-bold text-latte-900 block text-lg">{selectedBean.name}</span>
+                                </p>
+                                <div className="mt-2 text-latte-600 text-sm">
+                                    현재 재고: <span className="font-mono font-bold text-latte-900">{selectedBean.quantity_kg.toFixed(1)} kg</span>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-latte-700 mb-2">
                                         수량 (kg) *
                                     </label>
-                                    <input
+                                    <Input
                                         type="number"
                                         required
                                         min="0.1"
                                         step="0.1"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
                                         value={quantity}
                                         onChange={(e) => setQuantity(e.target.value)}
                                         placeholder="예: 10.0"
+                                        className="font-mono text-lg"
+                                        autoFocus
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-latte-700 mb-2">
                                         사유
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
                                         placeholder="예: 신규 구매, 로스팅 사용"
                                     />
                                 </div>
 
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <button
+                                <div className="flex justify-end gap-3 mt-8">
+                                    <Button
                                         type="button"
+                                        variant="outline"
                                         onClick={closeModal}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
                                     >
                                         취소
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={submitting}
-                                        className={`px-4 py-2 rounded-lg text-white ${transactionType === 'IN'
-                                            ? 'bg-indigo-600 hover:bg-indigo-700'
+                                        className={`${transactionType === 'IN'
+                                            ? 'bg-green-600 hover:bg-green-700'
                                             : 'bg-red-600 hover:bg-red-700'
-                                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                            } text-white`}
                                     >
                                         {submitting ? '처리 중...' : '확인'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         </div>
@@ -387,62 +424,72 @@ export default function InventoryPage() {
 
                 {/* 입출고 수정 Modal */}
                 {showEditModal && selectedLog && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                입출고 기록 수정
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                원두: <span className="font-semibold">{getBeanName(selectedLog.bean_id)}</span>
-                                <br />
-                                유형: <span className="font-semibold">{selectedLog.transaction_type === 'IN' ? '입고' : '출고'}</span>
-                            </p>
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 border border-latte-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-serif font-bold text-latte-900">
+                                    수량/사유 수정
+                                </h2>
+                                <Button variant="ghost" size="icon" onClick={closeEditModal} className="rounded-full hover:bg-latte-100">
+                                    <X className="w-5 h-5 text-latte-500" />
+                                </Button>
+                            </div>
 
-                            <form onSubmit={handleEdit} className="space-y-4">
+                            <div className="bg-latte-50 p-4 rounded-xl mb-6">
+                                <p className="text-latte-600 text-sm">
+                                    원두: <span className="font-bold text-latte-900 block text-lg">{getBeanName(selectedLog.bean_id)}</span>
+                                </p>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <Badge variant={selectedLog.change_amount >= 0 ? 'default' : 'destructive'}
+                                        className={selectedLog.change_amount >= 0 ? 'bg-green-600' : ''}>
+                                        {selectedLog.change_amount >= 0 ? '입고' : '출고'}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleEdit} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-latte-700 mb-2">
                                         수량 (kg) *
                                     </label>
-                                    <input
+                                    <Input
                                         type="number"
                                         required
                                         min="0.1"
                                         step="0.1"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
                                         value={editQuantity}
                                         onChange={(e) => setEditQuantity(e.target.value)}
                                         placeholder="예: 10.0"
+                                        className="font-mono text-lg"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-medium text-latte-700 mb-2">
                                         사유
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-transparent"
                                         value={editReason}
                                         onChange={(e) => setEditReason(e.target.value)}
-                                        placeholder="예: 신규 구매, 로스팅 사용"
+                                        placeholder="예: 사유 수정"
                                     />
                                 </div>
 
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <button
+                                <div className="flex justify-end gap-3 mt-8">
+                                    <Button
                                         type="button"
+                                        variant="outline"
                                         onClick={closeEditModal}
-                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
                                     >
                                         취소
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         type="submit"
                                         disabled={submitting}
-                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {submitting ? '처리 중...' : '수정 완료'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </form>
                         </div>
