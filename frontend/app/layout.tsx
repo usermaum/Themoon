@@ -4,6 +4,7 @@ import './globals.css'
 import AppLayout from '@/components/layout/AppLayout'
 import Footer from '@/components/layout/Footer'
 import { cookies } from 'next/headers'
+import { SWRProvider } from '@/lib/swr-config'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -29,12 +30,14 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-latte-50 text-latte-800`}>
         <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
-          <div className="flex flex-col min-h-screen">
-            <div className="flex-1">
-              {children}
+          <SWRProvider>
+            <div className="flex flex-col min-h-screen">
+              <div className="flex-1">
+                {children}
+              </div>
+              <Footer />
             </div>
-            <Footer />
-          </div>
+          </SWRProvider>
         </AppLayout>
       </body>
     </html>

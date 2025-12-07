@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Bean, BeanAPI } from '@/lib/api'
+import { Bean } from '@/lib/api'
+import { useBeans, deleteBean } from '@/hooks'
 import Link from 'next/link'
 import PageHero from '@/components/ui/PageHero'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
-import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag } from 'lucide-react'
+import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw } from 'lucide-react'
 
 // Helper to resolve bean images
 const getBeanImage = (bean: Bean) => {
@@ -18,35 +19,49 @@ const getBeanImage = (bean: Bean) => {
     const varietyLower = (bean.variety || '').toLowerCase();
 
     // Mapping logic based on actual images in /images/raw_material/
+    // 순서 중요: 더 구체적인 조건을 먼저 체크해야 함
+
     if (nameLower.includes('예가체프') || nameLower.includes('yirgacheffe') || varietyLower.includes('yirgacheffe'))
         return '/images/raw_material/01_yirgacheffe_raw.png';
-    if (nameLower.includes('모르모라') || nameLower.includes('mormora'))
+
+    // 모모라: '모모라' 또는 '모르모라' 둘 다 체크
+    if (nameLower.includes('모모라') || nameLower.includes('모르모라') || nameLower.includes('mormora'))
         return '/images/raw_material/02_mormora_raw.png';
+
     if (nameLower.includes('코케') || nameLower.includes('koke'))
         return '/images/raw_material/03_koke_honey_raw.png';
     if (nameLower.includes('우라가') || nameLower.includes('uraga'))
         return '/images/raw_material/04_uraga_raw.png';
     if (nameLower.includes('시다모') || nameLower.includes('sidamo'))
         return '/images/raw_material/05_sidamo_raw.png';
-    if (nameLower.includes('마사이') || nameLower.includes('masai') || originLower.includes('kenya'))
-        return '/images/raw_material/06_masai_raw.png';
-    if (nameLower.includes('키리냐가') || nameLower.includes('kirinyaga'))
+
+    // 키린야가: 마사이보다 먼저 체크 (둘 다 Kenya 원산지)
+    if (nameLower.includes('키린야가') || nameLower.includes('키리냐가') || nameLower.includes('kirinyaga'))
         return '/images/raw_material/07_kirinyaga_raw.png';
-    if (nameLower.includes('우일라') || nameLower.includes('huila') || originLower.includes('colombia'))
+
+    // 마사이: 키린야가 체크 이후에 Kenya origin 체크
+    if (nameLower.includes('마사이') || nameLower.includes('masai'))
+        return '/images/raw_material/06_masai_raw.png';
+
+    // 후일라: 이름으로 먼저 체크
+    if (nameLower.includes('후일라') || nameLower.includes('우일라') || nameLower.includes('huila'))
         return '/images/raw_material/08_huila_raw.png';
-    if (nameLower.includes('안티구아') || nameLower.includes('antigua') || originLower.includes('guatemala'))
+
+    if (nameLower.includes('안티구아') || nameLower.includes('antigua'))
         return '/images/raw_material/09_antigua_raw.png';
     if (nameLower.includes('엘탄케') || nameLower.includes('eltanque') || nameLower.includes('el tanque'))
         return '/images/raw_material/10_eltanque_raw.png';
     if (nameLower.includes('파젠다') || nameLower.includes('fazenda'))
         return '/images/raw_material/11_fazenda_raw.png';
-    if (nameLower.includes('산토스') || nameLower.includes('santos') || originLower.includes('brazil'))
+    if (nameLower.includes('산토스') || nameLower.includes('santos'))
         return '/images/raw_material/12_santos_raw.png';
-    if (nameLower.includes('디카페인') || nameLower.includes('decaf')) {
+    if (nameLower.includes('디카페') || nameLower.includes('decaf')) {
         if (nameLower.includes('sdm')) return '/images/raw_material/13_decaf_sdm_raw.png';
         if (nameLower.includes('sm')) return '/images/raw_material/14_decaf_sm_raw.png';
         return '/images/raw_material/15_swiss_water_raw.png';
     }
+    if (nameLower.includes('스위스') || nameLower.includes('swiss'))
+        return '/images/raw_material/15_swiss_water_raw.png';
     if (nameLower.includes('게이샤') || nameLower.includes('geisha'))
         return '/images/raw_material/16_geisha_raw.png';
 
@@ -54,59 +69,27 @@ const getBeanImage = (bean: Bean) => {
     return '/images/raw_material/01_yirgacheffe_raw.png';
 }
 
+
 export default function BeanManagementPage() {
-    const [beans, setBeans] = useState<Bean[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
     const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(1)
     const [search, setSearch] = useState('')
 
-    const fetchBeans = async () => {
-        try {
-            setLoading(true)
-            // 백엔드가 현재 skip, limit을 지원하지만 search는 지원 여부 불확실
-            // 페이지네이션 계산: page 1 -> skip 0, page 2 -> skip 12
-            const limit = 12
-            const skip = (page - 1) * limit
+    const limit = 12
+    const skip = (page - 1) * limit
 
-            const data = await BeanAPI.getAll({
-                skip,
-                limit,
-                search: search || undefined,
-            })
-
-            // 백엔드 응답이 배열인 경우 (현재 상태)
-            if (Array.isArray(data)) {
-                setBeans(data)
-                // 전체 개수를 알 수 없으므로, 데이터가 limit보다 적으면 마지막 페이지로 간주
-                setTotalPages(data.length < limit ? page : page + 1)
-            }
-            // 백엔드 응답이 페이지네이션 객체인 경우 (향후 대응)
-            else if ((data as any).items) {
-                setBeans((data as any).items)
-                setTotalPages((data as any).pages)
-            }
-
-            setError(null)
-        } catch (err) {
-            console.error('Failed to fetch beans:', err)
-            setError('원두 목록을 불러오는데 실패했습니다.')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchBeans()
-    }, [page, search])
+    // SWR 훅 사용 - 자동 재시도, 포커스 시 재검증, 네트워크 복구 시 재갱신
+    const { beans, pages: totalPages, isLoading, isValidating, error, refresh } = useBeans({
+        skip,
+        limit,
+        search: search || undefined,
+    })
 
     const handleDelete = async (id: number) => {
         if (!confirm('정말로 이 원두를 삭제하시겠습니까?')) return
 
         try {
-            await BeanAPI.delete(id)
-            fetchBeans()
+            await deleteBean(id)
+            // SWR이 자동으로 캐시를 무효화하고 새로고침
         } catch (err) {
             alert('삭제에 실패했습니다.')
         }
@@ -150,12 +133,23 @@ export default function BeanManagementPage() {
                 {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6 flex items-center gap-2">
-                        <span>⚠️</span> {error}
+                        <span>⚠️</span> 원두 목록을 불러오는데 실패했습니다.
+                        <Button variant="ghost" size="sm" onClick={refresh} className="ml-auto">
+                            <RefreshCw className="w-4 h-4 mr-1" /> 다시 시도
+                        </Button>
+                    </div>
+                )}
+
+                {/* 백그라운드 재검증 중 표시 */}
+                {isValidating && !isLoading && (
+                    <div className="flex items-center gap-2 text-latte-500 mb-4">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">데이터 동기화 중...</span>
                     </div>
                 )}
 
                 {/* Bean Collection Grid */}
-                {loading ? (
+                {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {[1, 2, 3, 4].map((n) => (
                             <div key={n} className="h-96 bg-latte-50 rounded-[1em] animate-pulse"></div>

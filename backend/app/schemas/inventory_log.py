@@ -4,9 +4,9 @@ from datetime import datetime
 
 class InventoryLogBase(BaseModel):
     bean_id: int
-    transaction_type: str  # "IN", "OUT", "ADJUST"
-    quantity_change: float
-    reason: Optional[str] = None
+    change_type: str  # "PURCHASE", "ROASTING_INPUT", "ROASTING_OUTPUT", "SALES", "LOSS", "ADJUSTMENT", "BLENDING_INPUT"
+    change_amount: float  # +: 증가, -: 감소
+    notes: Optional[str] = None
 
 class InventoryLogCreate(InventoryLogBase):
     pass
