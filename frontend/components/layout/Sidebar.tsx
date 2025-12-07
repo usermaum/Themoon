@@ -52,10 +52,10 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 className={`
                     fixed top-0 left-0 h-screen 
                     bg-white backdrop-blur-xl
-                    ${isOpen ? 'border-r border-latte-200 shadow-[0_4px_30px_rgba(0,0,0,0.03)]' : ''}
+                    ${isOpen ? 'border-r border-latte-200 shadow-[0_4px_30px_rgba(0,0,0,0.03)]' : 'lg:border-r lg:border-latte-200/50'}
                     transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) z-[100]
                     flex flex-col
-                    ${isOpen ? 'w-64' : 'w-[80px]'}
+                    ${isOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0 lg:w-[80px]'}
                 `}
             >
                 {/* Header / Logo Area */}
