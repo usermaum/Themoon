@@ -276,11 +276,33 @@ export interface InventoryLogCreateData {
   notes?: string
 }
 
+export interface InventoryLogListResponse {
+  items: InventoryLog[]
+  total: number
+  page: number
+  size: number
+  pages: number
+}
+
 // --- Inventory API ---
 
 export const InventoryLogAPI = {
   getAll: async (params?: { bean_id?: number; skip?: number; limit?: number }) => {
-    const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs/', { params })
+    // Convert skip/limit to page/size
+    const limitVal = params?.limit || 10
+    const skipVal = params?.skip || 0
+    const page = Math.floor(skipVal / limitVal) + 1
+
+    const queryParams: any = {
+      page,
+      size: limitVal,
+    }
+
+    if (params?.bean_id) queryParams.bean_id = params.bean_id
+
+    const response = await api.get<InventoryLogListResponse>('/api/v1/inventory-logs/', {
+      params: queryParams
+    })
     return response.data
   },
 
