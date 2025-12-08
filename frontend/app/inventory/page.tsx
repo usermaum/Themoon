@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
 import PageHero from '@/components/ui/page-hero'
@@ -62,18 +63,24 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
 )
 
 export default function InventoryPage() {
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
     const [beans, setBeans] = useState<Bean[]>([])
     const [logs, setLogs] = useState<InventoryLog[]>([])
     const [loadingBeans, setLoadingBeans] = useState(true)
     const [loadingLogs, setLoadingLogs] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Pagination State
-    const [beanPage, setBeanPage] = useState(1)
-    const [beanTotal, setBeanTotal] = useState(0)
-    const beanLimit = 10
+    // Pagination State derived from URL
+    const beanPage = Number(searchParams.get('beanPage')) || 1
+    const logPage = Number(searchParams.get('logPage')) || 1
 
-    const [logPage, setLogPage] = useState(1)
+    // Total counts state
+    const [beanTotal, setBeanTotal] = useState(0)
+
+    const beanLimit = 10
     const logLimit = 10
 
     // Modal state
@@ -89,6 +96,13 @@ export default function InventoryPage() {
     const [selectedLog, setSelectedLog] = useState<InventoryLog | null>(null)
     const [editQuantity, setEditQuantity] = useState('')
     const [editReason, setEditReason] = useState('')
+
+    // Helper to update URL params
+    const updatePage = (param: 'beanPage' | 'logPage', newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set(param, newPage.toString())
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     const fetchBeans = async (page: number) => {
         try {
@@ -175,7 +189,7 @@ export default function InventoryPage() {
             await InventoryLogAPI.create(logData)
             // Refresh both tables
             await fetchBeans(beanPage)
-            setLogPage(1) // Reset log page to 1 to see new entry
+            updatePage('logPage', 1) // Reset log page to 1 to see new entry
             await fetchLogs(1)
             closeModal()
         } catch (err: any) {
@@ -324,7 +338,7 @@ export default function InventoryPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setBeanPage(p => Math.max(1, p - 1))}
+                                            onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
                                             disabled={beanPage === 1}
                                         >
                                             이전
@@ -335,7 +349,7 @@ export default function InventoryPage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setBeanPage(p => Math.min(beanTotalPages || 1, p + 1))}
+                                            onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
                                             disabled={beanPage >= (beanTotalPages || 1)}
                                         >
                                             다음
@@ -418,7 +432,7 @@ export default function InventoryPage() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setLogPage(p => Math.max(1, p - 1))}
+                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
                                 disabled={logPage === 1}
                             >
                                 이전
@@ -429,7 +443,7 @@ export default function InventoryPage() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setLogPage(p => p + 1)}
+                                onClick={() => updatePage('logPage', logPage + 1)}
                                 disabled={logs.length < logLimit}
                             >
                                 다음
