@@ -74,7 +74,12 @@
       "Bash(ssh:*)",
       "Bash(git remote:*)",
       "Bash(git mv:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(npm run build:*)",
+      "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a/themoon_p922\" python3:*)",
+      "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a/themoon_p922\" ./venv/bin/python:*)",
+      "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a.oregon-postgres.render.com/themoon_p922\" ./venv/bin/python:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []

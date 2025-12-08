@@ -436,10 +436,34 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## 📖 문서
 
+### 프로젝트 문서 (Documents/)
+
+모든 기술 문서는 `Documents/` 폴더에 체계적으로 정리되어 있습니다.
+
+- **📚 문서 인덱스**: [Documents/README.md](Documents/README.md) - 모든 문서 네비게이션
+
+#### 핵심 아키텍처 문서 ✅
+
+| 문서 | 설명 | 경로 |
+|------|------|------|
+| **시스템 개요** | 전체 시스템 개요 및 핵심 기능 | [SYSTEM_OVERVIEW.md](Documents/Architecture/SYSTEM_OVERVIEW.md) |
+| **데이터 흐름** | 데이터 흐름도 및 프로세스 간 상호작용 | [DATA_FLOW.md](Documents/Architecture/DATA_FLOW.md) |
+| **DB 스키마** | PostgreSQL 데이터베이스 스키마 (ERD) | [DATABASE_SCHEMA.md](Documents/Architecture/DATABASE_SCHEMA.md) |
+| **API 명세** | RESTful API 엔드포인트 상세 명세 | [API_SPECIFICATION.md](Documents/Architecture/API_SPECIFICATION.md) ⭐ |
+| **기술 스택** | 기술 선정 이유 및 버전 정보 | [TECHNOLOGY_STACK.md](Documents/Architecture/TECHNOLOGY_STACK.md) ⭐ |
+| **배포 아키텍처** | Render.com 배포 구조 및 CI/CD | [DEPLOYMENT_ARCHITECTURE.md](Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ |
+
+#### 개발 가이드
+
 - **Backend README:** [backend/README.md](backend/README.md)
 - **Frontend README:** [frontend/README.md](frontend/README.md)
-- **원본 프로젝트:** `/mnt/d/Ai/WslProject/TheMoon_Project/`
-- **마이그레이션 계획:** [Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md](Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md)
+- **개발 가이드**: [Documents/Architecture/DEVELOPMENT_GUIDE.md](Documents/Architecture/DEVELOPMENT_GUIDE.md)
+- **문제 해결**: [Documents/Architecture/TROUBLESHOOTING.md](Documents/Architecture/TROUBLESHOOTING.md)
+
+#### 원본 프로젝트 참조
+
+- **원본 프로젝트 위치**: `/mnt/d/Ai/WslProject/TheMoon_Project/`
+- **마이그레이션 계획**: [Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md](Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md)
 
 ---
 
@@ -520,5 +544,5 @@ MIT License - 자유롭게 사용 가능
 ---
 
 **버전:** 0.0.6
-**최종 업데이트:** 2025-12-07
+**최종 업데이트:** 2025-12-08
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`
