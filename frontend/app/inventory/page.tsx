@@ -84,6 +84,7 @@ export default function InventoryPage() {
     // Tab State
     // Tab State derived from URL
     const activeTab = searchParams.get('tab') || 'all'
+    const logTab = searchParams.get('logTab') || 'all'  // 입출고 기록 탭
 
     const beanLimit = 10
     const logLimit = 10
@@ -146,11 +147,28 @@ export default function InventoryPage() {
         }
     }
 
-    const fetchLogs = async (page: number) => {
+    const fetchLogs = async (page: number, tab: string) => {
         try {
             setLoadingLogs(true)
             const skip = (page - 1) * logLimit
-            const data = await InventoryLogAPI.getAll({ skip, limit: logLimit })
+
+            // 탭에 따라 change_type 필터링
+            let changeTypeFilter: string[] | undefined = undefined
+
+            if (tab === 'in') {
+                // 입고: PURCHASE, ROASTING_OUTPUT
+                changeTypeFilter = ['PURCHASE', 'ROASTING_OUTPUT']
+            } else if (tab === 'out') {
+                // 출고: ROASTING_INPUT, SALES, LOSS, BLENDING_INPUT
+                changeTypeFilter = ['ROASTING_INPUT', 'SALES', 'LOSS', 'BLENDING_INPUT']
+            }
+            // tab === 'all'이면 changeTypeFilter는 undefined로 모든 기록 조회
+
+            const data = await InventoryLogAPI.getAll({
+                skip,
+                limit: logLimit,
+                change_type: changeTypeFilter
+            })
             setLogs(data.items)
             setLogTotal(data.total)
         } catch (err) {
@@ -173,8 +191,15 @@ export default function InventoryPage() {
     }
 
     useEffect(() => {
-        fetchLogs(logPage)
-    }, [logPage])
+        fetchLogs(logPage, logTab)
+    }, [logPage, logTab])
+
+    const handleLogTabChange = (value: string) => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('logTab', value)
+        params.set('logPage', '1') // Reset to page 1 on tab change
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     // Actions
     const openModal = (bean: Bean, type: 'IN' | 'OUT') => {
@@ -407,6 +432,16 @@ export default function InventoryPage() {
                     transition={{ duration: 0.4, delay: 0.2 }}
                 >
                     <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">입출고 기록</h2>
+
+                    {/* 입출고 기록 탭 */}
+                    <Tabs value={logTab} onValueChange={handleLogTabChange} className="mb-4">
+                        <TabsList className="grid w-full max-w-md grid-cols-3 bg-latte-100">
+                            <TabsTrigger value="all">전체</TabsTrigger>
+                            <TabsTrigger value="in">입고</TabsTrigger>
+                            <TabsTrigger value="out">출고</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
                     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-latte-100">
