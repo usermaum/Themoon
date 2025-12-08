@@ -454,27 +454,29 @@ export default function InventoryPage() {
                             </table>
                         </div>
                         {/* Logs Pagination */}
-                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
-                                disabled={logPage === 1}
-                            >
-                                이전
-                            </Button>
-                            <span className="text-sm font-medium text-latte-600">
-                                {logPage} / {logTotalPages || 1}
-                            </span>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
-                                disabled={logPage >= (logTotalPages || 1)}
-                            >
-                                다음
-                            </Button>
-                        </div>
+                        {!loadingLogs && (
+                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
+                                    disabled={logPage === 1}
+                                >
+                                    이전
+                                </Button>
+                                <span className="text-sm font-medium text-latte-600">
+                                    {logPage} / {logTotalPages || 1}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                    disabled={logPage >= (logTotalPages || 1)}
+                                >
+                                    다음
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </motion.section>
 
