@@ -31,6 +31,20 @@
 
 ### 📄 Documentation
 
+- **Architecture Documentation (6종)**: 프로젝트 아키텍처 문서 체계 완성
+  - `API_SPECIFICATION.md`: RESTful API 엔드포인트 명세 (요청/응답/에러 코드) ⭐ NEW!
+  - `TECHNOLOGY_STACK.md`: 기술 스택 선정 이유 및 버전 정보 ⭐ NEW!
+  - `DEPLOYMENT_ARCHITECTURE.md`: Render.com 배포 구조 및 CI/CD 파이프라인 ⭐ NEW!
+  - `SYSTEM_OVERVIEW.md`: 시스템 전체 개요 및 핵심 기능 정의
+  - `DATA_FLOW.md`: 데이터 흐름도 및 프로세스 간 상호작용
+  - `DATABASE_SCHEMA.md`: PostgreSQL 데이터베이스 스키마 (ERD, 테이블 정의)
+
+- **Document Navigation Links**: 전체 문서 네비게이션 링크 추가
+  - `Documents/README.md`: 모든 문서 이름을 클릭 가능한 링크로 변환 (50+ 문서)
+  - `Documents/Architecture/*.md`: 양방향 네비게이션 링크 추가 (6개 문서)
+  - `backend/README.md`, `frontend/README.md`: 아키텍처 문서 링크 추가
+  - 루트 `README.md`: 핵심 아키텍처 문서 섹션 추가
+
 - **Session Summary**: 2025-12-08 세션 진행 상황 및 다음 단계 업데이트.
 - **Bean Image Prompts**: V3 문서 업데이트 (모든 이미지 생성 완료 상태로 변경).
 

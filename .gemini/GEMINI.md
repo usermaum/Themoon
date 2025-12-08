@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.0.6
+> **버전**: 0.0.7
 
 ---
 
@@ -426,5 +426,5 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 **참고**: 상세 내용은 `Documents/Guides/PROGRAMMING_RULES.md` 참조
 
-**마지막 업데이트**: 2025-12-08  
-**프로젝트 버전**: 0.0.6
+**마지막 업데이트**: 2025-12-08
+**프로젝트 버전**: 0.0.7
