@@ -87,7 +87,9 @@
 **Session 3 (Claude Code - Maintenance)**:
 
 * [-] 원두 이미지 추가 생성 시도 (Kirinyaga Light 수정) -> Quota 초과로 보류
-* [x] `frontend/app/beans/page.tsx`: 로스팅 원두 및 블렌드 이미지 매핑 로직(`getBeanImage`) 개선
+* [x] `frontend/app/beans/page.tsx`: 로스팅 원두 및 블렌드 이미지 매핑 로직(`getBeanImage`) 개선 (풀문/뉴문/이클립스 매핑 수정)
+* [x] `frontend/app/beans/page.tsx`: 페이지네이션 상태 URL 쿼리 파라미터 동기화 (새로고침 시 페이지 유지)
+* [x] `frontend/app/inventory/page.tsx`: 재고 및 입출고 기록 페이징 처리 (각 10개) 및 모바일 반응형 UI 개선
 * [x] `frontend/components/layout/AppLayout.tsx`: 사이드바 닫힘 시 메인 컨텐츠 여백(Margin) 수정 (`ml-16` -> `ml-[80px]`)
 * [x] `Documents/Planning/Bean_Image_Prompts_V3.md`: 실패한 이미지 생성 요청 메모 추가
 
@@ -119,3 +121,13 @@
 
 * **이미지 생성**: 할당량 대기 시간이 있었으나 모두 완료됨. 결과물 퀄리티 매우 양호 (Macro shot 스타일 통일됨).
 * **서버 상태**: 현재 백엔드(8000)와 프론트엔드(3000) 정상 실행 중. 다음 작업 시작 시 `start_all.sh`로 재시작 권장.
+
+---
+
+**Session 4 (Antigravity - Inventory Improvement)**:
+
+* [x] `frontend/app/inventory/page.tsx`: 재고 관리 탭/필터 로직 개선
+  * '블렌드' 탭 신규 추가 (전체 / 생두 / 원두 / 블렌드 4종 체제)
+  * '원두' 탭을 싱글 오리진 전용으로 변경 (기존에는 블렌드 포함되었음)
+  * 탭 상태를 URL 쿼리 파라미터(`?tab=...`)와 완벽 동기화 (새로고침 시 유지)
+  * 페이징 상태 연동 점검 (탭 변경 시 1페이지 리셋 등)

@@ -30,6 +30,12 @@
 - **Mobile Sidebar**: 모바일 환경에서 사이드바가 닫혔을 때 화면 밖으로 완전히 사라지지 않던 문제 해결 (`-translate-x-full` 클래스 적용).
 - **Sidebar Margin**: 데스크탑에서 사이드바가 닫혔을 때 메인 컨텐츠 영역의 여백이 사이드바 너비(80px)와 맞지 않던 문제 해결 (`ml-16` -> `ml-[80px]`).
 - **Bean Image Mapping**: 원두 목록 페이지(`beans`)에서 로스팅된 원두 및 블렌드 원두의 이미지가 올바르게 표시되도록 매핑 로직(`getBeanImage`) 개선.
+- **Blend Image Logic**: '풀문', '뉴문', '이클립스' 등 특정 블렌드 이름이 포함된 경우 '블렌드' 키워드가 없어도 올바른 이미지를 표시하도록 수정.
+- **Pagination**: 원두 목록 페이지의 페이징 상태를 URL 쿼리 파라미터(`?page=N`)와 동기화하여 새로고침 시에도 현재 페이지가 유지되도록 개선.
+- **Inventory Pagination**: 재고 관리 페이지(`inventory`)의 '현재 재고 현황' 및 '입출고 기록' 테이블에 페이징 기능 추가. `?beanPage=N&logPage=N`으로 URL과 상태 동기화.
+- **Inventory Filtering**: 재고 현황 탭(전체/생두/원두) 클릭 시 서버 사이드 필터링 적용 및 페이징 연동. API/Service에 `bean_types` 필터 지원 추가.
+- **Inventory Tabs**: '블렌드' 탭 추가 및 '원두' 탭을 싱글 오리진 전용으로 분리하여 필터링 정확도 개선. 탭 상태(`?tab=...`) URL 동기화 적용.
+- **Mobile Responsive**: 재고 관리 페이지의 테이블이 모바일 환경에서 깔끔하게 보이도록 일부 컬럼(유형, 특징, 원산지 등)을 숨기고 가로 스크롤 및 배치 최적화.
 
 ### 📄 Documentation
 

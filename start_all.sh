@@ -11,13 +11,17 @@ echo ""
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 옵션 선택
-echo "Frontend 시작 옵션을 선택하세요:"
-echo ""
-echo "1) 일반 시작 (캐시 유지)"
-echo "2) 캐시 삭제 후 시작 (rm -rf .next)"
-echo "3) 취소"
-echo ""
-read -p "선택 (1-3): " choice
+if [ -n "$1" ]; then
+    choice=$1
+else
+    echo "Frontend 시작 옵션을 선택하세요:"
+    echo ""
+    echo "1) 일반 시작 (캐시 유지)"
+    echo "2) 캐시 삭제 후 시작 (rm -rf .next)"
+    echo "3) 취소"
+    echo ""
+    read -p "선택 (1-3): " choice
+fi
 
 case $choice in
     1)
