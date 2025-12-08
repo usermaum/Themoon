@@ -149,7 +149,6 @@ export default function InventoryPage() {
 
     const fetchLogs = async (page: number, tab: string) => {
         try {
-            setLoadingLogs(true)
             const skip = (page - 1) * logLimit
 
             // 탭에 따라 change_type 필터링
@@ -171,10 +170,10 @@ export default function InventoryPage() {
             })
             setLogs(data.items)
             setLogTotal(data.total)
+            setLoadingLogs(false)
         } catch (err) {
             console.error('Failed to fetch logs:', err)
             setError('입출고 기록을 불러오는데 실패했습니다.')
-        } finally {
             setLoadingLogs(false)
         }
     }
@@ -456,9 +455,7 @@ export default function InventoryPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-latte-100">
-                                    {loadingLogs ? (
-                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">기록을 불러오는 중...</td></tr>
-                                    ) : logs.length === 0 ? (
+                                    {logs.length === 0 ? (
                                         <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
                                     ) : (
                                         logs.map((log) => (
@@ -497,29 +494,27 @@ export default function InventoryPage() {
                             </table>
                         </div>
                         {/* Logs Pagination */}
-                        {!loadingLogs && (
-                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
-                                    disabled={logPage === 1}
-                                >
-                                    이전
-                                </Button>
-                                <span className="text-sm font-medium text-latte-600">
-                                    {logPage} / {logTotalPages || 1}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
-                                    disabled={logPage >= (logTotalPages || 1)}
-                                >
-                                    다음
-                                </Button>
-                            </div>
-                        )}
+                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
+                                disabled={logPage === 1}
+                            >
+                                이전
+                            </Button>
+                            <span className="text-sm font-medium text-latte-600">
+                                {logPage} / {logTotalPages || 1}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                disabled={logPage >= (logTotalPages || 1)}
+                            >
+                                다음
+                            </Button>
+                        </div>
                     </div>
                 </motion.section>
 
