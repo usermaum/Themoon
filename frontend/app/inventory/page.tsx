@@ -79,6 +79,7 @@ export default function InventoryPage() {
 
     // Total counts state
     const [beanTotal, setBeanTotal] = useState(0)
+    const [logTotal, setLogTotal] = useState(0)
 
     // Tab State
     // Tab State derived from URL
@@ -142,7 +143,8 @@ export default function InventoryPage() {
             setLoadingLogs(true)
             const skip = (page - 1) * logLimit
             const data = await InventoryLogAPI.getAll({ skip, limit: logLimit })
-            setLogs(data)
+            setLogs(data.items)
+            setLogTotal(data.total)
         } catch (err) {
             console.error('Failed to fetch logs:', err)
             setError('입출고 기록을 불러오는데 실패했습니다.')
@@ -274,6 +276,7 @@ export default function InventoryPage() {
 
     // Pagination calculations
     const beanTotalPages = Math.ceil(beanTotal / beanLimit)
+    const logTotalPages = Math.ceil(logTotal / logLimit)
 
     return (
         <div className="min-h-screen">
@@ -461,13 +464,13 @@ export default function InventoryPage() {
                                 이전
                             </Button>
                             <span className="text-sm font-medium text-latte-600">
-                                Page {logPage}
+                                {logPage} / {logTotalPages || 1}
                             </span>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => updatePage('logPage', logPage + 1)}
-                                disabled={logs.length < logLimit}
+                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                disabled={logPage >= (logTotalPages || 1)}
                             >
                                 다음
                             </Button>

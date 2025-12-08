@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class InventoryLogBase(BaseModel):
@@ -18,3 +18,11 @@ class InventoryLog(InventoryLogBase):
 
     class Config:
         from_attributes = True
+
+class InventoryLogListResponse(BaseModel):
+    """입출고 기록 목록 응답 (페이징 지원)"""
+    items: List[InventoryLog]
+    total: int
+    page: int
+    size: int
+    pages: int

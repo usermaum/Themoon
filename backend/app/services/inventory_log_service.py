@@ -11,6 +11,13 @@ class InventoryLogService:
             query = query.filter(InventoryLog.bean_id == bean_id)
         return query.order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
 
+    def get_logs_count(self, db: Session, bean_id: Optional[int] = None) -> int:
+        """입출고 기록 총 개수 조회"""
+        query = db.query(InventoryLog)
+        if bean_id:
+            query = query.filter(InventoryLog.bean_id == bean_id)
+        return query.count()
+
     def create_log(self, db: Session, log: InventoryLogCreate) -> InventoryLog:
         # Bean의 현재 재고량 가져오기
         bean = db.query(Bean).filter(Bean.id == log.bean_id).first()
