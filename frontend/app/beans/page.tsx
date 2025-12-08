@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Bean } from '@/lib/api'
 import { useBeans, deleteBean } from '@/hooks'
@@ -71,8 +72,20 @@ const getBeanImage = (bean: Bean) => {
 
 
 export default function BeanManagementPage() {
-    const [page, setPage] = useState(1)
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
+    // URL에서 페이지 번호 가져오기 (기본값 1)
+    const page = Number(searchParams.get('page')) || 1
     const [search, setSearch] = useState('')
+
+    // 페이지 변경 핸들러
+    const setPage = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('page', newPage.toString())
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     const limit = 12
     const skip = (page - 1) * limit
@@ -248,7 +261,7 @@ export default function BeanManagementPage() {
                 <div className="mt-12 flex justify-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        onClick={() => setPage(Math.max(1, page - 1))}
                         disabled={page === 1}
                         className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
                     >
@@ -259,7 +272,7 @@ export default function BeanManagementPage() {
                     </span>
                     <Button
                         variant="outline"
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        onClick={() => setPage(Math.min(totalPages, page + 1))}
                         disabled={page >= totalPages}
                         className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
                     >
