@@ -345,7 +345,11 @@ export default function InventoryPage() {
 
                         {['all', 'green', 'roasted', 'blend'].map((tabValue) => (
                             <TabsContent key={tabValue} value={tabValue} className="mt-0">
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                >
                                     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full divide-y divide-latte-100">
