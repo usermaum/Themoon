@@ -15,58 +15,57 @@ import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw } from 'luc
 // Helper to resolve bean images
 const getBeanImage = (bean: Bean) => {
     const nameLower = bean.name.toLowerCase();
-    const originLower = (bean.origin || '').toLowerCase();
-    const varietyLower = (bean.variety || '').toLowerCase();
 
-    // Mapping logic based on actual images in /images/raw_material/
-    // 순서 중요: 더 구체적인 조건을 먼저 체크해야 함
-
-    if (nameLower.includes('예가체프') || nameLower.includes('yirgacheffe') || varietyLower.includes('yirgacheffe'))
-        return '/images/raw_material/01_yirgacheffe_raw.png';
-
-    // 모모라: '모모라' 또는 '모르모라' 둘 다 체크
-    if (nameLower.includes('모모라') || nameLower.includes('모르모라') || nameLower.includes('mormora'))
-        return '/images/raw_material/02_mormora_raw.png';
-
-    if (nameLower.includes('코케') || nameLower.includes('koke'))
-        return '/images/raw_material/03_koke_honey_raw.png';
-    if (nameLower.includes('우라가') || nameLower.includes('uraga'))
-        return '/images/raw_material/04_uraga_raw.png';
-    if (nameLower.includes('시다모') || nameLower.includes('sidamo'))
-        return '/images/raw_material/05_sidamo_raw.png';
-
-    // 키린야가: 마사이보다 먼저 체크 (둘 다 Kenya 원산지)
-    if (nameLower.includes('키린야가') || nameLower.includes('키리냐가') || nameLower.includes('kirinyaga'))
-        return '/images/raw_material/07_kirinyaga_raw.png';
-
-    // 마사이: 키린야가 체크 이후에 Kenya origin 체크
-    if (nameLower.includes('마사이') || nameLower.includes('masai'))
-        return '/images/raw_material/06_masai_raw.png';
-
-    // 후일라: 이름으로 먼저 체크
-    if (nameLower.includes('후일라') || nameLower.includes('우일라') || nameLower.includes('huila'))
-        return '/images/raw_material/08_huila_raw.png';
-
-    if (nameLower.includes('안티구아') || nameLower.includes('antigua'))
-        return '/images/raw_material/09_antigua_raw.png';
-    if (nameLower.includes('엘탄케') || nameLower.includes('eltanque') || nameLower.includes('el tanque'))
-        return '/images/raw_material/10_eltanque_raw.png';
-    if (nameLower.includes('파젠다') || nameLower.includes('fazenda'))
-        return '/images/raw_material/11_fazenda_raw.png';
-    if (nameLower.includes('산토스') || nameLower.includes('santos'))
-        return '/images/raw_material/12_santos_raw.png';
-    if (nameLower.includes('디카페') || nameLower.includes('decaf')) {
-        if (nameLower.includes('sdm')) return '/images/raw_material/13_decaf_sdm_raw.png';
-        if (nameLower.includes('sm')) return '/images/raw_material/14_decaf_sm_raw.png';
-        return '/images/raw_material/15_swiss_water_raw.png';
+    // 1. Blend Beans
+    // Note: Blends are stored in /images/roasted/
+    if (bean.type === 'BLEND_BEAN' || nameLower.includes('blend') || nameLower.includes('블렌드')) {
+        if (nameLower.includes('full moon') || nameLower.includes('풀문')) return '/images/roasted/17_fullmoon_blend.png';
+        if (nameLower.includes('new moon') || nameLower.includes('뉴문')) return '/images/roasted/18_newmoon_blend.png';
+        if (nameLower.includes('eclipse') || nameLower.includes('이클립스')) return '/images/roasted/19_eclipse_blend.png';
+        // Fallback for generic blend
+        return '/images/roasted/17_fullmoon_blend.png';
     }
-    if (nameLower.includes('스위스') || nameLower.includes('swiss'))
-        return '/images/raw_material/15_swiss_water_raw.png';
-    if (nameLower.includes('게이샤') || nameLower.includes('geisha'))
-        return '/images/raw_material/16_geisha_raw.png';
 
-    // Default - use yirgacheffe as fallback
-    return '/images/raw_material/01_yirgacheffe_raw.png';
+    // 2. Determine File Type (Green vs Roasted)
+    // Check if it's a Roasted Bean based on type or roast_profile
+    const isRoasted = bean.type === 'ROASTED_BEAN' || (bean.roast_profile && bean.roast_profile !== null);
+
+    let folder = '/images/raw_material/';
+    let suffix = '_raw.png';
+
+    if (isRoasted) {
+        folder = '/images/roasted/';
+        // Map Roast Profile to suffix
+        // LIGHT, MEDIUM -> _light.png
+        // DARK -> _dark.png
+        const profile = bean.roast_profile || 'LIGHT';
+        suffix = profile === 'DARK' ? '_dark.png' : '_light.png';
+    }
+
+    // 3. Determine Bean Identity (Prefix)
+    let idPrefix = '01_yirgacheffe'; // Default
+
+    if (nameLower.includes('예가체프') || nameLower.includes('yirgacheffe')) idPrefix = '01_yirgacheffe';
+    else if (nameLower.includes('모모라') || nameLower.includes('mormora')) idPrefix = '02_mormora';
+    else if (nameLower.includes('코케') || nameLower.includes('koke')) idPrefix = '03_koke_honey';
+    else if (nameLower.includes('우라가') || nameLower.includes('uraga')) idPrefix = '04_uraga';
+    else if (nameLower.includes('시다모') || nameLower.includes('sidamo')) idPrefix = '05_sidamo';
+    else if (nameLower.includes('마사이') || nameLower.includes('masai')) idPrefix = '06_masai';
+    else if (nameLower.includes('키린야가') || nameLower.includes('키리냐가') || nameLower.includes('kirinyaga')) idPrefix = '07_kirinyaga';
+    else if (nameLower.includes('후일라') || nameLower.includes('huila')) idPrefix = '08_huila';
+    else if (nameLower.includes('안티구아') || nameLower.includes('antigua')) idPrefix = '09_antigua';
+    else if (nameLower.includes('엘탄케') || nameLower.includes('eltanque')) idPrefix = '10_eltanque';
+    else if (nameLower.includes('파젠다') || nameLower.includes('fazenda')) idPrefix = '11_fazenda';
+    else if (nameLower.includes('산토스') || nameLower.includes('santos')) idPrefix = '12_santos';
+    else if (nameLower.includes('디카페') || nameLower.includes('decaf')) {
+        if (nameLower.includes('sdm')) idPrefix = '13_decaf_sdm';
+        else if (nameLower.includes('sm')) idPrefix = '14_decaf_sm';
+        else idPrefix = '15_swiss_water';
+    }
+    else if (nameLower.includes('스위스') || nameLower.includes('swiss')) idPrefix = '15_swiss_water';
+    else if (nameLower.includes('게이샤') || nameLower.includes('geisha')) idPrefix = '16_geisha';
+
+    return `${folder}${idPrefix}${suffix}`;
 }
 
 
