@@ -246,7 +246,7 @@ export interface InventoryLogCreateData {
 // --- Inventory API ---
 
 export const InventoryLogAPI = {
-  getAll: async (params?: { bean_id?: number; limit?: number }) => {
+  getAll: async (params?: { bean_id?: number; skip?: number; limit?: number }) => {
     const response = await api.get<InventoryLog[]>('/api/v1/inventory-logs/', { params })
     return response.data
   },
