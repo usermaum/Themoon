@@ -152,18 +152,14 @@ export const BeanAPI = {
     limit?: number
     search?: string
     type?: string[]
+    origin?: string
+    exclude_blend?: boolean
   }) => {
-    // Backend expects: page, size, search, type
+    // Backend expects: page, size, search, type, origin, exclude_blend
     // Convert skip/limit to page/size
     const limitVal = params?.limit || 10
     const skipVal = params?.skip || 0
     const page = Math.floor(skipVal / limitVal) + 1
-
-    // Construct query params manually to handle array correctly if needed, or axios handles it?
-    // Axios handles array as type[]=A&type[]=B by default or comma?
-    // FastAPI expects type=A&type=B (repeat). Axios default is 'brackets' (type[]=A).
-    // We need 'repeat' (type=A&type=B).
-    // Use paramsSerializer.
 
     const queryParams: any = {
       page,
@@ -172,6 +168,8 @@ export const BeanAPI = {
 
     if (params?.search) queryParams.search = params.search
     if (params?.type) queryParams.type = params.type
+    if (params?.origin) queryParams.origin = params.origin
+    if (params?.exclude_blend) queryParams.exclude_blend = params.exclude_blend
 
     const response = await api.get<BeanListResponse>('/api/v1/beans/', {
       params: queryParams,
@@ -183,6 +181,8 @@ export const BeanAPI = {
         if (params.type && Array.isArray(params.type)) {
           params.type.forEach((t: string) => searchParams.append('type', t))
         }
+        if (params.origin) searchParams.append('origin', params.origin)
+        if (params.exclude_blend) searchParams.append('exclude_blend', 'true')
         return searchParams.toString()
       }
     })
