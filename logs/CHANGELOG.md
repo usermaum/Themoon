@@ -45,6 +45,11 @@
   - `backend/README.md`, `frontend/README.md`: 아키텍처 문서 링크 추가
   - 루트 `README.md`: 핵심 아키텍처 문서 섹션 추가
 
+- **Render.com Deployment System**: Render.com 자동 배포 시스템 구축 ⭐ NEW!
+  - `Documents/Guides/RENDER_DEPLOY_GUIDE.md`: 배포 가이드 문서 작성 (수동/자동 배포 방법, Troubleshooting)
+  - `deploy-render.sh`: 자동 배포 스크립트 작성 (main 병합, 빌드 테스트, 자동 푸시)
+  - 배포 브랜치: `claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck`
+
 - **Session Summary**: 2025-12-08 세션 진행 상황 및 다음 단계 업데이트.
 - **Bean Image Prompts**: V3 문서 업데이트 (모든 이미지 생성 완료 상태로 변경).
 
