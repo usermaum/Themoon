@@ -24,6 +24,7 @@ def read_beans(
     db: Session = Depends(get_db)
 ):
     """원두 목록 조회"""
+    print(f"DEBUG: Received type filter: {type}") # Debug log
     skip = (page - 1) * size
     beans = bean_service.get_beans(db, skip=skip, limit=size, search=search, bean_types=type)
     total = bean_service.get_beans_count(db, search=search, bean_types=type)
