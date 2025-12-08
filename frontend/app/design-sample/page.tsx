@@ -22,7 +22,8 @@ import {
     PackageCheck,
     ScrollText,
     Users,
-    LockKeyhole
+    LockKeyhole,
+    Sparkles
 } from 'lucide-react'
 
 // Section 1: Components
@@ -66,6 +67,14 @@ const components = [
         icon: AlertTriangle,
         preview: "Delete, Checkout, Logout Confirmations",
         color: "text-red-700 bg-red-50"
+    },
+    {
+        title: "Animation",
+        desc: "Motion primitives and complex interaction patterns.",
+        href: "/design-sample/animation",
+        icon: Sparkles,
+        preview: "Fade, Slide, Scale, Stagger",
+        color: "text-violet-700 bg-violet-50"
     }
 ]
 
