@@ -112,7 +112,6 @@ export default function InventoryPage() {
 
     const fetchBeans = async (page: number, tab: string) => {
         try {
-            setLoadingBeans(true)
             const skip = (page - 1) * beanLimit
 
             let typeFilter: string[] | undefined = undefined
@@ -139,10 +138,10 @@ export default function InventoryPage() {
             })
             setBeans(data.items)
             setBeanTotal(data.total)
+            setLoadingBeans(false)
         } catch (err) {
             console.error('Failed to fetch beans:', err)
             setError('원두 목록을 불러오는데 실패했습니다.')
-        } finally {
             setLoadingBeans(false)
         }
     }
@@ -362,9 +361,7 @@ export default function InventoryPage() {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-latte-100">
-                                                    {loadingBeans ? (
-                                                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">로딩 중...</td></tr>
-                                                    ) : beans.length === 0 ? (
+                                                    {beans.length === 0 ? (
                                                         <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
                                                     ) : beans.map((bean) => (
                                                         <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
