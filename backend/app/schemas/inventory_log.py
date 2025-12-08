@@ -8,6 +8,13 @@ class InventoryLogBase(BaseModel):
     change_amount: float  # +: 증가, -: 감소
     notes: Optional[str] = None
 
+class BeanSimple(BaseModel):
+    name: str
+    id: int
+
+    class Config:
+        from_attributes = True
+
 class InventoryLogCreate(InventoryLogBase):
     pass
 
@@ -15,6 +22,7 @@ class InventoryLog(InventoryLogBase):
     id: int
     current_quantity: float
     created_at: datetime
+    bean: Optional[BeanSimple] = None
 
     class Config:
         from_attributes = True

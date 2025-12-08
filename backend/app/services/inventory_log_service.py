@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.bean import Bean
 from app.schemas.inventory_log import InventoryLogCreate
@@ -18,7 +18,7 @@ class InventoryLogService:
             query = query.filter(InventoryLog.bean_id == bean_id)
         if change_types:
             query = query.filter(InventoryLog.change_type.in_(change_types))
-        return query.order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
+        return query.options(joinedload(InventoryLog.bean)).order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
 
     def get_logs_count(
         self,

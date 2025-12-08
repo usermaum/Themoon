@@ -267,6 +267,10 @@ export interface InventoryLog {
   current_quantity: number
   notes?: string
   created_at: string
+  bean?: {
+    name: string
+    id: number
+  }
 }
 
 export interface InventoryLogCreateData {

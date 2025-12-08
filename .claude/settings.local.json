@@ -79,7 +79,11 @@
       "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a/themoon_p922\" python3:*)",
       "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a/themoon_p922\" ./venv/bin/python:*)",
       "Bash(DATABASE_URL=\"postgresql://themoon:6qThXpnBlI2Xn9jqyHr3zgVRGJfpks9W@dpg-d4is05qli9vc73epqth0-a.oregon-postgres.render.com/themoon_p922\" ./venv/bin/python:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(/mnt/d/Ai/WslProject/TheMoon/venv/bin/uvicorn:*)",
+      "Bash(sqlite3:*)",
+      "Bash(/mnt/d/Ai/WslProject/TheMoon/venv/bin/python:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
