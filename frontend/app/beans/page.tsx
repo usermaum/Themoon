@@ -16,12 +16,13 @@ import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw } from 'luc
 const getBeanImage = (bean: Bean) => {
     const nameLower = bean.name.toLowerCase();
 
-    // 1. Blend Beans
-    // Note: Blends are stored in /images/roasted/
+    // 1. Blend Beans (Priority Check by Name)
+    if (nameLower.includes('full moon') || nameLower.includes('풀문')) return '/images/roasted/17_fullmoon_blend.png';
+    if (nameLower.includes('new moon') || nameLower.includes('뉴문')) return '/images/roasted/18_newmoon_blend.png';
+    if (nameLower.includes('eclipse') || nameLower.includes('이클립스')) return '/images/roasted/19_eclipse_blend.png';
+
+    // 2. Generic Blend Check
     if (bean.type === 'BLEND_BEAN' || nameLower.includes('blend') || nameLower.includes('블렌드')) {
-        if (nameLower.includes('full moon') || nameLower.includes('풀문')) return '/images/roasted/17_fullmoon_blend.png';
-        if (nameLower.includes('new moon') || nameLower.includes('뉴문')) return '/images/roasted/18_newmoon_blend.png';
-        if (nameLower.includes('eclipse') || nameLower.includes('이클립스')) return '/images/roasted/19_eclipse_blend.png';
         // Fallback for generic blend
         return '/images/roasted/17_fullmoon_blend.png';
     }
