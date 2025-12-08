@@ -131,3 +131,12 @@
   * '원두' 탭을 싱글 오리진 전용으로 변경 (기존에는 블렌드 포함되었음)
   * 탭 상태를 URL 쿼리 파라미터(`?tab=...`)와 완벽 동기화 (새로고침 시 유지)
   * 페이징 상태 연동 점검 (탭 변경 시 1페이지 리셋 등)
+
+**Session 5 (Antigravity - Animation & Dashboard Fix)**:
+* [x] `frontend/app/design-sample/animation/page.tsx`: 애니메이션 갤러리 페이지 신규 구현 (Fade, Slide, Scale, Interaction 등).
+* [x] `frontend/app/page.tsx`: 대시보드 렌더링 충돌 오류(`recentLogs.map`) 해결. API 데이터가 배열이 아닐 경우를 대비한 방어 코드(`Array.isArray`) 추가.
+* [x] `frontend/app/inventory/page.tsx`: 입출고 기록 조회 함수(`fetchLogs`) 호출 시 `logTab` 인자 누락 오류 수정 (빌드 에러 해결).
+* [x] `frontend/app/inventory/page.tsx`: 재고 현황 페이징 시 입출고 기록이 불필요하게 재조회되는 문제 해결 (`useEffect` 의존성 격리).
+* [x] `Full Stack`: 입출고 기록의 원두 이름이 페이징 시 사라지는 문제 수정 (Backend: `InventoryLog` 스키마에 `bean` 추가, Frontend: `log.bean.name` 표시).
+
+

@@ -11,6 +11,17 @@
 
 ---
 
+## [Unreleased]
+
+### ✨ Features
+
+- **Animation Page**: `design-sample/animation` 페이지 추가. Shadcn UI + Framer Motion 활용한 애니메이션 갤러리 구현.
+
+### 🐛 Fixed
+
+- **Dashboard Crash**: `app/page.tsx`에서 `recentLogs.map` 런타임 오류 수정 (API 응답 타입 안전성 강화).
+- **Inventory Logs**: 재고 관리 페이지에서 입출고/수정/삭제 후 목록 갱신 시 `fetchLogs` 인자 누락(`logTab`)으로 인한 빌드/런타임 오류 수정.
+
 ## [0.0.7] - 2025-12-08
 
 ### ✨ Features

@@ -346,9 +346,9 @@ export default function InventoryPage() {
                         {['all', 'green', 'roasted', 'blend'].map((tabValue) => (
                             <TabsContent key={tabValue} value={tabValue} className="mt-0">
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
                                 >
                                     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                                         <div className="overflow-x-auto">
@@ -444,9 +444,9 @@ export default function InventoryPage() {
                         {['all', 'in', 'out'].map((tabValue) => (
                             <TabsContent key={tabValue} value={tabValue} className="mt-0">
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
                                 >
                                     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                                         <div className="overflow-x-auto">
@@ -472,7 +472,7 @@ export default function InventoryPage() {
                                                                     <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                                                                 </td>
                                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
-                                                                    {getBeanName(log.bean_id)}
+                                                                    {log.bean?.name || getBeanName(log.bean_id)}
                                                                 </td>
                                                                 <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                                                                     <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
