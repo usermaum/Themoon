@@ -107,7 +107,7 @@ export default function InventoryPage() {
     const updatePage = (param: 'beanPage' | 'logPage', newPage: number) => {
         const params = new URLSearchParams(searchParams.toString())
         params.set(param, newPage.toString())
-        router.push(`${pathname}?${params.toString()}`)
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
     const fetchBeans = async (page: number, tab: string) => {
@@ -187,7 +187,7 @@ export default function InventoryPage() {
         const params = new URLSearchParams(searchParams.toString())
         params.set('tab', value)
         params.set('beanPage', '1') // Reset to page 1 on tab change
-        router.push(`${pathname}?${params.toString()}`)
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
     useEffect(() => {
@@ -198,7 +198,7 @@ export default function InventoryPage() {
         const params = new URLSearchParams(searchParams.toString())
         params.set('logTab', value)
         params.set('logPage', '1') // Reset to page 1 on tab change
-        router.push(`${pathname}?${params.toString()}`)
+        router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
     // Actions
