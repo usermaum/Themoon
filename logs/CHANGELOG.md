@@ -28,6 +28,8 @@
   - `CarouselContent`, `CarouselItem`, `CarouselNext`, `CarouselPrevious` export 추가.
 
 - **Mobile Sidebar**: 모바일 환경에서 사이드바가 닫혔을 때 화면 밖으로 완전히 사라지지 않던 문제 해결 (`-translate-x-full` 클래스 적용).
+- **Sidebar Margin**: 데스크탑에서 사이드바가 닫혔을 때 메인 컨텐츠 영역의 여백이 사이드바 너비(80px)와 맞지 않던 문제 해결 (`ml-16` -> `ml-[80px]`).
+- **Bean Image Mapping**: 원두 목록 페이지(`beans`)에서 로스팅된 원두 및 블렌드 원두의 이미지가 올바르게 표시되도록 매핑 로직(`getBeanImage`) 개선.
 
 ### 📄 Documentation
 

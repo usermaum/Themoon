@@ -29,58 +29,67 @@
 
 ---
 
-### 4. 아키텍처 문서 체계 완성 (Documentation System) ⭐ NEW!
+### 4. 아키텍처 문서 체계 완성 (Documentation System) ⭐ NEW
 
 * **신규 문서 작성 (6종)**:
-  - `API_SPECIFICATION.md`: RESTful API 엔드포인트 명세 (요청/응답/에러 코드)
-  - `TECHNOLOGY_STACK.md`: 기술 스택 선정 이유 및 버전 정보
-  - `DEPLOYMENT_ARCHITECTURE.md`: Render.com 배포 구조 및 CI/CD 파이프라인
-  - `SYSTEM_OVERVIEW.md`, `DATA_FLOW.md`, `DATABASE_SCHEMA.md` (기존 문서 링크 추가)
+  * `API_SPECIFICATION.md`: RESTful API 엔드포인트 명세 (요청/응답/에러 코드)
+  * `TECHNOLOGY_STACK.md`: 기술 스택 선정 이유 및 버전 정보
+  * `DEPLOYMENT_ARCHITECTURE.md`: Render.com 배포 구조 및 CI/CD 파이프라인
+  * `SYSTEM_OVERVIEW.md`, `DATA_FLOW.md`, `DATABASE_SCHEMA.md` (기존 문서 링크 추가)
 
 * **전체 문서 네비게이션 링크 추가**:
-  - `Documents/README.md`: 50+ 문서를 클릭 가능한 링크로 변환
-  - `Documents/Architecture/*.md`: 6개 문서에 양방향 네비게이션 링크 추가
-  - `backend/README.md`, `frontend/README.md`: 아키텍처 문서 링크 추가
-  - 루트 `README.md`: 핵심 아키텍처 문서 섹션 추가
+  * `Documents/README.md`: 50+ 문서를 클릭 가능한 링크로 변환
+  * `Documents/Architecture/*.md`: 6개 문서에 양방향 네비게이션 링크 추가
+  * `backend/README.md`, `frontend/README.md`: 아키텍처 문서 링크 추가
+  * 루트 `README.md`: 핵심 아키텍처 문서 섹션 추가
 
 ---
 
-### 5. Render.com 자동 배포 시스템 구축 ⭐ NEW!
+### 5. Render.com 자동 배포 시스템 구축 ⭐ NEW
 
 * **배포 가이드 문서**: `Documents/Guides/RENDER_DEPLOY_GUIDE.md` 작성
-  - 수동 배포 방법 (Git Push / Dashboard)
-  - 자동 배포 스크립트 사용법
-  - 배포 후 확인 사항
-  - Troubleshooting (5가지 일반적인 문제 해결법)
+  * 수동 배포 방법 (Git Push / Dashboard)
+  * 자동 배포 스크립트 사용법
+  * 배포 후 확인 사항
+  * Troubleshooting (5가지 일반적인 문제 해결법)
 
 * **자동 배포 스크립트**: `deploy-render.sh` 작성
-  - main 브랜치 변경사항 자동 병합
-  - 로컬 빌드 테스트 (Backend/Frontend)
-  - Git 커밋 및 푸시 자동화
-  - 컬러풀한 진행 상황 출력
-  - 옵션: `--help`, `--skip-test`, `--force`
+  * main 브랜치 변경사항 자동 병합
+  * 로컬 빌드 테스트 (Backend/Frontend)
+  * Git 커밋 및 푸시 자동화
+  * 컬러풀한 진행 상황 출력
+  * 옵션: `--help`, `--skip-test`, `--force`
 
 * **배포 브랜치**: `claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck`
-  - main 브랜치 최신 변경사항 병합 완료
-  - 배포 준비 완료 (Render.com 자동 배포 대기 중)
+  * main 브랜치 최신 변경사항 병합 완료
+  * 배포 준비 완료 (Render.com 자동 배포 대기 중)
 
 ---
 
 ## ✅ 완료된 작업 (Completed Tasks)
 
 **Session 1 (Gemini3 Pro)**:
+
 * [x] 로스팅 비즈니스 로직 검증 스크립트 작성 및 테스트 (`test_roasting_logic.py`)
 * [x] 모바일 사이드바 숨김 처리 (Responsive Fix)
 * [x] `components-demo` 페이지 확장 및 `Carousel` 컴포넌트 오류 수정
 * [x] 로스팅 원두 이미지 19종(35장) 생성 및 적용 완료
 
 **Session 2 (Claude Code)**:
+
 * [x] 아키텍처 문서 6종 작성 (API, 기술 스택, 배포 아키텍처 등)
 * [x] 전체 문서 네비게이션 링크 추가 (Documents, Architecture, Backend, Frontend README)
 * [x] Render.com 자동 배포 시스템 구축 (가이드 문서 + 자동화 스크립트)
 * [x] 배포 브랜치에 변경사항 푸시 및 Render.com 배포 준비 완료
 * [x] CHANGELOG 및 SESSION_SUMMARY 업데이트
 * [x] Git 커밋 및 원격 저장소 푸시
+
+**Session 3 (Claude Code - Maintenance)**:
+
+* [-] 원두 이미지 추가 생성 시도 (Kirinyaga Light 수정) -> Quota 초과로 보류
+* [x] `frontend/app/beans/page.tsx`: 로스팅 원두 및 블렌드 이미지 매핑 로직(`getBeanImage`) 개선
+* [x] `frontend/components/layout/AppLayout.tsx`: 사이드바 닫힘 시 메인 컨텐츠 여백(Margin) 수정 (`ml-16` -> `ml-[80px]`)
+* [x] `Documents/Planning/Bean_Image_Prompts_V3.md`: 실패한 이미지 생성 요청 메모 추가
 
 ---
 

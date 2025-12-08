@@ -47,8 +47,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                 className={`
                     flex-1 overflow-auto scrollbar-thin
                     transition-all duration-300 ease-in-out
-                    ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
-                    ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}
+                    ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-[80px]'}
                     relative z-0
                 `}
             >
