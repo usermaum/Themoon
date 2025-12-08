@@ -175,8 +175,15 @@ export const BeanAPI = {
 
     const response = await api.get<BeanListResponse>('/api/v1/beans/', {
       params: queryParams,
-      paramsSerializer: {
-        indexes: null // Result: type=A&type=B
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams()
+        if (params.page) searchParams.append('page', params.page.toString())
+        if (params.size) searchParams.append('size', params.size.toString())
+        if (params.search) searchParams.append('search', params.search)
+        if (params.type && Array.isArray(params.type)) {
+          params.type.forEach((t: string) => searchParams.append('type', t))
+        }
+        return searchParams.toString()
       }
     })
     return response.data
