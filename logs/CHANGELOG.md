@@ -15,6 +15,17 @@
 
 ### ✨ Features
 
+- **Inventory UX**: 재고 관리 페이지 탭 전환 애니메이션 개선 (Slide Up + Fade).
+
+### 🐛 Fixed
+
+- **Inventory Pagination**: 재고 현황 페이징 시 입출고 기록이 불필요하게 재조회되는 문제 해결 (State Isolation).
+- **Bean Name Display**: 입출고 기록 테이블에서 페이징 시 원두 이름이 잘못 표시되거나 사라지는 문제 수정 (Backend Schema Update & Frontend Logic Fix).
+
+## [0.0.8] - 2025-12-09
+
+### ✨ Features
+
 - **Animation Page**: `design-sample/animation` 페이지 추가. Shadcn UI + Framer Motion 활용한 애니메이션 갤러리 구현.
 
 ### 🐛 Fixed
