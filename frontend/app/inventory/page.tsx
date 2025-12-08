@@ -81,7 +81,8 @@ export default function InventoryPage() {
     const [beanTotal, setBeanTotal] = useState(0)
 
     // Tab State
-    const [activeTab, setActiveTab] = useState('all')
+    // Tab State derived from URL
+    const activeTab = searchParams.get('tab') || 'all'
 
     const beanLimit = 10
     const logLimit = 10
@@ -116,7 +117,9 @@ export default function InventoryPage() {
             if (tab === 'green') {
                 typeFilter = ['GREEN_BEAN']
             } else if (tab === 'roasted') {
-                typeFilter = ['ROASTED_BEAN', 'BLEND_BEAN']
+                typeFilter = ['ROASTED_BEAN']
+            } else if (tab === 'blend') {
+                typeFilter = ['BLEND_BEAN']
             }
 
             const data = await BeanAPI.getAll({
@@ -153,10 +156,10 @@ export default function InventoryPage() {
     }, [beanPage, activeTab])
 
     const handleTabChange = (value: string) => {
-        setActiveTab(value)
-        if (beanPage !== 1) {
-            updatePage('beanPage', 1)
-        }
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('tab', value)
+        params.set('beanPage', '1') // Reset to page 1 on tab change
+        router.push(`${pathname}?${params.toString()}`)
     }
 
     useEffect(() => {
@@ -302,10 +305,11 @@ export default function InventoryPage() {
                                 <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
                                 <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">생두</TabsTrigger>
                                 <TabsTrigger value="roasted" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">원두</TabsTrigger>
+                                <TabsTrigger value="blend" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">블렌드</TabsTrigger>
                             </TabsList>
                         </div>
 
-                        {['all', 'green', 'roasted'].map((tabValue) => (
+                        {['all', 'green', 'roasted', 'blend'].map((tabValue) => (
                             <TabsContent key={tabValue} value={tabValue} className="mt-0">
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                                     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
