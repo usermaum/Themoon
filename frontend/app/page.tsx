@@ -35,9 +35,9 @@ export default function HomePage() {
         InventoryLogAPI.getAll({ limit: 10 }),
       ])
 
-      setBeans(beansData.items || [])
-      setBlends(blendsData || [])
-      setRecentLogs(logsData || [])
+      setBeans(Array.isArray(beansData?.items) ? beansData.items : [])
+      setBlends(Array.isArray(blendsData) ? blendsData : [])
+      setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : [])
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
       setError(err)
