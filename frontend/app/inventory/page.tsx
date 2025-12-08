@@ -115,18 +115,26 @@ export default function InventoryPage() {
             const skip = (page - 1) * beanLimit
 
             let typeFilter: string[] | undefined = undefined
+            let originFilter: string | undefined = undefined
+            let excludeBlend: boolean | undefined = undefined
+
             if (tab === 'green') {
                 typeFilter = ['GREEN_BEAN']
             } else if (tab === 'roasted') {
                 typeFilter = ['ROASTED_BEAN']
+                excludeBlend = true  // 원두 탭에서는 블렌드 제외
             } else if (tab === 'blend') {
-                typeFilter = ['BLEND_BEAN']
+                // 블렌드: type=ROASTED_BEAN AND origin=Blend
+                typeFilter = ['ROASTED_BEAN']
+                originFilter = 'Blend'
             }
 
             const data = await BeanAPI.getAll({
                 skip,
                 limit: beanLimit,
-                type: typeFilter
+                type: typeFilter,
+                origin: originFilter,
+                exclude_blend: excludeBlend
             })
             setBeans(data.items)
             setBeanTotal(data.total)

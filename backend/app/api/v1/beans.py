@@ -17,6 +17,8 @@ def read_beans(
     size: int = Query(10, ge=1, le=100, description="페이지당 항목 수"),
     search: Optional[str] = Query(None, description="검색어 (이름, 원산지, 품종)"),
     type: List[str] = Query([], description="원두 유형 필터 (GREEN_BEAN, ROASTED_BEAN, BLEND_BEAN)"),
+    origin: Optional[str] = Query(None, description="원산지 필터 (예: Blend)"),
+    exclude_blend: bool = Query(False, description="블렌드 제외 (원두 탭용)"),
     db: Session = Depends(get_db)
 ):
     """원두 목록 조회 (페이징 및 필터 지원)"""
@@ -27,8 +29,8 @@ def read_beans(
     skip = (page - 1) * size
 
     # 데이터 조회
-    items = bean_service.get_beans(db, skip=skip, limit=size, search=search, bean_types=bean_types)
-    total = bean_service.get_beans_count(db, search=search, bean_types=bean_types)
+    items = bean_service.get_beans(db, skip=skip, limit=size, search=search, bean_types=bean_types, origin=origin, exclude_blend=exclude_blend)
+    total = bean_service.get_beans_count(db, search=search, bean_types=bean_types, origin=origin, exclude_blend=exclude_blend)
     pages = (total + size - 1) // size if size > 0 else 0
 
     return BeanListResponse(
