@@ -80,6 +80,9 @@ export default function InventoryPage() {
     // Total counts state
     const [beanTotal, setBeanTotal] = useState(0)
 
+    // Tab State
+    const [activeTab, setActiveTab] = useState('all')
+
     const beanLimit = 10
     const logLimit = 10
 
@@ -104,11 +107,23 @@ export default function InventoryPage() {
         router.push(`${pathname}?${params.toString()}`)
     }
 
-    const fetchBeans = async (page: number) => {
+    const fetchBeans = async (page: number, tab: string) => {
         try {
             setLoadingBeans(true)
             const skip = (page - 1) * beanLimit
-            const data = await BeanAPI.getAll({ skip, limit: beanLimit })
+
+            let typeFilter: string[] | undefined = undefined
+            if (tab === 'green') {
+                typeFilter = ['GREEN_BEAN']
+            } else if (tab === 'roasted') {
+                typeFilter = ['ROASTED_BEAN', 'BLEND_BEAN']
+            }
+
+            const data = await BeanAPI.getAll({
+                skip,
+                limit: beanLimit,
+                type: typeFilter
+            })
             setBeans(data.items)
             setBeanTotal(data.total)
         } catch (err) {
@@ -134,8 +149,15 @@ export default function InventoryPage() {
     }
 
     useEffect(() => {
-        fetchBeans(beanPage)
-    }, [beanPage])
+        fetchBeans(beanPage, activeTab)
+    }, [beanPage, activeTab])
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value)
+        if (beanPage !== 1) {
+            updatePage('beanPage', 1)
+        }
+    }
 
     useEffect(() => {
         fetchLogs(logPage)
@@ -188,7 +210,7 @@ export default function InventoryPage() {
             setSubmitting(true)
             await InventoryLogAPI.create(logData)
             // Refresh both tables
-            await fetchBeans(beanPage)
+            await fetchBeans(beanPage, activeTab)
             updatePage('logPage', 1) // Reset log page to 1 to see new entry
             await fetchLogs(1)
             closeModal()
@@ -215,7 +237,7 @@ export default function InventoryPage() {
         try {
             setSubmitting(true)
             await InventoryLogAPI.update(selectedLog.id, finalQuantity, editReason || undefined)
-            await fetchBeans(beanPage)
+            await fetchBeans(beanPage, activeTab)
             await fetchLogs(logPage)
             closeEditModal()
         } catch (err: any) {
@@ -231,7 +253,7 @@ export default function InventoryPage() {
 
         try {
             await InventoryLogAPI.delete(id)
-            await fetchBeans(beanPage)
+            await fetchBeans(beanPage, activeTab)
             await fetchLogs(logPage)
         } catch (err: any) {
             console.error('Failed to delete inventory log:', err)
@@ -274,7 +296,7 @@ export default function InventoryPage() {
                         현재 재고 현황
                     </h2>
 
-                    <Tabs defaultValue="all" className="w-full">
+                    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                         <div className="flex justify-between items-center mb-4 overflow-x-auto">
                             <TabsList className="bg-latte-100 p-1 rounded-xl">
                                 <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
@@ -283,86 +305,83 @@ export default function InventoryPage() {
                             </TabsList>
                         </div>
 
-                        <TabsContent value="all" className="mt-0">
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                                <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-latte-100">
-                                            <thead className="bg-latte-50/50">
-                                                <tr>
-                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
-                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
-                                                    <th className="hidden lg:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
-                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
-                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
-                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
-                                                    <th className="px-4 md:px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-latte-100">
-                                                {loadingBeans ? (
-                                                    <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">로딩 중...</td></tr>
-                                                ) : beans.length === 0 ? (
-                                                    <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
-                                                ) : beans.map((bean) => (
-                                                    <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
-                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
-                                                        <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                            {bean.type === 'GREEN_BEAN' ? '생두' : bean.type === 'BLEND_BEAN' ? '블렌드' : '원두'}
-                                                        </td>
-                                                        <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">
-                                                            {bean.roast_profile || '-'}
-                                                        </td>
-                                                        <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
-                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
-                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                                                            {bean.quantity_kg < 5 ? <Badge variant="destructive" className="whitespace-nowrap">부족</Badge> :
-                                                                bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800 whitespace-nowrap">주의</Badge> :
-                                                                    <Badge variant="default" className="bg-green-600 whitespace-nowrap">충분</Badge>}
-                                                        </td>
-                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1 md:space-x-2">
-                                                            <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'IN')} className="text-green-600 hover:bg-green-50 px-2 md:px-3">
-                                                                <Plus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">입고</span>
-                                                            </Button>
-                                                            <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50 px-2 md:px-3">
-                                                                <Minus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">출고</span>
-                                                            </Button>
-                                                        </td>
+                        {['all', 'green', 'roasted'].map((tabValue) => (
+                            <TabsContent key={tabValue} value={tabValue} className="mt-0">
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-latte-100">
+                                                <thead className="bg-latte-50/50">
+                                                    <tr>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
+                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                                                        <th className="hidden lg:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
+                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
+                                                        <th className="px-4 md:px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-latte-100">
+                                                    {loadingBeans ? (
+                                                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">로딩 중...</td></tr>
+                                                    ) : beans.length === 0 ? (
+                                                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                                                    ) : beans.map((bean) => (
+                                                        <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
+                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                                {bean.type === 'GREEN_BEAN' ? '생두' : bean.type === 'BLEND_BEAN' ? '블렌드' : '원두'}
+                                                            </td>
+                                                            <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">
+                                                                {bean.roast_profile || '-'}
+                                                            </td>
+                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                                                {bean.quantity_kg < 5 ? <Badge variant="destructive" className="whitespace-nowrap">부족</Badge> :
+                                                                    bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800 whitespace-nowrap">주의</Badge> :
+                                                                        <Badge variant="default" className="bg-green-600 whitespace-nowrap">충분</Badge>}
+                                                            </td>
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1 md:space-x-2">
+                                                                <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'IN')} className="text-green-600 hover:bg-green-50 px-2 md:px-3">
+                                                                    <Plus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">입고</span>
+                                                                </Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50 px-2 md:px-3">
+                                                                    <Minus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">출고</span>
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {/* Bean Pagination */}
+                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
+                                                disabled={beanPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            <span className="text-sm font-medium text-latte-600">
+                                                {beanPage} / {beanTotalPages || 1}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
+                                                disabled={beanPage >= (beanTotalPages || 1)}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
                                     </div>
-                                    {/* Bean Pagination */}
-                                    <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
-                                            disabled={beanPage === 1}
-                                        >
-                                            이전
-                                        </Button>
-                                        <span className="text-sm font-medium text-latte-600">
-                                            {beanPage} / {beanTotalPages || 1}
-                                        </span>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
-                                            disabled={beanPage >= (beanTotalPages || 1)}
-                                        >
-                                            다음
-                                        </Button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        </TabsContent>
-                        {/* Note: Other tabs (green, roasted) would need filtered fetching or client filtering. For simplicity, we are paginating 'All' correctly. 
-                            Implementing server-side filtering + pagination for tabs requires API change or prop passing. 
-                            Current implementation keeps simple All pagination. 
-                            Tabs content for 'green'/'roasted' is removed in this simplification to avoid complex state management in one go. 
-                            User asked for "pagination" for "Current Inventory Status". */}
+                                </motion.div>
+                            </TabsContent>
+                        ))}
                     </Tabs>
                 </section>
 

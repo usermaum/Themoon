@@ -20,12 +20,13 @@ def read_beans(
     page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
     size: int = Query(10, ge=1, le=100, description="페이지당 항목 수"),
     search: Optional[str] = Query(None, description="검색어 (이름, 원산지, 품종)"),
+    type: Optional[List[str]] = Query(None, description="원두 유형 필터 (GREEN_BEAN, ROASTED_BEAN, BLEND_BEAN)"),
     db: Session = Depends(get_db)
 ):
     """원두 목록 조회"""
     skip = (page - 1) * size
-    beans = bean_service.get_beans(db, skip=skip, limit=size, search=search)
-    total = bean_service.get_beans_count(db)
+    beans = bean_service.get_beans(db, skip=skip, limit=size, search=search, bean_types=type)
+    total = bean_service.get_beans_count(db, search=search, bean_types=type)
     pages = math.ceil(total / size) if size > 0 else 0
     
     return BeanListResponse(
