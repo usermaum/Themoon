@@ -287,7 +287,12 @@ export interface InventoryLogListResponse {
 // --- Inventory API ---
 
 export const InventoryLogAPI = {
-  getAll: async (params?: { bean_id?: number; skip?: number; limit?: number }) => {
+  getAll: async (params?: {
+    bean_id?: number;
+    skip?: number;
+    limit?: number;
+    change_type?: string[];
+  }) => {
     // Convert skip/limit to page/size
     const limitVal = params?.limit || 10
     const skipVal = params?.skip || 0
@@ -299,9 +304,20 @@ export const InventoryLogAPI = {
     }
 
     if (params?.bean_id) queryParams.bean_id = params.bean_id
+    if (params?.change_type) queryParams.change_type = params.change_type
 
     const response = await api.get<InventoryLogListResponse>('/api/v1/inventory-logs/', {
-      params: queryParams
+      params: queryParams,
+      paramsSerializer: (params) => {
+        const searchParams = new URLSearchParams()
+        if (params.page) searchParams.append('page', params.page.toString())
+        if (params.size) searchParams.append('size', params.size.toString())
+        if (params.bean_id) searchParams.append('bean_id', params.bean_id.toString())
+        if (params.change_type && Array.isArray(params.change_type)) {
+          params.change_type.forEach((t: string) => searchParams.append('change_type', t))
+        }
+        return searchParams.toString()
+      }
     })
     return response.data
   },

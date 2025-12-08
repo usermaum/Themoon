@@ -12,18 +12,23 @@ def read_inventory_logs(
     page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
     size: int = Query(10, ge=1, le=100, description="페이지당 항목 수"),
     bean_id: Optional[int] = Query(None, description="원두 ID 필터"),
+    change_type: List[str] = Query([], description="변동 유형 필터 (PURCHASE, SALES 등)"),
     db: Session = Depends(get_db)
 ):
     """
     재고 입출고 기록 조회 (페이징 지원)
-    bean_id를 지정하면 해당 원두의 기록만 조회
+    - bean_id: 특정 원두의 기록만 조회
+    - change_type: 변동 유형으로 필터링 (입고/출고 탭용)
     """
     # skip/limit 계산
     skip = (page - 1) * size
 
+    # 빈 리스트를 None으로 변환
+    change_types = change_type if change_type else None
+
     # 데이터 조회
-    logs = inventory_log_service.get_logs(db, bean_id=bean_id, skip=skip, limit=size)
-    total = inventory_log_service.get_logs_count(db, bean_id=bean_id)
+    logs = inventory_log_service.get_logs(db, bean_id=bean_id, change_types=change_types, skip=skip, limit=size)
+    total = inventory_log_service.get_logs_count(db, bean_id=bean_id, change_types=change_types)
     pages = (total + size - 1) // size if size > 0 else 0
 
     return InventoryLogListResponse(

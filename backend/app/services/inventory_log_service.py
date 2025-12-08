@@ -5,17 +5,33 @@ from app.schemas.inventory_log import InventoryLogCreate
 from typing import List, Optional
 
 class InventoryLogService:
-    def get_logs(self, db: Session, bean_id: Optional[int] = None, skip: int = 0, limit: int = 100) -> List[InventoryLog]:
+    def get_logs(
+        self,
+        db: Session,
+        bean_id: Optional[int] = None,
+        change_types: Optional[List[str]] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[InventoryLog]:
         query = db.query(InventoryLog)
         if bean_id:
             query = query.filter(InventoryLog.bean_id == bean_id)
+        if change_types:
+            query = query.filter(InventoryLog.change_type.in_(change_types))
         return query.order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
 
-    def get_logs_count(self, db: Session, bean_id: Optional[int] = None) -> int:
+    def get_logs_count(
+        self,
+        db: Session,
+        bean_id: Optional[int] = None,
+        change_types: Optional[List[str]] = None
+    ) -> int:
         """입출고 기록 총 개수 조회"""
         query = db.query(InventoryLog)
         if bean_id:
             query = query.filter(InventoryLog.bean_id == bean_id)
+        if change_types:
+            query = query.filter(InventoryLog.change_type.in_(change_types))
         return query.count()
 
     def create_log(self, db: Session, log: InventoryLogCreate) -> InventoryLog:
