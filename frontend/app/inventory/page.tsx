@@ -248,7 +248,7 @@ export default function InventoryPage() {
             // Refresh both tables
             await fetchBeans(beanPage, activeTab)
             updatePage('logPage', 1) // Reset log page to 1 to see new entry
-            await fetchLogs(1)
+            await fetchLogs(1, logTab)
             closeModal()
         } catch (err: any) {
             console.error('Failed to create inventory log:', err)
@@ -274,7 +274,7 @@ export default function InventoryPage() {
             setSubmitting(true)
             await InventoryLogAPI.update(selectedLog.id, finalQuantity, editReason || undefined)
             await fetchBeans(beanPage, activeTab)
-            await fetchLogs(logPage)
+            await fetchLogs(logPage, logTab)
             closeEditModal()
         } catch (err: any) {
             console.error('Failed to update inventory log:', err)
@@ -290,7 +290,7 @@ export default function InventoryPage() {
         try {
             await InventoryLogAPI.delete(id)
             await fetchBeans(beanPage, activeTab)
-            await fetchLogs(logPage)
+            await fetchLogs(logPage, logTab)
         } catch (err: any) {
             console.error('Failed to delete inventory log:', err)
             alert(err.response?.data?.detail || '삭제에 실패했습니다.')
@@ -440,83 +440,93 @@ export default function InventoryPage() {
                             <TabsTrigger value="in">입고</TabsTrigger>
                             <TabsTrigger value="out">출고</TabsTrigger>
                         </TabsList>
-                    </Tabs>
 
-                    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-latte-100">
-                                <thead className="bg-latte-50/50">
-                                    <tr>
-                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">날짜</th>
-                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두</th>
-                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
-                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">수량</th>
-                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">사유</th>
-                                        <th className="hidden md:table-cell px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-latte-100">
-                                    {logs.length === 0 ? (
-                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
-                                    ) : (
-                                        logs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
-                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                    {new Date(log.created_at).toLocaleDateString('ko-KR')}
-                                                    <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                </td>
-                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
-                                                    {getBeanName(log.bean_id)}
-                                                </td>
-                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
-                                                    <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
-                                                        className={log.change_amount >= 0 ? 'bg-green-600' : ''}>
-                                                        {log.change_amount >= 0 ? '입고' : '출고'}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
-                                                    {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
-                                                </td>
-                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                    {log.notes || '-'}
-                                                </td>
-                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                    <Button size="icon" variant="ghost" onClick={() => openEditModal(log)} className="text-latte-400 hover:bg-latte-100">
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button size="icon" variant="ghost" onClick={() => handleDelete(log.id)} className="text-latte-400 hover:text-red-600 hover:bg-red-50">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                        {/* Logs Pagination */}
-                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
-                                disabled={logPage === 1}
-                            >
-                                이전
-                            </Button>
-                            <span className="text-sm font-medium text-latte-600">
-                                {logPage} / {logTotalPages || 1}
-                            </span>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
-                                disabled={logPage >= (logTotalPages || 1)}
-                            >
-                                다음
-                            </Button>
-                        </div>
-                    </div>
+                        {['all', 'in', 'out'].map((tabValue) => (
+                            <TabsContent key={tabValue} value={tabValue} className="mt-0">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
+                                >
+                                    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-latte-100">
+                                                <thead className="bg-latte-50/50">
+                                                    <tr>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">날짜</th>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두</th>
+                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">수량</th>
+                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">사유</th>
+                                                        <th className="hidden md:table-cell px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-latte-100">
+                                                    {logs.length === 0 ? (
+                                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
+                                                    ) : (
+                                                        logs.map((log) => (
+                                                            <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
+                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                                    {new Date(log.created_at).toLocaleDateString('ko-KR')}
+                                                                    <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                </td>
+                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
+                                                                    {getBeanName(log.bean_id)}
+                                                                </td>
+                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
+                                                                    <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                                                                        className={log.change_amount >= 0 ? 'bg-green-600' : ''}>
+                                                                        {log.change_amount >= 0 ? '입고' : '출고'}
+                                                                    </Badge>
+                                                                </td>
+                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
+                                                                    {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
+                                                                </td>
+                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                                    {log.notes || '-'}
+                                                                </td>
+                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                                    <Button size="icon" variant="ghost" onClick={() => openEditModal(log)} className="text-latte-400 hover:bg-latte-100">
+                                                                        <Edit2 className="w-4 h-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" variant="ghost" onClick={() => handleDelete(log.id)} className="text-latte-400 hover:text-red-600 hover:bg-red-50">
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </Button>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {/* Logs Pagination */}
+                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
+                                                disabled={logPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            <span className="text-sm font-medium text-latte-600">
+                                                {logPage} / {logTotalPages || 1}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                                disabled={logPage >= (logTotalPages || 1)}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </TabsContent>
+                        ))}
+                    </Tabs>
                 </motion.section>
 
                 {/* 입출고 등록 Modal */}
