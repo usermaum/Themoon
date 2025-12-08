@@ -11,6 +11,31 @@
 
 ---
 
+## [0.0.7] - 2025-12-08
+
+### ✨ Features
+
+- **Roasted Bean Images**: 전체 원두 및 블렌드 로스팅 이미지 생성 완료 (19종, 35개 파일).
+  - 전체 리스트: `frontend/public/images/roasted/`
+  - V3 프롬프트 적용 완료.
+
+- **Components Demo Page**: Shadcn UI 컴포넌트 데모 페이지 확장 (`frontend/app/components-demo/page.tsx`).
+  - 추가된 컴포넌트: Accordion, Dialog, Carousel, Table, Calendar 등 모든 기본 UI 요소 통합.
+
+### 🐛 Fixed
+
+- **Carousel Component**: `Carousel` 컴포넌트의 Named Export 누락 오류 수정.
+  - `CarouselContent`, `CarouselItem`, `CarouselNext`, `CarouselPrevious` export 추가.
+
+- **Mobile Sidebar**: 모바일 환경에서 사이드바가 닫혔을 때 화면 밖으로 완전히 사라지지 않던 문제 해결 (`-translate-x-full` 클래스 적용).
+
+### 📄 Documentation
+
+- **Session Summary**: 2025-12-08 세션 진행 상황 및 다음 단계 업데이트.
+- **Bean Image Prompts**: V3 문서 업데이트 (모든 이미지 생성 완료 상태로 변경).
+
+---
+
 ## [0.0.6] - 2025-12-07
 
 ### ✨ Features
@@ -58,6 +83,9 @@
 - **Documents/README.md**: 문서 인덱스 생성
 - **루트 문서 이동**: DEPLOYMENT.md, TEST_REPORT.md 등 적절한 폴더로 이동
 - **Session Summary**: 2025-12-07 세션 요약 작성
+
+- **Roasting Validation**: 로스팅 비즈니스 로직(싱글/블렌드) 검증 스크립트(`test_roasting_logic.py`) 작성 및 테스트 완료.
+- **Mobile Responsive**: 모바일 화면에서 사이드바가 닫혀 있을 때 완전히 숨겨지도록 수정.
 
 ---
 

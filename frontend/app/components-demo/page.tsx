@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import PageHero from '@/components/ui/page-hero'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,9 +8,64 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Coffee, Palette, Package, Plus, Trash2, Edit2, Search, Check, Mail, ArrowRight } from 'lucide-react'
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Calendar } from "@/components/ui/calendar"
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { Progress } from "@/components/ui/progress"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Coffee, Palette, Plus, Trash2, Search, ArrowRight, Bell, Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react'
 
 export default function ComponentsDemoPage() {
+    const [date, setDate] = useState<Date | undefined>(new Date())
+
     return (
         <div className="min-h-screen pb-20">
             <PageHero
@@ -169,6 +224,19 @@ export default function ComponentsDemoPage() {
                                     <Label htmlFor="message">Message</Label>
                                     <Textarea id="message" placeholder="Type your message here..." />
                                 </div>
+                                <div className="space-y-2">
+                                    <Label>Select Option</Label>
+                                    <Select>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a roast level" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="light">Light Roast</SelectItem>
+                                            <SelectItem value="medium">Medium Roast</SelectItem>
+                                            <SelectItem value="dark">Dark Roast</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -218,6 +286,253 @@ export default function ComponentsDemoPage() {
                             </CardContent>
                         </Card>
                     </div>
+                </section>
+
+                {/* 6. Selection Controls */}
+                <section className="space-y-6">
+                    <h2 className="text-3xl font-serif font-bold text-latte-900 border-b border-latte-200 pb-4">
+                        6. Selection Controls
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Checkbox & Radio</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox id="terms" />
+                                    <Label htmlFor="terms">Accept terms and conditions</Label>
+                                </div>
+
+                                <RadioGroup defaultValue="option-one">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-one" id="option-one" />
+                                        <Label htmlFor="option-one">Option One</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="option-two" id="option-two" />
+                                        <Label htmlFor="option-two">Option Two</Label>
+                                    </div>
+                                </RadioGroup>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Switch & Slider</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-8">
+                                <div className="flex items-center space-x-2">
+                                    <Switch id="airplane-mode" />
+                                    <Label htmlFor="airplane-mode">Airplane Mode</Label>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Volume: 50%</Label>
+                                    <Slider defaultValue={[50]} max={100} step={1} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </section>
+
+                {/* 7. Components & Overlays */}
+                <section className="space-y-6">
+                    <h2 className="text-3xl font-serif font-bold text-latte-900 border-b border-latte-200 pb-4">
+                        7. Components & Overlays
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Tabs & Accordion</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-8">
+                                <Tabs defaultValue="account" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="account">Account</TabsTrigger>
+                                        <TabsTrigger value="password">Password</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="account">
+                                        <p className="p-4 text-sm text-latte-600 bg-latte-50 rounded-lg">Account settings content goes here.</p>
+                                    </TabsContent>
+                                    <TabsContent value="password">
+                                        <p className="p-4 text-sm text-latte-600 bg-latte-50 rounded-lg">Password settings content goes here.</p>
+                                    </TabsContent>
+                                </Tabs>
+
+                                <Accordion type="single" collapsible>
+                                    <AccordionItem value="item-1">
+                                        <AccordionTrigger>Is it accessible?</AccordionTrigger>
+                                        <AccordionContent>
+                                            Yes. It adheres to the WAI-ARIA design pattern.
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    <AccordionItem value="item-2">
+                                        <AccordionTrigger>Is it styled?</AccordionTrigger>
+                                        <AccordionContent>
+                                            Yes. It comes with default styles that matches the other components&apos; aesthetic.
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                </Accordion>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Dialogs & Popovers</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="block mb-2">Alert Dialog</Label>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline">Show Dialog</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete your account
+                                                    and remove your data from our servers.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction>Continue</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="block mb-2">Popover</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline">Open Popover</Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-80">
+                                            <div className="grid gap-4">
+                                                <div className="space-y-2">
+                                                    <h4 className="font-medium leading-none">Dimensions</h4>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Set the dimensions for the layer.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </section>
+
+                {/* 8. Data Display */}
+                <section className="space-y-6">
+                    <h2 className="text-3xl font-serif font-bold text-latte-900 border-b border-latte-200 pb-4">
+                        8. Data Display
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <Card className="md:col-span-2">
+                            <CardHeader>
+                                <CardTitle>Table</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableCaption>A list of recent coffee orders.</TableCaption>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[100px]">Order</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Method</TableHead>
+                                            <TableHead className="text-right">Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow>
+                                            <TableCell className="font-medium">INV001</TableCell>
+                                            <TableCell>Paid</TableCell>
+                                            <TableCell>Credit Card</TableCell>
+                                            <TableCell className="text-right">$250.00</TableCell>
+                                        </TableRow>
+                                        <TableRow>
+                                            <TableCell className="font-medium">INV002</TableCell>
+                                            <TableCell>Pending</TableCell>
+                                            <TableCell>PayPal</TableCell>
+                                            <TableCell className="text-right">$150.00</TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Avatar & Progress</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-8">
+                                <div className="flex items-center gap-4">
+                                    <Avatar>
+                                        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                        <AvatarFallback>CN</AvatarFallback>
+                                    </Avatar>
+                                    <Avatar>
+                                        <AvatarFallback>JD</AvatarFallback>
+                                    </Avatar>
+                                    <div className="text-sm text-latte-600">
+                                        Avatar components with image and fallback support.
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Progress: 60%</Label>
+                                    <Progress value={60} className="w-full" />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Calendar</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex justify-center">
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    className="rounded-md border"
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </section>
+
+                {/* 9. Carousel */}
+                <section className="space-y-6">
+                    <h2 className="text-3xl font-serif font-bold text-latte-900 border-b border-latte-200 pb-4">
+                        9. Carousel
+                    </h2>
+                    <Card>
+                        <CardContent className="p-12">
+                            <Carousel className="w-full max-w-xs mx-auto">
+                                <CarouselContent>
+                                    {Array.from({ length: 5 }).map((_, index) => (
+                                        <CarouselItem key={index}>
+                                            <div className="p-1">
+                                                <Card>
+                                                    <CardContent className="flex aspect-square items-center justify-center p-6">
+                                                        <span className="text-4xl font-semibold">{index + 1}</span>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                            </Carousel>
+                        </CardContent>
+                    </Card>
                 </section>
 
             </div>
