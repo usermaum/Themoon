@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.0.6** | Next.js + FastAPI로 완전히 재작성
+> **v0.0.7** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -78,9 +78,11 @@
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
 ├── .claude/                   # Claude Code 설정
-│   ├── CLAUDE.md              # 프로젝트 가이드
+│   ├── CLAUDE.md              # 프로젝트 가이드 (Claude용)
 │   ├── instructions.md        # 상세 지침
 │   └── settings.local.json
+├── .gemini/                   # Gemini 설정
+│   └── GEMINI.md              # 프로젝트 가이드 (Gemini용)
 │
 ├── backend/                   # FastAPI 백엔드 (8개 파일, 20KB)
 │   ├── app/
