@@ -13,25 +13,31 @@ router = APIRouter()
 
 @router.get("/", response_model=BeanListResponse)
 def read_beans(
-    skip: int = 0,
-    limit: int = 100,
-    search: Optional[str] = None,
+    page: int = Query(1, ge=1, description="페이지 번호 (1부터 시작)"),
+    size: int = Query(10, ge=1, le=100, description="페이지당 항목 수"),
+    search: Optional[str] = Query(None, description="검색어 (이름, 원산지, 품종)"),
+    type: List[str] = Query([], description="원두 유형 필터 (GREEN_BEAN, ROASTED_BEAN, BLEND_BEAN)"),
     db: Session = Depends(get_db)
 ):
-    """원두 목록 조회"""
-    items = bean_service.get_beans(db, skip=skip, limit=limit, search=search)
-    total = bean_service.get_beans_count(db) # 검색어가 있을 경우 카운트 로직이 부정확할 수 있으나, 일단 전체 카운트로 구현
-    
-    page = (skip // limit) + 1
-    pages = (total + limit - 1) // limit
+    """원두 목록 조회 (페이징 및 필터 지원)"""
+    # 빈 리스트를 None으로 변환 (bean_service에서 None일 때만 필터 미적용)
+    bean_types = type if type else None
 
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": limit,
-        "pages": pages
-    }
+    # skip/limit 계산
+    skip = (page - 1) * size
+
+    # 데이터 조회
+    items = bean_service.get_beans(db, skip=skip, limit=size, search=search, bean_types=bean_types)
+    total = bean_service.get_beans_count(db, search=search, bean_types=bean_types)
+    pages = (total + size - 1) // size if size > 0 else 0
+
+    return BeanListResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+        pages=pages
+    )
 
 @router.post("/", response_model=Bean)
 def create_bean(bean: BeanCreate, db: Session = Depends(get_db)):
