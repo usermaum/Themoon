@@ -18,7 +18,8 @@ def get_beans(
     db: Session,
     skip: int = 0,
     limit: int = 100,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    bean_types: Optional[List[str]] = None
 ) -> List[Bean]:
     """원두 목록 조회 (페이징 및 검색 지원)"""
     query = db.query(Bean)
@@ -29,6 +30,9 @@ def get_beans(
             (Bean.origin.contains(search)) |
             (Bean.variety.contains(search))
         )
+    
+    if bean_types:
+        query = query.filter(Bean.type.in_(bean_types))
     
     return query.offset(skip).limit(limit).all()
 
@@ -69,9 +73,21 @@ def delete_bean(db: Session, bean_id: int) -> bool:
     return True
 
 
-def get_beans_count(db: Session) -> int:
-    """전체 원두 개수 조회"""
-    return db.query(Bean).count()
+def get_beans_count(db: Session, search: Optional[str] = None, bean_types: Optional[List[str]] = None) -> int:
+    """전체 원두 개수 조회 (필터 포함)"""
+    query = db.query(Bean)
+    
+    if search:
+        query = query.filter(
+            (Bean.name.contains(search)) |
+            (Bean.origin.contains(search)) |
+            (Bean.variety.contains(search))
+        )
+    
+    if bean_types:
+        query = query.filter(Bean.type.in_(bean_types))
+        
+    return query.count()
 
 
 def update_bean_quantity(
