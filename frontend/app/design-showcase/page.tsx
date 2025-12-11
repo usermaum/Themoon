@@ -61,20 +61,16 @@ export default function DesignShowcasePage() {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
-        ease: [0.25, 0.46, 0.45, 0.94]
+        duration: 0.5
       }
     }
   }
 
-  const floatingVariants = {
-    animate: {
-      y: [0, -10, 0],
-      transition: {
-        duration: 3,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
+  const floatingAnimation = {
+    y: [0, -10, 0],
+    transition: {
+      duration: 3,
+      repeat: Infinity
     }
   }
 
@@ -117,8 +113,7 @@ export default function DesignShowcasePage() {
             className="text-center"
           >
             <motion.div
-              variants={floatingVariants}
-              animate="animate"
+              animate={floatingAnimation}
               className="inline-block mb-6"
             >
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 inline-block">
@@ -640,7 +635,7 @@ export default function DesignShowcasePage() {
                   <div className="flex flex-col items-center justify-center space-y-6">
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      transition={{ duration: 2, repeat: Infinity }}
                       className="w-16 h-16 border-4 border-latte-200 border-t-latte-800 rounded-full"
                     />
                     <div className="space-y-3 w-full max-w-md">
