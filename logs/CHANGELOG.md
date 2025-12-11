@@ -15,6 +15,11 @@
 
 ### ✨ Features
 
+- **Design Showcase**: `design-showcase` 페이지 추가. 종합 디자인 시스템 쇼케이스 구현.
+  - 컴포넌트 (통계 카드, 알림 배지, 버튼, 폼 요소)
+  - 레이아웃 (대시보드, 그리드)
+  - 인터랙션 (호버 효과, 로딩 상태, 애니메이션)
+  - Sidebar에 Design Demo 메뉴 추가
 - **Inventory UX**: 재고 관리 페이지 탭 전환 애니메이션 개선 (Slide Up + Fade).
 
 ### 🐛 Fixed
