@@ -22,6 +22,12 @@
   - Sidebar에 Design Demo 메뉴 추가
 - **Inventory UX**: 재고 관리 페이지 탭 전환 애니메이션 개선 (Slide Up + Fade).
 
+### 📝 Documentation
+
+- **문서 동기화 개선**: 문서 4종 세트 → 5종 세트로 확장.
+  - `.gemini/GEMINI.md` 추가 (Gemini용 프로젝트 가이드)
+  - `.claude/CLAUDE.md`와 함께 버전 동기화 대상 관리
+
 ### 🐛 Fixed
 
 - **Inventory Pagination**: 재고 현황 페이징 시 입출고 기록이 불필요하게 재조회되는 문제 해결 (State Isolation).
