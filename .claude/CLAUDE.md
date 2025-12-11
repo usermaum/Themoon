@@ -83,11 +83,12 @@ http://localhost:8501
    ↓
 2️⃣ git commit
    ↓
-3️⃣ 문서 4종 세트 업데이트 ← 이것 없으면 작업 미완료!
+3️⃣ 문서 5종 세트 업데이트 ← 이것 없으면 작업 미완료!
    - [ ] logs/CHANGELOG.md (변경 로그 추가)
    - [ ] Documents/Progress/SESSION_SUMMARY_YYYY-MM-DD.md (세션 요약 작성/업데이트)
    - [ ] README.md (버전, 테스트 통계 등 6개 위치 확인)
    - [ ] .claude/CLAUDE.md (버전 동기화 확인)
+   - [ ] .gemini/GEMINI.md (버전 동기화 확인)
 ```
 
 **❌ 절대 하지 말 것:**
@@ -98,7 +99,7 @@ http://localhost:8501
 
 **✅ 반드시 할 것:**
 
-- 커밋 직후 바로 문서 4종 세트 체크
+- 커밋 직후 바로 문서 5종 세트 체크
 - 하나라도 빠뜨리면 TodoWrite로 "문서 업데이트" 태스크 추가
 - 세션 종료 전 반드시 모든 문서 동기화 확인
 

@@ -41,10 +41,12 @@
 * [x] patch_easyocr.sh 스크립트 삭제
 * [x] animation 페이지 개행 문자 정리
 * [x] frontend-design skill 권한 추가
-* [x] Git 커밋 및 원격 저장소 푸시 (15 commits)
+* [x] Git 커밋 및 원격 저장소 푸시 (16 commits)
 * [x] CHANGELOG 업데이트
 * [x] SESSION_SUMMARY 작성
-* [ ] README.md 업데이트 (진행 중)
+* [x] README.md 업데이트 (v0.0.8 동기화)
+* [x] .claude/CLAUDE.md 업데이트 (v0.0.8 동기화)
+* [x] 문서 동기화 대상에 .gemini/GEMINI.md 추가 (4종 → 5종 세트)
 
 ---
 
