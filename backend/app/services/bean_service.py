@@ -29,7 +29,11 @@ def get_beans(
     if search:
         query = query.filter(
             (Bean.name.contains(search)) |
+            (Bean.name_ko.contains(search)) |
+            (Bean.name_en.contains(search)) |
             (Bean.origin.contains(search)) |
+            (Bean.origin_ko.contains(search)) |
+            (Bean.origin_en.contains(search)) |
             (Bean.variety.contains(search))
         )
 
@@ -88,7 +92,11 @@ def get_beans_count(db: Session, search: Optional[str] = None, bean_types: Optio
     if search:
         query = query.filter(
             (Bean.name.contains(search)) |
+            (Bean.name_ko.contains(search)) |
+            (Bean.name_en.contains(search)) |
             (Bean.origin.contains(search)) |
+            (Bean.origin_ko.contains(search)) |
+            (Bean.origin_en.contains(search)) |
             (Bean.variety.contains(search))
         )
 

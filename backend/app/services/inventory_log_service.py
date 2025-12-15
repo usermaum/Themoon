@@ -10,28 +10,50 @@ class InventoryLogService:
         db: Session,
         bean_id: Optional[int] = None,
         change_types: Optional[List[str]] = None,
+        search: Optional[str] = None,
         skip: int = 0,
         limit: int = 100
     ) -> List[InventoryLog]:
-        query = db.query(InventoryLog)
+        query = db.query(InventoryLog).join(Bean)
+        
         if bean_id:
             query = query.filter(InventoryLog.bean_id == bean_id)
         if change_types:
             query = query.filter(InventoryLog.change_type.in_(change_types))
+        if search:
+            query = query.filter(
+                (Bean.name.contains(search)) |
+                (Bean.name_ko.contains(search)) |
+                (Bean.name_en.contains(search)) |
+                (Bean.origin.contains(search)) |
+                (Bean.origin_ko.contains(search))
+            )
+            
         return query.options(joinedload(InventoryLog.bean)).order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
 
     def get_logs_count(
         self,
         db: Session,
         bean_id: Optional[int] = None,
-        change_types: Optional[List[str]] = None
+        change_types: Optional[List[str]] = None,
+        search: Optional[str] = None
     ) -> int:
         """입출고 기록 총 개수 조회"""
-        query = db.query(InventoryLog)
+        query = db.query(InventoryLog).join(Bean)
+        
         if bean_id:
             query = query.filter(InventoryLog.bean_id == bean_id)
         if change_types:
             query = query.filter(InventoryLog.change_type.in_(change_types))
+        if search:
+            query = query.filter(
+                (Bean.name.contains(search)) |
+                (Bean.name_ko.contains(search)) |
+                (Bean.name_en.contains(search)) |
+                (Bean.origin.contains(search)) |
+                (Bean.origin_ko.contains(search))
+            )
+
         return query.count()
 
     def create_log(self, db: Session, log: InventoryLogCreate) -> InventoryLog:

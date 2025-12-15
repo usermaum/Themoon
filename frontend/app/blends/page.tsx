@@ -198,9 +198,11 @@ export default function BlendManagementPage() {
                                                                 </span>
                                                             </div>
                                                             <div className="h-1.5 rounded-full bg-latte-100 w-full overflow-hidden">
-                                                                <div
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${item.ratio * 100}%` }}
+                                                                    transition={{ duration: 1, delay: 0.5 + (idx * 0.1) }}
                                                                     className={`h-full rounded-full ${idx % 2 === 0 ? 'bg-latte-600' : 'bg-latte-400'}`}
-                                                                    style={{ width: `${item.ratio * 100}%` }}
                                                                 />
                                                             </div>
                                                         </div>

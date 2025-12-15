@@ -1,0 +1,23 @@
+
+import sys
+import os
+
+# Add backend directory to path so we can import app modules
+sys.path.append(os.path.join(os.getcwd(), 'backend'))
+
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import sessionmaker
+from app.database import Base
+from app.models.bean import Bean
+from app.models.blend import Blend
+from app.core.config import settings
+
+# Setup DB connection
+DATABASE_URL = "sqlite:///./backend/sql_app.db" # Adjust if handling postgres, but looks like sqlite might be used or I should use settings
+# Let's try to load from settings or just guess default. 
+# The context showed app.database uses standard declarative base.
+# Assuming typical fastapi structure.
+
+# But wait, I should check database.py to see the URL or if it env var driven.
+# For now, I'll assume I can just use the session if I can import get_db, but that requires a generator.
+# I will inspect app/database.py first to be safe about the connection string.

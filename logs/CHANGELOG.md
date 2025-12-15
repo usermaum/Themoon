@@ -13,9 +13,35 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2025-12-15
+
+### 🐛 Fixed
+
+- **Unknown Bean Matching**: 블렌드 페이지 및 인벤토리에서 'Unknown Bean'이 표시되는 문제 해결.
+  - 원인: 프론트엔드 SWR 훅(`useBeans`, `useInventoryLogs`)에서 `skip`/`limit` 파라미터를 사용했으나, 백엔드는 `page`/`size`를 기대함. 백엔드가 `limit` 파라미터를 무시하고 기본값(page=1, size=10)을 적용하여 10번째 이후 항목이 리스트에서 누락됨.
+  - 해결: `useBeans`와 `useInventoryLogs` 훅을 수정하여 `skip`/`limit`을 `page`/`size` 파라미터로 올바르게 변환하여 전송하도록 변경.
+
+- **Bean Type Mismatch**: '원두' 탭에 블렌드가 표시되고 '블렌드' 탭이 비어있는 문제 수정.
+  - 원인: DB 내 블렌드 상품들의 타입이 `ROASTED_BEAN`으로 잘못 설정됨.
+  - 해결: 데이터 마이그레이션을 통해 해당 상품들의 타입을 `BLEND_BEAN`으로 수정.
+
 ### ✨ Features
 
-- **Design Showcase**: `design-showcase` 페이지 추가. 종합 디자인 시스템 쇼케이스 구현.
+- **Blend Recipes UI**: 블렌드 레시피 구성 비율 막대에 애니메이션 효과 적용.
+  - `design-showcase`의 Progress 애니메이션 스타일 이식.
+  - 레시피 비율이 부드럽게 차오르는 모션 추가.
+
+- **Beans Filtering**: 원두 목록 페이지에 탭 기반 필터링 기능 추가.
+  - 분류: 전체 / 생두 / 원두 / 블렌드.
+  - 즉각적인 리스트 필터링 및 페이지네이션 연동.
+
+- **Beans Empty State Logic**: 데이터 없음 화면 개선.
+  - 검색 결과가 없을 때: 검색 초기화 버튼 제공.
+  - 탭별(블렌드/원두 등) 데이터 없을 때:
+    - 블렌드: "블렌드 생성 (Pre-Roast)" 버튼 표시 (링크: `/roasting/blend`).
+    - 원두: "싱글 오리진 로스팅" 버튼 표시.
+    - 생두/전체: "첫 번째 원두 등록하기" 버튼 표시.
+  - 데이터 없는 경우 페이징(1/1) 컨트롤 숨김 처리.
   - 컴포넌트 (통계 카드, 알림 배지, 버튼, 폼 요소)
   - 레이아웃 (대시보드, 그리드)
   - 인터랙션 (호버 효과, 로딩 상태, 애니메이션)
