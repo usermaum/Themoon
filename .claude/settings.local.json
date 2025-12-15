@@ -84,7 +84,8 @@
       "Bash(sqlite3:*)",
       "Bash(/mnt/d/Ai/WslProject/TheMoon/venv/bin/python:*)",
       "Bash(npm run dev:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
