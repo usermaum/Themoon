@@ -373,8 +373,16 @@ export default function InventoryPage() {
                                     placeholder="원두명 검색..."
                                     value={beanSearch}
                                     onChange={(e) => setBeanSearch(e.target.value)}
-                                    className="pl-9 h-10 bg-white border-latte-200 focus:border-latte-400"
+                                    className="pl-9 pr-8 h-10 bg-white border-latte-200 focus:border-latte-400"
                                 />
+                                {beanSearch && (
+                                    <button
+                                        onClick={() => setBeanSearch('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-latte-400 hover:text-latte-600 focus:outline-none"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -484,8 +492,16 @@ export default function InventoryPage() {
                                     placeholder="기록 검색 (원두명)..."
                                     value={logSearch}
                                     onChange={(e) => setLogSearch(e.target.value)}
-                                    className="pl-9 h-10 bg-white border-latte-200 focus:border-latte-400"
+                                    className="pl-9 pr-8 h-10 bg-white border-latte-200 focus:border-latte-400"
                                 />
+                                {logSearch && (
+                                    <button
+                                        onClick={() => setLogSearch('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-latte-400 hover:text-latte-600 focus:outline-none"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
