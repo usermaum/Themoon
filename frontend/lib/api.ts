@@ -41,8 +41,14 @@ export interface Bean {
   type: BeanType
   sku?: string
 
+  // 다국어 정보
+  name_ko?: string
+  name_en?: string
+
   // 생두 정보
   origin?: string
+  origin_ko?: string
+  origin_en?: string
   variety?: string
   grade?: string
   processing_method?: string
@@ -79,7 +85,13 @@ export interface BeanListResponse {
 export interface BeanCreateData {
   name: string
   type: BeanType
+
+  name_ko?: string
+  name_en?: string
+
   origin?: string
+  origin_ko?: string
+  origin_en?: string
   variety?: string
   grade?: string
   processing_method?: string
@@ -270,6 +282,9 @@ export interface InventoryLog {
   bean?: {
     name: string
     id: number
+    name_ko?: string
+    name_en?: string
+    origin_ko?: string
   }
 }
 
@@ -296,6 +311,7 @@ export const InventoryLogAPI = {
     skip?: number;
     limit?: number;
     change_type?: string[];
+    search?: string;
   }) => {
     // Convert skip/limit to page/size
     const limitVal = params?.limit || 10
@@ -309,6 +325,7 @@ export const InventoryLogAPI = {
 
     if (params?.bean_id) queryParams.bean_id = params.bean_id
     if (params?.change_type) queryParams.change_type = params.change_type
+    if (params?.search) queryParams.search = params.search
 
     const response = await api.get<InventoryLogListResponse>('/api/v1/inventory-logs/', {
       params: queryParams,
@@ -320,6 +337,7 @@ export const InventoryLogAPI = {
         if (params.change_type && Array.isArray(params.change_type)) {
           params.change_type.forEach((t: string) => searchParams.append('change_type', t))
         }
+        if (params.search) searchParams.append('search', params.search)
         return searchParams.toString()
       }
     })

@@ -15,19 +15,29 @@ interface UseBeansOptions {
     skip?: number
     limit?: number
     search?: string
+    type?: string[]
 }
 
 /**
  * Bean 목록 조회 훅
  */
 export function useBeans(options: UseBeansOptions = {}) {
-    const { skip = 0, limit = 100, search } = options
+    const { skip = 0, limit = 100, search, type } = options
 
     // URL 파라미터 생성
+    // URL 파라미터 생성 (Backend matches page/size, not skip/limit)
     const params = new URLSearchParams()
-    params.set('skip', String(skip))
-    params.set('limit', String(limit))
+
+    // skip/limit -> page/size 변환
+    const page = Math.floor(skip / limit) + 1
+    const size = limit
+
+    params.set('page', String(page))
+    params.set('size', String(size))
     if (search) params.set('search', search)
+    if (type && type.length > 0) {
+        type.forEach(t => params.append('type', t))
+    }
 
     const key = `${BEANS_KEY}?${params.toString()}`
 

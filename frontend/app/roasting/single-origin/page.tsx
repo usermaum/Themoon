@@ -238,9 +238,18 @@ export default function SingleOriginRoastingPage() {
                                             <SelectContent>
                                                 {greenBeans.map(bean => (
                                                     <SelectItem key={bean.id} value={String(bean.id)}>
-                                                        <span className="font-bold mr-2">{bean.origin}</span>
-                                                        {bean.name}
-                                                        <span className="text-latte-400 ml-2 text-sm">(재고: {bean.quantity_kg.toFixed(1)}kg)</span>
+                                                        <div className="flex flex-col items-start text-left">
+                                                            <div>
+                                                                <span className="font-bold mr-2 text-latte-700">[{bean.origin_ko || bean.origin}]</span>
+                                                                <span className="font-medium text-latte-900">{bean.name_ko || bean.name}</span>
+                                                                <span className={`ml-2 text-xs ${bean.quantity_kg < 5 ? 'text-red-500 font-bold' : 'text-latte-400'}`}>
+                                                                    ({bean.quantity_kg.toFixed(1)}kg)
+                                                                </span>
+                                                            </div>
+                                                            {bean.name_en && (
+                                                                <span className="text-xs text-latte-400 font-normal">{bean.name_en}</span>
+                                                            )}
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>

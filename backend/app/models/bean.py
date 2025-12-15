@@ -35,12 +35,19 @@ class Bean(Base):
     id = Column(Integer, primary_key=True, index=True)
     
     # --- 핵심 식별 정보 ---
-    name = Column(String(100), nullable=False, index=True, comment="품목명 (예: 예가체프, 풀문)")
+    name = Column(String(100), nullable=False, index=True, comment="품목명 (Legacy/대표명)")
     type = Column(Enum(BeanType), nullable=False, default=BeanType.GREEN_BEAN, comment="품목 유형")
     sku = Column(String(100), unique=True, index=True, comment="SKU 코드 (예: Yirga-LIGHT)")
 
+    # --- 다국어 지원 (New) ---
+    name_ko = Column(String(100), index=True, nullable=True, comment="품목명(한글)")
+    name_en = Column(String(200), index=True, nullable=True, comment="품목명(영문)")
+
     # --- 생두 정보 (Green Bean) ---
-    origin = Column(String(100), nullable=True, comment="원산지 (생두용)")
+    origin = Column(String(100), nullable=True, comment="원산지 (Legacy/국가코드)")
+    origin_ko = Column(String(50), index=True, nullable=True, comment="원산지(한글)")
+    origin_en = Column(String(50), index=True, nullable=True, comment="원산지(영문)")
+    
     variety = Column(String(50), nullable=True, comment="품종")
     grade = Column(String(50), nullable=True, comment="등급 (G1, G2, AA 등)")
     processing_method = Column(String(50), nullable=True, comment="가공 방식")
@@ -75,4 +82,3 @@ class Bean(Base):
     
     def __repr__(self):
         return f"<Bean(id={self.id}, name='{self.name}', type='{self.type}', sku='{self.sku}')>"
-

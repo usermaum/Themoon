@@ -16,8 +16,15 @@ class BeanBase(BaseModel):
     type: BeanType = Field(default=BeanType.GREEN_BEAN, description="품목 유형")
     sku: Optional[str] = Field(None, description="SKU 코드")
     
+    # 다국어 정보
+    name_ko: Optional[str] = Field(None, description="품목명(한글)")
+    name_en: Optional[str] = Field(None, description="품목명(영문)")
+
     # 생두 정보
     origin: Optional[str] = Field(None, max_length=100, description="원산지")
+    origin_ko: Optional[str] = Field(None, description="원산지(한글)")
+    origin_en: Optional[str] = Field(None, description="원산지(영문)")
+
     variety: Optional[str] = Field(None, max_length=50, description="품종")
     grade: Optional[str] = Field(None, max_length=50, description="등급")
     processing_method: Optional[str] = Field(None, max_length=50, description="가공 방식")
@@ -60,7 +67,13 @@ class BeanUpdate(BaseModel):
     type: Optional[BeanType] = Field(None)
     sku: Optional[str] = Field(None)
     
+    name_ko: Optional[str] = Field(None)
+    name_en: Optional[str] = Field(None)
+    
     origin: Optional[str] = Field(None)
+    origin_ko: Optional[str] = Field(None)
+    origin_en: Optional[str] = Field(None)
+
     variety: Optional[str] = Field(None)
     grade: Optional[str] = Field(None)
     processing_method: Optional[str] = Field(None)

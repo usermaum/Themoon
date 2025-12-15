@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw } from 'lucide-react'
 
 // Helper to resolve bean images
@@ -79,6 +80,23 @@ export default function BeanManagementPage() {
     // URL에서 페이지 번호 가져오기 (기본값 1)
     const page = Number(searchParams.get('page')) || 1
     const [search, setSearch] = useState('')
+    const [activeTab, setActiveTab] = useState('all')
+
+    // 탭 변경 핸들러
+    const handleTabChange = (value: string) => {
+        setActiveTab(value)
+        setPage(1)
+    }
+
+    // 탭 값에 따른 필터 타입 반환
+    const getBeanTypes = () => {
+        switch (activeTab) {
+            case 'raw': return ['GREEN_BEAN']
+            case 'roasted': return ['ROASTED_BEAN']
+            case 'blend': return ['BLEND_BEAN']
+            default: return []
+        }
+    }
 
     // 페이지 변경 핸들러
     const setPage = (newPage: number) => {
@@ -95,6 +113,7 @@ export default function BeanManagementPage() {
         skip,
         limit,
         search: search || undefined,
+        type: getBeanTypes(),
     })
 
     const handleDelete = async (id: number) => {
@@ -143,6 +162,15 @@ export default function BeanManagementPage() {
                     </Button>
                 </motion.div>
 
+                <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="mb-8">
+                    <TabsList className="bg-latte-100 p-1 h-12 rounded-xl">
+                        <TabsTrigger value="all" className="h-10 rounded-lg px-6 data-[state=active]:bg-white data-[state=active]:text-latte-900 data-[state=active]:shadow-sm">전체</TabsTrigger>
+                        <TabsTrigger value="raw" className="h-10 rounded-lg px-6 data-[state=active]:bg-white data-[state=active]:text-latte-900 data-[state=active]:shadow-sm">생두</TabsTrigger>
+                        <TabsTrigger value="roasted" className="h-10 rounded-lg px-6 data-[state=active]:bg-white data-[state=active]:text-latte-900 data-[state=active]:shadow-sm">원두</TabsTrigger>
+                        <TabsTrigger value="blend" className="h-10 rounded-lg px-6 data-[state=active]:bg-white data-[state=active]:text-latte-900 data-[state=active]:shadow-sm">블렌드</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+
                 {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 mb-6 flex items-center gap-2">
@@ -173,13 +201,45 @@ export default function BeanManagementPage() {
                         <div className="bg-latte-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Coffee className="w-10 h-10 text-latte-400" />
                         </div>
-                        <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 원두가 없습니다</h3>
-                        <p className="text-latte-500 mb-8">새로운 원두를 등록하여 컬렉션을 시작해보세요.</p>
-                        <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
-                            <Link href="/beans/new">
-                                첫 번째 원두 등록하기
-                            </Link>
-                        </Button>
+                        {search ? (
+                            <>
+                                <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">검색 결과가 없습니다</h3>
+                                <p className="text-latte-500 mb-8">'{search}'에 대한 검색 결과를 찾을 수 없습니다.</p>
+                                <Button variant="outline" onClick={() => setSearch('')} className="border-latte-400 text-latte-700 hover:bg-latte-50">
+                                    검색 초기화
+                                </Button>
+                            </>
+                        ) : activeTab === 'blend' ? (
+                            <>
+                                <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 블렌드가 없습니다</h3>
+                                <p className="text-latte-500 mb-8">새로운 블렌드 레시피를 생성하면 이곳에 표시됩니다.</p>
+                                <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
+                                    <Link href="/roasting/blend">
+                                        블렌드 생성 (Pre-Roast)
+                                    </Link>
+                                </Button>
+                            </>
+                        ) : activeTab === 'roasted' ? (
+                            <>
+                                <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 원두가 없습니다</h3>
+                                <p className="text-latte-500 mb-8">로스팅된 싱글 오리진 원두가 없습니다.</p>
+                                <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
+                                    <Link href="/roasting/single-origin">
+                                        싱글 오리진 로스팅
+                                    </Link>
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">원두 목록이 비어있습니다</h3>
+                                <p className="text-latte-500 mb-8">새로운 원두(생두)를 등록하여 컬렉션을 시작해보세요.</p>
+                                <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
+                                    <Link href="/beans/new">
+                                        첫 번째 원두 등록하기
+                                    </Link>
+                                </Button>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <motion.div
@@ -235,12 +295,15 @@ export default function BeanManagementPage() {
                                             </span>
                                         </div>
                                         <CardTitle className="leading-tight group-hover:text-latte-600 transition-colors">
-                                            <Link href={`/beans/${bean.id}`} className="hover:underline decoration-latte-400 underline-offset-4">
-                                                {bean.name}
+                                            <Link href={`/beans/${bean.id}`} className="hover:underline decoration-latte-400 underline-offset-4 block">
+                                                <span>{bean.name_ko || bean.name}</span>
+                                                {bean.name_en && (
+                                                    <span className="block text-xs font-normal text-latte-400 mt-1 font-sans">{bean.name_en}</span>
+                                                )}
                                             </Link>
                                         </CardTitle>
                                         <CardDescription className="flex items-center gap-1 mt-1 text-latte-500">
-                                            <MapPin className="w-3 h-3" /> {bean.origin}
+                                            <MapPin className="w-3 h-3" /> {bean.origin_ko || bean.origin || 'Unknown Origin'}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardFooter className="pt-2 border-t border-latte-50 mt-auto bg-latte-50/30">
@@ -258,27 +321,30 @@ export default function BeanManagementPage() {
                 )}
 
                 {/* Pagination */}
-                <div className="mt-12 flex justify-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => setPage(Math.max(1, page - 1))}
-                        disabled={page === 1}
-                        className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
-                    >
-                        이전 페이지
-                    </Button>
-                    <span className="px-6 py-2 bg-white border border-latte-200 rounded-lg text-latte-800 font-bold flex items-center shadow-sm">
-                        {page} / {totalPages || 1}
-                    </span>
-                    <Button
-                        variant="outline"
-                        onClick={() => setPage(Math.min(totalPages, page + 1))}
-                        disabled={page >= totalPages}
-                        className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
-                    >
-                        다음 페이지
-                    </Button>
-                </div>
+                {/* Pagination */}
+                {beans.length > 0 && (
+                    <div className="mt-12 flex justify-center gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={() => setPage(Math.max(1, page - 1))}
+                            disabled={page === 1}
+                            className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
+                        >
+                            이전 페이지
+                        </Button>
+                        <span className="px-6 py-2 bg-white border border-latte-200 rounded-lg text-latte-800 font-bold flex items-center shadow-sm">
+                            {page} / {totalPages || 1}
+                        </span>
+                        <Button
+                            variant="outline"
+                            onClick={() => setPage(Math.min(totalPages, page + 1))}
+                            disabled={page >= totalPages}
+                            className="bg-white border-latte-200 text-latte-700 hover:bg-latte-50 px-6"
+                        >
+                            다음 페이지
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     )

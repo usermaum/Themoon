@@ -22,9 +22,12 @@ interface UseInventoryLogsOptions {
 export function useInventoryLogs(options: UseInventoryLogsOptions = {}) {
     const { beanId, limit = 100 } = options
 
-    // URL 파라미터 생성
+    // URL 파라미터 생성 (Backend matches page/size)
     const params = new URLSearchParams()
-    params.set('limit', String(limit))
+
+    // limit -> size, page=1 (skip 없음)
+    params.set('page', '1')
+    params.set('size', String(limit))
     if (beanId) params.set('bean_id', String(beanId))
 
     const key = `${INVENTORY_KEY}?${params.toString()}`

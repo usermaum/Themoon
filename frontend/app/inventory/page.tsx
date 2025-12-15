@@ -8,7 +8,7 @@ import PageHero from '@/components/ui/page-hero'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle } from 'lucide-react'
+import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle, Search } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
@@ -31,7 +31,10 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
                         <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
                     ) : beans.map((bean) => (
                         <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">
+                                <div>{bean.name_ko || bean.name}</div>
+                                {bean.name_en && <div className="text-xs font-normal text-latte-500 font-sans">{bean.name_en}</div>}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
                                 {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">생두</Badge> :
                                     bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
@@ -43,7 +46,7 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
                                         bean.roast_profile === 'MEDIUM' ? <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none">미디엄</Badge> :
                                             '-'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin_ko || bean.origin || '-'}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 {bean.quantity_kg < 5 ? <Badge variant="destructive">재고 부족</Badge> :
@@ -69,6 +72,10 @@ export default function InventoryPage() {
 
     const [beans, setBeans] = useState<Bean[]>([])
     const [logs, setLogs] = useState<InventoryLog[]>([])
+    const [beanSearch, setBeanSearch] = useState('')
+    const [logSearch, setLogSearch] = useState('')
+    const [debouncedBeanSearch, setDebouncedBeanSearch] = useState('')
+    const [debouncedLogSearch, setDebouncedLogSearch] = useState('')
     const [loadingBeans, setLoadingBeans] = useState(true)
     const [loadingLogs, setLoadingLogs] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -110,7 +117,24 @@ export default function InventoryPage() {
         router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
 
-    const fetchBeans = async (page: number, tab: string) => {
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedBeanSearch(beanSearch)
+            updatePage('beanPage', 1)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [beanSearch])
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedLogSearch(logSearch)
+            updatePage('logPage', 1)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [logSearch])
+
+    const fetchBeans = async (page: number, tab: string, search: string) => {
         try {
             const skip = (page - 1) * beanLimit
 
@@ -134,7 +158,8 @@ export default function InventoryPage() {
                 limit: beanLimit,
                 type: typeFilter,
                 origin: originFilter,
-                exclude_blend: excludeBlend
+                exclude_blend: excludeBlend,
+                search: search || undefined
             })
             setBeans(data.items)
             setBeanTotal(data.total)
@@ -146,7 +171,7 @@ export default function InventoryPage() {
         }
     }
 
-    const fetchLogs = async (page: number, tab: string) => {
+    const fetchLogs = async (page: number, tab: string, search: string) => {
         try {
             const skip = (page - 1) * logLimit
 
@@ -165,7 +190,8 @@ export default function InventoryPage() {
             const data = await InventoryLogAPI.getAll({
                 skip,
                 limit: logLimit,
-                change_type: changeTypeFilter
+                change_type: changeTypeFilter,
+                search: search || undefined
             })
             setLogs(data.items)
             setLogTotal(data.total)
@@ -178,8 +204,8 @@ export default function InventoryPage() {
     }
 
     useEffect(() => {
-        fetchBeans(beanPage, activeTab)
-    }, [beanPage, activeTab])
+        fetchBeans(beanPage, activeTab, debouncedBeanSearch)
+    }, [beanPage, activeTab, debouncedBeanSearch])
 
     const handleTabChange = (value: string) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -189,8 +215,8 @@ export default function InventoryPage() {
     }
 
     useEffect(() => {
-        fetchLogs(logPage, logTab)
-    }, [logPage, logTab])
+        fetchLogs(logPage, logTab, debouncedLogSearch)
+    }, [logPage, logTab, debouncedLogSearch])
 
     const handleLogTabChange = (value: string) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -246,9 +272,9 @@ export default function InventoryPage() {
             setSubmitting(true)
             await InventoryLogAPI.create(logData)
             // Refresh both tables
-            await fetchBeans(beanPage, activeTab)
+            await fetchBeans(beanPage, activeTab, debouncedBeanSearch)
             updatePage('logPage', 1) // Reset log page to 1 to see new entry
-            await fetchLogs(1, logTab)
+            await fetchLogs(1, logTab, debouncedLogSearch)
             closeModal()
         } catch (err: any) {
             console.error('Failed to create inventory log:', err)
@@ -273,8 +299,8 @@ export default function InventoryPage() {
         try {
             setSubmitting(true)
             await InventoryLogAPI.update(selectedLog.id, finalQuantity, editReason || undefined)
-            await fetchBeans(beanPage, activeTab)
-            await fetchLogs(logPage, logTab)
+            await fetchBeans(beanPage, activeTab, debouncedBeanSearch)
+            await fetchLogs(logPage, logTab, debouncedLogSearch)
             closeEditModal()
         } catch (err: any) {
             console.error('Failed to update inventory log:', err)
@@ -289,8 +315,8 @@ export default function InventoryPage() {
 
         try {
             await InventoryLogAPI.delete(id)
-            await fetchBeans(beanPage, activeTab)
-            await fetchLogs(logPage, logTab)
+            await fetchBeans(beanPage, activeTab, debouncedBeanSearch)
+            await fetchLogs(logPage, logTab, debouncedLogSearch)
         } catch (err: any) {
             console.error('Failed to delete inventory log:', err)
             alert(err.response?.data?.detail || '삭제에 실패했습니다.')
@@ -334,13 +360,22 @@ export default function InventoryPage() {
                     </h2>
 
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                        <div className="flex justify-between items-center mb-4 overflow-x-auto">
-                            <TabsList className="bg-latte-100 p-1 rounded-xl">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                            <TabsList className="bg-latte-100 p-1 rounded-xl overflow-x-auto w-full md:w-auto">
                                 <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
                                 <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">생두</TabsTrigger>
                                 <TabsTrigger value="roasted" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">원두</TabsTrigger>
                                 <TabsTrigger value="blend" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">블렌드</TabsTrigger>
                             </TabsList>
+                            <div className="relative w-full md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-latte-400" />
+                                <Input
+                                    placeholder="원두명 검색..."
+                                    value={beanSearch}
+                                    onChange={(e) => setBeanSearch(e.target.value)}
+                                    className="pl-9 h-10 bg-white border-latte-200 focus:border-latte-400"
+                                />
+                            </div>
                         </div>
 
                         {['all', 'green', 'roasted', 'blend'].map((tabValue) => (
@@ -397,27 +432,29 @@ export default function InventoryPage() {
                                             </table>
                                         </div>
                                         {/* Bean Pagination */}
-                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
-                                                disabled={beanPage === 1}
-                                            >
-                                                이전
-                                            </Button>
-                                            <span className="text-sm font-medium text-latte-600">
-                                                {beanPage} / {beanTotalPages || 1}
-                                            </span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
-                                                disabled={beanPage >= (beanTotalPages || 1)}
-                                            >
-                                                다음
-                                            </Button>
-                                        </div>
+                                        {beans.length > 0 && (
+                                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
+                                                    disabled={beanPage === 1}
+                                                >
+                                                    이전
+                                                </Button>
+                                                <span className="text-sm font-medium text-latte-600">
+                                                    {beanPage} / {beanTotalPages || 1}
+                                                </span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
+                                                    disabled={beanPage >= (beanTotalPages || 1)}
+                                                >
+                                                    다음
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             </TabsContent>
@@ -435,11 +472,22 @@ export default function InventoryPage() {
 
                     {/* 입출고 기록 탭 */}
                     <Tabs value={logTab} onValueChange={handleLogTabChange} className="mb-4">
-                        <TabsList className="grid w-full max-w-md grid-cols-3 bg-latte-100">
-                            <TabsTrigger value="all">전체</TabsTrigger>
-                            <TabsTrigger value="in">입고</TabsTrigger>
-                            <TabsTrigger value="out">출고</TabsTrigger>
-                        </TabsList>
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <TabsList className="grid w-full max-w-md grid-cols-3 bg-latte-100">
+                                <TabsTrigger value="all">전체</TabsTrigger>
+                                <TabsTrigger value="in">입고</TabsTrigger>
+                                <TabsTrigger value="out">출고</TabsTrigger>
+                            </TabsList>
+                            <div className="relative w-full md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-latte-400" />
+                                <Input
+                                    placeholder="기록 검색 (원두명)..."
+                                    value={logSearch}
+                                    onChange={(e) => setLogSearch(e.target.value)}
+                                    className="pl-9 h-10 bg-white border-latte-200 focus:border-latte-400"
+                                />
+                            </div>
+                        </div>
 
                         {['all', 'in', 'out'].map((tabValue) => (
                             <TabsContent key={tabValue} value={tabValue} className="mt-0">
@@ -472,7 +520,12 @@ export default function InventoryPage() {
                                                                     <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
                                                                 </td>
                                                                 <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
-                                                                    {log.bean?.name || getBeanName(log.bean_id)}
+                                                                    <div>{log.bean?.name_ko || beans.find(b => b.id === log.bean_id)?.name_ko || log.bean?.name || getBeanName(log.bean_id)}</div>
+                                                                    {(log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en) && (
+                                                                        <div className="text-xs font-normal text-latte-500 font-sans mt-0.5">
+                                                                            {log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en}
+                                                                        </div>
+                                                                    )}
                                                                 </td>
                                                                 <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                                                                     <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
@@ -501,27 +554,29 @@ export default function InventoryPage() {
                                             </table>
                                         </div>
                                         {/* Logs Pagination */}
-                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
-                                                disabled={logPage === 1}
-                                            >
-                                                이전
-                                            </Button>
-                                            <span className="text-sm font-medium text-latte-600">
-                                                {logPage} / {logTotalPages || 1}
-                                            </span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
-                                                disabled={logPage >= (logTotalPages || 1)}
-                                            >
-                                                다음
-                                            </Button>
-                                        </div>
+                                        {logs.length > 0 && (
+                                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
+                                                    disabled={logPage === 1}
+                                                >
+                                                    이전
+                                                </Button>
+                                                <span className="text-sm font-medium text-latte-600">
+                                                    {logPage} / {logTotalPages || 1}
+                                                </span>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                                    disabled={logPage >= (logTotalPages || 1)}
+                                                >
+                                                    다음
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             </TabsContent>
