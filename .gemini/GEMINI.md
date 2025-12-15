@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.0.9
+> **버전**: 0.1.0
 
 ---
 

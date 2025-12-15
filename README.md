@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.0.9** | Next.js + FastAPI로 완전히 재작성
+> **v0.1.0** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -73,7 +73,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.0.8)
+### 현재 구조 (v0.1.0)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -545,6 +545,6 @@ MIT License - 자유롭게 사용 가능
 
 ---
 
-**버전:** 0.0.9
+**버전:** 0.1.0
 **최종 업데이트:** 2025-12-15
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

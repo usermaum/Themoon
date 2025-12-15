@@ -1,7 +1,7 @@
 # CLAUDE.md - 프로젝트 가이드 네비게이터
 
 > **TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)**
-> 버전: 0.0.8 · 스택: Next.js + FastAPI + PostgreSQL · Clean Slate
+> 버전: 0.1.0 · 스택: Next.js + FastAPI + PostgreSQL · Clean Slate
 
 ---
 
