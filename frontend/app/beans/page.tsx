@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw } from 'lucide-react'
+import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw, X } from 'lucide-react'
 
 // Helper to resolve bean images
 const getBeanImage = (bean: Bean) => {
@@ -149,10 +149,18 @@ export default function BeanManagementPage() {
                         <Input
                             type="text"
                             placeholder="원두명, 원산지, 품종 검색..."
-                            className="pl-12 bg-white border-latte-200 focus:border-latte-400 h-12 rounded-xl shadow-sm"
+                            className="pl-12 pr-10 bg-white border-latte-200 focus:border-latte-400 h-12 rounded-xl shadow-sm"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-latte-400 hover:text-latte-600 focus:outline-none"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
 
                     <Button asChild className="shadow-lg hover:shadow-xl bg-latte-800 hover:bg-latte-900 gap-2 h-12 px-6 rounded-xl text-lg font-serif">
