@@ -42,6 +42,14 @@
   - 각 탭에 맞는 적절한 액션 버튼(“블렌드 생성 (Pre-Roast)” -> `/roasting/blend`, “싱글 오리진 로스팅” -> `/roasting/single-origin`) 배치.
   - 데이터가 없을 경우(검색 결과 포함) 하단 페이징(1 / 1) 컨트롤을 비활성화/숨김 처리하여 사용자 경험 개선.
 
+- **Multilingual Support**
+  - 시스템 전반(원두 목록, 재고 관리, 로스팅)에 한글/영문 다국어 표시 및 검색 기능 구현.
+  - DB 스키마 확장 및 기존 데이터 마이그레이션(Seed) 완료.
+
+- **Inventory Search**
+  - 재고 관리 페이지의 '현재 재고 현황' 및 '입출고 기록' 탭에 검색바 추가.
+  - 실시간 타이핑(Debounce 적용)으로 원두명/원산지 필터링 가능.
+
 ## 🛠️ Technical Details
 - **Affected Files**:
   - `frontend/hooks/use-beans.ts`

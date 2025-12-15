@@ -59,6 +59,17 @@
 - **Inventory Pagination**: 재고 현황 페이징 시 입출고 기록이 불필요하게 재조회되는 문제 해결 (State Isolation).
 - **Bean Name Display**: 입출고 기록 테이블에서 페이징 시 원두 이름이 잘못 표시되거나 사라지는 문제 수정 (Backend Schema Update & Frontend Logic Fix).
 
+### ✨ Features (Updated)
+
+- **Multilingual Support**: 시스템 전반(원두, 재고, 로스팅)에 다국어(한글/영문) 지원 추가.
+  - DB: `name_ko`, `name_en`, `origin_ko`, `origin_en` 컬럼 추가 및 데이터 마이그레이션.
+  - Backend: 검색 로직 개선 (한국어/영어 이름 및 원산지 검색 지원).
+  - Frontend: 원두 카드, 재고 테이블, 로스팅 선택 드롭다운에 다국어 병기.
+
+- **Inventory Search**: 재고 관리 페이지에 실시간 검색 기능 도입.
+  - 현재 재고 현황: 이름/원산지 검색 지원.
+  - 입출고 기록: 원두 이름 기반 검색 지원.
+
 ## [0.0.8] - 2025-12-09
 
 ### ✨ Features
