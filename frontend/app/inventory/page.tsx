@@ -387,84 +387,90 @@ export default function InventoryPage() {
                         </div>
 
                         {['all', 'green', 'roasted', 'blend'].map((tabValue) => (
-                            <TabsContent key={tabValue} value={tabValue} className="mt-0">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, ease: "easeOut" }}
-                                >
-                                    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full divide-y divide-latte-100">
-                                                <thead className="bg-latte-50/50">
-                                                    <tr>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
-                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
-                                                        <th className="hidden lg:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
-                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
-                                                        <th className="px-4 md:px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                            <TabsContent
+                                key={tabValue}
+                                value={tabValue}
+                                className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                            >
+                                <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-latte-100">
+                                            <thead className="bg-latte-50/50">
+                                                <tr>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두명</th>
+                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                                                    <th className="hidden lg:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
+                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
+                                                    <th className="px-4 md:px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-latte-100">
+                                                {beans.length === 0 ? (
+                                                    <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                                                ) : beans.map((bean) => (
+                                                    <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
+                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">
+                                                            <div>{bean.name_ko || bean.name}</div>
+                                                            {bean.name_en && <div className="text-xs font-normal text-latte-500 font-sans">{bean.name_en}</div>}
+                                                        </td>
+                                                        <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                            {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">생두</Badge> :
+                                                                bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
+                                                                    <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50">원두</Badge>}
+                                                        </td>
+                                                        <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">
+                                                            {bean.roast_profile === 'LIGHT' ? <Badge className="bg-lime-500 hover:bg-lime-600 border-none text-white">신콩(Light)</Badge> :
+                                                                bean.roast_profile === 'DARK' ? <Badge className="bg-slate-800 hover:bg-slate-900 border-none text-white">탄콩(Dark)</Badge> :
+                                                                    bean.roast_profile === 'MEDIUM' ? <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none">미디엄</Badge> :
+                                                                        '-'}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin_ko || bean.origin || '-'}</td>
+                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
+                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap">
+                                                            {bean.quantity_kg < 5 ? <Badge variant="destructive" className="whitespace-nowrap">부족</Badge> :
+                                                                bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800 whitespace-nowrap">주의</Badge> :
+                                                                    <Badge variant="default" className="bg-green-600 whitespace-nowrap">충분</Badge>}
+                                                        </td>
+                                                        <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1 md:space-x-2">
+                                                            <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'IN')} className="text-green-600 hover:bg-green-50 px-2 md:px-3">
+                                                                <Plus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">입고</span>
+                                                            </Button>
+                                                            <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50 px-2 md:px-3">
+                                                                <Minus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">출고</span>
+                                                            </Button>
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-latte-100">
-                                                    {beans.length === 0 ? (
-                                                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
-                                                    ) : beans.map((bean) => (
-                                                        <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
-                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">{bean.name}</td>
-                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                                {bean.type === 'GREEN_BEAN' ? '생두' : bean.type === 'BLEND_BEAN' ? '블렌드' : '원두'}
-                                                            </td>
-                                                            <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">
-                                                                {bean.roast_profile || '-'}
-                                                            </td>
-                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin || '-'}</td>
-                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
-                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap">
-                                                                {bean.quantity_kg < 5 ? <Badge variant="destructive" className="whitespace-nowrap">부족</Badge> :
-                                                                    bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800 whitespace-nowrap">주의</Badge> :
-                                                                        <Badge variant="default" className="bg-green-600 whitespace-nowrap">충분</Badge>}
-                                                            </td>
-                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1 md:space-x-2">
-                                                                <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'IN')} className="text-green-600 hover:bg-green-50 px-2 md:px-3">
-                                                                    <Plus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">입고</span>
-                                                                </Button>
-                                                                <Button size="sm" variant="ghost" onClick={() => openModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50 px-2 md:px-3">
-                                                                    <Minus className="w-4 h-4 md:mr-1" /><span className="hidden md:inline">출고</span>
-                                                                </Button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        {/* Bean Pagination */}
-                                        {beans.length > 0 && (
-                                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
-                                                    disabled={beanPage === 1}
-                                                >
-                                                    이전
-                                                </Button>
-                                                <span className="text-sm font-medium text-latte-600">
-                                                    {beanPage} / {beanTotalPages || 1}
-                                                </span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
-                                                    disabled={beanPage >= (beanTotalPages || 1)}
-                                                >
-                                                    다음
-                                                </Button>
-                                            </div>
-                                        )}
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                </motion.div>
+                                    {/* Bean Pagination */}
+                                    {beans.length > 0 && (
+                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
+                                                disabled={beanPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            <span className="text-sm font-medium text-latte-600">
+                                                {beanPage} / {beanTotalPages || 1}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
+                                                disabled={beanPage >= (beanTotalPages || 1)}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </TabsContent>
                         ))}
                     </Tabs>
@@ -506,95 +512,93 @@ export default function InventoryPage() {
                         </div>
 
                         {['all', 'in', 'out'].map((tabValue) => (
-                            <TabsContent key={tabValue} value={tabValue} className="mt-0">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, ease: "easeOut" }}
-                                >
-                                    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
-                                        <div className="overflow-x-auto">
-                                            <table className="min-w-full divide-y divide-latte-100">
-                                                <thead className="bg-latte-50/50">
-                                                    <tr>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">날짜</th>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두</th>
-                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
-                                                        <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">수량</th>
-                                                        <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">사유</th>
-                                                        <th className="hidden md:table-cell px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-latte-100">
-                                                    {logs.length === 0 ? (
-                                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
-                                                    ) : (
-                                                        logs.map((log) => (
-                                                            <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
-                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                                    {new Date(log.created_at).toLocaleDateString('ko-KR')}
-                                                                    <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                                </td>
-                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
-                                                                    <div>{log.bean?.name_ko || beans.find(b => b.id === log.bean_id)?.name_ko || log.bean?.name || getBeanName(log.bean_id)}</div>
-                                                                    {(log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en) && (
-                                                                        <div className="text-xs font-normal text-latte-500 font-sans mt-0.5">
-                                                                            {log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en}
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
-                                                                    <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
-                                                                        className={log.change_amount >= 0 ? 'bg-green-600' : ''}>
-                                                                        {log.change_amount >= 0 ? '입고' : '출고'}
-                                                                    </Badge>
-                                                                </td>
-                                                                <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
-                                                                    {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
-                                                                </td>
-                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                                                    {log.notes || '-'}
-                                                                </td>
-                                                                <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                                                    <Button size="icon" variant="ghost" onClick={() => openEditModal(log)} className="text-latte-400 hover:bg-latte-100">
-                                                                        <Edit2 className="w-4 h-4" />
-                                                                    </Button>
-                                                                    <Button size="icon" variant="ghost" onClick={() => handleDelete(log.id)} className="text-latte-400 hover:text-red-600 hover:bg-red-50">
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </Button>
-                                                                </td>
-                                                            </tr>
-                                                        ))
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        {/* Logs Pagination */}
-                                        {logs.length > 0 && (
-                                            <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
-                                                    disabled={logPage === 1}
-                                                >
-                                                    이전
-                                                </Button>
-                                                <span className="text-sm font-medium text-latte-600">
-                                                    {logPage} / {logTotalPages || 1}
-                                                </span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
-                                                    disabled={logPage >= (logTotalPages || 1)}
-                                                >
-                                                    다음
-                                                </Button>
-                                            </div>
-                                        )}
+                            <TabsContent
+                                key={tabValue}
+                                value={tabValue}
+                                className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                            >
+                                <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-latte-100">
+                                            <thead className="bg-latte-50/50">
+                                                <tr>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">날짜</th>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원두</th>
+                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">유형</th>
+                                                    <th className="px-4 md:px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">수량</th>
+                                                    <th className="hidden md:table-cell px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">사유</th>
+                                                    <th className="hidden md:table-cell px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-latte-100">
+                                                {logs.length === 0 ? (
+                                                    <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
+                                                ) : (
+                                                    logs.map((log) => (
+                                                        <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                                {new Date(log.created_at).toLocaleDateString('ko-KR')}
+                                                                <span className="hidden md:inline"> {new Date(log.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            </td>
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-latte-900">
+                                                                <div>{log.bean?.name_ko || beans.find(b => b.id === log.bean_id)?.name_ko || log.bean?.name || getBeanName(log.bean_id)}</div>
+                                                                {(log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en) && (
+                                                                    <div className="text-xs font-normal text-latte-500 font-sans mt-0.5">
+                                                                        {log.bean?.name_en || beans.find(b => b.id === log.bean_id)?.name_en}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
+                                                                <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                                                                    className={log.change_amount >= 0 ? 'bg-green-600' : ''}>
+                                                                    {log.change_amount >= 0 ? '입고' : '출고'}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-latte-900">
+                                                                {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
+                                                            </td>
+                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm text-latte-500">
+                                                                {log.notes || '-'}
+                                                            </td>
+                                                            <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                                                <Button size="icon" variant="ghost" onClick={() => openEditModal(log)} className="text-latte-400 hover:bg-latte-100">
+                                                                    <Edit2 className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button size="icon" variant="ghost" onClick={() => handleDelete(log.id)} className="text-latte-400 hover:text-red-600 hover:bg-red-50">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                </motion.div>
+                                    {/* Logs Pagination */}
+                                    {logs.length > 0 && (
+                                        <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('logPage', Math.max(1, logPage - 1))}
+                                                disabled={logPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            <span className="text-sm font-medium text-latte-600">
+                                                {logPage} / {logTotalPages || 1}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('logPage', Math.min(logTotalPages || 1, logPage + 1))}
+                                                disabled={logPage >= (logTotalPages || 1)}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </TabsContent>
                         ))}
                     </Tabs>

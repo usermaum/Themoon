@@ -250,11 +250,9 @@ export default function BeanManagementPage() {
                         )}
                     </div>
                 ) : (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                    <div
+                        key={activeTab}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500"
                     >
                         {beans.map((bean, index) => (
                             <motion.div
@@ -325,7 +323,7 @@ export default function BeanManagementPage() {
                                 </Card>
                             </motion.div>
                         ))}
-                    </motion.div>
+                    </div>
                 )}
 
                 {/* Pagination */}
