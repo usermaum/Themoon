@@ -23,6 +23,10 @@ interface InboundItem {
 
 interface InboundForm {
     supplier_name: string
+    supplier_phone?: string
+    supplier_email?: string
+    contract_number?: string
+    receiver_name?: string
     invoice_date: string
     total_amount: number
     items: InboundItem[]
@@ -119,6 +123,11 @@ export default function InboundPage() {
 
             // Auto-fill form
             setValue("supplier_name", data.supplier_name || "")
+            setValue("contract_number", data.contract_number || "")
+            setValue("supplier_phone", data.supplier_phone || "")
+            setValue("supplier_email", data.supplier_email || "")
+            setValue("receiver_name", data.receiver_name || "")
+
             setValue("invoice_date", data.invoice_date || "")
             setValue("total_amount", data.total_amount || 0)
             setValue("items", data.items || [])
@@ -138,6 +147,11 @@ export default function InboundPage() {
                 items: data.items,
                 document: {
                     supplier_name: data.supplier_name,
+                    contract_number: data.contract_number,
+                    supplier_phone: data.supplier_phone,
+                    supplier_email: data.supplier_email,
+                    receiver_name: data.receiver_name,
+
                     invoice_date: data.invoice_date,
                     total_amount: data.total_amount,
                     image_url: driveLink, // Using the local link
@@ -259,14 +273,39 @@ export default function InboundPage() {
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>공급처 (Supplier)</Label>
-                                        <Input {...register("supplier_name")} placeholder="공급처명" />
+                                        <Label>계약/주문 번호 (Contract No.)</Label>
+                                        <Input {...register("contract_number")} placeholder="발주번호 or 문서번호" className="bg-muted/10" />
                                     </div>
                                     <div className="space-y-2">
                                         <Label>날짜 (Date)</Label>
                                         <Input {...register("invoice_date")} type="date" />
                                     </div>
                                 </div>
+
+                                <Separator className="my-2" />
+
+                                <div className="space-y-4">
+                                    <Label className="text-base font-semibold">공급처 정보 (Supplier)</Label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>상호명 (Company Name)</Label>
+                                            <Input {...register("supplier_name")} placeholder="공급처명" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>담당자 (Receiver)</Label>
+                                            <Input {...register("receiver_name")} placeholder="수신자" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>연락처 (Phone)</Label>
+                                            <Input {...register("supplier_phone")} placeholder="010-0000-0000" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>이메일 (Email)</Label>
+                                            <Input {...register("supplier_email")} placeholder="example@email.com" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <Separator className="my-2" />
 
                                 <div className="space-y-2">
                                     <Label>품목 (Items)</Label>
