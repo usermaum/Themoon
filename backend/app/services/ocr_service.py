@@ -24,9 +24,13 @@ class OCRService:
         Analyze this coffee bean invoice/receipt image and extract the following data in JSON format:
         
         1. supplier_name: String (Name of the vendor/supplier)
-        2. invoice_date: String (YYYY-MM-DD format)
-        3. total_amount: Number (Total sum of the invoice)
-        4. items: List of objects, each containing:
+        2. contract_number: String (Order No, Estimate No, Document No, or '발주번호', '견적번호'. If not found, null)
+        3. supplier_phone: String (Vendor's phone number, e.g., 'Tel', 'Phone', 'H.P')
+        4. supplier_email: String (Vendor's email)
+        5. receiver_name: String (Name of the receiver/buyer)
+        6. invoice_date: String (YYYY-MM-DD format)
+        7. total_amount: Number (Total sum of the invoice)
+        8. items: List of objects, each containing:
            - bean_name: String (Name of the bean/product)
            - quantity: Number (Weight in kg or count)
            - unit_price: Number (Price per unit)

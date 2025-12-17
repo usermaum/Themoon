@@ -110,6 +110,7 @@ from app.database import get_db
 from app.models.inbound_document import InboundDocument
 from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.bean import Bean, BeanType
+from app.models.supplier import Supplier
 from app.schemas.inbound import InboundConfirmRequest
 
 @router.post("/confirm", status_code=201)
@@ -119,25 +120,57 @@ def confirm_inbound(
 ):
     """
     Saves the confirmed inbound data:
-    1. Create InboundDocument record.
-    2. Create InventoryLog records for each item.
-    3. Update Bean current_quantity.
+    1. Check for Duplicate Contract Number.
+    2. Manage Supplier (Find existing or Create new).
+    3. Create InboundDocument record.
+    4. Create InventoryLog records for each item.
+    5. Update Bean quantity.
     """
-    # 1. Create Document
-    doc_data = request.document.dict()
+    # 0. Check Duplicate Check
+    if request.document.contract_number:
+        # Check strict match on contract_number
+        existing_doc = db.query(InboundDocument).filter(
+            InboundDocument.contract_number == request.document.contract_number
+        ).first()
+        if existing_doc:
+             raise HTTPException(status_code=400, detail=f"Duplicate Contract Number: {request.document.contract_number}")
+
+    # 1. Manage Supplier
+    supplier_id = request.document.supplier_id
+    if not supplier_id and request.document.supplier_name:
+        # Try to find by name
+        supplier = db.query(Supplier).filter(Supplier.name == request.document.supplier_name).first()
+        if not supplier:
+            # Create New Supplier
+            supplier = Supplier(
+                name=request.document.supplier_name,
+                contact_phone=request.document.supplier_phone,
+                contact_email=request.document.supplier_email,
+                representative_name=request.document.receiver_name or "" # Fallback or separate field?
+            )
+            db.add(supplier)
+            db.flush() # Get ID
+        
+        # If supplier exists, we could update info, but let's skip for safety.
+        supplier_id = supplier.id
+
+    # 2. Create Document
+    doc_data = request.document.dict(exclude={'supplier_phone', 'supplier_email'})
+    doc_data['supplier_id'] = supplier_id
+    
     new_doc = InboundDocument(**doc_data)
     db.add(new_doc)
     db.flush() # Get ID
 
-    # 2. Process Items
+    # 3. Process Items
     for item in request.items:
         bean_name = item.bean_name
-        quantity = item.quantity
+        quantity = item.quantity or 0.0
         
         # Find Bean
         bean = db.query(Bean).filter(Bean.name == bean_name).first()
         if not bean:
-            # Auto-create bean if missing (Simple logic for Inbound ease)
+            # Auto-create bean if missing
             bean = Bean(name=bean_name, quantity_kg=0.0, origin="Unknown", type=BeanType.GREEN_BEAN)
             db.add(bean)
             db.flush()
@@ -149,7 +182,7 @@ def confirm_inbound(
             change_amount=quantity,
             current_quantity=bean.quantity_kg + quantity,
             inbound_document_id=new_doc.id,
-            notes=f"Inbound from {new_doc.supplier_name}"
+            notes=f"Inbound from {new_doc.supplier_name} (Contract: {new_doc.contract_number or 'N/A'})"
         )
         # Update Bean Quantity
         bean.quantity_kg += quantity
@@ -157,74 +190,4 @@ def confirm_inbound(
         db.add(log)
     
     db.commit()
-    return {"status": "success", "document_id": new_doc.id}
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models.inbound_document import InboundDocument
-from app.models.inventory_log import InventoryLog, InventoryChangeType
-from app.models.bean import Bean
-from app.schemas.inbound import InboundConfirmRequest
-
-@router.post("/confirm", status_code=201)
-def confirm_inbound(
-    request: InboundConfirmRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Saves the confirmed inbound data:
-    1. Create InboundDocument record.
-    2. Create InventoryLog records for each item.
-    3. Update Bean current_quantity (calculated via specific logic or relying on logs). 
-       (InventoryLog trigger or service logic usually handles quantity updates, but here we might need to be explicit if no triggers exist)
-    """
-    # 1. Create Document
-    doc_data = request.document.dict()
-    new_doc = InboundDocument(**doc_data)
-    db.add(new_doc)
-    db.flush() # Get ID
-
-    # 2. Process Items
-    for item in request.items:
-        # Find Bean (by name fuzzy match or exact? Frontend sends bean_id or name? 
-        # The schema implies we are sending raw OCR items. We need to Map them to Bean IDs.
-        # Ideally Frontend should allow selecting the Bean ID for each item.
-        # But for now let's assume the frontend sends 'bean_name' and we try to find it, or we need to update Frontend to allow Bean Selection.
-        
-        # Checking schema: request.items is List[dict]. 
-        # We need to clarify if frontend sends bean_id. 
-        # Code view of `frontend/.../page.tsx` shows Inputs for `bean_name`.
-        # Realistically, we need `bean_id` to link to InventoryLog.
-        # For this MVP/Restoration, if we don't have bean_id, we can't create InventoryLog correctly linked to a Bean.
-        # Logic: Try to find bean by name. If not found, create new? Or fail?
-        # User requirement says "Automagically register". 
-        # Let's try to find bean by name.
-        
-        bean_name = item.get('bean_name')
-        quantity = float(item.get('quantity', 0))
-        
-        bean = db.query(Bean).filter(Bean.name == bean_name).first()
-        if not bean:
-            # Option: Create new bean if not exists?
-            # Or skip?
-            # Let's create a placeholder bean or error? 
-            # Better: Create if missing to ensure flow doesn't break.
-            bean = Bean(name=bean_name, remain_amount=0, origin="Unknown", type="Green") # Default values
-            db.add(bean)
-            db.flush()
-        
-        # Create Log
-        log = InventoryLog(
-            bean_id=bean.id,
-            change_type=InventoryChangeType.PURCHASE,
-            change_amount=quantity,
-            current_quantity=bean.remain_amount + quantity, # Simple logic
-            inbound_document_id=new_doc.id,
-            notes=f"Inbound from {new_doc.supplier_name}"
-        )
-        # Update Bean Quantity (Manual update as no triggers guaranteed)
-        bean.remain_amount += quantity
-        
-        db.add(log)
-    
-    db.commit()
-    return {"status": "success", "document_id": new_doc.id}
+    return {"status": "success", "document_id": new_doc.id, "supplier_id": supplier_id}
