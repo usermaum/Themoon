@@ -11,6 +11,33 @@
 
 ---
 
+## [0.1.2] - 2025-12-16
+
+### ✨ Features & Improvements
+
+- **Reliable Server Startup**: `dev.sh` 실행 시 기존 프로세스(3500, 8000) 강제 종료 및 캐시 삭제 프로세스 고도화.
+- **Inbound System Upgrade Plan**: 입고 시스템 고도화를 위한 심층 계획 수립 (중복 방지, 공급처 정규화).
+
+### 🐛 Fixed
+
+- **Inbound Save Logic**: `POST /inbound/confirm` 로직 정상화 (Bean 모델 필드명 `remain_amount` -> `quantity_kg` 수정).
+- **UI Translation**: 입고 페이지(`inventory/inbound`) 전체 한글화 및 UX 개선.
+- **Process Conflict**: `EADDRINUSE` 에러 방지를 위한 프로세스 정리 규칙 도입.
+
+## [0.1.1] - 2025-12-16
+
+### ✨ Features
+
+- **Gemini OCR Restoration**: 영수증 OCR 기능 복구 (Gemini 1.5 Flash).
+- **Google Drive Integration**: 이미지 스토리지로 구글 드라이브 연동 (Service Account).
+- **Clipboard Paste**: 인바운드 페이지에서 Ctrl+V 이미지 붙여넣기 지원.
+- **Inbound Linking**: 입고 기록과 재고 로그의 DB 관계 설정 (InboundDocument).
+
+### 🐛 Fixed
+
+- **Frontend TS/Type Errors**: `page.tsx`의 타입스크립트 및 컴포넌트 임포트 오류 수정.
+- **Components Installation**: 누락된 Shadcn UI 컴포넌트(separator, alert, toast) 설치.
+
 ## [0.1.0] - 2025-12-15
 
 ### ✨ 마이너 업데이트 (Minor Update): 다국어 지원, 카테고리 필터링, 재고 검색 등 주요 기능 추가

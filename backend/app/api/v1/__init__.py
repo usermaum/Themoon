@@ -12,3 +12,6 @@ api_router.include_router(beans.router, prefix="/beans", tags=["beans"])
 api_router.include_router(roasting.router, prefix="/roasting", tags=["roasting"])
 api_router.include_router(blends.router, prefix="/blends", tags=["blends"])
 api_router.include_router(inventory_logs.router, prefix="/inventory-logs", tags=["inventory-logs"])
+
+from app.api.v1.endpoints import inbound
+api_router.include_router(inbound.router, prefix="/inbound", tags=["inbound"])

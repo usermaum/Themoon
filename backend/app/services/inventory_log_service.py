@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, contains_eager
 from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.bean import Bean
 from app.schemas.inventory_log import InventoryLogCreate
@@ -29,7 +29,7 @@ class InventoryLogService:
                 (Bean.origin_ko.contains(search))
             )
             
-        return query.options(joinedload(InventoryLog.bean)).order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
+        return query.options(contains_eager(InventoryLog.bean)).order_by(InventoryLog.created_at.desc()).offset(skip).limit(limit).all()
 
     def get_logs_count(
         self,

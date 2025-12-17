@@ -18,3 +18,10 @@ passlib[bcrypt]>=1.7.4,<2.0.0
 
 # Environment
 python-dotenv>=1.0.0,<2.0.0
+
+# Google Gemini & Drive
+google-generativeai
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+httpx

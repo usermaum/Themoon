@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: 'Premium Roasting Management System',
 }
 
+import { Toaster } from "@/components/ui/toaster"
+
 export default function RootLayout({
   children,
 }: {
@@ -37,6 +39,7 @@ export default function RootLayout({
               </div>
               <Footer />
             </div>
+            <Toaster />
           </SWRProvider>
         </AppLayout>
       </body>

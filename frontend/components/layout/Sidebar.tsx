@@ -12,7 +12,8 @@ import {
     User,
     PanelLeft,
     LogOut,
-    Sparkles
+    Sparkles,
+    FileInput
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { name: 'Roasting', href: '/roasting', icon: Flame },
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
+        { name: 'Inbound', href: '/inventory/inbound', icon: FileInput },
         { name: 'Design Demo', href: '/design-showcase', icon: Sparkles },
     ]
 

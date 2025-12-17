@@ -65,3 +65,7 @@ node_modules/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Google Drive Upload
+.gemini/service_account.json
+
