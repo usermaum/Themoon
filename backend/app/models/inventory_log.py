@@ -31,5 +31,9 @@ class InventoryLog(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
 
+    # Relationships
     bean = relationship("app.models.bean.Bean", back_populates="inventory_logs")
+    
+    inbound_document_id = Column(Integer, ForeignKey("inbound_documents.id"), nullable=True)
+    inbound_document = relationship("app.models.inbound_document.InboundDocument", back_populates="inventory_logs")
 

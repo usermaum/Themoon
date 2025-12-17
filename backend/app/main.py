@@ -70,6 +70,14 @@ app.include_router(api_router, prefix="/api/v1")
 def read_root():
     return {"message": "Welcome to The Moon Drip Bar API"}
 
+from fastapi.staticfiles import StaticFiles
+import os
+
+# Create static directory if not exists
+os.makedirs("static/uploads", exist_ok=True)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/health")
 def health_check():
     """Health check endpoint for Render.com"""

@@ -42,8 +42,8 @@ elif [ -d "venv" ]; then
 fi
 
 # 로그 파일 비우기 및 시작
-> /tmp/themoon_backend.log
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /tmp/themoon_backend.log 2>&1 &
+> ../logs/themoon_backend.log
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > ../logs/themoon_backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend 시작됨 (PID: $BACKEND_PID)"
 
@@ -52,9 +52,9 @@ cd ..
 # 4. Frontend 시작
 cd "$ROOT_DIR/frontend"
 # 로그 파일 비우기 및 시작
-> /tmp/themoon_frontend.log
+> ../logs/themoon_frontend.log
 # 0.0.0.0으로 호스트 바인딩하여 외부 접속 허용하며 포트 3500 지정
-npm run dev -- -H 0.0.0.0 -p 3500 > /tmp/themoon_frontend.log 2>&1 &
+npm run dev -- -H 0.0.0.0 -p 3500 > ../logs/themoon_frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "✅ Frontend 시작됨 (PID: $FRONTEND_PID)"
 
@@ -73,4 +73,4 @@ echo "========================================="
 
 # 5. 로그 실시간 출력 (Blocking)
 # 스크립트가 계속 실행 상태로 유지됨
-tail -f /tmp/themoon_backend.log /tmp/themoon_frontend.log
+tail -f logs/themoon_backend.log logs/themoon_frontend.log
