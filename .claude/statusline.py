@@ -134,8 +134,8 @@ def format_statusline(compact=True):
     if compact:
         # 컴팩트 버전 (한 줄)
         statusline_parts = [
-            f"🕐 {time_str}",
             f"📅 {date_str}({weekday})",
+            f"🕐 {time_str}",
             f"🌿 {branch}",
             f"🤖 {claude_info['model']}",
             f"📊 {claude_info['context']}",
