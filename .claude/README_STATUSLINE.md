@@ -130,14 +130,31 @@ export ANTHROPIC_API_KEY="your-api-key-here"
 .claude/
 ├── statusline.py           # 메인 상태바 스크립트
 ├── claude_usage_api.py     # Claude 사용량 API 모듈
+├── settings.json           # Claude Code 상태바 설정
+├── hooks.yaml              # 세션 시작 시 자동 실행 설정
 └── README_STATUSLINE.md    # 이 파일
 ```
 
 ## 🛠️ 고급 사용
 
-### Hook으로 상태바 자동 실행
+### Claude Code 상태바 통합 (자동 설정됨)
 
-`.claude/hooks.yaml` 파일에 추가:
+`.claude/settings.json` 파일:
+
+```json
+{
+  "statusLine": {
+    "command": "python3 .claude/statusline.py",
+    "refreshInterval": 60
+  }
+}
+```
+
+이 설정으로 Claude Code가 60초마다 자동으로 상태바를 새로고침합니다.
+
+### Hook으로 상태바 자동 실행 (자동 설정됨)
+
+`.claude/hooks.yaml` 파일:
 
 ```yaml
 hooks:
@@ -145,7 +162,10 @@ hooks:
     - name: statusline
       command: python3 .claude/statusline.py
       description: 세션 시작 시 상태바 표시
+      blocking: false
 ```
+
+이 설정으로 새 세션이 시작될 때마다 자동으로 상태바가 표시됩니다.
 
 ### Cron으로 주기적 모니터링
 

@@ -1,0 +1,6 @@
+hooks:
+  SessionStart:
+    - name: statusline
+      command: python3 .claude/statusline.py
+      description: 세션 시작 시 상태바 표시
+      blocking: false
