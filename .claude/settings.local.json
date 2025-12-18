@@ -93,7 +93,7 @@
   "model": "Sonnet",
   "statusLine": {
     "type": "command",
-    "command": "echo '📁 Project: The Moon Drip BAR' && ~/.claude/statusline.sh",
-    "padding": 0
+    "command": "python3 .claude/statusline.py",
+    "refreshInterval": 60
   }
 }
