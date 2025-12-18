@@ -15,7 +15,7 @@
 ls -lt Documents/Progress/SESSION_SUMMARY_*.md | head -1
 
 # 파일 읽기
-cat Documents/Progress/SESSION_SUMMARY_2025-10-27.md
+cat Documents/Progress/SESSION_SUMMARY_2025-12-18.md
 ```
 
 **확인 항목**:
@@ -59,42 +59,30 @@ git branch
 - [ ] 마지막 커밋이 뭐였는가?
 - [ ] 현재 브랜치가 main인가?
 
-#### Step 2-2: venv 상태 확인
+#### Step 2-2: 개발 환경 확인
 ```bash
-# venv 존재 확인
-ls -la venv/bin/ | grep -E "python|streamlit"
-
-# Python 버전 확인
+# Backend - Python/FastAPI
 ./venv/bin/python --version
+./venv/bin/pip list | grep -E "fastapi|uvicorn|sqlalchemy"
 
-# Streamlit 버전 확인
-./venv/bin/streamlit --version
+# Frontend - Node.js/Next.js
+cd frontend && npm list next react && cd ..
 ```
 
 **확인 항목**:
-- [ ] venv가 존재하는가?
-- [ ] Python 3.12.3인가?
-- [ ] Streamlit 1.38.0인가?
+- [ ] Python 가상환경이 존재하는가?
+- [ ] FastAPI 관련 패키지가 설치되어 있는가?
+- [ ] Next.js 관련 패키지가 설치되어 있는가?
 
 #### Step 2-3: 데이터베이스 상태 확인
 ```bash
-# DB 파일 존재 확인
-ls -lh data/roasting_data.db
-
-# DB 테이블 확인
-./venv/bin/python -c "
-import sqlite3
-conn = sqlite3.connect('data/roasting_data.db')
-cursor = conn.cursor()
-cursor.execute('SELECT name FROM sqlite_master WHERE type=\"table\"')
-tables = cursor.fetchall()
-print('Database Tables:', [t[0] for t in tables])
-conn.close()
-"
+# PostgreSQL 연결 확인 (로컬 개발 시)
+# 또는 SQLite DB 파일 확인
+ls -lh backend/data/*.db 2>/dev/null || echo "PostgreSQL 사용 중"
 ```
 
 **확인 항목**:
-- [ ] DB 파일이 존재하는가?
+- [ ] 데이터베이스가 준비되어 있는가?
 - [ ] 필요한 테이블들이 있는가?
 
 ---
@@ -130,7 +118,7 @@ cat .claude/CLAUDE.md | head -50
 **확인 항목**:
 - [ ] `.claude/CLAUDE.md`가 있는가?
 - [ ] 프로젝트 규칙이 설정되어 있는가?
-- [ ] venv 사용 규칙이 명시되어 있는가?
+- [ ] 기술 스택이 명시되어 있는가?
 
 ---
 
@@ -138,16 +126,23 @@ cat .claude/CLAUDE.md | head -50
 
 #### Step 4-1: 필요한 패키지 확인
 ```bash
-# 설치된 패키지 확인
-./venv/bin/pip list | grep -E "streamlit|pandas|plotly|numpy|openpyxl"
+# Backend 패키지
+./venv/bin/pip list | grep -E "fastapi|uvicorn|sqlalchemy|pydantic"
+
+# Frontend 패키지
+cd frontend && npm list | grep -E "next|react|tailwind" && cd ..
 ```
 
-**필수 패키지**:
-- [ ] streamlit 1.38.0
-- [ ] pandas 2.2.3
-- [ ] numpy 2.1.3
-- [ ] plotly 5.24.1
-- [ ] openpyxl 3.1.5
+**필수 패키지 (Backend)**:
+- [ ] fastapi
+- [ ] uvicorn
+- [ ] sqlalchemy
+- [ ] pydantic
+
+**필수 패키지 (Frontend)**:
+- [ ] next
+- [ ] react
+- [ ] tailwindcss
 
 #### Step 4-2: README 확인
 ```bash
@@ -166,27 +161,28 @@ cat README.md | grep -A 20 "프로젝트 정보"
 
 #### Step 5-1: 작업 목표 정하기
 ```bash
-# 다음 할 일 목록 확인
-cat Documents/Progress/SESSION_SUMMARY_2025-10-27.md | grep -A 15 "다음 세션에서 할 일"
+# 최신 세션 요약 확인
+ls -lt Documents/Progress/SESSION_SUMMARY_*.md | head -1
 ```
 
 **준비 항목**:
 - [ ] 오늘 할 작업이 뭔지 확인했는가?
 - [ ] 우선순위를 정했는가?
-- [ ] 예상 시간을 추정했는가?
 
 #### Step 5-2: 작업 환경 준비
 ```bash
 # 현재 디렉토리 확인
 pwd
 
-# 아무것도 실행 중이지 않은지 확인
-lsof -ti :8501 2>/dev/null || echo "포트 8501 사용 가능"
+# 포트 사용 확인
+lsof -ti :3000 2>/dev/null || echo "포트 3000 사용 가능 (Frontend)"
+lsof -ti :8000 2>/dev/null || echo "포트 8000 사용 가능 (Backend)"
 ```
 
 **준비 항목**:
 - [ ] 프로젝트 루트 디렉토리에 있는가?
-- [ ] 포트 8501이 사용 가능한가?
+- [ ] 포트 3000 (Frontend)이 사용 가능한가?
+- [ ] 포트 8000 (Backend)이 사용 가능한가?
 
 ---
 
@@ -198,11 +194,18 @@ lsof -ti :8501 2>/dev/null || echo "포트 8501 사용 가능"
 # 1. 현재 상태 최종 확인
 git status
 
-# 2. 작업 시작
-./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true
+# 2-1. Backend 시작 (터미널 1)
+cd backend
+./venv/bin/uvicorn app.main:app --reload --port 8000
+
+# 2-2. Frontend 시작 (터미널 2)
+cd frontend
+npm run dev
 
 # 3. 브라우저 접속
-# http://localhost:8501
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# API Docs: http://localhost:8000/docs
 ```
 
 ---
@@ -216,7 +219,8 @@ git status
 echo "=== 현재 버전 ===" && cat logs/VERSION && \
 echo "=== 최근 세션 ===" && ls -lt Documents/Progress/SESSION_SUMMARY_*.md | head -1 && \
 echo "=== Git 상태 ===" && git status --short && \
-echo "=== venv ===" && ./venv/bin/python --version
+echo "=== Python ===" && ./venv/bin/python --version && \
+echo "=== Node.js ===" && node --version
 ```
 
 ---
