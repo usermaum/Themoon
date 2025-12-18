@@ -69,18 +69,20 @@ git diff --stat
 
 #### Step 2-2: 코드 품질 확인
 ```bash
-# Python 구문 오류 확인 (선택)
-./venv/bin/python -m py_compile app/app.py
+# Backend - FastAPI 구문 오류 확인 (선택)
+./venv/bin/python -m py_compile backend/app/main.py
 
-# 앱 실행 테스트 (선택)
-./venv/bin/streamlit run app/app.py --server.port 8501 --server.headless true &
-sleep 5
-curl -s http://localhost:8501 | head -10
-pkill -f streamlit
+# Frontend - Next.js 빌드 체크 (선택)
+cd frontend && npm run build && cd ..
+
+# 간단한 API 테스트 (선택)
+# Backend를 실행하고 있다면:
+curl -s http://localhost:8000/api/health || echo "Backend 정지 상태"
 ```
 
 **확인 항목**:
-- [ ] 앱이 정상 실행되는가?
+- [ ] Backend API가 정상 작동하는가?
+- [ ] Frontend 빌드가 성공하는가?
 - [ ] 에러가 발생하지 않는가?
 
 ---
