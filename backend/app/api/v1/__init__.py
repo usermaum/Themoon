@@ -15,3 +15,6 @@ api_router.include_router(inventory_logs.router, prefix="/inventory-logs", tags=
 
 from app.api.v1.endpoints import inbound
 api_router.include_router(inbound.router, prefix="/inbound", tags=["inbound"])
+
+from app.api.v1.endpoints import dashboard
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])

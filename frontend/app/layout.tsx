@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import AppLayout from '@/components/layout/AppLayout'
-import Footer from '@/components/layout/Footer'
+
 import { cookies } from 'next/headers'
 import { SWRProvider } from '@/lib/swr-config'
 
@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   description: 'Premium Roasting Management System',
 }
 
+import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from "@/components/ui/toaster"
+import { LoadingProvider } from "@/components/providers/loading-provider"
 
 export default function RootLayout({
   children,
@@ -31,17 +33,28 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-latte-50 text-latte-800`}>
-        <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
-          <SWRProvider>
-            <div className="flex flex-col min-h-screen">
-              <div className="flex-1">
+        <NextTopLoader
+          color="#D97706"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #D97706,0 0 5px #D97706"
+        />
+        <LoadingProvider>
+          <AppLayout initialSidebarState={sidebarState?.value === 'true'}>
+            <SWRProvider>
+              <div className="flex flex-col min-h-screen">
                 {children}
+                <div className="flex-grow" />
               </div>
-              <Footer />
-            </div>
-            <Toaster />
-          </SWRProvider>
-        </AppLayout>
+              <Toaster />
+            </SWRProvider>
+          </AppLayout>
+        </LoadingProvider>
       </body>
     </html>
   )

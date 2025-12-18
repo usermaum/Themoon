@@ -129,3 +129,20 @@ def update_bean_quantity(
     db.commit()
     db.refresh(db_bean)
     return db_bean
+
+
+def get_total_stock(db: Session) -> float:
+    """전체 원두 재고량 합계 조회"""
+    # sum(quantity_kg)
+    result = db.query(Bean).with_entities(Bean.quantity_kg).all()
+    total_stock = sum(row.quantity_kg for row in result)
+    return total_stock
+
+
+def get_low_stock_beans(db: Session, threshold: float = 5.0, limit: int = 5) -> List[Bean]:
+    """재고 부족 원두 리스트 조회"""
+    return db.query(Bean)\
+        .filter(Bean.quantity_kg < threshold)\
+        .order_by(Bean.quantity_kg.asc())\
+        .limit(limit)\
+        .all()

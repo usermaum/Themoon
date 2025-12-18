@@ -13,14 +13,15 @@ def read_blends(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     블렌드 목록 조회
     """
     blends = blend_service.get_blends(db, skip=skip, limit=limit)
-    return blends
+    return [Blend.model_validate(b) for b in blends]
 
 @router.post("/", response_model=Blend, status_code=status.HTTP_201_CREATED)
 def create_blend(blend: BlendCreate, db: Session = Depends(get_db)):
     """
     새 블렌드 레시피 생성
     """
-    return blend_service.create_blend(db, blend)
+    new_blend = blend_service.create_blend(db, blend)
+    return Blend.model_validate(new_blend)
 
 @router.get("/{blend_id}", response_model=Blend)
 def read_blend(blend_id: int, db: Session = Depends(get_db)):
@@ -30,7 +31,7 @@ def read_blend(blend_id: int, db: Session = Depends(get_db)):
     db_blend = blend_service.get_blend(db, blend_id)
     if db_blend is None:
         raise HTTPException(status_code=404, detail="Blend not found")
-    return db_blend
+    return Blend.model_validate(db_blend)
 
 @router.put("/{blend_id}", response_model=Blend)
 def update_blend(blend_id: int, blend_update: BlendUpdate, db: Session = Depends(get_db)):
@@ -40,7 +41,7 @@ def update_blend(blend_id: int, blend_update: BlendUpdate, db: Session = Depends
     db_blend = blend_service.update_blend(db, blend_id, blend_update)
     if db_blend is None:
         raise HTTPException(status_code=404, detail="Blend not found")
-    return db_blend
+    return Blend.model_validate(db_blend)
 
 @router.delete("/{blend_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_blend(blend_id: int, db: Session = Depends(get_db)):

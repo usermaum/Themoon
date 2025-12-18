@@ -31,8 +31,12 @@ def read_beans(
     total = bean_service.get_beans_count(db, search=search, bean_types=bean_types)
     pages = math.ceil(total / size) if size > 0 else 0
 
+    # Explicitly convert ORM objects to Pydantic models to ensure serialization works
+    # This prevents PydanticSerializationError: Unable to serialize unknown type: <class 'app.models.bean.Bean'>
+    beans_data = [Bean.model_validate(b) for b in beans]
+
     return BeanListResponse(
-        items=beans,
+        items=beans_data,
         total=total,
         page=page,
         size=size,
@@ -46,13 +50,14 @@ def read_bean(bean_id: int, db: Session = Depends(get_db)):
     bean = bean_service.get_bean(db, bean_id=bean_id)
     if bean is None:
         raise HTTPException(status_code=404, detail="Bean not found")
-    return bean
+    return Bean.model_validate(bean)
 
 
 @router.post("/", response_model=Bean, status_code=201)
 def create_bean(bean: BeanCreate, db: Session = Depends(get_db)):
     """새 원두 등록"""
-    return bean_service.create_bean(db=db, bean=bean)
+    new_bean = bean_service.create_bean(db=db, bean=bean)
+    return Bean.model_validate(new_bean)
 
 
 @router.put("/{bean_id}", response_model=Bean)
@@ -61,7 +66,7 @@ def update_bean(bean_id: int, bean: BeanUpdate, db: Session = Depends(get_db)):
     updated_bean = bean_service.update_bean(db, bean_id=bean_id, bean=bean)
     if updated_bean is None:
         raise HTTPException(status_code=404, detail="Bean not found")
-    return updated_bean
+    return Bean.model_validate(updated_bean)
 
 
 @router.delete("/{bean_id}", status_code=204)
@@ -91,4 +96,4 @@ def update_bean_quantity(
     )
     if updated_bean is None:
         raise HTTPException(status_code=404, detail="Bean not found")
-    return updated_bean
+    return Bean.model_validate(updated_bean)

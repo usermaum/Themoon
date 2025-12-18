@@ -43,4 +43,7 @@ class BlendService:
         db.commit()
         return True
 
+    def get_blends_count(self, db: Session) -> int:
+        return db.query(Blend).count()
+
 blend_service = BlendService()

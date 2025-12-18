@@ -6,11 +6,53 @@
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 1. 정리 (Cleanup)
-# 기존 실행 중인 프로세스 정리
-if lsof -ti :3500,8000 > /dev/null 2>&1; then
-    echo "🔄 기존 서버 프로세스 종료 중..."
-    lsof -ti :3500,8000 | xargs kill -9 2>/dev/null
-fi
+# 1. 정리 (Cleanup)
+echo "🧹 Force Cleanup Started..."
+
+# Kill specific patterns (Aggressive)
+# Kill OTHER dev.sh instances (Prevent multiple terminal tabs from running effectively)
+# $$ is the current shell's PID. We filter it out.
+CURRENT_PID=$$
+echo "🧹 Cleaning up other dev.sh instances..."
+pgrep -f "dev.sh" | grep -v "$CURRENT_PID" | xargs kill -9 2>/dev/null || true
+
+pkill -f "node" || true
+pkill -f "uvicorn" || true
+pkill -f "python backend/app/main.py" || true
+pkill -f "next-server" || true
+
+# Kill by port (3000, 3500, 8000)
+ports=(3000 3500 8000)
+for port in "${ports[@]}"; do
+    # 1. Check if port is in use
+    if lsof -ti :$port > /dev/null; then
+        echo "⚠️  Port $port is in use. Killing procs..."
+        pids=$(lsof -ti :$port)
+        kill -9 $pids 2>/dev/null || true
+        
+        # 2. Wait for port to be free (Max 5 seconds)
+        for i in {1..5}; do
+            if ! lsof -ti :$port > /dev/null; then
+                echo "✅ Port $port is now free."
+                break
+            fi
+            echo "   Waiting for port $port to release... ($i/5)"
+            sleep 1
+        done
+        
+        # 3. Final Check
+        if lsof -ti :$port > /dev/null; then
+            echo "❌ Error: Port $port is still in use after force kill."
+            echo "   Common reason: Permission denied or zombie process."
+            echo "   Please run 'lsof -ti :$port | xargs kill -9' manually."
+            exit 1
+        fi
+    else
+        echo "✅ Port $port is already free."
+    fi
+done
+
+echo "✅ Cleanup Complete."
 
 # Frontend 캐시 삭제
 echo "🗑️  Frontend 캐시 삭제 중..."

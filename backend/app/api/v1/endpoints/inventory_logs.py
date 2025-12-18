@@ -33,8 +33,11 @@ def read_inventory_logs(
     total = inventory_log_service.get_logs_count(db, bean_id=bean_id, change_types=change_types, search=search)
     pages = (total + size - 1) // size if size > 0 else 0
 
+    # Explicit conversation
+    logs_data = [InventoryLog.model_validate(log) for log in logs]
+
     return InventoryLogListResponse(
-        items=logs,
+        items=logs_data,
         total=total,
         page=page,
         size=size,
@@ -49,7 +52,8 @@ def create_inventory_log(log: InventoryLogCreate, db: Session = Depends(get_db))
     - quantity_change: 양수(입고), 음수(출고)
     """
     try:
-        return inventory_log_service.create_log(db, log)
+        new_log = inventory_log_service.create_log(db, log)
+        return InventoryLog.model_validate(new_log)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -67,7 +71,7 @@ def update_inventory_log(
         updated_log = inventory_log_service.update_log(db, log_id, change_amount, notes)
         if not updated_log:
             raise HTTPException(status_code=404, detail="Inventory log not found")
-        return updated_log
+        return InventoryLog.model_validate(updated_log)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
