@@ -76,9 +76,9 @@ export default function SingleOriginRoastingPage() {
 
     async function loadGreenBeans() {
         try {
-            const response = await BeanAPI.getAll({ limit: 100 })
+            const beansRes = await BeanAPI.getAll({ limit: 100, type: ['GREEN_BEAN'] })
             // 생두(GREEN_BEAN)만 필터링
-            const greens = response.items.filter(b => b.type === 'GREEN_BEAN')
+            const greens = beansRes.items
             setGreenBeans(greens)
         } catch (error) {
             console.error('Failed to load beans:', error)

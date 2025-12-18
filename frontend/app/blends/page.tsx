@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Search, Plus, Trash2, Edit2, Hexagon, PieChart, Layers, RefreshCw } from 'lucide-react'
+import { useLoading } from '@/components/providers/loading-provider'
 
 // 블렌드 리스트 메인 페이지
 export default function BlendManagementPage() {
+    const { startLoading } = useLoading()
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState('')
 
@@ -28,7 +30,7 @@ export default function BlendManagementPage() {
     })
 
     // 원두 이름 조회를 위한 훅
-    const { beans } = useBeans({ limit: 100 })
+    const { beans } = useBeans({ limit: 300 })
 
     const handleDelete = async (id: number) => {
         if (!confirm('정말로 이 블렌드 레시피를 삭제하시겠습니까?')) return
@@ -75,7 +77,7 @@ export default function BlendManagementPage() {
                     </div>
 
                     <Button asChild className="shadow-lg hover:shadow-xl bg-latte-800 hover:bg-latte-900 gap-2 h-12 px-6 rounded-xl text-lg font-serif">
-                        <Link href="/blends/new">
+                        <Link href="/blends/new" onClick={startLoading}>
                             <Plus className="w-5 h-5" /> 새 블렌드 생성
                         </Link>
                     </Button>
@@ -112,7 +114,7 @@ export default function BlendManagementPage() {
                         <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 블렌드가 없습니다</h3>
                         <p className="text-latte-500 mb-8">새로운 블렌드 레시피를 만들어보세요.</p>
                         <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
-                            <Link href="/blends/new">
+                            <Link href="/blends/new" onClick={startLoading}>
                                 첫 블렌드 만들기
                             </Link>
                         </Button>
@@ -159,7 +161,7 @@ export default function BlendManagementPage() {
                                             </div>
                                             <div className="absolute top-4 right-4 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Button asChild size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white text-latte-800 rounded-full shadow-lg">
-                                                    <Link href={`/blends/${blend.id}`}>
+                                                    <Link href={`/blends/${blend.id}`} onClick={startLoading}>
                                                         <Edit2 className="w-4 h-4" />
                                                     </Link>
                                                 </Button>

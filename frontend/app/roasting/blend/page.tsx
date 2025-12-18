@@ -91,12 +91,12 @@ export default function BlendRoastingPage() {
         const loadData = async () => {
             try {
                 const [beansRes, blendsRes] = await Promise.all([
-                    BeanAPI.getAll({ limit: 100 }),
+                    BeanAPI.getAll({ limit: 100, type: ['GREEN_BEAN'] }),
                     BlendAPI.getAll()
                 ])
 
-                // 생두만 필터링 (블렌드 구성에 사용됨)
-                setAvailableBeans(beansRes.items.filter(b => b.type === 'GREEN_BEAN'))
+                // 생두만 필터링 (서버에서 이미 필터링됨)
+                setAvailableBeans(beansRes.items)
                 setBlends(blendsRes)
             } catch (err) {
                 console.error('Failed to load initial data:', err)

@@ -9,31 +9,37 @@ from sqlalchemy import text, inspect
 def fix_schema():
     print("Fixing Schema...")
     inspector = inspect(engine)
-    existing_columns = [c['name'] for c in inspector.get_columns('inbound_documents')]
+    
+    # ... (Inbound Documents checks omitted for brevity if confirmed, but good to keep idempotency)
+    # Keeping only relevant updates for speed and focus on inventory_logs
+    
+    print("Checking Inventory Logs...")
+    cols = [c['name'] for c in inspector.get_columns('inventory_logs')]
     
     with engine.connect() as conn:
-        if 'invoice_date' not in existing_columns:
-            print("Adding invoice_date...")
-            conn.execute(text("ALTER TABLE inbound_documents ADD COLUMN invoice_date VARCHAR(50)"))
+        # Rename transaction_type -> change_type
+        if 'transaction_type' in cols and 'change_type' not in cols:
+            print("Renaming transaction_type to change_type...")
+            conn.execute(text("ALTER TABLE inventory_logs RENAME COLUMN transaction_type TO change_type"))
             
-        if 'total_amount' not in existing_columns:
-            print("Adding total_amount...")
-            conn.execute(text("ALTER TABLE inbound_documents ADD COLUMN total_amount FLOAT"))
+        # Rename quantity_change -> change_amount
+        if 'quantity_change' in cols and 'change_amount' not in cols:
+            print("Renaming quantity_change to change_amount...")
+            conn.execute(text("ALTER TABLE inventory_logs RENAME COLUMN quantity_change TO change_amount"))
             
-        if 'image_url' not in existing_columns:
-            print("Adding image_url...")
-            conn.execute(text("ALTER TABLE inbound_documents ADD COLUMN image_url VARCHAR(500)"))
-
-        if 'drive_file_id' not in existing_columns:
-            print("Adding drive_file_id...")
-            conn.execute(text("ALTER TABLE inbound_documents ADD COLUMN drive_file_id VARCHAR(200)"))
+        # Rename reason -> notes
+        if 'reason' in cols and 'notes' not in cols:
+            print("Renaming reason to notes...")
+            conn.execute(text("ALTER TABLE inventory_logs RENAME COLUMN reason TO notes"))
             
-        if 'notes' not in existing_columns:
-            print("Adding notes...")
-            conn.execute(text("ALTER TABLE inbound_documents ADD COLUMN notes TEXT"))
+        # Add related_id
+        if 'related_id' not in cols:
+            print("Adding related_id...")
+            conn.execute(text("ALTER TABLE inventory_logs ADD COLUMN related_id INTEGER"))
             
         conn.commit()
-    print("Schema Fix Completed.")
+        
+    print("Inventory Logs Schema Fixed.")
 
 if __name__ == "__main__":
     fix_schema()

@@ -60,8 +60,8 @@ export default function BlendDetailPage({ params }: { params: { id: string } }) 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 원두 목록 로드
-                const beansData = await BeanAPI.getAll({ limit: 100 })
+                // 원두 목록 로드 (생두만)
+                const beansData = await BeanAPI.getAll({ limit: 100, type: ['GREEN_BEAN'] })
                 // 블렌드 정보 로드
                 const blendData = await BlendAPI.getOne(blendId)
 

@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Footer() {
     return (
         <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
@@ -16,6 +18,9 @@ export default function Footer() {
                             <span className="sr-only">GitHub</span>
                             GitHub
                         </a>
+                        <Link href="/design-demo" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                            Design Demo
+                        </Link>
                         <a href="#" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
                             <span className="sr-only">Documentation</span>
                             Docs

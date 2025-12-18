@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
+import Footer from './Footer'
 
 interface AppLayoutProps {
     children: React.ReactNode
@@ -80,6 +81,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
                 <div className="pt-4 lg:pt-0 min-h-full">
                     {children}
                 </div>
+                <Footer />
             </main>
         </div>
     )

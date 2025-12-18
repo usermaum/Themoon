@@ -16,6 +16,8 @@ import {
     FileInput
 } from 'lucide-react'
 
+import { useLoading } from '@/components/providers/loading-provider'
+
 interface SidebarProps {
     isOpen: boolean
     onToggle: () => void
@@ -23,6 +25,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     const pathname = usePathname()
+    const { startLoading } = useLoading()
 
     const navItems = [
         { name: 'Home', href: '/', icon: Home },
@@ -31,7 +34,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
         { name: 'Inbound', href: '/inventory/inbound', icon: FileInput },
-        { name: 'Design Demo', href: '/design-showcase', icon: Sparkles },
+
     ]
 
     const isActive = (href: string) => {
@@ -39,6 +42,13 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             return pathname === '/'
         }
         return pathname.startsWith(href)
+    }
+
+    // Handle Navigation Click
+    const handleNavigation = (href: string) => {
+        if (pathname !== href) {
+            startLoading()
+        }
     }
 
     return (
@@ -109,6 +119,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                             <div key={item.name} className="relative group">
                                 <Link
                                     href={item.href}
+                                    onClick={() => handleNavigation(item.href)}
                                     className={`
                                         flex items-center
                                         ${isOpen ? 'gap-4 px-4' : 'justify-center'}

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle, Search } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 
 const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
@@ -353,14 +354,14 @@ export default function InventoryPage() {
                 )}
 
                 {/* 재고 현황 테이블 (Tabs 적용) */}
-                <section className="mb-12">
+                <section className="mb-16">
                     <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
                         <Package className="w-6 h-6 text-latte-400" />
                         현재 재고 현황
                     </h2>
 
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
                             <TabsList className="bg-latte-100 p-1 rounded-xl overflow-x-auto w-full md:w-auto">
                                 <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
                                 <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">생두</TabsTrigger>
@@ -476,17 +477,19 @@ export default function InventoryPage() {
                     </Tabs>
                 </section>
 
+                <Separator className="mb-16 bg-latte-200" />
+
                 {/* 입출고 기록 테이블 */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
                 >
-                    <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">입출고 기록</h2>
+                    <h2 className="text-2xl font-serif font-bold text-latte-900 mb-2">입출고 기록</h2>
 
                     {/* 입출고 기록 탭 */}
-                    <Tabs value={logTab} onValueChange={handleLogTabChange} className="mb-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <Tabs value={logTab} onValueChange={handleLogTabChange} className="mb-2">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-[0.5em]">
                             <TabsList className="grid w-full max-w-md grid-cols-3 bg-latte-100">
                                 <TabsTrigger value="all">전체</TabsTrigger>
                                 <TabsTrigger value="in">입고</TabsTrigger>

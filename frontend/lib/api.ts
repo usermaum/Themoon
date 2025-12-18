@@ -365,3 +365,19 @@ export const InventoryLogAPI = {
     return response.data
   }
 }
+
+// --- Dashboard API ---
+
+export interface DashboardStats {
+  total_beans: number
+  total_blends: number
+  total_stock_kg: number
+  low_stock_beans: Bean[]
+}
+
+export const DashboardAPI = {
+  getStats: async () => {
+    const response = await api.get<DashboardStats>('/api/v1/dashboard/')
+    return response.data
+  }
+}

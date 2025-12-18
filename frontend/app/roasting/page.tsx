@@ -4,8 +4,10 @@ import { motion } from 'framer-motion'
 import PageHero from '@/components/ui/page-hero'
 import { Flame, Layers, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useLoading } from '@/components/providers/loading-provider'
 
 export default function RoastingMainPage() {
+    const { startLoading } = useLoading()
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
             <PageHero
@@ -30,7 +32,11 @@ export default function RoastingMainPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.1 }}
                         >
-                            <Link href="/roasting/single-origin" className="group relative flex flex-col items-center bg-white rounded-[2rem] shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full">
+                            <Link
+                                href="/roasting/single-origin"
+                                onClick={startLoading}
+                                className="group relative flex flex-col items-center bg-white rounded-[2rem] shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full"
+                            >
                                 {/* 상단 이미지 */}
                                 <div
                                     className="w-full h-48 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
@@ -64,7 +70,11 @@ export default function RoastingMainPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 0.2 }}
                         >
-                            <Link href="/roasting/blend" className="group relative flex flex-col items-center bg-white rounded-[2rem] shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full">
+                            <Link
+                                href="/roasting/blend"
+                                onClick={startLoading}
+                                className="group relative flex flex-col items-center bg-white rounded-[2rem] shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full"
+                            >
                                 {/* 상단 이미지 */}
                                 <div
                                     className="w-full h-48 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"

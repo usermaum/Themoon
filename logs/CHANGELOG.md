@@ -11,6 +11,35 @@
 
 ---
 
+## [0.2.1] - 2025-12-18
+
+### ✨ Features
+- **Design Demo Integration**: `design-showcase`와 `design-sample`을 통합한 `/design-demo` 페이지 신설. 사이드바 메뉴 제거 및 Footer 링크로 이동.
+- **Loading UX**: `LoadingProvider` 도입으로 페이지 전환 시 즉각적인 로딩 피드백 제공 (아이콘 크기 확대, 페이드 효과).
+
+### 💅 UI/UX Improvements
+- **Inventory Layout**: "현재 재고 현황"과 "입출고 기록" 사이의 간격(`mb-16`) 확대 및 구분선(`Separator`) 추가로 가독성 개선.
+- **Compact Spacing**: 인벤토리 탭 메뉴 하단 여백(`0.5em`) 정밀 조정.
+
+### 🐛 Fixed
+- **Duplicate Footer**: `RootLayout`과 `AppLayout` 중복 포함으로 인한 Footer 이중 출력 문제 해결.
+- **Dev Script**: `dev.sh` 실행 시 기존 `dev.sh` 프로세스를 확실하게 정리하도록 자기 정리(Self-Cleanup) 로직 강화.
+
+## [0.2.0] - 2025-12-17
+
+### ✨ Major Features
+- **Inbound System Upgrade**: 자재 입고 시스템 대규모 고도화.
+    - **Duplicate Prevention**: 계약/주문 번호(Contract No) 기반 중복 입고 방지 로직 도입.
+    - **Supplier Management**: 공급처(Suppliers) 정규화 테이블 도입 (3차 정규화).
+    - **Data Integrity**: 입고 문서(`inbound_documents`)에 계약번호, 공급처 ID, 수신자 정보, 총액 등 필수 데이터 스키마 확장.
+
+### 🐛 Fixed
+- **Database Schema Sync**: DB 스키마와 코드 모델 간의 불일치 해결 (`fix_schema.py` 마이그레이션 수행).
+- **Backend Logic**: `confirm_inbound` API의 중복 생성 로직 및 공급처 자동 매핑 로직 개선.
+
+### 📝 Documentation
+- **Walkthrough**: 입고 시스템 업그레이드 가이드 (`walkthrough.md`) 작성.
+
 ## [0.1.2] - 2025-12-16
 
 ### ✨ Features & Improvements

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { Bean } from '@/lib/api'
 import { useBeans, deleteBean } from '@/hooks'
 import Link from 'next/link'
+import { useLoading } from '@/components/providers/loading-provider'
 import PageHero from '@/components/ui/page-hero'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,7 @@ import { Search, Plus, Trash2, Coffee, Edit2, MapPin, Tag, RefreshCw, X } from '
 
 // Helper to resolve bean images
 const getBeanImage = (bean: Bean) => {
+    // ... (This function remains unchanged)
     const nameLower = bean.name.toLowerCase();
 
     // 1. Blend Beans (Priority Check by Name)
@@ -76,6 +78,7 @@ export default function BeanManagementPage() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
+    const { startLoading } = useLoading()
 
     // URL에서 페이지 번호 가져오기 (기본값 1)
     const page = Number(searchParams.get('page')) || 1
@@ -100,6 +103,7 @@ export default function BeanManagementPage() {
 
     // 페이지 변경 핸들러
     const setPage = (newPage: number) => {
+        startLoading()
         const params = new URLSearchParams(searchParams.toString())
         params.set('page', newPage.toString())
         router.push(`${pathname}?${params.toString()}`)
@@ -164,7 +168,7 @@ export default function BeanManagementPage() {
                     </div>
 
                     <Button asChild className="shadow-lg hover:shadow-xl bg-latte-800 hover:bg-latte-900 gap-2 h-12 px-6 rounded-xl text-lg font-serif">
-                        <Link href="/beans/new">
+                        <Link href="/beans/new" onClick={startLoading}>
                             <Plus className="w-5 h-5" /> 새 원두 등록
                         </Link>
                     </Button>
@@ -222,7 +226,7 @@ export default function BeanManagementPage() {
                                 <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 블렌드가 없습니다</h3>
                                 <p className="text-latte-500 mb-8">새로운 블렌드 레시피를 생성하면 이곳에 표시됩니다.</p>
                                 <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
-                                    <Link href="/roasting/blend">
+                                    <Link href="/roasting/blend" onClick={startLoading}>
                                         블렌드 생성 (Pre-Roast)
                                     </Link>
                                 </Button>
@@ -232,7 +236,7 @@ export default function BeanManagementPage() {
                                 <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">등록된 원두가 없습니다</h3>
                                 <p className="text-latte-500 mb-8">로스팅된 싱글 오리진 원두가 없습니다.</p>
                                 <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
-                                    <Link href="/roasting/single-origin">
+                                    <Link href="/roasting/single-origin" onClick={startLoading}>
                                         싱글 오리진 로스팅
                                     </Link>
                                 </Button>
@@ -242,7 +246,7 @@ export default function BeanManagementPage() {
                                 <h3 className="text-2xl font-serif font-bold text-latte-800 mb-2">원두 목록이 비어있습니다</h3>
                                 <p className="text-latte-500 mb-8">새로운 원두(생두)를 등록하여 컬렉션을 시작해보세요.</p>
                                 <Button asChild variant="outline" className="border-latte-400 text-latte-700 hover:bg-latte-50">
-                                    <Link href="/beans/new">
+                                    <Link href="/beans/new" onClick={startLoading}>
                                         첫 번째 원두 등록하기
                                     </Link>
                                 </Button>
@@ -276,7 +280,7 @@ export default function BeanManagementPage() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-6">
                                             <div className="flex gap-2">
                                                 <Button asChild size="icon" variant="secondary" className="bg-white/90 hover:bg-white text-latte-800 rounded-full h-10 w-10">
-                                                    <Link href={`/beans/${bean.id}`}>
+                                                    <Link href={`/beans/${bean.id}`} onClick={startLoading}>
                                                         <Edit2 className="w-4 h-4" />
                                                     </Link>
                                                 </Button>
@@ -301,7 +305,7 @@ export default function BeanManagementPage() {
                                             </span>
                                         </div>
                                         <CardTitle className="leading-tight group-hover:text-latte-600 transition-colors">
-                                            <Link href={`/beans/${bean.id}`} className="hover:underline decoration-latte-400 underline-offset-4 block">
+                                            <Link href={`/beans/${bean.id}`} onClick={startLoading} className="hover:underline decoration-latte-400 underline-offset-4 block">
                                                 <span>{bean.name_ko || bean.name}</span>
                                                 {bean.name_en && (
                                                     <span className="block text-xs font-normal text-latte-400 mt-1 font-sans">{bean.name_en}</span>

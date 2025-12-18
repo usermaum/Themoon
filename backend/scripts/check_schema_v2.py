@@ -20,3 +20,17 @@ if 'suppliers' in inspector.get_table_names():
         print(f"{col['name']}: {col['type']}")
 else:
     print("Suppliers table NOT FOUND")
+
+print("\n--- Beans Columns ---")
+if 'beans' in inspector.get_table_names():
+    for col in inspector.get_columns('beans'):
+        print(f"{col['name']}: {col['type']}")
+else:
+    print("Beans table NOT FOUND")
+
+print("\n--- Inventory Logs Columns ---")
+if 'inventory_logs' in inspector.get_table_names():
+    for col in inspector.get_columns('inventory_logs'):
+        print(f"{col['name']}: {col['type']}")
+else:
+    print("Inventory Logs table NOT FOUND")

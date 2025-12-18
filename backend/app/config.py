@@ -18,8 +18,10 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     API_V1_STR: str = "/api/v1"
 
-    # 데이터베이스 (개발용 SQLite)
-    DATABASE_URL: str = "sqlite:///./themoon.db"
+    # 데이터베이스 (개발용 SQLite) - 절대 경로 사용
+    _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _ROOT_DIR = os.path.dirname(_BASE_DIR)
+    DATABASE_URL: str = f"sqlite:///{os.path.join(_ROOT_DIR, 'themoon.db')}"
 
     # PostgreSQL 사용 시 (프로덕션):
     # DATABASE_URL: str = "postgresql://user:password@localhost/themoon"

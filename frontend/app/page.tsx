@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Bean, BeanAPI, Blend, BlendAPI, InventoryLog, InventoryLogAPI } from '@/lib/api'
+import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI } from '@/lib/api'
 import Link from 'next/link'
 import {
   Card,
@@ -19,8 +19,13 @@ import { ErrorState, LoadingSkeleton } from '@/components/ui/error-state'
 import { Coffee, Palette, Package, AlertTriangle, ArrowRight } from 'lucide-react'
 
 export default function HomePage() {
-  const [beans, setBeans] = useState<Bean[]>([])
-  const [blends, setBlends] = useState<Blend[]>([])
+  const [stats, setStats] = useState<{
+    total_beans: number
+    total_blends: number
+    total_stock_kg: number
+    low_stock_beans: Bean[]
+  } | null>(null)
+
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<any>(null)
@@ -29,14 +34,13 @@ export default function HomePage() {
     try {
       setLoading(true)
       setError(null)
-      const [beansData, blendsData, logsData] = await Promise.all([
-        BeanAPI.getAll({ limit: 100 }),
-        BlendAPI.getAll({ limit: 100 }),
+
+      const [statsData, logsData] = await Promise.all([
+        DashboardAPI.getStats(),
         InventoryLogAPI.getAll({ limit: 10 }),
       ])
 
-      setBeans(Array.isArray(beansData?.items) ? beansData.items : [])
-      setBlends(Array.isArray(blendsData) ? blendsData : [])
+      setStats(statsData)
       setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : [])
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
@@ -50,8 +54,11 @@ export default function HomePage() {
     fetchData()
   }, [])
 
-  const lowStockBeans = beans.filter((bean) => bean.quantity_kg < 5)
-  const totalStock = beans.reduce((sum, bean) => sum + bean.quantity_kg, 0)
+  // stats가 없으면 0으로 처리 (로딩 중 또는 에러)
+  const totalBeans = stats?.total_beans || 0
+  const totalBlends = stats?.total_blends || 0
+  const totalStock = stats?.total_stock_kg || 0
+  const lowStockBeans = stats?.low_stock_beans || []
 
   return (
     <div className="min-h-screen">
@@ -75,8 +82,8 @@ export default function HomePage() {
               <Card className="hover:border-latte-400">
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
-                    <p className="text-latte-500 text-sm font-medium">전체 원두</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">{beans.length}</p>
+                    <p className="text-latte-500 text-sm font-medium">보유 생두</p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalBeans}</p>
                   </div>
                   <Coffee className="w-10 h-10 text-latte-300" />
                 </CardContent>
@@ -86,7 +93,7 @@ export default function HomePage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
                     <p className="text-latte-500 text-sm font-medium">블렌드 레시피</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">{blends.length}</p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalBlends}</p>
                   </div>
                   <Palette className="w-10 h-10 text-latte-300" />
                 </CardContent>
