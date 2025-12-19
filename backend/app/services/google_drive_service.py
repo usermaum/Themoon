@@ -58,9 +58,10 @@ class GoogleDriveService:
             self.service = build('drive', 'v3', credentials=self.creds)
             print(f"✅ Google Drive Service initialized from file: {service_account_path}")
         else:
-            print(f"ℹ️ Google Drive Service not configured (optional)")
-            print(f"   - Files will be saved locally only")
-            print(f"   - To enable Google Drive upload, set GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT env var")
+            print(f"ℹ️ Google Drive upload disabled (optional feature)")
+            print(f"   - Files are saved locally: backend/static/uploads/inbound/")
+            print(f"   - Note: Service accounts require Google Workspace (Shared Drive)")
+            print(f"   - Current setup: Local storage only (sufficient for most use cases)")
 
     def find_folder_id(self, folder_name: str) -> Optional[str]:
         if not self.service:
