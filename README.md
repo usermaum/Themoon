@@ -119,7 +119,7 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   └── Resources/             # 자료 (엑셀, 문서 등)
 │
 ├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.0.6
+│   ├── VERSION                # 현재: 0.2.2
 │   └── CHANGELOG.md           # 변경 로그
 │
 ├── data/                      # 데이터베이스 (원본 참조용)
@@ -546,5 +546,6 @@ MIT License - 자유롭게 사용 가능
 ---
 
 **버전:** 0.2.2
-**최종 업데이트:** 2025-12-19
+**최종 업데이트:** 2025-12-20
+**최종 커밋:** 24b0483
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

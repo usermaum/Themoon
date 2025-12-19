@@ -11,6 +11,70 @@
 
 ---
 
+## [0.2.2] - 2025-12-20
+
+### 🚀 Deployment & Infrastructure
+- **Render.com Production Deployment**: Render.com 자동 배포 완료
+  - Backend API: `https://themoon-api.onrender.com`
+  - Frontend: `https://themoon-frontend.onrender.com`
+  - PostgreSQL 18 데이터베이스 연동
+
+### 📦 Database Migration
+- **PostgreSQL Migration**: SQLite에서 PostgreSQL로 완전 마이그레이션
+  - 17개 원두 데이터
+  - 3개 블렌드 레시피
+  - 3개 공급처 정보
+  - 17개 재고 입출고 기록
+  - 검증 스크립트(`verify_render_db.py`) 작성 및 테스트 완료
+
+### ✨ Features
+- **OCR Production Test**: 실제 한글 명세서 이미지로 OCR 테스트 완료
+  - 테스트 파일: 명세서_1657.PNG (43.7 KB)
+  - 추출 정확도: ~95% (계약번호, 공급자, 날짜, 총액)
+  - 처리 시간: ~30초
+  - 테스트 스크립트: `test_inbound_upload_full.py`
+
+### 🐛 Fixed
+- **GoogleDriveService**: 환경변수에서 JSON 읽기 지원 추가
+  - `GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT` 환경변수 지원
+  - 로컬 개발과 프로덕션 환경 모두 대응
+  - Render.com 배포 시 환경변수 우선 사용
+
+- **render.yaml**: Google API 키 환경변수 정의 추가
+  - `GOOGLE_API_KEY`: OCR 서비스용
+  - `GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT`: Google Drive용 (선택)
+  - `sync: false` 설정으로 보안 강화
+
+### 📝 Documentation
+- **Google Drive Setup Guide**: 구글 드라이브 서비스 계정 설정 완벽 가이드 작성
+  - 파일: `Documents/Guides/GOOGLE_DRIVE_SERVICE_ACCOUNT_SETUP.md` (680줄)
+  - 5단계 프로세스: 프로젝트 생성 → 서비스 계정 → API 활성화 → 폴더 공유 → Render.com 설정
+  - 무료 사용량 정보 및 보안 가이드 포함
+  - ASCII 아트 다이어그램 및 트러블슈팅 가이드
+
+- **Inbound System Status**: 인바운드 시스템 최종 상태 문서 작성
+  - 파일: `Documents/Progress/INBOUND_SYSTEM_STATUS.md` (387줄)
+  - 시스템 개요, 활성화/비활성화 기능 상태
+  - API 엔드포인트 명세 및 테스트 결과
+  - 성능 지표 및 문제 해결 가이드
+
+- **Session Summaries**: 세션 진행 상황 문서화
+  - `Documents/Progress/SESSION_SUMMARY_2025-12-19.md`
+  - `Documents/Progress/SESSION_SUMMARY_2025-12-20.md`
+
+### ⚠️ Changed
+- **Google Drive Upload Disabled**: 서비스 계정 한계로 인해 구글 드라이브 자동 업로드 비활성화
+  - 원인: 서비스 계정은 자체 스토리지 할당량 없음
+  - 대안: Google Workspace Shared Drive 필요 (월 $6~)
+  - 확정: 로컬 저장 방식으로 운영 (`backend/static/uploads/inbound/`)
+  - 메시지 개선: 사용자에게 명확한 정보 제공
+
+### 🔧 Technical Improvements
+- `.gitignore` 업데이트: 업로드 파일 및 테스트 출력 제외
+- 서비스 계정 파일을 백업으로 이동 (`.gemini/service_account.json.backup`)
+
+---
+
 ## [0.2.1] - 2025-12-18
 
 ### ✨ Features
