@@ -1,5 +1,6 @@
 import os
 import io
+import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -17,8 +18,27 @@ class GoogleDriveService:
         self._authenticate()
 
     def _authenticate(self):
+        # Option 1: Try to read from environment variable (for Render.com)
+        service_account_json_content = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT")
+
+        if service_account_json_content:
+            try:
+                # Parse JSON string from environment variable
+                service_account_info = json.loads(service_account_json_content)
+                self.creds = service_account.Credentials.from_service_account_info(
+                    service_account_info, scopes=SCOPES
+                )
+                self.service = build('drive', 'v3', credentials=self.creds)
+                print("✅ Google Drive Service initialized from environment variable")
+                return
+            except json.JSONDecodeError:
+                print("⚠️ Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT")
+            except Exception as e:
+                print(f"⚠️ Failed to initialize Google Drive from env var: {e}")
+
+        # Option 2: Try to read from file (for local development)
         service_account_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", ".gemini/service_account.json")
-        
+
         # Check if path is absolute or relative
         if not os.path.isabs(service_account_path):
             # Assume relative to project root (backend's parent)
@@ -27,17 +47,20 @@ class GoogleDriveService:
             # Adjust if we are in backend dir context
             # Let's try to find it relative to current working directory (usually root in dev)
             if os.path.exists(service_account_path):
-                pass 
+                pass
             elif os.path.exists(os.path.join("..", service_account_path)):
                  service_account_path = os.path.join("..", service_account_path)
-        
+
         if os.path.exists(service_account_path):
             self.creds = service_account.Credentials.from_service_account_file(
                 service_account_path, scopes=SCOPES
             )
             self.service = build('drive', 'v3', credentials=self.creds)
+            print(f"✅ Google Drive Service initialized from file: {service_account_path}")
         else:
-            print(f"Warning: Service account file not found at {service_account_path}")
+            print(f"ℹ️ Google Drive Service not configured (optional)")
+            print(f"   - Files will be saved locally only")
+            print(f"   - To enable Google Drive upload, set GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT env var")
 
     def find_folder_id(self, folder_name: str) -> Optional[str]:
         if not self.service:
