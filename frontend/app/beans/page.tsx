@@ -88,7 +88,7 @@ export default function BeanManagementPage() {
     // 탭 변경 핸들러
     const handleTabChange = (value: string) => {
         setActiveTab(value)
-        setPage(1)
+        setPage(1, false)
     }
 
     // 탭 값에 따른 필터 타입 반환
@@ -102,8 +102,8 @@ export default function BeanManagementPage() {
     }
 
     // 페이지 변경 핸들러
-    const setPage = (newPage: number) => {
-        startLoading()
+    const setPage = (newPage: number, withLoading: boolean = true) => {
+        if (withLoading) startLoading()
         const params = new URLSearchParams(searchParams.toString())
         params.set('page', newPage.toString())
         router.push(`${pathname}?${params.toString()}`)

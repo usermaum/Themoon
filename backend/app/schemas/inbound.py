@@ -19,6 +19,7 @@ class OCRResponse(BaseModel):
     total_amount: Optional[float] = None
     items: List[OCRItem] = []
     drive_link: Optional[str] = None
+    debug_raw_text: Optional[str] = None
 
 # --- Inbound Document DB Schemas ---
 class InboundDocumentBase(BaseModel):

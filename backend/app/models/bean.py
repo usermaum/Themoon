@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, For
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship, backref
 from app.database import Base
+from app.utils.timezone import get_kst_now
 
 
 class BeanType(str, enum.Enum):
@@ -70,8 +71,8 @@ class Bean(Base):
     expected_loss_rate = Column(Float, default=0.15, nullable=False, comment="예상 로스팅 손실률 (0.0 ~ 1.0)")
     
     # 타임스탬프
-    created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.current_timestamp())
+    created_at = Column(DateTime(timezone=True), default=get_kst_now)
+    updated_at = Column(DateTime(timezone=True), default=get_kst_now, onupdate=get_kst_now)
 
     # --- Relationships ---
     # Self-referential relationship (원두 -> 생두)
