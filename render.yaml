@@ -26,6 +26,11 @@ services:
         value: "false"
       - key: BACKEND_CORS_ORIGINS
         value: '["https://themoon-frontend-0s4m.onrender.com"]'
+      # Google API Keys (값은 Render.com 대시보드에서 설정)
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON_CONTENT
+        sync: false
     autoDeployTrigger: commit
 
   # Frontend (Next.js)
