@@ -21,22 +21,26 @@ class OCRService:
             raise Exception("OCR Service is not configured (Missing API Key)")
 
         prompt = """
-        Analyze this coffee bean invoice/receipt image and extract the following data in JSON format:
+        You are a meticulous Data Entry Clerk. Read the provided Invoice/Purchase Order image carefully.
         
-        1. supplier_name: String (Name of the vendor/supplier)
-        2. contract_number: String (Order No, Estimate No, Document No, or '발주번호', '견적번호'. If not found, null)
-        3. supplier_phone: String (Vendor's phone number, e.g., 'Tel', 'Phone', 'H.P')
-        4. supplier_email: String (Vendor's email)
-        5. receiver_name: String (Name of the receiver/buyer)
-        6. invoice_date: String (YYYY-MM-DD format)
-        7. total_amount: Number (Total sum of the invoice)
-        8. items: List of objects, each containing:
-           - bean_name: String (Name of the bean/product)
-           - quantity: Number (Weight in kg or count)
-           - unit_price: Number (Price per unit)
-           - amount: Number (Total price for this line item)
-           
-        If a field is missing, use null. ensure the output is valid JSON without markdown code blocks.
+        Your task is to extracting the following data into a JSON format.
+        
+        EXTRACT ALL TEXT FIRST for debugging, then find specific fields.
+
+        JSON SCHEMA:
+        {
+          "debug_raw_text": "TRANSCRIPTION OF ALL TEXT found in the top 30% of the page (Header area). INCLUDE EVERYTHING YOU SEE.",
+          "contract_number": "Look for '발주번호', '문서번호', 'Order No', 'Ref No' in the header. It usually starts with 'S' (e.g. S225HY...). Copy it exactly.",
+          "supplier_name": "The Supplier Company Name (exclude 'The Moon Coffee').",
+          "supplier_phone": "Tel/Mobile number",
+          "supplier_email": "Email address",
+          "receiver_name": "Receiver Name (default to 'The Moon Coffee' if implied)",
+          "invoice_date": "YYYY-MM-DD",
+          "total_amount": "Total Amount (Number)",
+          "items": "List of {bean_name, quantity, unit_price, amount}"
+        }
+        
+        Return ONLY valid JSON.
         """
 
         try:

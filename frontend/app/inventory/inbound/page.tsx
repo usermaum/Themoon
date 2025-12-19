@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
-import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save } from "lucide-react"
+import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,6 +42,9 @@ export default function InboundPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [driveLink, setDriveLink] = useState<string | null>(null)
+
+    const [ocrResult, setOcrResult] = useState<any>(null) // Temporary for debugging
+    const [duplicateStatus, setDuplicateStatus] = useState<{ status: 'idle' | 'checking' | 'duplicate' | 'available', message: string }>({ status: 'idle', message: '' })
 
     const { toast } = useToast()
 
@@ -94,6 +97,7 @@ export default function InboundPage() {
     // Analyze Logic
     const handleAnalyze = async () => {
         setIsAnalyzing(true)
+        setOcrResult(null)
         const formData = new FormData()
 
         if (activeTab === "file" && selectedFile) {
@@ -120,10 +124,18 @@ export default function InboundPage() {
             }
 
             const data = await response.json()
+            setOcrResult(data) // Save raw data for debug view
 
             // Auto-fill form
+            const contractNum = data.contract_number || ""
+            setValue("contract_number", contractNum)
+
+            // Auto-trigger duplicate check
+            if (contractNum) {
+                checkDuplicate(contractNum)
+            }
+
             setValue("supplier_name", data.supplier_name || "")
-            setValue("contract_number", data.contract_number || "")
             setValue("supplier_phone", data.supplier_phone || "")
             setValue("supplier_email", data.supplier_email || "")
             setValue("receiver_name", data.receiver_name || "")
@@ -141,7 +153,51 @@ export default function InboundPage() {
         }
     }
 
+    // Duplicate Check Logic
+    const checkDuplicate = async (contractNumber: string) => {
+        if (!contractNumber || contractNumber.trim() === "") {
+            setDuplicateStatus({ status: 'idle', message: '' })
+            return
+        }
+
+        setDuplicateStatus({ status: 'checking', message: '확인 중...' })
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/inbound/check-duplicate/${contractNumber}`)
+            if (response.ok) {
+                const data = await response.json()
+                if (data.exists) {
+                    setDuplicateStatus({ status: 'duplicate', message: data.detail })
+                } else {
+                    setDuplicateStatus({ status: 'available', message: data.detail })
+                }
+            } else {
+                setDuplicateStatus({ status: 'idle', message: '확인 불가' })
+            }
+        } catch (error) {
+            console.error("Duplicate check error:", error)
+            setDuplicateStatus({ status: 'idle', message: '확인 불가' })
+        }
+    }
+
+    // Watch contract number changes for debounce or blur handling
+    // Simple approach: Use onBlur on the input
+
+
     const onSubmit = async (data: InboundForm) => {
+        // Validation
+        if (!data.contract_number || data.contract_number.trim() === "") {
+            toast({ title: "필수 입력값 누락", description: "계약/주문 번호(Contract No.)는 필수입니다.", variant: "destructive" })
+            return
+        }
+        if (!data.supplier_name || data.supplier_name.trim() === "") {
+            toast({ title: "필수 입력값 누락", description: "공급처 정보(상호명)는 필수입니다.", variant: "destructive" })
+            return
+        }
+        if (data.items.length === 0) {
+            toast({ title: "필수 입력값 누락", description: "최소 1개 이상의 품목이 필요합니다.", variant: "destructive" })
+            return
+        }
+
         try {
             const payload = {
                 items: data.items,
@@ -176,7 +232,12 @@ export default function InboundPage() {
             // Optional: Reset form or redirect
             // reset()
         } catch (error: any) {
-            toast({ title: "저장 실패", description: error.message, variant: "destructive" })
+            // Check if it's a duplicate error and show a friendly message
+            if (error.message.includes("Duplicate Contract Number") || error.message.includes("이미 등록된")) {
+                toast({ title: "저장 실패", description: "이미 등록된 명세서(계약번호)입니다. 중복을 확인해주세요.", variant: "destructive" })
+            } else {
+                toast({ title: "저장 실패", description: error.message, variant: "destructive" })
+            }
         }
     }
 
@@ -260,6 +321,22 @@ export default function InboundPage() {
                             </AlertDescription>
                         </Alert>
                     )}
+
+                    {/* Temporary Debug View */}
+                    {ocrResult && (
+                        <Card className="border-yellow-400 bg-yellow-50/50">
+                            <CardHeader className="py-3">
+                                <CardTitle className="text-sm font-mono text-yellow-800 flex items-center gap-2">
+                                    ⚠️ [임시] OCR 원본 데이터 (Debug)
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="py-2 pb-4">
+                                <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-60 font-mono">
+                                    {JSON.stringify(ocrResult, null, 2)}
+                                </pre>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Right: Form */}
@@ -273,8 +350,25 @@ export default function InboundPage() {
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label>계약/주문 번호 (Contract No.)</Label>
-                                        <Input {...register("contract_number")} placeholder="발주번호 or 문서번호" className="bg-muted/10" />
+                                        <Label className="text-destructive font-bold">계약/주문 번호 (필수)*</Label>
+                                        <div className="relative">
+                                            <Input
+                                                {...register("contract_number")}
+                                                placeholder="발주번호 or 문서번호"
+                                                className={`bg-muted/10 border-destructive/20 ${duplicateStatus.status === 'duplicate' ? 'border-red-500 focus-visible:ring-red-500' : duplicateStatus.status === 'available' ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
+                                                onBlur={(e) => checkDuplicate(e.target.value)}
+                                            />
+                                            <div className="absolute right-3 top-2.5">
+                                                {duplicateStatus.status === 'checking' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                                {duplicateStatus.status === 'duplicate' && <AlertCircle className="h-4 w-4 text-red-500" />}
+                                                {duplicateStatus.status === 'available' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                                            </div>
+                                        </div>
+                                        {duplicateStatus.status !== 'idle' && (
+                                            <p className={`text-xs ${duplicateStatus.status === 'duplicate' ? 'text-red-500' : duplicateStatus.status === 'available' ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                                {duplicateStatus.message}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <Label>날짜 (Date)</Label>
@@ -288,7 +382,7 @@ export default function InboundPage() {
                                     <Label className="text-base font-semibold">공급처 정보 (Supplier)</Label>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>상호명 (Company Name)</Label>
+                                            <Label>상호명 (Company Name) *</Label>
                                             <Input {...register("supplier_name")} placeholder="공급처명" />
                                         </div>
                                         <div className="space-y-2">

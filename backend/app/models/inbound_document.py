@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKe
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
+from app.utils.timezone import get_kst_now
 
 class InboundDocument(Base):
     __tablename__ = "inbound_documents"
@@ -19,7 +20,7 @@ class InboundDocument(Base):
     drive_file_id = Column(String, nullable=True, comment="Google Drive File ID or Local Filename")
     
     notes = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
+    created_at = Column(DateTime(timezone=True), default=get_kst_now)
 
     # Relationships
     supplier = relationship("app.models.supplier.Supplier", back_populates="inbound_documents")

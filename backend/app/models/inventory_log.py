@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enu
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
+from app.utils.timezone import get_kst_now
 import enum
 
 class InventoryChangeType(str, enum.Enum):
@@ -29,7 +30,7 @@ class InventoryLog(Base):
     notes = Column(Text, nullable=True, comment="비고/사유")
     related_id = Column(Integer, nullable=True, comment="관련 ID (로스팅ID 등)")
     
-    created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
+    created_at = Column(DateTime(timezone=True), default=get_kst_now)
 
     # Relationships
     bean = relationship("app.models.bean.Bean", back_populates="inventory_logs")

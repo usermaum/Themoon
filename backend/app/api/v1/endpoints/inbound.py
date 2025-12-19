@@ -8,6 +8,13 @@ from app.services.google_drive_service import GoogleDriveService
 from app.services.ocr_service import OCRService
 from app.schemas.inbound import OCRResponse, AnalyzeUrlRequest
 from app.config import settings
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.inbound_document import InboundDocument
+from app.models.inventory_log import InventoryLog, InventoryChangeType
+from app.models.bean import Bean, BeanType
+from app.models.supplier import Supplier
+from app.schemas.inbound import InboundConfirmRequest
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -96,22 +103,35 @@ async def analyze_inbound_document(
     # 4. Merge Results
     response = OCRResponse(
         supplier_name=ocr_result.get("supplier_name"),
+        contract_number=ocr_result.get("contract_number"),
+        supplier_phone=ocr_result.get("supplier_phone"),
+        supplier_email=ocr_result.get("supplier_email"),
+        receiver_name=ocr_result.get("receiver_name"),
         invoice_date=ocr_result.get("invoice_date"),
         total_amount=ocr_result.get("total_amount"),
         items=ocr_result.get("items", []),
-        drive_link=drive_link
+        drive_link=drive_link,
+        debug_raw_text=ocr_result.get("debug_raw_text")
     )
 
     return response
 
+@router.get("/check-duplicate/{contract_number}")
+def check_duplicate_contract_number(contract_number: str, db: Session = Depends(get_db)):
+    """
+    Check if a contract number already exists.
+    Returns {"exists": true/false}
+    """
+    existing_doc = db.query(InboundDocument).filter(
+        InboundDocument.contract_number == contract_number
+    ).first()
+    
+    if existing_doc:
+        return {"exists": True, "detail": "⚠️ 이미 등록된 명세서(계약번호)입니다."}
+    return {"exists": False, "detail": "사용 가능한 번호입니다."}
+
 # --- Save Endpoint ---
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models.inbound_document import InboundDocument
-from app.models.inventory_log import InventoryLog, InventoryChangeType
-from app.models.bean import Bean, BeanType
-from app.models.supplier import Supplier
-from app.schemas.inbound import InboundConfirmRequest
+
 
 @router.post("/confirm", status_code=201)
 def confirm_inbound(

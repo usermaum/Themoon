@@ -69,3 +69,11 @@ htmlcov/
 # Google Drive Upload
 .gemini/service_account.json
 
+# Uploaded files
+backend/static/uploads/
+
+# Test outputs
+test_*.txt
+test_*.py
+suppliers.json
+

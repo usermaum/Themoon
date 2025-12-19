@@ -32,7 +32,8 @@
       "Bash(bash)",
       "Bash(test:*)",
       "Bash(claude:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
@@ -40,7 +41,6 @@
   "model": "Sonnet",
   "statusLine": {
     "type": "command",
-    "command": "python3 .claude/statusline.py",
-    "refreshInterval": 60
+    "command": "python3 .claude/statusline.py"
   }
 }
