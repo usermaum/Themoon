@@ -1,4 +1,5 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 import json
 from typing import Dict, Any
@@ -10,15 +11,17 @@ class OCRService:
     def __init__(self):
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key:
-            genai.configure(api_key=api_key)
+            # 새로운 google.genai Client 사용
+            self.client = genai.Client(api_key=api_key)
             # Gemini 2.0 Flash 모델 사용 (2025년 최신 모델)
-            self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            self.model_name = 'gemini-2.0-flash-exp'
         else:
             print("Warning: GOOGLE_API_KEY not found in environment variables.")
-            self.model = None
+            self.client = None
+            self.model_name = None
 
     def analyze_image(self, image_bytes: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
-        if not self.model:
+        if not self.client:
             raise Exception("OCR Service is not configured (Missing API Key)")
 
         prompt = """
@@ -103,20 +106,24 @@ class OCRService:
         """
 
         try:
-            response = self.model.generate_content([
-                {'mime_type': mime_type, 'data': image_bytes},
-                prompt
-            ])
-            
+            # 새로운 API: client.models.generate_content() 사용
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[
+                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                    prompt
+                ]
+            )
+
             text = response.text
             # Clean up markdown if present
             if text.startswith("```json"):
                 text = text[7:]
             if text.endswith("```"):
                 text = text[:-3]
-            
+
             return json.loads(text)
-            
+
         except Exception as e:
             print(f"Error during Gemini OCR analysis: {e}")
             raise e
