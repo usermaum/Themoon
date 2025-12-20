@@ -457,3 +457,64 @@ MAJOR: 호환성 변경 (년 1~2회)
 
 마지막 업데이트: 2025-10-28
 세션 관리 시스템 확립: v1.2.0
+
+---
+
+## 🕒 최근 작업 상태 (Latest Context)
+
+> **이 섹션은 AI가 세션을 시작할 때 자동으로 읽어들이는 "기억" 영역입니다.**
+> **세션 종료 전 반드시 AI에게 "상태 저장해줘" 또는 "세션 종료"를 요청하여 이 부분을 업데이트하세요.**
+
+### 🔄 Context Handover Protocol
+
+**세션 간 연속성을 위한 3단계 프로토콜:**
+
+1. **세션 종료 시**: "상태 저장해줘" 명령으로 진행 상황 자동 기록
+2. **컴퓨터 간 이동**: Git Sync 필수 (`git commit && git push` → `git pull`)
+3. **새 세션 시작**: 자동으로 마지막 상태 로드 및 제안
+
+---
+
+### 📅 마지막 세션: 2025-12-20
+
+**✅ 완료된 작업 (커밋됨)**:
+1. ✅ Google Gemini API 마이그레이션 (`f344713`)
+   - `google-generativeai` → `google-genai` 전환 완료
+   - Client 기반 새로운 API 구조 적용
+   - FutureWarning 제거 및 향후 지원 보장
+
+2. ✅ 인바운드 페이지 UI 개선 (`e9e4221`)
+   - 거래명세서 보기 버튼 추가
+   - OCR 결과 카드 개선 (요약 정보 표시)
+   - sessionStorage를 통한 데이터 전달
+
+3. ✅ GSC 거래명세서 뷰 페이지 구현 (`0d8bc29`)
+
+4. ✅ 명세서 OCR 전체 항목 추출 (`aa50ac5`)
+
+**⚠️ 현재 작업 중 (미커밋)**:
+1. **Invoice 페이지 구현** (`frontend/app/inbound/invoice/page.tsx`)
+   - 생두 입고 명세서 UI 완성 (Mock 데이터 기반)
+   - 인쇄, 다운로드, 입고 처리 버튼 구현
+   - **다음 단계**: 실제 OCR 데이터와 연동 필요
+
+2. **문서 업데이트 중**:
+   - `.gemini/GEMINI.md` - Context Handover Protocol 추가
+   - `.claude/CLAUDE.md` - Context Handover Protocol 추가
+   - `logs/CHANGELOG.md` - Invoice 페이지 항목 추가
+   - `.claude/settings.local.json` - Bash 권한 추가
+
+**Git 상태**:
+- 현재 브랜치: main
+- 원격보다 6커밋 앞서 있음
+- 미커밋 파일: 5개 (invoice 페이지, 문서 업데이트)
+
+**서버 상태**:
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3500
+
+**🎯 다음 작업 옵션**:
+1. Invoice 페이지를 실제 OCR 데이터와 연동
+2. 현재 변경사항 커밋 후 문서 5종 세트 업데이트
+3. Invoice 페이지 UI/UX 개선 (인쇄, 다운로드 기능 구현)
+4. OCR 기능 실제 테스트 (전체 플로우 검증)

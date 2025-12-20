@@ -25,3 +25,8 @@ class InboundDocument(Base):
     # Relationships
     supplier = relationship("app.models.supplier.Supplier", back_populates="inbound_documents")
     inventory_logs = relationship("app.models.inventory_log.InventoryLog", back_populates="inbound_document")
+
+    # New relationships for OCR data (Option B redesign)
+    detail = relationship("app.models.inbound_document_detail.InboundDocumentDetail", back_populates="inbound_document", uselist=False)
+    receiver = relationship("app.models.inbound_receiver.InboundReceiver", back_populates="inbound_document", uselist=False)
+    items = relationship("app.models.inbound_item.InboundItem", back_populates="inbound_document", order_by="app.models.inbound_item.InboundItem.item_order")

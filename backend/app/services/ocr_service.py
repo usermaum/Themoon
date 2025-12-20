@@ -49,11 +49,12 @@ class OCRService:
             "name": "공급자명, Supplier Name",
             "business_number": "사업자등록번호, Business Registration Number",
             "address": "주소, Address",
-            "phone": "전화번호, Tel",
+            "phone": "대표 전화번호, Main Tel",
             "fax": "팩스, Fax",
             "email": "Email",
             "representative": "대표자명, Representative Name",
-            "contact_person": "담당자명, Contact Person"
+            "contact_person": "담당자명, Contact Person",
+            "contact_phone": "담당자 전화번호, Contact Person Phone"
           },
 
           "receiver": {

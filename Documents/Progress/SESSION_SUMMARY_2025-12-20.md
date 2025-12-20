@@ -511,7 +511,106 @@ nothing to commit, working tree clean
 
 ---
 
-**세션 종료 시간:** 2025-12-20
-**다음 세션 시작 시 확인 사항:** Render.com 배포 완료 여부 확인
+## 🎯 저녁 작업 - DB 재설계 (Option B)
+
+### 문제 발견 및 해결
+
+**발견한 문제:**
+- OCR은 39개 필드를 정확히 추출
+- DB에는 6개 필드만 저장 (15.4%)
+- **85% 데이터 손실** 발생
+
+**선택한 해결책: Option B - 완벽한 재설계**
+- 3개 정규화된 테이블 추가
+- 전체 OCR 데이터 구조 저장
+- **데이터 저장률: 15.4% → 100%** 🎉
+
+### 새로운 데이터베이스 테이블
+
+1. **inbound_document_details** (25개 필드)
+   - 문서 정보: 명세서 종류, 발행일, 납품일, 지급기한
+   - 공급자 상세: 사업자번호, 주소, 전화, 팩스, 이메일, 대표자, 담당자, 담당자 전화
+   - 금액 상세: 공급가액, 세액, 총합계, 통화
+   - 추가 정보: 결제조건, 배송방법, 비고
+
+2. **inbound_receivers** (5개 필드)
+   - 상호명, 사업자번호, 주소, 전화, 담당자
+
+3. **inbound_items** (9개 필드)
+   - 품목명, 규격, 단위, 수량, 원산지
+   - 단가, 공급가액, 세액, 비고
+
+### 구현 완료
+
+**Backend:**
+- ✅ 3개 모델 파일 생성
+- ✅ SQLAlchemy relationship 설정 (1:1, 1:N)
+- ✅ API 스키마 확장 (InboundConfirmRequest)
+- ✅ `/confirm` 엔드포인트 로직 수정
+
+**Frontend:**
+- ✅ Payload에 전체 OCR 데이터 포함
+- ✅ sessionStorage 활용한 데이터 보존
+
+**Testing:**
+- ✅ 전체 플로우 테스트 (업로드 → OCR → 저장 → DB 검증)
+- ✅ GSC 거래명세서 (5개 품목, 2,198,000원) 테스트
+- ✅ 모든 필드 100% 저장 확인
+
+**Cleanup:**
+- ✅ 미사용 `data/` 폴더 삭제
+- ✅ 프로젝트 구조 단순화
+
+### 데이터 저장률 비교
+
+| 항목 | 이전 | 현재 | 개선 |
+|------|------|------|------|
+| 공급받는자 정보 | 0% | 100% | +100% |
+| 공급자 상세 | 11% | 100% | +89% |
+| 품목 상세 | 22% | 100% | +78% |
+| 문서 메타 | 43% | 100% | +57% |
+| **전체** | **15.4%** | **100%** | **+84.6%** |
+
+### 기술적 세부사항
+
+**SQLAlchemy Relationships:**
+```python
+detail = relationship("InboundDocumentDetail", uselist=False)
+receiver = relationship("InboundReceiver", uselist=False)
+items = relationship("InboundItem", order_by="InboundItem.item_order")
+```
+
+**API Payload 확장:**
+```typescript
+{
+  document: {...},
+  items: [...],
+  document_info: ocrResult?.document_info,
+  supplier: ocrResult?.supplier,
+  receiver: ocrResult?.receiver,
+  amounts: ocrResult?.amounts,
+  additional_info: ocrResult?.additional_info,
+}
+```
+
+### 완료 체크리스트
+
+- [x] DB 모델 3개 생성
+- [x] 테이블 생성 확인
+- [x] API 스키마 확장
+- [x] API 엔드포인트 수정
+- [x] 프론트엔드 payload 수정
+- [x] 전체 플로우 테스트
+- [x] DB 검증 (100% 저장 확인)
+- [x] data 폴더 정리
+- [x] CHANGELOG.md 업데이트
+- [x] 세션 요약 작성
+
+---
+
+**세션 종료 시간:** 2025-12-20 22:00
+**다음 세션 시작 시 확인 사항:**
+- Render.com 배포 완료 여부 확인
+- 새 DB 테이블의 프로덕션 마이그레이션 필요
 
 **좋은 하루 되세요! 👋**

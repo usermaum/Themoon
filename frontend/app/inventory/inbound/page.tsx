@@ -25,6 +25,7 @@ interface InboundItem {
 interface InboundForm {
     supplier_name: string
     supplier_phone?: string
+    contact_phone?: string
     supplier_email?: string
     contract_number?: string
     receiver_name?: string
@@ -128,8 +129,9 @@ export default function InboundPage() {
             const data = await response.json()
             setOcrResult(data) // Save raw data for debug view
 
-            // Auto-fill form
-            const contractNum = data.contract_number || ""
+            // Auto-fill form using structured data
+            // 계약번호 (우선순위: 구조화된 데이터 > 하위 호환성 필드)
+            const contractNum = data.document_info?.contract_number || data.contract_number || ""
             setValue("contract_number", contractNum)
 
             // Auto-trigger duplicate check
@@ -137,13 +139,21 @@ export default function InboundPage() {
                 checkDuplicate(contractNum)
             }
 
-            setValue("supplier_name", data.supplier_name || "")
-            setValue("supplier_phone", data.supplier_phone || "")
-            setValue("supplier_email", data.supplier_email || "")
-            setValue("receiver_name", data.receiver_name || "")
+            // 공급처 정보 (Supplier Information)
+            setValue("supplier_name", data.supplier?.name || data.supplier_name || "")
+            setValue("supplier_phone", data.supplier?.phone || data.supplier_phone || "")
+            setValue("contact_phone", data.supplier?.contact_phone || "")
+            setValue("supplier_email", data.supplier?.email || data.supplier_email || "")
 
-            setValue("invoice_date", data.invoice_date || "")
-            setValue("total_amount", data.total_amount || 0)
+            // 공급처 담당자 (공급자의 contact_person 또는 representative)
+            // receiver_name 필드를 공급처 담당자로 사용 (폼 구조 유지)
+            setValue("receiver_name", data.supplier?.contact_person || data.supplier?.representative || "")
+
+            // 날짜 및 금액
+            setValue("invoice_date", data.document_info?.invoice_date || data.invoice_date || "")
+            setValue("total_amount", data.amounts?.total_amount || data.total_amount || 0)
+
+            // 품목 정보
             setValue("items", data.items || [])
             setDriveLink(data.drive_link)
 
@@ -214,7 +224,13 @@ export default function InboundPage() {
                     total_amount: data.total_amount,
                     image_url: driveLink, // Using the local link
                     notes: data.notes
-                }
+                },
+                // NEW: Include full OCR data for detailed storage (Option B)
+                document_info: ocrResult?.document_info,
+                supplier: ocrResult?.supplier,
+                receiver: ocrResult?.receiver,
+                amounts: ocrResult?.amounts,
+                additional_info: ocrResult?.additional_info,
             }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/inbound/confirm`, {
@@ -335,8 +351,8 @@ export default function InboundPage() {
                                     <Button
                                         size="sm"
                                         onClick={() => {
-                                            sessionStorage.setItem('invoiceData', JSON.stringify(ocrResult))
-                                            router.push('/inventory/inbound/view')
+                                            sessionStorage.setItem('ocrResult', JSON.stringify(ocrResult))
+                                            router.push('/inbound/invoice')
                                         }}
                                         className="bg-blue-600 hover:bg-blue-700"
                                     >
@@ -419,19 +435,23 @@ export default function InboundPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>상호명 (Company Name) *</Label>
-                                            <Input {...register("supplier_name")} placeholder="공급처명" />
+                                            <Input {...register("supplier_name")} placeholder="지에스씨인터내셔날(주)" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>담당자 (Receiver)</Label>
-                                            <Input {...register("receiver_name")} placeholder="수신자" />
+                                            <Label>담당자 (Contact Person)</Label>
+                                            <Input {...register("receiver_name")} placeholder="이혜인" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>연락처 (Phone)</Label>
-                                            <Input {...register("supplier_phone")} placeholder="010-0000-0000" />
+                                            <Label>공급처 대표 전화 (Main Phone)</Label>
+                                            <Input {...register("supplier_phone")} placeholder="070-4366-6276" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>담당자 전화 (Contact Phone)</Label>
+                                            <Input {...register("contact_phone")} placeholder="010-9269-3047" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>이메일 (Email)</Label>
-                                            <Input {...register("supplier_email")} placeholder="example@email.com" />
+                                            <Input {...register("supplier_email")} placeholder="h.y.lee@coffeegsc.co.kr" />
                                         </div>
                                     </div>
                                 </div>
