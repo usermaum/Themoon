@@ -33,7 +33,11 @@
       "Bash(test:*)",
       "Bash(claude:*)",
       "Skill(frontend-design)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(timeout 5 uvicorn:*)",
+      "Bash(pip3 list:*)",
+      "Bash(pip3 install:*)",
+      "Bash(./venv/bin/python3:*)"
     ],
     "deny": [],
     "ask": []
