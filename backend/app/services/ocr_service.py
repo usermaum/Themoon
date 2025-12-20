@@ -23,25 +23,83 @@ class OCRService:
 
         prompt = """
         You are a meticulous Data Entry Clerk. Read the provided Invoice/Purchase Order image carefully.
-        
-        Your task is to extracting the following data into a JSON format.
-        
-        EXTRACT ALL TEXT FIRST for debugging, then find specific fields.
 
-        JSON SCHEMA:
+        Your task is to extract ALL available information from the invoice into a structured JSON format.
+
+        EXTRACT EVERYTHING YOU CAN SEE, even if some fields are empty or not found.
+
+        JSON SCHEMA (Complete Invoice Data):
         {
-          "debug_raw_text": "TRANSCRIPTION OF ALL TEXT found in the top 30% of the page (Header area). INCLUDE EVERYTHING YOU SEE.",
-          "contract_number": "Look for '발주번호', '문서번호', 'Order No', 'Ref No' in the header. It usually starts with 'S' (e.g. S225HY...). Copy it exactly.",
-          "supplier_name": "The Supplier Company Name (exclude 'The Moon Coffee').",
-          "supplier_phone": "Tel/Mobile number",
-          "supplier_email": "Email address",
-          "receiver_name": "Receiver Name (default to 'The Moon Coffee' if implied)",
-          "invoice_date": "YYYY-MM-DD",
-          "total_amount": "Total Amount (Number)",
-          "items": "List of {bean_name, quantity, unit_price, amount}"
+          "debug_raw_text": "FULL TRANSCRIPTION of ALL text in the document. Include EVERYTHING visible.",
+
+          "document_info": {
+            "document_number": "문서번호, Document No (if different from contract_number)",
+            "contract_number": "발주번호, 계약번호, Order No, Ref No (e.g. S225HY...)",
+            "issue_date": "발행일, Issue Date (YYYY-MM-DD)",
+            "invoice_date": "거래일, Invoice Date (YYYY-MM-DD)",
+            "delivery_date": "납품일, 배송일, Delivery Date (YYYY-MM-DD)",
+            "payment_due_date": "지급기한, Payment Due Date (YYYY-MM-DD)",
+            "invoice_type": "GSC, HACIELO, STANDARD, or UNKNOWN"
+          },
+
+          "supplier": {
+            "name": "공급자명, Supplier Name",
+            "business_number": "사업자등록번호, Business Registration Number",
+            "address": "주소, Address",
+            "phone": "전화번호, Tel",
+            "fax": "팩스, Fax",
+            "email": "Email",
+            "representative": "대표자명, Representative Name",
+            "contact_person": "담당자명, Contact Person"
+          },
+
+          "receiver": {
+            "name": "수신자명, Receiver Name (default: The Moon Coffee)",
+            "business_number": "사업자등록번호",
+            "address": "주소",
+            "phone": "전화번호",
+            "contact_person": "담당자명"
+          },
+
+          "amounts": {
+            "subtotal": "공급가액, Subtotal (Number)",
+            "tax_amount": "세액, Tax Amount (Number)",
+            "total_amount": "합계금액, Total Amount (Number)",
+            "grand_total": "총합계, Grand Total (Number)",
+            "currency": "통화, Currency (KRW, USD, etc.)"
+          },
+
+          "items": [
+            {
+              "item_number": "순번, No",
+              "bean_name": "품명, 원두명, Product Name",
+              "bean_name_kr": "품명 한글 번역 (if original is English)",
+              "specification": "규격, Specification",
+              "origin": "원산지, Origin",
+              "quantity": "수량 (Number)",
+              "unit": "단위 (kg, bag, etc.)",
+              "unit_price": "단가 (Number)",
+              "amount": "금액, Amount (Number)",
+              "note": "비고, Note"
+            }
+          ],
+
+          "additional_info": {
+            "payment_terms": "결제조건, Payment Terms",
+            "shipping_method": "배송방법, Shipping Method",
+            "notes": "비고, 특이사항, Notes",
+            "remarks": "기타 메모, Remarks"
+          }
         }
-        
-        Return ONLY valid JSON.
+
+        IMPORTANT RULES:
+        1. Extract ALL text visible in the image into debug_raw_text
+        2. For each field, try your best to find the information
+        3. If a field is not found, use null or empty string ""
+        4. Convert all dates to YYYY-MM-DD format
+        5. Convert all numbers by removing commas (e.g., "1,500" -> 1500)
+        6. For items, extract as many details as possible
+        7. Return ONLY valid JSON, no markdown code blocks
         """
 
         try:
