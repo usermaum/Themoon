@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
-import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,6 +36,7 @@ interface InboundForm {
 }
 
 export default function InboundPage() {
+    const router = useRouter()
     const [activeTab, setActiveTab] = useState("file")
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [pastedImage, setPastedImage] = useState<File | null>(null)
@@ -322,18 +324,52 @@ export default function InboundPage() {
                         </Alert>
                     )}
 
-                    {/* Temporary Debug View */}
+                    {/* Temporary Debug View with Invoice Button */}
                     {ocrResult && (
-                        <Card className="border-yellow-400 bg-yellow-50/50">
+                        <Card className="border-blue-400 bg-blue-50/50">
                             <CardHeader className="py-3">
-                                <CardTitle className="text-sm font-mono text-yellow-800 flex items-center gap-2">
-                                    ⚠️ [임시] OCR 원본 데이터 (Debug)
+                                <CardTitle className="text-sm font-mono text-blue-800 flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        ✅ OCR 분석 완료
+                                    </span>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => {
+                                            sessionStorage.setItem('invoiceData', JSON.stringify(ocrResult))
+                                            router.push('/inventory/inbound/view')
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        📄 거래명세서 보기
+                                    </Button>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="py-2 pb-4">
-                                <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-60 font-mono">
-                                    {JSON.stringify(ocrResult, null, 2)}
-                                </pre>
+                            <CardContent className="py-2 pb-4 space-y-3">
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="bg-white p-2 rounded border">
+                                        <span className="text-gray-600 text-xs">공급자:</span>
+                                        <div className="font-semibold">{ocrResult.supplier?.name || ocrResult.supplier_name || '-'}</div>
+                                    </div>
+                                    <div className="bg-white p-2 rounded border">
+                                        <span className="text-gray-600 text-xs">계약번호:</span>
+                                        <div className="font-semibold">{ocrResult.document_info?.contract_number || ocrResult.contract_number || '-'}</div>
+                                    </div>
+                                    <div className="bg-white p-2 rounded border">
+                                        <span className="text-gray-600 text-xs">품목 수:</span>
+                                        <div className="font-semibold">{ocrResult.items?.length || 0}개</div>
+                                    </div>
+                                    <div className="bg-white p-2 rounded border">
+                                        <span className="text-gray-600 text-xs">합계:</span>
+                                        <div className="font-semibold">{(ocrResult.amounts?.total_amount || ocrResult.total_amount || 0).toLocaleString()}원</div>
+                                    </div>
+                                </div>
+                                <details className="text-xs bg-white p-2 rounded border">
+                                    <summary className="cursor-pointer font-semibold text-gray-700">🔍 원본 데이터 보기 (개발자용)</summary>
+                                    <pre className="mt-2 p-2 bg-gray-50 rounded overflow-auto max-h-40 font-mono text-xs">
+                                        {JSON.stringify(ocrResult, null, 2)}
+                                    </pre>
+                                </details>
                             </CardContent>
                         </Card>
                     )}
