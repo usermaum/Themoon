@@ -11,6 +11,9 @@ from app.config import settings
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.inbound_document import InboundDocument
+from app.models.inbound_document_detail import InboundDocumentDetail
+from app.models.inbound_receiver import InboundReceiver
+from app.models.inbound_item import InboundItem
 from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.bean import Bean, BeanType
 from app.models.supplier import Supplier
@@ -201,16 +204,71 @@ def confirm_inbound(
     # 2. Create Document
     doc_data = request.document.dict(exclude={'supplier_phone', 'supplier_email'})
     doc_data['supplier_id'] = supplier_id
-    
+
     new_doc = InboundDocument(**doc_data)
     db.add(new_doc)
     db.flush() # Get ID
 
+    # 2-1. Create Document Detail (NEW - Option B)
+    if request.document_info or request.supplier or request.amounts or request.additional_info:
+        detail_data = {}
+
+        # Document info
+        if request.document_info:
+            detail_data['document_number'] = request.document_info.document_number
+            detail_data['issue_date'] = request.document_info.issue_date
+            detail_data['delivery_date'] = request.document_info.delivery_date
+            detail_data['payment_due_date'] = request.document_info.payment_due_date
+            detail_data['invoice_type'] = request.document_info.invoice_type
+
+        # Supplier detailed info
+        if request.supplier:
+            detail_data['supplier_business_number'] = request.supplier.business_number
+            detail_data['supplier_address'] = request.supplier.address
+            detail_data['supplier_phone'] = request.supplier.phone
+            detail_data['supplier_fax'] = request.supplier.fax
+            detail_data['supplier_email'] = request.supplier.email
+            detail_data['supplier_representative'] = request.supplier.representative
+            detail_data['supplier_contact_person'] = request.supplier.contact_person
+            detail_data['supplier_contact_phone'] = request.supplier.contact_phone
+
+        # Amount details
+        if request.amounts:
+            detail_data['subtotal'] = request.amounts.subtotal
+            detail_data['tax_amount'] = request.amounts.tax_amount
+            detail_data['grand_total'] = request.amounts.grand_total or request.amounts.total_amount
+            detail_data['currency'] = request.amounts.currency
+
+        # Additional info
+        if request.additional_info:
+            detail_data['payment_terms'] = request.additional_info.payment_terms
+            detail_data['shipping_method'] = request.additional_info.shipping_method
+            detail_data['notes'] = request.additional_info.notes
+            detail_data['remarks'] = request.additional_info.remarks
+
+        detail = InboundDocumentDetail(
+            inbound_document_id=new_doc.id,
+            **detail_data
+        )
+        db.add(detail)
+
+    # 2-2. Create Receiver (NEW - Option B)
+    if request.receiver:
+        receiver = InboundReceiver(
+            inbound_document_id=new_doc.id,
+            name=request.receiver.name,
+            business_number=request.receiver.business_number,
+            address=request.receiver.address,
+            phone=request.receiver.phone,
+            contact_person=request.receiver.contact_person
+        )
+        db.add(receiver)
+
     # 3. Process Items
-    for item in request.items:
+    for idx, item in enumerate(request.items):
         bean_name = item.bean_name
         quantity = item.quantity or 0.0
-        
+
         # Find Bean
         bean = db.query(Bean).filter(Bean.name == bean_name).first()
         if not bean:
@@ -218,8 +276,8 @@ def confirm_inbound(
             bean = Bean(name=bean_name, quantity_kg=0.0, origin="Unknown", type=BeanType.GREEN_BEAN)
             db.add(bean)
             db.flush()
-        
-        # Create Log
+
+        # Create Log (기존 로직 유지)
         log = InventoryLog(
             bean_id=bean.id,
             change_type=InventoryChangeType.PURCHASE,
@@ -228,10 +286,26 @@ def confirm_inbound(
             inbound_document_id=new_doc.id,
             notes=f"Inbound from {new_doc.supplier_name} (Contract: {new_doc.contract_number or 'N/A'})"
         )
+        db.add(log)
+
         # Update Bean Quantity
         bean.quantity_kg += quantity
-        
-        db.add(log)
+
+        # Create InboundItem (NEW - Option B)
+        inbound_item = InboundItem(
+            inbound_document_id=new_doc.id,
+            item_order=idx,
+            bean_name=item.bean_name,
+            specification=item.specification,
+            unit=item.unit,
+            quantity=item.quantity,
+            origin=item.origin,
+            unit_price=item.unit_price,
+            supply_amount=item.amount,  # OCRItem.amount maps to supply_amount
+            tax_amount=None,  # Not provided in OCRItem
+            notes=item.note
+        )
+        db.add(inbound_item)
     
     db.commit()
     return {"status": "success", "document_id": new_doc.id, "supplier_id": supplier_id}

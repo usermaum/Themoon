@@ -24,6 +24,7 @@ class SupplierInfo(BaseModel):
     email: Optional[str] = None
     representative: Optional[str] = None
     contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
 
 class ReceiverInfo(BaseModel):
     """수신자 정보"""
@@ -119,3 +120,10 @@ class InboundConfirmRequest(BaseModel):
     # Data to save to DB (Log + Document)
     document: InboundDocumentCreate
     items: List[OCRItem] # Validated list of items
+
+    # New: Full OCR data for detailed storage (Option B redesign)
+    document_info: Optional[DocumentInfo] = None
+    supplier: Optional[SupplierInfo] = None
+    receiver: Optional[ReceiverInfo] = None
+    amounts: Optional[AmountsInfo] = None
+    additional_info: Optional[AdditionalInfo] = None

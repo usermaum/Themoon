@@ -1,0 +1,164 @@
+--- Database Schema for themoon.db ---
+
+[Table: beans]
+CREATE TABLE beans (
+	id INTEGER NOT NULL, 
+	name VARCHAR(100) NOT NULL, 
+	type VARCHAR(12) NOT NULL, 
+	sku VARCHAR(100), 
+	name_ko VARCHAR(100), 
+	name_en VARCHAR(200), 
+	origin VARCHAR(100), 
+	origin_ko VARCHAR(50), 
+	origin_en VARCHAR(50), 
+	variety VARCHAR(50), 
+	grade VARCHAR(50), 
+	processing_method VARCHAR(50), 
+	roast_profile VARCHAR(6), 
+	parent_bean_id INTEGER, 
+	quantity_kg FLOAT NOT NULL, 
+	avg_price FLOAT NOT NULL, 
+	purchase_price_per_kg FLOAT, 
+	cost_price FLOAT, 
+	description TEXT, 
+	notes TEXT, 
+	expected_loss_rate FLOAT NOT NULL, 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(parent_bean_id) REFERENCES beans (id)
+)
+-- Row count: 27
+
+[Table: suppliers]
+CREATE TABLE suppliers (
+	id INTEGER NOT NULL, 
+	name VARCHAR NOT NULL, 
+	representative_name VARCHAR, 
+	contact_phone VARCHAR, 
+	contact_email VARCHAR, 
+	address VARCHAR, 
+	registration_number VARCHAR, 
+	PRIMARY KEY (id)
+)
+-- Row count: 5
+
+[Table: blends]
+CREATE TABLE blends (
+	id INTEGER NOT NULL, 
+	name VARCHAR(200) NOT NULL, 
+	description TEXT, 
+	recipe JSON NOT NULL, 
+	target_roast_level VARCHAR(50), 
+	notes TEXT, 
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id)
+)
+-- Row count: 3
+
+[Table: inbound_documents]
+CREATE TABLE inbound_documents (
+	id INTEGER NOT NULL, 
+	contract_number VARCHAR, 
+	supplier_name VARCHAR, 
+	supplier_id INTEGER, 
+	receiver_name VARCHAR, 
+	invoice_date VARCHAR, 
+	total_amount FLOAT, 
+	image_url VARCHAR, 
+	drive_file_id VARCHAR, 
+	notes TEXT, 
+	created_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(supplier_id) REFERENCES suppliers (id)
+)
+-- Row count: 3
+
+[Table: inventory_logs]
+CREATE TABLE inventory_logs (
+	id INTEGER NOT NULL, 
+	bean_id INTEGER NOT NULL, 
+	change_type VARCHAR(15) NOT NULL, 
+	change_amount FLOAT NOT NULL, 
+	current_quantity FLOAT NOT NULL, 
+	notes TEXT, 
+	related_id INTEGER, 
+	created_at DATETIME, 
+	inbound_document_id INTEGER, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(bean_id) REFERENCES beans (id), 
+	FOREIGN KEY(inbound_document_id) REFERENCES inbound_documents (id)
+)
+-- Row count: 30
+
+[Table: inbound_document_details]
+CREATE TABLE inbound_document_details (
+	id INTEGER NOT NULL, 
+	inbound_document_id INTEGER NOT NULL, 
+	document_number VARCHAR, 
+	issue_date VARCHAR, 
+	delivery_date VARCHAR, 
+	payment_due_date VARCHAR, 
+	invoice_type VARCHAR, 
+	supplier_business_number VARCHAR, 
+	supplier_address TEXT, 
+	supplier_phone VARCHAR, 
+	supplier_fax VARCHAR, 
+	supplier_email VARCHAR, 
+	supplier_representative VARCHAR, 
+	supplier_contact_person VARCHAR, 
+	supplier_contact_phone VARCHAR, 
+	subtotal FLOAT, 
+	tax_amount FLOAT, 
+	grand_total FLOAT, 
+	currency VARCHAR, 
+	payment_terms TEXT, 
+	shipping_method VARCHAR, 
+	notes TEXT, 
+	remarks TEXT, 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	UNIQUE (inbound_document_id), 
+	FOREIGN KEY(inbound_document_id) REFERENCES inbound_documents (id)
+)
+-- Row count: 2
+
+[Table: inbound_receivers]
+CREATE TABLE inbound_receivers (
+	id INTEGER NOT NULL, 
+	inbound_document_id INTEGER NOT NULL, 
+	name VARCHAR, 
+	business_number VARCHAR, 
+	address TEXT, 
+	phone VARCHAR, 
+	contact_person VARCHAR, 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	UNIQUE (inbound_document_id), 
+	FOREIGN KEY(inbound_document_id) REFERENCES inbound_documents (id)
+)
+-- Row count: 2
+
+[Table: inbound_items]
+CREATE TABLE inbound_items (
+	id INTEGER NOT NULL, 
+	inbound_document_id INTEGER NOT NULL, 
+	item_order INTEGER NOT NULL, 
+	bean_name VARCHAR, 
+	specification VARCHAR, 
+	unit VARCHAR, 
+	quantity FLOAT, 
+	origin VARCHAR, 
+	unit_price FLOAT, 
+	supply_amount FLOAT, 
+	tax_amount FLOAT, 
+	notes TEXT, 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(inbound_document_id) REFERENCES inbound_documents (id)
+)
+-- Row count: 9

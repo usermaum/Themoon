@@ -11,6 +11,57 @@
 
 ---
 
+## [Unreleased]
+
+### 🎯 Database Redesign (Option B)
+- **OCR Data Loss Fix**: 데이터 손실 문제 완전 해결 (85% 손실 → 100% 저장)
+  - 이전: 39개 OCR 필드 중 6개만 저장 (15.4%)
+  - 현재: 39개 필드 전부 저장 (100%)
+
+- **New Database Tables**: 3개 정규화된 테이블 추가
+  - `inbound_document_details`: 문서 상세 정보 (25개 필드)
+    - 명세서 종류, 발행일, 납품일, 지급기한
+    - 공급자 사업자번호, 주소, 전화, 팩스, 이메일
+    - 대표자명, 담당자명, 담당자 전화
+    - 공급가액, 세액, 총합계, 통화
+    - 결제조건, 배송방법, 비고
+  - `inbound_receivers`: 공급받는자 정보 (5개 필드)
+    - 상호명, 사업자번호, 주소, 전화, 담당자
+  - `inbound_items`: 품목 상세 정보 (9개 필드)
+    - 품목명, 규격, 단위, 수량, 원산지
+    - 단가, 공급가액, 세액, 비고
+
+### 🔧 Backend Updates
+- **API Schema Extension**: `InboundConfirmRequest` 확장
+  - `document_info`, `supplier`, `receiver`, `amounts`, `additional_info` 필드 추가
+- **API Endpoint**: `/api/v1/inbound/confirm` 로직 수정
+  - 기존 `InboundDocument` + 3개 새 테이블 동시 저장
+  - InventoryLog 로직 유지 (재고 관리 연동)
+- **Models**: SQLAlchemy 관계 설정
+  - `InboundDocument.detail` (1:1)
+  - `InboundDocument.receiver` (1:1)
+  - `InboundDocument.items` (1:N)
+
+### 💻 Frontend Updates
+- **Payload Enhancement**: 전체 OCR 데이터 전송
+  - `ocrResult` 전체 구조를 confirm API로 전송
+  - 기존 폼 데이터 + OCR 원본 데이터 병합
+- **Data Preservation**: sessionStorage 활용
+  - OCR 분석 결과 완전 보존
+  - Invoice 페이지와 데이터 공유
+
+### ✅ Testing
+- **Full Flow Test**: 업로드 → OCR → 저장 → DB 검증 완료
+  - 테스트 데이터: GSC 거래명세서 (5개 품목, 2,198,000원)
+  - 검증 결과: 모든 필드 100% 저장 확인
+
+### 🧹 Cleanup
+- **Project Cleanup**: 미사용 `data/` 폴더 삭제
+  - 오래된 백업 DB 파일 제거
+  - 프로젝트 구조 단순화
+
+---
+
 ## [0.2.2] - 2025-12-20
 
 ### 🚀 Deployment & Infrastructure
@@ -33,6 +84,12 @@
   - 추출 정확도: ~95% (계약번호, 공급자, 날짜, 총액)
   - 처리 시간: ~30초
   - 테스트 스크립트: `test_inbound_upload_full.py`
+
+- **Invoice View Button**: 인바운드 페이지에 거래명세서 보기 버튼 추가
+  - OCR 분석 완료 후 즉시 명세서 확인 가능
+  - sessionStorage를 통한 데이터 전달
+  - 요약 정보 카드 (공급자, 계약번호, 품목 수, 합계)
+  - 거래명세서 뷰 페이지로 원클릭 이동
 
 ### 🐛 Fixed
 - **GoogleDriveService**: 환경변수에서 JSON 읽기 지원 추가
@@ -70,6 +127,13 @@
   - 메시지 개선: 사용자에게 명확한 정보 제공
 
 ### 🔧 Technical Improvements
+- **Google Gemini API Migration**: `google-generativeai` → `google-genai` 마이그레이션
+  - Deprecated 패키지에서 공식 지원 패키지로 전환
+  - `Client` 기반 새로운 API 구조 적용
+  - `types.Part.from_bytes()`로 이미지 데이터 전달 방식 개선
+  - FutureWarning 제거 및 향후 지원 보장
+  - 버전: `google-genai>=1.56.0`
+
 - `.gitignore` 업데이트: 업로드 파일 및 테스트 출력 제외
 - 서비스 계정 파일을 백업으로 이동 (`.gemini/service_account.json.backup`)
 

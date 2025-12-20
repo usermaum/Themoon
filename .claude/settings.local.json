@@ -37,7 +37,14 @@
       "Bash(timeout 5 uvicorn:*)",
       "Bash(pip3 list:*)",
       "Bash(pip3 install:*)",
-      "Bash(./venv/bin/python3:*)"
+      "Bash(./venv/bin/python3:*)",
+      "Bash(./dev.sh)",
+      "Bash(../venv/bin/python -c \"from app.services.ocr_service import OCRService; print\\(''✅ OCR Service import successful''\\)\")",
+      "Bash(../venv/bin/uvicorn:*)",
+      "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/uvicorn:*)",
+      "Bash(netstat:*)",
+      "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/python -c \"\nimport sqlite3\nconn = sqlite3.connect\\(''/mnt/d/Ai/WslProject/Themoon/themoon.db''\\)\ncursor = conn.cursor\\(\\)\ncursor.execute\\(\"\"SELECT name FROM sqlite_master WHERE type=''table'' ORDER BY name;\"\"\\)\ntables = cursor.fetchall\\(\\)\nfor table in tables:\n    print\\(table[0]\\)\nconn.close\\(\\)\n\")",
+      "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/python:*)"
     ],
     "deny": [],
     "ask": []
