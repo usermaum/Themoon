@@ -20,7 +20,7 @@ passlib[bcrypt]>=1.7.4,<2.0.0
 python-dotenv>=1.0.0,<2.0.0
 
 # Google Gemini & Drive
-google-generativeai
+google-genai>=1.56.0
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
