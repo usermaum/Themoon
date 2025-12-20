@@ -8,6 +8,10 @@ from typing import Optional
 import json
 import os
 
+# 프로젝트 디렉토리 경로 (모듈 레벨에서 정의)
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ROOT_DIR = os.path.dirname(_BASE_DIR)
+
 
 class Settings(BaseSettings):
     """애플리케이션 설정"""
@@ -19,8 +23,6 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # 데이터베이스 (개발용 SQLite) - 절대 경로 사용
-    _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    _ROOT_DIR = os.path.dirname(_BASE_DIR)
     DATABASE_URL: str = f"sqlite:///{os.path.join(_ROOT_DIR, 'themoon.db')}"
 
     # PostgreSQL 사용 시 (프로덕션):
