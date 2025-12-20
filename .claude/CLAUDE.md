@@ -485,17 +485,19 @@ MAJOR: 호환성 변경 (년 1~2회)
    - 리셋 시간 자동 계산 및 초기화
    - **사용법**: `python3 .claude/statusline.py --sync 100 "2시간 21분"`
 
-2. ✅ 설정 파일 동기화
-   - `.claude/settings.local.json`: refreshInterval 추가
+2. ✅ 버전 0.3.0 업데이트 (0.2.2 → 0.3.0)
+   - MINOR 버전 올림 (새 기능 6개 누적)
+   - 포함 기능: statusline, DB 재설계, OCR 항목, 거래명세서 뷰 등
 
-**📝 문서 작성**:
-- `Documents/Progress/SESSION_SUMMARY_2025-12-20.md` 작성
-- `logs/CHANGELOG.md` 업데이트
+3. ✅ 세션 종료 체크리스트 완료
+   - 모든 변경사항 커밋
+   - 문서 5종 세트 동기화 (README, CLAUDE.md, VERSION, CHANGELOG, SESSION_SUMMARY)
 
 **Git 상태**:
 - 현재 브랜치: main
-- 원격보다 7커밋 앞서 있음
-- 미커밋 파일: 4개 (statusline 시스템)
+- 원격보다 9커밋 앞서 있음
+- Working tree: clean ✅
+- 최종 커밋: 716d57f
 
 **🎯 다음 작업 옵션**:
 1. Invoice 페이지를 실제 OCR 데이터와 연동
