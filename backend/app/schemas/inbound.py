@@ -1,15 +1,80 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 # --- OCR/Analysis Schemas ---
+
+class DocumentInfo(BaseModel):
+    """문서 정보"""
+    document_number: Optional[str] = None
+    contract_number: Optional[str] = None
+    issue_date: Optional[str] = None
+    invoice_date: Optional[str] = None
+    delivery_date: Optional[str] = None
+    payment_due_date: Optional[str] = None
+    invoice_type: Optional[str] = None
+
+class SupplierInfo(BaseModel):
+    """공급자 정보"""
+    name: Optional[str] = None
+    business_number: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    fax: Optional[str] = None
+    email: Optional[str] = None
+    representative: Optional[str] = None
+    contact_person: Optional[str] = None
+
+class ReceiverInfo(BaseModel):
+    """수신자 정보"""
+    name: Optional[str] = None
+    business_number: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    contact_person: Optional[str] = None
+
+class AmountsInfo(BaseModel):
+    """금액 정보"""
+    subtotal: Optional[float] = None
+    tax_amount: Optional[float] = None
+    total_amount: Optional[float] = None
+    grand_total: Optional[float] = None
+    currency: Optional[str] = None
+
 class OCRItem(BaseModel):
+    """품목 정보 (확장)"""
+    item_number: Optional[str] = None
     bean_name: Optional[str] = None
+    bean_name_kr: Optional[str] = None
+    specification: Optional[str] = None
+    origin: Optional[str] = None
     quantity: Optional[float] = None
+    unit: Optional[str] = None
     unit_price: Optional[float] = None
     amount: Optional[float] = None
+    note: Optional[str] = None
+
+class AdditionalInfo(BaseModel):
+    """추가 정보"""
+    payment_terms: Optional[str] = None
+    shipping_method: Optional[str] = None
+    notes: Optional[str] = None
+    remarks: Optional[str] = None
 
 class OCRResponse(BaseModel):
+    """OCR 분석 결과 (전체 명세서 데이터)"""
+    # 디버그 원본 텍스트
+    debug_raw_text: Optional[str] = None
+
+    # 구조화된 데이터
+    document_info: Optional[DocumentInfo] = None
+    supplier: Optional[SupplierInfo] = None
+    receiver: Optional[ReceiverInfo] = None
+    amounts: Optional[AmountsInfo] = None
+    items: List[OCRItem] = []
+    additional_info: Optional[AdditionalInfo] = None
+
+    # 기존 호환성 유지 (deprecated, 하위 호환성)
     supplier_name: Optional[str] = None
     contract_number: Optional[str] = None
     supplier_phone: Optional[str] = None
@@ -17,9 +82,9 @@ class OCRResponse(BaseModel):
     receiver_name: Optional[str] = None
     invoice_date: Optional[str] = None
     total_amount: Optional[float] = None
-    items: List[OCRItem] = []
+
+    # 메타 정보
     drive_link: Optional[str] = None
-    debug_raw_text: Optional[str] = None
 
 # --- Inbound Document DB Schemas ---
 class InboundDocumentBase(BaseModel):

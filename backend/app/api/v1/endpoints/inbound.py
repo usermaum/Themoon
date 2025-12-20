@@ -100,18 +100,42 @@ async def analyze_inbound_document(
         logger.error(f"OCR Analysis Failed: {e}")
         raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
 
-    # 4. Merge Results
+    # 4. Merge Results (새로운 구조화된 데이터 + 하위 호환성)
+    from app.schemas.inbound import (
+        DocumentInfo, SupplierInfo, ReceiverInfo,
+        AmountsInfo, AdditionalInfo
+    )
+
+    # 새로운 구조화된 데이터 생성
+    document_info = DocumentInfo(**ocr_result.get("document_info", {})) if "document_info" in ocr_result else None
+    supplier_info = SupplierInfo(**ocr_result.get("supplier", {})) if "supplier" in ocr_result else None
+    receiver_info = ReceiverInfo(**ocr_result.get("receiver", {})) if "receiver" in ocr_result else None
+    amounts_info = AmountsInfo(**ocr_result.get("amounts", {})) if "amounts" in ocr_result else None
+    additional_info = AdditionalInfo(**ocr_result.get("additional_info", {})) if "additional_info" in ocr_result else None
+
     response = OCRResponse(
-        supplier_name=ocr_result.get("supplier_name"),
-        contract_number=ocr_result.get("contract_number"),
-        supplier_phone=ocr_result.get("supplier_phone"),
-        supplier_email=ocr_result.get("supplier_email"),
-        receiver_name=ocr_result.get("receiver_name"),
-        invoice_date=ocr_result.get("invoice_date"),
-        total_amount=ocr_result.get("total_amount"),
+        # 디버그 텍스트
+        debug_raw_text=ocr_result.get("debug_raw_text"),
+
+        # 새로운 구조화된 데이터
+        document_info=document_info,
+        supplier=supplier_info,
+        receiver=receiver_info,
+        amounts=amounts_info,
         items=ocr_result.get("items", []),
-        drive_link=drive_link,
-        debug_raw_text=ocr_result.get("debug_raw_text")
+        additional_info=additional_info,
+
+        # 하위 호환성 (기존 필드)
+        supplier_name=ocr_result.get("supplier", {}).get("name"),
+        contract_number=ocr_result.get("document_info", {}).get("contract_number"),
+        supplier_phone=ocr_result.get("supplier", {}).get("phone"),
+        supplier_email=ocr_result.get("supplier", {}).get("email"),
+        receiver_name=ocr_result.get("receiver", {}).get("name"),
+        invoice_date=ocr_result.get("document_info", {}).get("invoice_date"),
+        total_amount=ocr_result.get("amounts", {}).get("total_amount"),
+
+        # 메타 정보
+        drive_link=drive_link
     )
 
     return response
