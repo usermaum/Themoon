@@ -131,6 +131,15 @@ def format_statusline(compact=True):
     # Claude 사용량
     usage = get_claude_usage()
 
+    # 사용량 색상 표시 (이모지로 경고 수준 표시)
+    percentage = usage.get('percentage', 0)
+    if percentage >= 90:
+        usage_icon = "🔴"  # 90% 이상: 위험
+    elif percentage >= 70:
+        usage_icon = "🟡"  # 70-89%: 경고
+    else:
+        usage_icon = "💎"  # 70% 미만: 정상
+
     if compact:
         # 컴팩트 버전 (한 줄)
         statusline_parts = [
@@ -139,9 +148,9 @@ def format_statusline(compact=True):
             f"🌿 {branch}",
             f"🤖 {claude_info['model']}",
             f"📊 {claude_info['context']}",
-            f"🆔 {claude_info['session_id']}",
             f"📦 v{version}",
-            f"💎 {usage['used']}/{usage['daily_limit']}"
+            f"{usage_icon} {usage['used']}/{usage['daily_limit']} ({usage['percentage']}%)",
+            f"⏰ {usage.get('time_remaining', 'N/A')}"
         ]
         return " • ".join(statusline_parts)
     else:
@@ -152,7 +161,8 @@ def format_statusline(compact=True):
 ║ 🌿 브랜치: {branch}
 ║ 🤖 모델: {claude_info['model']}  📊 컨텍스트: {claude_info['context']}
 ║ 🆔 세션: {claude_info['session_id']}  📦 버전: v{version}
-║ 💎 사용량: {usage['used']}/{usage['daily_limit']} ({usage['percentage']}%)
+║ {usage_icon} 플랜 사용량: {usage['used']}/{usage['daily_limit']} ({usage['percentage']}%)
+║ ⏰ 리셋까지: {usage.get('time_remaining', 'N/A')}
 ╚══════════════════════════════════════════════════════════════
         """.strip()
 
@@ -184,7 +194,41 @@ def main():
     """메인 실행 함수"""
     # 명령줄 인수 확인
     if len(sys.argv) > 1:
-        if sys.argv[1] == "--continuous" or sys.argv[1] == "-c":
+        if sys.argv[1] == "--sync" or sys.argv[1] == "-s":
+            # 동기화 모드
+            if len(sys.argv) < 4:
+                print("❌ 사용법: python statusline.py --sync <사용량%> <리셋 시간>")
+                print("   예시: python statusline.py --sync 100 \"2시간 21분\"")
+                print("   예시: python statusline.py --sync 85 \"1시간 30분\"")
+                sys.exit(1)
+
+            try:
+                usage_percent = int(sys.argv[2])
+                time_remaining = sys.argv[3]
+
+                if get_claude_usage_api is None:
+                    print("❌ claude_usage_api 모듈을 불러올 수 없습니다.")
+                    sys.exit(1)
+
+                api = get_claude_usage_api()
+                result = api.sync_baseline(usage_percent, time_remaining)
+
+                if result['success']:
+                    print(result['message'])
+                    print(f"\n📊 동기화 정보:")
+                    print(f"  - 기준 사용량: {result['baseline']['baseline_used']}%")
+                    print(f"  - CLI 메시지 수: {result['baseline']['baseline_cli_messages']}")
+                    print(f"  - 리셋 시간: {result['baseline']['reset_time']}")
+                    print(f"\n이제 statusline이 자동으로 CLI 사용량을 추적합니다.")
+                else:
+                    print(result['message'])
+                    sys.exit(1)
+
+            except ValueError:
+                print("❌ 사용량은 숫자로 입력해주세요. (0-100)")
+                sys.exit(1)
+
+        elif sys.argv[1] == "--continuous" or sys.argv[1] == "-c":
             # 연속 모드 (60초 간격)
             interval = 60
             if len(sys.argv) > 2:
@@ -205,15 +249,22 @@ Claude Code 상태바 스크립트
 
 사용법:
   python statusline.py              # 한 번 출력 (컴팩트)
+  python statusline.py -s 100 "2시간 21분"  # 사용량 동기화
   python statusline.py -c           # 연속 모드 (60초 간격)
   python statusline.py -c 30        # 연속 모드 (30초 간격)
   python statusline.py -d           # 상세 출력
   python statusline.py -h           # 도움말
 
 옵션:
-  -c, --continuous [INTERVAL]  연속 모드로 실행 (기본: 60초)
-  -d, --detail                 상세 정보 출력
-  -h, --help                   이 도움말 출력
+  -s, --sync <사용량%> <리셋시간>  웹/앱 사용량 동기화
+  -c, --continuous [INTERVAL]      연속 모드로 실행 (기본: 60초)
+  -d, --detail                     상세 정보 출력
+  -h, --help                       이 도움말 출력
+
+동기화 예시:
+  python statusline.py --sync 100 "2시간 21분"
+  python statusline.py --sync 85 "1시간 30분"
+  python statusline.py --sync 50 "3시간"
             """)
         else:
             run_once()

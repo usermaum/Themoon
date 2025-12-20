@@ -44,7 +44,11 @@
       "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/uvicorn:*)",
       "Bash(netstat:*)",
       "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/python -c \"\nimport sqlite3\nconn = sqlite3.connect\\(''/mnt/d/Ai/WslProject/Themoon/themoon.db''\\)\ncursor = conn.cursor\\(\\)\ncursor.execute\\(\"\"SELECT name FROM sqlite_master WHERE type=''table'' ORDER BY name;\"\"\\)\ntables = cursor.fetchall\\(\\)\nfor table in tables:\n    print\\(table[0]\\)\nconn.close\\(\\)\n\")",
-      "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/python:*)"
+      "Bash(/mnt/d/Ai/WslProject/TheMoon_Project/venv/bin/python:*)",
+      "Bash(https://api.anthropic.com/v1/usage)",
+      "Bash(https://api.anthropic.com/v1/account)",
+      "Bash(https://claude.ai/api/organizations)",
+      "Bash(https://claude.ai/api/bootstrap)"
     ],
     "deny": [],
     "ask": []

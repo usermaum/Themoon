@@ -477,44 +477,27 @@ MAJOR: 호환성 변경 (년 1~2회)
 
 ### 📅 마지막 세션: 2025-12-20
 
-**✅ 완료된 작업 (커밋됨)**:
-1. ✅ Google Gemini API 마이그레이션 (`f344713`)
-   - `google-generativeai` → `google-genai` 전환 완료
-   - Client 기반 새로운 API 구조 적용
-   - FutureWarning 제거 및 향후 지원 보장
+**✅ 완료된 작업**:
+1. ✅ statusline 자동 사용량 추적 시스템 구현
+   - 하이브리드 동기화: 웹/앱 수동 입력 + CLI 자동 추적
+   - Baseline 관리 시스템 구현
+   - 경고 수준 시각화 (💎/🟡/🔴)
+   - 리셋 시간 자동 계산 및 초기화
+   - **사용법**: `python3 .claude/statusline.py --sync 100 "2시간 21분"`
 
-2. ✅ 인바운드 페이지 UI 개선 (`e9e4221`)
-   - 거래명세서 보기 버튼 추가
-   - OCR 결과 카드 개선 (요약 정보 표시)
-   - sessionStorage를 통한 데이터 전달
+2. ✅ 설정 파일 동기화
+   - `.claude/settings.local.json`: refreshInterval 추가
 
-3. ✅ GSC 거래명세서 뷰 페이지 구현 (`0d8bc29`)
-
-4. ✅ 명세서 OCR 전체 항목 추출 (`aa50ac5`)
-
-**⚠️ 현재 작업 중 (미커밋)**:
-1. **Invoice 페이지 구현** (`frontend/app/inbound/invoice/page.tsx`)
-   - 생두 입고 명세서 UI 완성 (Mock 데이터 기반)
-   - 인쇄, 다운로드, 입고 처리 버튼 구현
-   - **다음 단계**: 실제 OCR 데이터와 연동 필요
-
-2. **문서 업데이트 중**:
-   - `.gemini/GEMINI.md` - Context Handover Protocol 추가
-   - `.claude/CLAUDE.md` - Context Handover Protocol 추가
-   - `logs/CHANGELOG.md` - Invoice 페이지 항목 추가
-   - `.claude/settings.local.json` - Bash 권한 추가
+**📝 문서 작성**:
+- `Documents/Progress/SESSION_SUMMARY_2025-12-20.md` 작성
+- `logs/CHANGELOG.md` 업데이트
 
 **Git 상태**:
 - 현재 브랜치: main
-- 원격보다 6커밋 앞서 있음
-- 미커밋 파일: 5개 (invoice 페이지, 문서 업데이트)
-
-**서버 상태**:
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3500
+- 원격보다 7커밋 앞서 있음
+- 미커밋 파일: 4개 (statusline 시스템)
 
 **🎯 다음 작업 옵션**:
 1. Invoice 페이지를 실제 OCR 데이터와 연동
-2. 현재 변경사항 커밋 후 문서 5종 세트 업데이트
-3. Invoice 페이지 UI/UX 개선 (인쇄, 다운로드 기능 구현)
-4. OCR 기능 실제 테스트 (전체 플로우 검증)
+2. OCR 기능 전체 플로우 테스트
+3. UI/UX 개선 (인쇄, 다운로드 기능)
