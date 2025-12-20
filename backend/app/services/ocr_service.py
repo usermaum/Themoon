@@ -11,7 +11,8 @@ class OCRService:
         api_key = os.getenv("GOOGLE_API_KEY")
         if api_key:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-flash-latest')
+            # Gemini 2.0 Flash 모델 사용 (2025년 최신 모델)
+            self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
         else:
             print("Warning: GOOGLE_API_KEY not found in environment variables.")
             self.model = None

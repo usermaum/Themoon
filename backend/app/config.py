@@ -43,7 +43,8 @@ class Settings(BaseSettings):
     CONTEXT7_API_KEY: Optional[str] = None
 
     class Config:
-        env_file = ".env"
+        # 프로젝트 루트의 .env 파일 사용 (모노레포 구조)
+        env_file = os.path.join(_ROOT_DIR, ".env")
         case_sensitive = True
         extra = "ignore"
 
