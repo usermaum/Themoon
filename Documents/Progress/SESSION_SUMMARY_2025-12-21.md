@@ -19,12 +19,14 @@
 - **UI 구성**:
   - **공급자 분석**: `SupplierPieChart` (Recharts)
   - **원가 추이**: `CostTrendChart` (라인 차트)
-  - **재고 가치**: `InventoryValueTable` (현재 재고 평가액)
+   - **재고 가치**: `InventoryValueTable` (현재 재고 평가액)
+   - **📅 날짜 필터링**: `DateRangeFilter` 도입. 기간별(최근 30일/3개월/1년) 데이터 조회 및 커스텀 범위 설정 기능 구현.
 - **통합**: `PageHero` 공통 헤더 적용 및 사이드바 메뉴 연동
 
 ### 3. 안정화 및 버그 수정
 - **Router 경로 수정**: Frontend와 Backend 간 API 경로 불일치 현상 해결 (`/inbound`, `/inventory-logs`).
 - **서비스 오류 수정**: `StatsService` 내 필드명 오류(`total_amount`) 및 Import 누락 해결.
+- **UI 버그 수정**: 대시보드 조회 시 로딩 상태(`setLoading`)로 인해 날짜 필터가 초기화되는 문제 해결.
 - **문서 한글화**: `GEMINI.md` 규칙에 따라 모든 아티팩트(Walkthrough, Implementation Plan)를 한글로 작성.
 
 ## 📝 변경된 파일
@@ -39,12 +41,12 @@
 ## ⚠️ 이슈 및 해결
 - **이슈**: `AttributeError: type object 'InboundDocument' has no attribute 'grand_total'`
 - **해결**: 모델 정의를 확인하여 `total_amount`로 필드명 수정.
-- **이슈**: `NameError: name 'desc' is not defined`
-- **해결**: SQLAlchemy import 문에 `desc` 추가.
+- **이슈**: `Analytics Page`에서 프리셋 버튼 클릭 시 입력값이 사라지는 현상
+- **해결**: `fetchData` 호출 시 불필요한 전체 페이지 로딩(`setLoading(true)`)을 제거하여 컴포넌트 Unmount 방지.
 
 ## 🔜 다음 계획
 1. **로스팅 로그 연동**: 구현된 `calculate_fifo_cost`를 실제 로스팅 로그 저장 시점에 적용하여 `cost_per_kg` 기록.
-2. **날짜 필터링**: 대시보드에 조회 기간 설정 기능 추가.
+2. **PostgreSQL 마이그레이션**: 프로덕션 배포를 위한 데이터베이스 이전 준비.
 
 ---
 

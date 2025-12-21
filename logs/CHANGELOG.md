@@ -33,6 +33,7 @@
 - **API Router Paths**: Frontend 요청 경로와 불일치하던 Backend 라우터 prefix 수정 (`invoices` → `inbound`, `inventory` → `inventory-logs`).
 - **Stats Service Bugs**: `InboundDocument` 필드명 불일치(`grand_total` → `total_amount`) 및 `SQLAlchemy` import 누락 수정.
 - **Documentation**: 모든 사용자 문서(`walkthrough.md`, `implementation_plan.md`)를 한글로 전면 번역 및 수정 (GEMINI.md 규칙 준수).
+- **Analytics UI**: `DateRangeFilter` 프리셋 버튼 클릭 시 로딩 상태 문제로 인해 입력값이 초기화되는 버그 수정 (`AnalyticsPage` state issue).
 
 ---
 
