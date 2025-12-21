@@ -24,10 +24,14 @@
 - **다중 필드 매칭**: name, name_en, name_ko 모두 검사하여 매칭률 향상
   - 이전: Bean.name만 exact match 검사
   - 현재: 3개 필드 모두 검사하여 매칭 성공률 대폭 향상
+- **Case-insensitive 매칭**: 대소문자 무시 검색 추가
+  - Exact match 우선, 실패 시 대소문자 무시 매칭 시도
+  - "sugarcane" vs "Sugarcane", "COLOMBIA" vs "colombia" 등 해결
+  - SQLAlchemy `func.lower()` 사용
 - **매칭 상태 확인 기능**: OCRItem에 매칭 정보 필드 추가
   - `matched`: 매칭 성공 여부 (true/false)
   - `match_field`: 매칭된 필드 ("name", "name_en", "name_ko", "new")
-  - `match_method`: 매칭 방법 ("exact", "new")
+  - `match_method`: 매칭 방법 ("exact", "case_insensitive", "new")
   - `bean_id`: 매칭된 생두 ID
 - **데이터 정리**: 중복 생두 통합 및 관련 레코드 업데이트
   - ID=18 (Colombia Supremo Huila, 50kg) → ID=8 (후일라, 84kg)
