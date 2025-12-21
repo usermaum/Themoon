@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import engine, Base, SessionLocal
-from app.models import Bean, InboundDocument, InboundItem, Supplier, InboundDocumentDetail, InboundReceiver
+from app.models import Bean, InboundDocument, InboundItem, Supplier, InboundDocumentDetail, InboundReceiver, InventoryLog
 from sqlalchemy.orm import Session
 
 def seed_analytics(db: Session):
@@ -79,10 +79,23 @@ def seed_analytics(db: Session):
             db.add(item)
             doc_total += total_price
             
-            # Optional: Update Bean stock for "Current Inventory Value"
+            # Update Bean stock
             # We add some stock but assume some was used. 
             # Let's say 50% remains.
             bean.quantity_kg += (quantity * 0.5)
+
+            # Create Inventory Log (PURCHASE) -> Essential for Inventory History!
+            inventory_log = InventoryLog(
+                bean_id=bean.id,
+                change_type="PURCHASE", # Match InventoryChangeType.PURCHASE
+                change_amount=quantity,
+                current_quantity=bean.quantity_kg, # Approximate (since we modified it above)
+                unit_cost=unit_price,
+                notes=f"Seeded Data: Inbound from {supplier.name}",
+                created_at=doc_date, # Sync date with document
+                inbound_document_id=doc.id
+            )
+            db.add(inventory_log)
 
         # Update Document Total
         doc.total_amount = doc_total
