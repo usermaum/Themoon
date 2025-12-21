@@ -31,7 +31,7 @@ graph TD
     end
 
     subgraph Data ["Data Layer (Database)"]
-        SQLite[(SQLite (themoon.db))]
+        SQLite[("SQLite (themoon.db)")]
         SSOT[Single Source of Truth]
     end
 
@@ -144,7 +144,7 @@ graph TD
     end
 
     subgraph DB ["Database Layer"]
-        SQLite[(SQLite roasting_data.db)]
+        SQLite[("SQLite roasting_data.db")]
     end
 
     UI --> Logic
@@ -374,17 +374,14 @@ selected_bean = st.selectbox(
 
 ## 📡 API 없이 직접 데이터 접근
 
-```
 주의: 이 프로젝트는 API 서버가 없습니다.
 Streamlit이 직접 데이터베이스에 접근합니다.
 
 ```mermaid
 graph TD
     UI[Streamlit UI]
-    DB[(SQLite DB)]
+    DB[("SQLite DB")]
     UI -->|직접 접근| DB
-```
-
 ```
 
 이 구조의 장점:
@@ -452,7 +449,6 @@ for use_case in use_cases:
 
 오류 발생 시 추적 순서:
 
-```
 ```mermaid
 flowchart TD
     Err[오류 발생] --> UI[1. Streamlit UI 브라우저 콘솔]
@@ -461,8 +457,6 @@ flowchart TD
     Svc -->|데이터 처리 로직 확인| Model[4. Models ORM]
     Model -->|데이터 유형 확인| DB[5. Database SQLite]
     DB -->|데이터 존재 여부 확인| End[원인 파악]
-```
-
 ```
 
 **디버깅 명령어:**

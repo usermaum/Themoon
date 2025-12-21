@@ -29,15 +29,15 @@ TheMoon 프로젝트는 **Render.com 무료 티어**를 활용하여 프로덕�
 graph TD
     subgraph Render [Render.com Cloud (Oregon)]
         subgraph FE [Frontend Service]
-            NextJS[Next.js 14<br/>Node.js 18]
+            NextJS["Next.js 14<br/>Node.js 18"]
         end
         
         subgraph BE [Backend Service]
-            FastAPI[FastAPI<br/>Python 3.10+]
+            FastAPI["FastAPI<br/>Python 3.10+"]
         end
         
         subgraph DB [Database]
-            Postgres[(PostgreSQL 18)]
+            Postgres[("PostgreSQL 18")]
         end
         
         NextJS -->|HTTPS| FastAPI
