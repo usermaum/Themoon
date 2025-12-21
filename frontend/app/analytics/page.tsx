@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CostTrendChart } from "@/components/analytics/CostTrendChart"
 import { SupplierPieChart } from "@/components/analytics/SupplierPieChart"
 import { InventoryValueTable } from "@/components/analytics/InventoryValueTable"
+import { DateRangeFilter } from "@/components/analytics/DateRangeFilter"
 import { PageHero } from "@/components/PageHero"
 import { BarChart3, TrendingUp, DollarSign } from "lucide-react"
 import axios from "axios"
@@ -15,44 +16,59 @@ export default function AnalyticsPage() {
     const [costTrends, setCostTrends] = useState([])
     const [inventoryValue, setInventoryValue] = useState([])
     const [loading, setLoading] = useState(true)
+    const [startDate, setStartDate] = useState<string | null>(null)
+    const [endDate, setEndDate] = useState<string | null>(null)
+
+    const fetchData = async (start?: string | null, end?: string | null) => {
+        setLoading(true)
+        try {
+            // Build params
+            const dateParams: any = {}
+            if (start) dateParams.start_date = start
+            if (end) dateParams.end_date = end
+
+            // 1. Fetch Supplier Stats
+            const supplierRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/supplier", {
+                params: dateParams
+            })
+            setSupplierStats(supplierRes.data)
+
+            // 2. Fetch Cost Trends (Sample: Yirgacheffe)
+            const trendRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/item/trends", {
+                params: { bean_name: "예가체프", ...dateParams }
+            })
+            setCostTrends(trendRes.data)
+
+            // 3. Fetch Inventory for Valuation (no date filter)
+            const beansRes = await axios.get("http://localhost:8000/api/v1/beans/")
+            const inventoryData = beansRes.data.items.map((bean: any) => ({
+                bean_name: bean.name,
+                quantity_kg: bean.quantity_kg,
+                avg_price: bean.avg_price,
+                total_value: bean.quantity_kg * bean.avg_price
+            })).filter((item: any) => item.quantity_kg > 0)
+
+            setInventoryValue(inventoryData)
+
+            setLoading(false)
+        } catch (error) {
+            console.error("Failed to fetch analytics data", error)
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // 1. Fetch Supplier Stats
-                const supplierRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/supplier")
-                setSupplierStats(supplierRes.data)
-
-                // 2. Fetch Cost Trends (Sample: Yirgacheffe)
-                // In a real app, we would have a dropdown to select the bean
-                const trendRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/item/trends", {
-                    params: { bean_name: "Yirgacheffe" }
-                })
-                setCostTrends(trendRes.data)
-
-                // 3. Fetch Inventory for Valuation
-                const beansRes = await axios.get("http://localhost:8000/api/v1/beans/")
-                const inventoryData = beansRes.data.map((bean: any) => ({
-                    bean_name: bean.name,
-                    quantity_kg: bean.quantity_kg,
-                    avg_price: bean.avg_price,
-                    total_value: bean.quantity_kg * bean.avg_price
-                })).filter((item: any) => item.quantity_kg > 0)
-
-                setInventoryValue(inventoryData)
-
-                setLoading(false)
-            } catch (error) {
-                console.error("Failed to fetch analytics data", error)
-                setLoading(false)
-            }
-        }
-
         fetchData()
     }, [])
 
+    const handleDateChange = (start: string | null, end: string | null) => {
+        setStartDate(start)
+        setEndDate(end)
+        fetchData(start, end)
+    }
+
     if (loading) {
-        return <div className="p-8">Loading analytics...</div>
+        return <div className="p-8">데이터를 불러오는 중...</div>
     }
 
     return (
@@ -65,6 +81,11 @@ export default function AnalyticsPage() {
             />
 
             <div className="container mx-auto px-4 max-w-7xl">
+                {/* Date Range Filter */}
+                <div className="mb-6">
+                    <DateRangeFilter onDateChange={handleDateChange} />
+                </div>
+
                 <Tabs defaultValue="overview" className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="overview">개요</TabsTrigger>

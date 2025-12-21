@@ -51,7 +51,12 @@
       "Bash(https://claude.ai/api/bootstrap)",
       "Bash(source ../venv/bin/activate)",
       "Bash([ -f .env ])",
-      "Bash([ -f themoon.db ])"
+      "Bash([ -f themoon.db ])",
+      "mcp__playwright__playwright_navigate",
+      "mcp__playwright__playwright_screenshot",
+      "mcp__playwright__playwright_get_visible_html",
+      "mcp__playwright__playwright_evaluate",
+      "mcp__playwright__playwright_close"
     ],
     "deny": [],
     "ask": []
