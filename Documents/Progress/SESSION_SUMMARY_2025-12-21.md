@@ -16,11 +16,11 @@
   - 월별 매입 추이 및 품목별 단가 변동 내역 집계
 
 ### 2. Frontend: 비즈니스 분석 대시보드 (`/analytics`)
-- **UI 구성**:
+- **UI 구성 및 기능 업그레이드**:
   - **공급자 분석**: `SupplierPieChart` (Recharts)
-  - **원가 추이**: `CostTrendChart` (라인 차트)
-   - **재고 가치**: `InventoryValueTable` (현재 재고 평가액)
-   - **📅 날짜 필터링**: `DateRangeFilter` 도입. 기간별(최근 30일/3개월/1년) 데이터 조회 및 커스텀 범위 설정 기능 구현.
+  - **원가 추이**: `CostTrendChart` (라인 차트) **+ 품목 선택 기능(Bean Selector) 추가**
+  - **재고 가치**: `InventoryValueTable` (현재 재고 평가액) **+ 상세 검색 및 페이징 기능 추가**
+  - **📅 날짜 필터링**: `DateRangeFilter` 도입. 기간별(최근 30일/3개월/1년) 데이터 조회 및 커스텀 범위 설정 기능 구현.
 - **통합**: `PageHero` 공통 헤더 적용 및 사이드바 메뉴 연동
 
 ### 3. 안정화 및 버그 수정
@@ -47,6 +47,8 @@
 - **해결**: `seed_analytics_data.py` 스크립트 작성 및 실행하여 과거 6개월치 모의 입고 데이터(20건) 생성 완료.
 - **이슈**: 로스팅 서비스 코드 오류 (`UnboundLocalError`)
 - **해결**: `roasting_service.py` 내의 `fifo_unit_cost` 계산 순서를 변경하여 로스팅 로그에 정확한 원가가 기록되도록 수정.
+- **이슈**: 앱 재시작 후 Analytics 페이지 크래시 (`ReferenceError: handleDateChange`)
+- **해결**: `AnalyticsPage.tsx`에 누락된 이벤트 핸들러를 정의하여 정상 복구.
 
 ## 🔜 다음 계획
 1. **PostgreSQL 마이그레이션**: 프로덕션 배포를 위한 데이터베이스 이전 준비.

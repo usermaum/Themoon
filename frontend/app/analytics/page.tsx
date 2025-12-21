@@ -18,6 +18,8 @@ export default function AnalyticsPage() {
     const [loading, setLoading] = useState(true)
     const [startDate, setStartDate] = useState<string | null>(null)
     const [endDate, setEndDate] = useState<string | null>(null)
+    const [availableBeans, setAvailableBeans] = useState<string[]>([])
+    const [selectedBeanForTrend, setSelectedBeanForTrend] = useState<string>("예가체프")
 
     const fetchData = async (start?: string | null, end?: string | null) => {
         // Only set loading on initial load or handle it differently
@@ -34,25 +36,31 @@ export default function AnalyticsPage() {
             })
             setSupplierStats(supplierRes.data)
 
-            // 2. Fetch Cost Trends (Sample: Yirgacheffe)
-            const trendRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/item/trends", {
-                params: { bean_name: "예가체프", ...dateParams }
-            })
-            setCostTrends(trendRes.data)
-
-            // 3. Fetch Inventory for Valuation (no date filter)
-            // Only fetch if not already loaded or if needed? 
-            // For now, let's keep fetching it or optimize.
-            // But to be safe, we fetch everything.
+            // 3. Fetch Inventory (and get Bean List for Selector)
             const beansRes = await axios.get("http://localhost:8000/api/v1/beans/")
-            const inventoryData = beansRes.data.items.map((bean: any) => ({
+            const allBeans = beansRes.data.items
+
+            // Set Available Beans for Selector (Unique names)
+            const beanNames = Array.from(new Set(allBeans.map((b: any) => b.name))) as string[]
+            setAvailableBeans(beanNames)
+
+            // Set Inventory Data
+            const inventoryData = allBeans.map((bean: any) => ({
                 bean_name: bean.name,
                 quantity_kg: bean.quantity_kg,
                 avg_price: bean.avg_price,
                 total_value: bean.quantity_kg * bean.avg_price
             })).filter((item: any) => item.quantity_kg > 0)
-
             setInventoryValue(inventoryData)
+
+            // 2. Fetch Cost Trends (Using selectedBeanForTrend)
+            // Note: If selectedBeanForTrend is not in list (initial load), default to first available or "예가체프"
+            const targetBean = selectedBeanForTrend || (beanNames.length > 0 ? beanNames[0] : "예가체프")
+
+            const trendRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/item/trends", {
+                params: { bean_name: targetBean, ...dateParams }
+            })
+            setCostTrends(trendRes.data)
 
             setLoading(false)
         } catch (error) {
@@ -62,15 +70,17 @@ export default function AnalyticsPage() {
     }
 
     useEffect(() => {
-        fetchData()
-    }, [])
+        fetchData(startDate, endDate)
+    }, [startDate, endDate, selectedBeanForTrend]) // Re-fetch when date or bean changes
 
     const handleDateChange = (start: string | null, end: string | null) => {
         setStartDate(start)
         setEndDate(end)
-        fetchData(start, end)
     }
 
+    // ... handleDateChange ...
+
+    // ... if loading ...
     if (loading) {
         return <div className="p-8">데이터를 불러오는 중...</div>
     }
@@ -83,6 +93,7 @@ export default function AnalyticsPage() {
                 description="원가 분석 및 재고 가치 통계 대시보드입니다."
                 variant="midnight"
             />
+            {/* ... DateFilter ... */}
 
             <div className="container mx-auto px-4 max-w-7xl">
                 {/* Date Range Filter */}
@@ -98,6 +109,7 @@ export default function AnalyticsPage() {
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4">
+                        {/* ... Overview Content ... */}
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                             <Card className="col-span-4">
                                 <CardHeader>
@@ -130,6 +142,18 @@ export default function AnalyticsPage() {
                     <TabsContent value="cost" className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
                             <div className="col-span-1">
+                                <div className="mb-4">
+                                    <label className="text-sm font-medium mb-2 block">품목 선택</label>
+                                    <select
+                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={selectedBeanForTrend}
+                                        onChange={(e) => setSelectedBeanForTrend(e.target.value)}
+                                    >
+                                        {availableBeans.map(bean => (
+                                            <option key={bean} value={bean}>{bean}</option>
+                                        ))}
+                                    </select>
+                                </div>
                                 <CostTrendChart data={costTrends} />
                             </div>
                             <Card className="col-span-1">
@@ -138,8 +162,8 @@ export default function AnalyticsPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-sm text-gray-500">
-                                        현재 'Yirgacheffe' 품목의 입고 단가 추이를 보여줍니다.
-                                        향후 드롭다운을 통해 품목 선택 기능을 제공할 예정입니다.
+                                        선택한 품목의 최근 입고 단가 추이를 보여줍니다.
+                                        기간 필터를 통해 조회 범위를 조정할 수 있습니다.
                                     </p>
                                 </CardContent>
                             </Card>

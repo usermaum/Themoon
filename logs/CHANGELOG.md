@@ -34,6 +34,12 @@
 - **Stats Service Bugs**: `InboundDocument` 필드명 불일치(`grand_total` → `total_amount`) 및 `SQLAlchemy` import 누락 수정.
 - **Documentation**: 모든 사용자 문서(`walkthrough.md`, `implementation_plan.md`)를 한글로 전면 번역 및 수정 (GEMINI.md 규칙 준수).
 - **Analytics UI**: `DateRangeFilter` 프리셋 버튼 클릭 시 로딩 상태 문제로 인해 입력값이 초기화되는 버그 수정 (`AnalyticsPage` state issue).
+- **Analytics Crash Fix**: 앱 재시작 후 발생한 `handleDateChange` ReferenceError 수정.
+
+#### 🚀 New Features (Enhanced)
+- **Analytics Detail Features**:
+  - **Bean Selector**: 단가 변동 추이 차트에서 특정 품목 선택 가능.
+  - **Inventory Search**: 재고 자산 가치 테이블에서 품목명 검색 및 페이징 지원.
 
 ---
 
