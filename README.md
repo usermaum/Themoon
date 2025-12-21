@@ -122,7 +122,6 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   ├── VERSION                # 현재: 0.4.0
 │   └── CHANGELOG.md           # 변경 로그
 │
-├── data/                      # 데이터베이스 (원본 참조용)
 ├── venv/                      # Python 가상환경 (원본 참조용)
 ├── scripts/                   # 유틸리티 스크립트
 ├── .env                       # 환경 변수
