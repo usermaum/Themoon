@@ -29,7 +29,7 @@ ocr_service = OCRService()
 # === 생두 매칭 헬퍼 함수 ===
 def match_bean_multi_field(bean_name: str, db: Session) -> tuple[Bean | None, str, str]:
     """
-    다중 필드로 생두 매칭 시도
+    다중 필드로 생두 매칭 시도 (대소문자 무시)
 
     Args:
         bean_name: OCR에서 추출한 생두명
@@ -39,27 +39,44 @@ def match_bean_multi_field(bean_name: str, db: Session) -> tuple[Bean | None, st
         (매칭된 Bean 객체 또는 None, 매칭 필드, 매칭 방법)
         - Bean: 매칭된 생두 객체 (없으면 None)
         - match_field: "name", "name_en", "name_ko", "new"
-        - match_method: "exact", "new"
+        - match_method: "exact", "case_insensitive", "new"
     """
     if not bean_name:
         return None, "new", "new"
 
-    # 1. Bean.name으로 매칭 시도
+    from sqlalchemy import func
+
+    # 1. Exact match 시도 (Bean.name)
     bean = db.query(Bean).filter(Bean.name == bean_name).first()
     if bean:
         return bean, "name", "exact"
 
-    # 2. Bean.name_en으로 매칭 시도
+    # 2. Exact match 시도 (Bean.name_en)
     bean = db.query(Bean).filter(Bean.name_en == bean_name).first()
     if bean:
         return bean, "name_en", "exact"
 
-    # 3. Bean.name_ko로 매칭 시도
+    # 3. Exact match 시도 (Bean.name_ko)
     bean = db.query(Bean).filter(Bean.name_ko == bean_name).first()
     if bean:
         return bean, "name_ko", "exact"
 
-    # 4. 매칭 실패
+    # 4. Case-insensitive match 시도 (Bean.name)
+    bean = db.query(Bean).filter(func.lower(Bean.name) == bean_name.lower()).first()
+    if bean:
+        return bean, "name", "case_insensitive"
+
+    # 5. Case-insensitive match 시도 (Bean.name_en)
+    bean = db.query(Bean).filter(func.lower(Bean.name_en) == bean_name.lower()).first()
+    if bean:
+        return bean, "name_en", "case_insensitive"
+
+    # 6. Case-insensitive match 시도 (Bean.name_ko)
+    bean = db.query(Bean).filter(func.lower(Bean.name_ko) == bean_name.lower()).first()
+    if bean:
+        return bean, "name_ko", "case_insensitive"
+
+    # 7. 매칭 실패
     return None, "new", "new"
 
 @router.post("/analyze", response_model=OCRResponse)
