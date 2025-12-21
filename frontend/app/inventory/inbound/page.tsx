@@ -56,7 +56,16 @@ export default function InboundPage() {
 
     const { register, control, handleSubmit, setValue, reset, watch } = useForm<InboundForm>({
         defaultValues: {
-            items: [{ bean_name: "", quantity: 0, unit_price: 0, amount: 0 }]
+            supplier_name: "",
+            supplier_phone: "",
+            contact_phone: "",
+            supplier_email: "",
+            contract_number: "",
+            receiver_name: "",
+            invoice_date: "",
+            total_amount: 0,
+            items: [{ bean_name: "", quantity: 0, unit_price: 0, amount: 0 }],
+            notes: ""
         }
     })
 
@@ -172,11 +181,10 @@ export default function InboundPage() {
             }
 
         } catch (error: any) {
-            reset({
-                items: [{ bean_name: "", quantity: 0, unit_price: 0, amount: 0 }]
-            })
+            reset()
             setOcrResult(null)
             setDriveLink(null)
+            setDuplicateStatus({ status: 'idle', message: '' })
             toast({ title: "오류 발생", description: error.message, variant: "destructive" })
         } finally {
             setIsAnalyzing(false)
