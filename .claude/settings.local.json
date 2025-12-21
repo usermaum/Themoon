@@ -50,7 +50,8 @@
       "Bash(https://claude.ai/api/organizations)",
       "Bash(https://claude.ai/api/bootstrap)",
       "Bash(source ../venv/bin/activate)",
-      "Bash([ -f .env ])"
+      "Bash([ -f .env ])",
+      "Bash([ -f themoon.db ])"
     ],
     "deny": [],
     "ask": []

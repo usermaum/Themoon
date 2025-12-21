@@ -4,22 +4,36 @@ from app.models.inbound_item import InboundItem
 from app.models.inbound_document import InboundDocument
 from app.models.supplier import Supplier
 from datetime import datetime, timedelta
+from typing import Optional
 
 import re
 
-def get_supplier_stats(db: Session):
+def get_supplier_stats(db: Session, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
     """
     Get aggregated statistics by supplier.
     Returns total purchase amount and count for each supplier.
+
+    Args:
+        db: Database session
+        start_date: Start date for filtering (inclusive)
+        end_date: End date for filtering (inclusive)
     """
     # Join InboundItem -> InboundDocument -> Supplier (via name or relationship)
     # Since relationships might be loose, we'll group by InboundDocument.supplier_name
-    
-    results = db.query(
+
+    query = db.query(
         InboundDocument.supplier_name,
         func.sum(InboundDocument.total_amount).label("total_amount"),
         func.count(InboundDocument.id).label("doc_count")
-    ).group_by(InboundDocument.supplier_name).order_by(desc("total_amount")).all()
+    )
+
+    # Apply date filters if provided
+    if start_date:
+        query = query.filter(InboundDocument.created_at >= start_date)
+    if end_date:
+        query = query.filter(InboundDocument.created_at <= end_date)
+
+    results = query.group_by(InboundDocument.supplier_name).order_by(desc("total_amount")).all()
     
     # Python-side aggregation for normalization
     aggregated = {}
@@ -74,17 +88,31 @@ def get_monthly_buying_stats(db: Session, months: int = 12):
         for r in results
     ]
 
-def get_item_price_trends(db: Session, bean_name: str):
+def get_item_price_trends(db: Session, bean_name: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
     """
     Get unit price history for a specific bean/item.
+
+    Args:
+        db: Database session
+        bean_name: Bean name to search for
+        start_date: Start date for filtering (inclusive)
+        end_date: End date for filtering (inclusive)
     """
-    results = db.query(
+    query = db.query(
         InboundItem.created_at,
         InboundItem.unit_price,
         InboundItem.bean_name
     ).filter(
         InboundItem.bean_name.like(f"%{bean_name}%")
-    ).order_by(InboundItem.created_at).all()
+    )
+
+    # Apply date filters if provided
+    if start_date:
+        query = query.filter(InboundItem.created_at >= start_date)
+    if end_date:
+        query = query.filter(InboundItem.created_at <= end_date)
+
+    results = query.order_by(InboundItem.created_at).all()
     
     return [
         {"date": r.created_at.strftime("%Y-%m-%d"), "price": r.unit_price}
