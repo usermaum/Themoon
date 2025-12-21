@@ -19,7 +19,7 @@
 - **UI 구성 및 기능 업그레이드**:
   - **공급자 분석**: `SupplierPieChart` (Recharts)
   - **원가 추이**: `CostTrendChart` (라인 차트) **+ 품목 선택 기능(Bean Selector) 추가**
-  - **재고 가치**: `InventoryValueTable` (현재 재고 평가액) **+ 상세 검색 및 페이징 기능 추가**
+  - **재고 가치**: `InventoryValueTable` (현재 재고 평가액) **+ 상세 검색 및 페이징 기능 추가, UI 개선(테이블 라운드, 페이징 중앙 정렬, 검색어 초기화)**
   - **📅 날짜 필터링**: `DateRangeFilter` 도입. 기간별(최근 30일/3개월/1년) 데이터 조회 및 커스텀 범위 설정 기능 구현.
 - **통합**: `PageHero` 공통 헤더 적용 및 사이드바 메뉴 연동
 
