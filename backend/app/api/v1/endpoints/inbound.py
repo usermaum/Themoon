@@ -26,10 +26,47 @@ logger = logging.getLogger(__name__)
 drive_service = GoogleDriveService()
 ocr_service = OCRService()
 
+# === 생두 매칭 헬퍼 함수 ===
+def match_bean_multi_field(bean_name: str, db: Session) -> tuple[Bean | None, str, str]:
+    """
+    다중 필드로 생두 매칭 시도
+
+    Args:
+        bean_name: OCR에서 추출한 생두명
+        db: DB 세션
+
+    Returns:
+        (매칭된 Bean 객체 또는 None, 매칭 필드, 매칭 방법)
+        - Bean: 매칭된 생두 객체 (없으면 None)
+        - match_field: "name", "name_en", "name_ko", "new"
+        - match_method: "exact", "new"
+    """
+    if not bean_name:
+        return None, "new", "new"
+
+    # 1. Bean.name으로 매칭 시도
+    bean = db.query(Bean).filter(Bean.name == bean_name).first()
+    if bean:
+        return bean, "name", "exact"
+
+    # 2. Bean.name_en으로 매칭 시도
+    bean = db.query(Bean).filter(Bean.name_en == bean_name).first()
+    if bean:
+        return bean, "name_en", "exact"
+
+    # 3. Bean.name_ko로 매칭 시도
+    bean = db.query(Bean).filter(Bean.name_ko == bean_name).first()
+    if bean:
+        return bean, "name_ko", "exact"
+
+    # 4. 매칭 실패
+    return None, "new", "new"
+
 @router.post("/analyze", response_model=OCRResponse)
 async def analyze_inbound_document(
     file: Optional[UploadFile] = File(None),
-    url: Optional[str] = Form(None)
+    url: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
 ):
     """
     Analyze an inbound document (invoice) from a file upload or a URL.
@@ -116,6 +153,22 @@ async def analyze_inbound_document(
     amounts_info = AmountsInfo(**ocr_result.get("amounts", {})) if "amounts" in ocr_result else None
     additional_info = AdditionalInfo(**ocr_result.get("additional_info", {})) if "additional_info" in ocr_result else None
 
+    # 5. 각 아이템에 대해 생두 매칭 시도 (NEW)
+    items_with_match_info = []
+    for item_data in ocr_result.get("items", []):
+        bean_name = item_data.get("bean_name")
+
+        # 매칭 시도
+        matched_bean, match_field, match_method = match_bean_multi_field(bean_name, db)
+
+        # 매칭 정보 추가
+        item_data["matched"] = matched_bean is not None
+        item_data["match_field"] = match_field
+        item_data["match_method"] = match_method
+        item_data["bean_id"] = matched_bean.id if matched_bean else None
+
+        items_with_match_info.append(item_data)
+
     response = OCRResponse(
         # 디버그 텍스트
         debug_raw_text=ocr_result.get("debug_raw_text"),
@@ -125,7 +178,7 @@ async def analyze_inbound_document(
         supplier=supplier_info,
         receiver=receiver_info,
         amounts=amounts_info,
-        items=ocr_result.get("items", []),
+        items=items_with_match_info,  # 매칭 정보가 포함된 아이템
         additional_info=additional_info,
 
         # 하위 호환성 (기존 필드)
@@ -269,13 +322,23 @@ def confirm_inbound(
         bean_name = item.bean_name
         quantity = item.quantity or 0.0
 
-        # Find Bean
-        bean = db.query(Bean).filter(Bean.name == bean_name).first()
+        # Find Bean (다중 필드 매칭)
+        bean, match_field, match_method = match_bean_multi_field(bean_name, db)
+
         if not bean:
             # Auto-create bean if missing
-            bean = Bean(name=bean_name, quantity_kg=0.0, origin="Unknown", type=BeanType.GREEN_BEAN)
+            logger.info(f"Creating new bean: {bean_name} (no match found)")
+            bean = Bean(
+                name=bean_name,
+                name_en=bean_name,  # OCR 결과를 영문명으로 저장
+                quantity_kg=0.0,
+                origin=item.origin or "Unknown",
+                type=BeanType.GREEN_BEAN
+            )
             db.add(bean)
             db.flush()
+        else:
+            logger.info(f"Matched bean: {bean_name} → {bean.name} (ID: {bean.id}, field: {match_field})")
 
         # Create Log (기존 로직 유지)
         log = InventoryLog(
