@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.3.0** | Next.js + FastAPI로 완전히 재작성
+> **v0.4.0** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -73,7 +73,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.1.0)
+### 현재 구조 (v0.4.0)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -119,7 +119,7 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   └── Resources/             # 자료 (엑셀, 문서 등)
 │
 ├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.3.0
+│   ├── VERSION                # 현재: 0.4.0
 │   └── CHANGELOG.md           # 변경 로그
 │
 ├── data/                      # 데이터베이스 (원본 참조용)
@@ -349,26 +349,26 @@ python3 .claude/statusline.py -c 60  # 60초 간격
 
 ### Backend
 
-| 분류 | 기술 | 버전 |
-|------|------|------|
-| **프레임워크** | FastAPI | 0.109+ |
-| **언어** | Python | 3.12+ |
-| **데이터베이스** | PostgreSQL | 15+ |
-| **ORM** | SQLAlchemy | 2.0+ |
-| **스키마** | Pydantic | 2.5+ |
-| **인증** | JWT (python-jose) | 3.3+ |
-| **서버** | Uvicorn | 0.27+ |
+| 분류             | 기술              | 버전   |
+| ---------------- | ----------------- | ------ |
+| **프레임워크**   | FastAPI           | 0.109+ |
+| **언어**         | Python            | 3.12+  |
+| **데이터베이스** | PostgreSQL        | 15+    |
+| **ORM**          | SQLAlchemy        | 2.0+   |
+| **스키마**       | Pydantic          | 2.5+   |
+| **인증**         | JWT (python-jose) | 3.3+   |
+| **서버**         | Uvicorn           | 0.27+  |
 
 ### Frontend
 
-| 분류 | 기술 | 버전 |
-|------|------|------|
-| **프레임워크** | Next.js | 14.1+ |
-| **언어** | TypeScript | 5.3+ |
-| **UI 라이브러리** | React | 18.2+ |
-| **스타일링** | Tailwind CSS | 3.4+ |
-| **UI 컴포넌트** | shadcn/ui | - |
-| **HTTP 클라이언트** | Axios | 1.6+ |
+| 분류                | 기술         | 버전  |
+| ------------------- | ------------ | ----- |
+| **프레임워크**      | Next.js      | 14.1+ |
+| **언어**            | TypeScript   | 5.3+  |
+| **UI 라이브러리**   | React        | 18.2+ |
+| **스타일링**        | Tailwind CSS | 3.4+  |
+| **UI 컴포넌트**     | shadcn/ui    | -     |
+| **HTTP 클라이언트** | Axios        | 1.6+  |
 
 ---
 
@@ -476,14 +476,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## 📝 원본 프로젝트 대응표
 
-| 원본 (Streamlit) | 신규 (Next.js + FastAPI) | 설명 |
-|------------------|--------------------------|------|
-| `app/models/` | `backend/app/models/` | SQLAlchemy 모델 (재작성) |
-| `app/services/` | `backend/app/services/` | 비즈니스 로직 (재작성) |
-| `app/pages/Dashboard.py` | `frontend/app/page.tsx` | 메인 대시보드 |
-| `app/pages/BeanManagement.py` | `frontend/app/beans/page.tsx` | 원두 관리 |
-| `app/pages/BlendManagement.py` | `frontend/app/blends/page.tsx` | 블렌드 관리 |
-| `app/components/` | `frontend/components/` | UI 컴포넌트 |
+| 원본 (Streamlit)               | 신규 (Next.js + FastAPI)       | 설명                     |
+| ------------------------------ | ------------------------------ | ------------------------ |
+| `app/models/`                  | `backend/app/models/`          | SQLAlchemy 모델 (재작성) |
+| `app/services/`                | `backend/app/services/`        | 비즈니스 로직 (재작성)   |
+| `app/pages/Dashboard.py`       | `frontend/app/page.tsx`        | 메인 대시보드            |
+| `app/pages/BeanManagement.py`  | `frontend/app/beans/page.tsx`  | 원두 관리                |
+| `app/pages/BlendManagement.py` | `frontend/app/blends/page.tsx` | 블렌드 관리              |
+| `app/components/`              | `frontend/components/`         | UI 컴포넌트              |
 
 ---
 
@@ -497,14 +497,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 #### 핵심 아키텍처 문서 ✅
 
-| 문서 | 설명 | 경로 |
-|------|------|------|
-| **시스템 개요** | 전체 시스템 개요 및 핵심 기능 | [SYSTEM_OVERVIEW.md](Documents/Architecture/SYSTEM_OVERVIEW.md) |
-| **데이터 흐름** | 데이터 흐름도 및 프로세스 간 상호작용 | [DATA_FLOW.md](Documents/Architecture/DATA_FLOW.md) |
-| **DB 스키마** | PostgreSQL 데이터베이스 스키마 (ERD) | [DATABASE_SCHEMA.md](Documents/Architecture/DATABASE_SCHEMA.md) |
-| **API 명세** | RESTful API 엔드포인트 상세 명세 | [API_SPECIFICATION.md](Documents/Architecture/API_SPECIFICATION.md) ⭐ |
-| **기술 스택** | 기술 선정 이유 및 버전 정보 | [TECHNOLOGY_STACK.md](Documents/Architecture/TECHNOLOGY_STACK.md) ⭐ |
-| **배포 아키텍처** | Render.com 배포 구조 및 CI/CD | [DEPLOYMENT_ARCHITECTURE.md](Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ |
+| 문서              | 설명                                  | 경로                                                                              |
+| ----------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
+| **시스템 개요**   | 전체 시스템 개요 및 핵심 기능         | [SYSTEM_OVERVIEW.md](Documents/Architecture/SYSTEM_OVERVIEW.md)                   |
+| **데이터 흐름**   | 데이터 흐름도 및 프로세스 간 상호작용 | [DATA_FLOW.md](Documents/Architecture/DATA_FLOW.md)                               |
+| **DB 스키마**     | PostgreSQL 데이터베이스 스키마 (ERD)  | [DATABASE_SCHEMA.md](Documents/Architecture/DATABASE_SCHEMA.md)                   |
+| **API 명세**      | RESTful API 엔드포인트 상세 명세      | [API_SPECIFICATION.md](Documents/Architecture/API_SPECIFICATION.md) ⭐             |
+| **기술 스택**     | 기술 선정 이유 및 버전 정보           | [TECHNOLOGY_STACK.md](Documents/Architecture/TECHNOLOGY_STACK.md) ⭐               |
+| **배포 아키텍처** | Render.com 배포 구조 및 CI/CD         | [DEPLOYMENT_ARCHITECTURE.md](Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ |
 
 #### 개발 가이드
 
@@ -596,7 +596,7 @@ MIT License - 자유롭게 사용 가능
 
 ---
 
-**버전:** 0.3.0
-**최종 업데이트:** 2025-12-20
-**최종 커밋:** 02595e2
+**버전:** 0.4.0
+**최종 업데이트:** 2025-12-21
+**최종 커밋:** 2067190
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

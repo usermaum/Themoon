@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.3.0
+> **버전**: 0.4.0
 
 ---
 
@@ -253,7 +253,7 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 **참고**: 상세 내용은 `Documents/Guides/PROGRAMMING_RULES.md` 참조
 
 **마지막 업데이트**: 2025-12-21
-**프로젝트 버전**: 0.3.0
+**프로젝트 버전**: 0.4.0
 
 ---
 
@@ -272,49 +272,35 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 ---
 
-### 📅 마지막 세션: 2025-12-20 (저녁)
+### 📅 마지막 세션: 2025-12-21 (Cost Analysis & Analytics)
 
-**✅ 완료된 작업 (미커밋)**:
+**✅ 완료된 작업 (v0.4.0)**:
 
-1. ✅ **DB 재설계 (Option B) - 데이터 손실 문제 완전 해결**
-   - 문제: OCR 데이터의 85% 손실 (39개 필드 중 6개만 저장)
-   - 해결: 3개 정규화된 테이블 추가로 100% 저장 달성
+1. ✅ **Backend: 정밀 원가 분석 시스템 구축**
+   - **Virtual FIFO**: `CostService`로 실제 입고 내역(`InboundItem`) 기반 가중 평균 단가 계산.
+   - **통계 서비스**: `StatsService`로 공급자별, 월별, 품목별 통계 집계.
 
-2. ✅ **새 데이터베이스 테이블 3개 추가**
-   - `inbound_document_details` (25개 필드)
-   - `inbound_receivers` (5개 필드)
-   - `inbound_items` (9개 필드)
+2. ✅ **Frontend: 비즈니스 분석 대시보드 (/analytics)**
+   - **UI 구성**: 공급자 분석(파이 차트), 단가 추이(라인 차트), 재고 가치(테이블).
+   - **완성도**: `PageHero` 적용 및 사이드바 연동.
 
-3. ✅ **Backend API 전면 수정**
-   - `InboundConfirmRequest` 스키마 확장
-   - `/api/v1/inbound/confirm` 로직 수정
-   - SQLAlchemy relationship 설정 (1:1, 1:N)
+3. ✅ **시스템 안정화 및 버그 수정**
+   - **API 경로 수정**: `/inbound`, `/inventory-logs` 경로 일치화.
+   - **서비스 오류 해결**: `StatsService` 필드명 및 import 오류 수정.
+   - **데이터 정제**: 공급자명 정규화("(주)" 제거) 적용.
 
-4. ✅ **Frontend Payload 수정**
-   - 전체 OCR 데이터 전송 구조로 변경
-   - sessionStorage 활용한 데이터 보존
-
-5. ✅ **전체 플로우 테스트 성공**
-   - GSC 거래명세서 테스트 (5개 품목, 2,198,000원)
-   - 모든 필드 100% 저장 확인
-
-6. ✅ **프로젝트 정리**
-   - 미사용 `data/` 폴더 삭제
-   - 오래된 백업 DB 파일 제거
+4. ✅ **문서화 및 규칙 준수**
+   - **한글화**: 모든 사용자 문서(`walkthrough.md`, `implementation_plan.md`) 한글로 작성.
+   - **버전 승격**: 0.3.0 → 0.4.0 (Minor Update).
 
 **📊 성과:**
-- 데이터 저장률: **15.4% → 100%** (+84.6%)
-- 공급받는자 정보: **0% → 100%** (+100%)
-- 공급자 상세: **11% → 100%** (+89%)
-- 품목 상세: **22% → 100%** (+78%)
+- 원가 분석 정확도: 단순 평균 → **FIFO 정밀 원가**
+- 비즈니스 인사이트: 공급자 점유율 및 원가 변동 추적 가능
+- 시스템 안정성: Frontend-Backend 연동 오류 0건
 
 **Git 상태**:
 - 현재 브랜치: main
-- 미커밋 파일:
-  - 3개 새 모델 파일
-  - 2개 수정된 API 파일
-  - 1개 프론트엔드 파일
-  - 2개 문서 파일 (CHANGELOG.md, SESSION_SUMMARY)
+- 최신 커밋: v0.4.0 업데이트 완료
 
 **서버 상태**:
 - Backend: http://localhost:8000 ✅
@@ -322,7 +308,6 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 - Database: `/mnt/d/Ai/WslProject/Themoon/themoon.db` ✅
 
 **🎯 다음 작업 옵션**:
-1. 현재 변경사항 커밋
-2. 프로덕션 배포 준비 (PostgreSQL 마이그레이션 스크립트)
-3. 저장된 상세 데이터 조회 UI 추가
-4. 공급자/품목별 통계 기능 구현
+1. 로스팅 로그 연동 (FIFO 원가 기록)
+2. 대시보드 날짜 필터링 기능 추가
+3. PostgreSQL 마이그레이션 (Prooduction 준비)

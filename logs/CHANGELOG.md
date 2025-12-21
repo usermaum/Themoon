@@ -11,6 +11,31 @@
 
 ---
 
+## [0.4.0] - 2025-12-21
+
+### ✨ 마이너 업데이트 (Minor Update): 원가 분석(FIFO) 및 비즈니스 통계 대시보드 추가
+
+#### 🚀 New Features
+- **정밀 원가 분석 (Virtual FIFO)**:
+  - `CostService`: 실제 입고 내역(`InboundItem`)과 로스팅 로그를 대조하여 선입선출(FIFO) 방식의 가중 평균 단가 계산 로직 구현.
+  - API: `GET /api/v1/analytics/cost/fifo/{bean_id}`
+
+- **비즈니스 통계 대시보드 (`/analytics`)**:
+  - **공급자 분석**: 매입 점유율 파이 차트 (`SupplierPieChart`). 공급자명 정규화(주식회사 등 제거) 적용.
+  - **단가 추이**: 주요 품목의 입고 단가 변동 라인 차트 (`CostTrendChart`).
+  - **재고 가치**: FIFO 기준 현재 보유 재고의 총 평가액 실시간 산출 (`InventoryValueTable`).
+
+- **Backend Architecture**:
+  - `StatsService`: 공급자별, 월별, 품목별 통계 집계 로직 분리.
+  - `Analytics Router`: 통계 및 원가 관련 API 엔드포인트 통합 (`/api/v1/analytics`).
+
+#### 🐛 Fixed
+- **API Router Paths**: Frontend 요청 경로와 불일치하던 Backend 라우터 prefix 수정 (`invoices` → `inbound`, `inventory` → `inventory-logs`).
+- **Stats Service Bugs**: `InboundDocument` 필드명 불일치(`grand_total` → `total_amount`) 및 `SQLAlchemy` import 누락 수정.
+- **Documentation**: 모든 사용자 문서(`walkthrough.md`, `implementation_plan.md`)를 한글로 전면 번역 및 수정 (GEMINI.md 규칙 준수).
+
+---
+
 ## [0.3.0] - 2025-12-20
 
 ### ✨ 마이너 업데이트 (Minor Update): statusline 자동 추적, DB 재설계, OCR 전체 항목, 거래명세서 뷰 등 6개 주요 기능 추가
