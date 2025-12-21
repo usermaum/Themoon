@@ -37,41 +37,38 @@ erDiagram
 
 **목적**: 생두, 원두, 블렌드 원두를 하나의 테이블에서 통합 관리
 
-| 컬럼명                  | 타입         | 제약                    | 설명                                           |
-| ----------------------- | ------------ | ----------------------- | ---------------------------------------------- |
-| `id`                    | INTEGER      | PK, AUTO_INCREMENT      | 원두 ID                                        |
-| `name`                  | VARCHAR(100) | NOT NULL                | 품목명 (예: 예가체프, 풀문)                    |
-| `type`                  | VARCHAR(12)  | NOT NULL                | 품목 유형 (GREEN_BEAN/ROASTED_BEAN/BLEND_BEAN) |
-| `sku`                   | VARCHAR(100) | UNIQUE                  | SKU 코드 (예: ETH-예가체프)                    |
-| `name_ko`               | VARCHAR(100) | NULL                    | 품목명 (한글)                                  |
-| `name_en`               | VARCHAR(200) | NULL                    | 품목명 (영문)                                  |
-| `origin`                | VARCHAR(100) | NULL                    | 원산지 (생두용, 예: Ethiopia)                  |
-| `origin_ko`             | VARCHAR(50)  | NULL                    | 원산지 (한글)                                  |
-| `origin_en`             | VARCHAR(50)  | NULL                    | 원산지 (영문)                                  |
-| `variety`               | VARCHAR(50)  | NULL                    | 품종 (예: Yirgacheffe)                         |
-| `grade`                 | VARCHAR(50)  | NULL                    | 등급 (예: G2 Washed)                           |
-| `processing_method`     | VARCHAR(50)  | NULL                    | 가공 방식 (Washed/Natural/Honey)               |
-| `roast_profile`         | VARCHAR(6)   | NULL                    | 로스팅 프로필 (LIGHT/MEDIUM/DARK)              |
-| `parent_bean_id`        | INTEGER      | FK → beans.id           | 원재료 생두 ID (원두인 경우)                   |
-| `quantity_kg`           | FLOAT        | NOT NULL                | 현재 재고량 (kg)                               |
-| `avg_price`             | FLOAT        | NOT NULL                | kg당 평균 단가 (원)                            |
-| `purchase_price_per_kg` | FLOAT        | NULL                    | 최근 매입가 (참조용)                           |
-| `cost_price`            | FLOAT        | NULL                    | 생산 원가 (로스팅 비용 포함)                   |
-| `description`           | TEXT         | NULL                    | 설명                                           |
-| `notes`                 | TEXT         | NULL                    | 내부 메모                                      |
-| `expected_loss_rate`    | FLOAT        | NOT NULL                | 예상 로스팅 손실률 (0.15 = 15%)                |
-| `created_at`            | DATETIME     | NOT NULL, DEFAULT NOW() | 생성일시                                       |
-| `updated_at`            | DATETIME     | NULL                    | 수정일시                                       |
+| Column                  | Type         | Nullable | Default | PK  |
+| ----------------------- | ------------ | -------- | ------- | --- |
+| `id`                    | INTEGER      | NO       | NULL    | YES |
+| `name`                  | VARCHAR(100) | NO       | NULL    |     |
+| `type`                  | VARCHAR(12)  | NO       | NULL    |     |
+| `sku`                   | VARCHAR(100) | YES      | NULL    |     |
+| `name_ko`               | VARCHAR(100) | YES      | NULL    |     |
+| `name_en`               | VARCHAR(200) | YES      | NULL    |     |
+| `origin`                | VARCHAR(100) | YES      | NULL    |     |
+| `origin_ko`             | VARCHAR(50)  | YES      | NULL    |     |
+| `origin_en`             | VARCHAR(50)  | YES      | NULL    |     |
+| `variety`               | VARCHAR(50)  | YES      | NULL    |     |
+| `grade`                 | VARCHAR(50)  | YES      | NULL    |     |
+| `processing_method`     | VARCHAR(50)  | YES      | NULL    |     |
+| `roast_profile`         | VARCHAR(6)   | YES      | NULL    |     |
+| `parent_bean_id`        | INTEGER      | YES      | NULL    |     |
+| `quantity_kg`           | FLOAT        | NO       | NULL    |     |
+| `avg_price`             | FLOAT        | NO       | NULL    |     |
+| `purchase_price_per_kg` | FLOAT        | YES      | NULL    |     |
+| `cost_price`            | FLOAT        | YES      | NULL    |     |
+| `description`           | TEXT         | YES      | NULL    |     |
+| `notes`                 | TEXT         | YES      | NULL    |     |
+| `expected_loss_rate`    | FLOAT        | NO       | NULL    |     |
+| `created_at`            | DATETIME     | YES      | NULL    |     |
+| `updated_at`            | DATETIME     | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `parent_bean_id` -> `beans.id`
 
 **Enum 값**:
 - `type`: `'GREEN_BEAN'`, `'ROASTED_BEAN'`, `'BLEND_BEAN'`
 - `roast_profile`: `'LIGHT'`, `'MEDIUM'`, `'DARK'`
-
-**Self-Referential Relationship**:
-```sql
-parent_bean_id → beans.id
--- 원두(ROASTED_BEAN) → 생두(GREEN_BEAN) 참조
-```
 
 ---
 
@@ -79,15 +76,15 @@ parent_bean_id → beans.id
 
 **목적**: 원두 및 자재 공급처 관리
 
-| 컬럼명                | 타입    | 제약               | 설명           |
-| --------------------- | ------- | ------------------ | -------------- |
-| `id`                  | INTEGER | PK, AUTO_INCREMENT | 공급처 ID      |
-| `name`                | VARCHAR | NOT NULL           | 공급처명       |
-| `representative_name` | VARCHAR | NULL               | 대표자명       |
-| `contact_phone`       | VARCHAR | NULL               | 연락처         |
-| `contact_email`       | VARCHAR | NULL               | 이메일         |
-| `address`             | VARCHAR | NULL               | 주소           |
-| `registration_number` | VARCHAR | NULL               | 사업자등록번호 |
+| Column                | Type    | Nullable | Default | PK  |
+| --------------------- | ------- | -------- | ------- | --- |
+| `id`                  | INTEGER | NO       | NULL    | YES |
+| `name`                | VARCHAR | NO       | NULL    |     |
+| `representative_name` | VARCHAR | YES      | NULL    |     |
+| `contact_phone`       | VARCHAR | YES      | NULL    |     |
+| `contact_email`       | VARCHAR | YES      | NULL    |     |
+| `address`             | VARCHAR | YES      | NULL    |     |
+| `registration_number` | VARCHAR | YES      | NULL    |     |
 
 ---
 
@@ -95,16 +92,16 @@ parent_bean_id → beans.id
 
 **목적**: 커피 블렌드 레시피 저장
 
-| 컬럼명               | 타입         | 제약                    | 설명                     |
-| -------------------- | ------------ | ----------------------- | ------------------------ |
-| `id`                 | INTEGER      | PK, AUTO_INCREMENT      | 블렌드 ID                |
-| `name`               | VARCHAR(200) | NOT NULL                | 블렌드명 (예: Full Moon) |
-| `description`        | TEXT         | NULL                    | 블렌드 설명              |
-| `recipe`             | JSON         | NOT NULL                | 레시피 (JSON 배열)       |
-| `target_roast_level` | VARCHAR(50)  | NULL                    | 목표 로스팅 레벨         |
-| `notes`              | TEXT         | NULL                    | 내부 메모                |
-| `created_at`         | DATETIME     | NOT NULL, DEFAULT NOW() | 생성일시                 |
-| `updated_at`         | DATETIME     | NULL                    | 수정일시                 |
+| Column               | Type         | Nullable | Default           | PK  |
+| -------------------- | ------------ | -------- | ----------------- | --- |
+| `id`                 | INTEGER      | NO       | NULL              | YES |
+| `name`               | VARCHAR(200) | NO       | NULL              |     |
+| `description`        | TEXT         | YES      | NULL              |     |
+| `recipe`             | JSON         | NO       | NULL              |     |
+| `target_roast_level` | VARCHAR(50)  | YES      | NULL              |     |
+| `notes`              | TEXT         | YES      | NULL              |     |
+| `created_at`         | DATETIME     | YES      | CURRENT_TIMESTAMP |     |
+| `updated_at`         | DATETIME     | YES      | NULL              |     |
 
 **recipe 구조 (JSON)**:
 ```json
@@ -120,19 +117,22 @@ parent_bean_id → beans.id
 
 **목적**: OCR 스캔된 입고 내역서 헤더 정보
 
-| 컬럼명            | 타입     | 제약               | 설명                   |
-| ----------------- | -------- | ------------------ | ---------------------- |
-| `id`              | INTEGER  | PK, AUTO_INCREMENT | 문서 ID                |
-| `contract_number` | VARCHAR  | NULL               | 계약 번호              |
-| `supplier_name`   | VARCHAR  | NULL               | 공급처명 (OCR 추출)    |
-| `supplier_id`     | INTEGER  | FK → suppliers.id  | 매핑된 공급처 ID       |
-| `receiver_name`   | VARCHAR  | NULL               | 받는 사람 (상호)       |
-| `invoice_date`    | VARCHAR  | NULL               | 발행 일자 (YYYY-MM-DD) |
-| `total_amount`    | FLOAT    | NULL               | 총 금액                |
-| `image_url`       | VARCHAR  | NULL               | 원본 이미지 URL        |
-| `drive_file_id`   | VARCHAR  | NULL               | 구글 드라이브 파일 ID  |
-| `notes`           | TEXT     | NULL               | 메모                   |
-| `created_at`      | DATETIME | NOT NULL           | 생성일시               |
+| Column            | Type     | Nullable | Default | PK  |
+| ----------------- | -------- | -------- | ------- | --- |
+| `id`              | INTEGER  | NO       | NULL    | YES |
+| `contract_number` | VARCHAR  | YES      | NULL    |     |
+| `supplier_name`   | VARCHAR  | YES      | NULL    |     |
+| `supplier_id`     | INTEGER  | YES      | NULL    |     |
+| `receiver_name`   | VARCHAR  | YES      | NULL    |     |
+| `invoice_date`    | VARCHAR  | YES      | NULL    |     |
+| `total_amount`    | FLOAT    | YES      | NULL    |     |
+| `image_url`       | VARCHAR  | YES      | NULL    |     |
+| `drive_file_id`   | VARCHAR  | YES      | NULL    |     |
+| `notes`           | TEXT     | YES      | NULL    |     |
+| `created_at`      | DATETIME | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `supplier_id` -> `suppliers.id`
 
 ---
 
@@ -140,33 +140,36 @@ parent_bean_id → beans.id
 
 **목적**: 입고 내역서 상의 상세 공급자 및 재무 정보
 
-| 컬럼명                     | 타입     | 제약                      | 설명                |
-| -------------------------- | -------- | ------------------------- | ------------------- |
-| `id`                       | INTEGER  | PK, AUTO_INCREMENT        | ID                  |
-| `inbound_document_id`      | INTEGER  | FK → inbound_documents.id | 상위 문서 ID        |
-| `document_number`          | VARCHAR  | NULL                      | 문서 번호           |
-| `issue_date`               | VARCHAR  | NULL                      | 공급연월일 (작성일) |
-| `delivery_date`            | VARCHAR  | NULL                      | 납품일자            |
-| `payment_due_date`         | VARCHAR  | NULL                      | 지급기일            |
-| `invoice_type`             | VARCHAR  | NULL                      | 영수/청구 구분      |
-| `supplier_business_number` | VARCHAR  | NULL                      | 공급자 등록번호     |
-| `supplier_address`         | TEXT     | NULL                      | 공급자 주소         |
-| `supplier_phone`           | VARCHAR  | NULL                      | 공급자 전화         |
-| `supplier_fax`             | VARCHAR  | NULL                      | 공급자 팩스         |
-| `supplier_email`           | VARCHAR  | NULL                      | 공급자 이메일       |
-| `supplier_representative`  | VARCHAR  | NULL                      | 공급자 대표자명     |
-| `supplier_contact_person`  | VARCHAR  | NULL                      | 담당자              |
-| `supplier_contact_phone`   | VARCHAR  | NULL                      | 담당자 연락처       |
-| `subtotal`                 | FLOAT    | NULL                      | 공급가액 합계       |
-| `tax_amount`               | FLOAT    | NULL                      | 세액 합계           |
-| `grand_total`              | FLOAT    | NULL                      | 총 합계             |
-| `currency`                 | VARCHAR  | NULL                      | 통화 단위           |
-| `payment_terms`            | TEXT     | NULL                      | 결제 조건           |
-| `shipping_method`          | VARCHAR  | NULL                      | 배송 방법           |
-| `notes`                    | TEXT     | NULL                      | 비고                |
-| `remarks`                  | TEXT     | NULL                      | 특이사항            |
-| `created_at`               | DATETIME | NULL                      | 생성일시            |
-| `updated_at`               | DATETIME | NULL                      | 수정일시            |
+| Column                     | Type     | Nullable | Default | PK  |
+| -------------------------- | -------- | -------- | ------- | --- |
+| `id`                       | INTEGER  | NO       | NULL    | YES |
+| `inbound_document_id`      | INTEGER  | NO       | NULL    |     |
+| `document_number`          | VARCHAR  | YES      | NULL    |     |
+| `issue_date`               | VARCHAR  | YES      | NULL    |     |
+| `delivery_date`            | VARCHAR  | YES      | NULL    |     |
+| `payment_due_date`         | VARCHAR  | YES      | NULL    |     |
+| `invoice_type`             | VARCHAR  | YES      | NULL    |     |
+| `supplier_business_number` | VARCHAR  | YES      | NULL    |     |
+| `supplier_address`         | TEXT     | YES      | NULL    |     |
+| `supplier_phone`           | VARCHAR  | YES      | NULL    |     |
+| `supplier_fax`             | VARCHAR  | YES      | NULL    |     |
+| `supplier_email`           | VARCHAR  | YES      | NULL    |     |
+| `supplier_representative`  | VARCHAR  | YES      | NULL    |     |
+| `supplier_contact_person`  | VARCHAR  | YES      | NULL    |     |
+| `supplier_contact_phone`   | VARCHAR  | YES      | NULL    |     |
+| `subtotal`                 | FLOAT    | YES      | NULL    |     |
+| `tax_amount`               | FLOAT    | YES      | NULL    |     |
+| `grand_total`              | FLOAT    | YES      | NULL    |     |
+| `currency`                 | VARCHAR  | YES      | NULL    |     |
+| `payment_terms`            | TEXT     | YES      | NULL    |     |
+| `shipping_method`          | VARCHAR  | YES      | NULL    |     |
+| `notes`                    | TEXT     | YES      | NULL    |     |
+| `remarks`                  | TEXT     | YES      | NULL    |     |
+| `created_at`               | DATETIME | YES      | NULL    |     |
+| `updated_at`               | DATETIME | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `inbound_document_id` -> `inbound_documents.id`
 
 ---
 
@@ -174,17 +177,20 @@ parent_bean_id → beans.id
 
 **목적**: 입고 내역서 상의 공급받는자 정보
 
-| 컬럼명                | 타입     | 제약                      | 설명         |
-| --------------------- | -------- | ------------------------- | ------------ |
-| `id`                  | INTEGER  | PK, AUTO_INCREMENT        | ID           |
-| `inbound_document_id` | INTEGER  | FK → inbound_documents.id | 상위 문서 ID |
-| `name`                | VARCHAR  | NULL                      | 상호(법인명) |
-| `business_number`     | VARCHAR  | NULL                      | 등록번호     |
-| `address`             | TEXT     | NULL                      | 사업장 주소  |
-| `phone`               | VARCHAR  | NULL                      | 전화번호     |
-| `contact_person`      | VARCHAR  | NULL                      | 담당자       |
-| `created_at`          | DATETIME | NULL                      | 생성일시     |
-| `updated_at`          | DATETIME | NULL                      | 수정일시     |
+| Column                | Type     | Nullable | Default | PK  |
+| --------------------- | -------- | -------- | ------- | --- |
+| `id`                  | INTEGER  | NO       | NULL    | YES |
+| `inbound_document_id` | INTEGER  | NO       | NULL    |     |
+| `name`                | VARCHAR  | YES      | NULL    |     |
+| `business_number`     | VARCHAR  | YES      | NULL    |     |
+| `address`             | TEXT     | YES      | NULL    |     |
+| `phone`               | VARCHAR  | YES      | NULL    |     |
+| `contact_person`      | VARCHAR  | YES      | NULL    |     |
+| `created_at`          | DATETIME | YES      | NULL    |     |
+| `updated_at`          | DATETIME | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `inbound_document_id` -> `inbound_documents.id`
 
 ---
 
@@ -192,22 +198,25 @@ parent_bean_id → beans.id
 
 **목적**: 입고 내역서 내 개별 품목 상세
 
-| 컬럼명                | 타입     | 제약                      | 설명         |
-| --------------------- | -------- | ------------------------- | ------------ |
-| `id`                  | INTEGER  | PK, AUTO_INCREMENT        | ID           |
-| `inbound_document_id` | INTEGER  | FK → inbound_documents.id | 상위 문서 ID |
-| `item_order`          | INTEGER  | NOT NULL                  | 품목 순번    |
-| `bean_name`           | VARCHAR  | NULL                      | 품목명 (OCR) |
-| `specification`       | VARCHAR  | NULL                      | 규격         |
-| `unit`                | VARCHAR  | NULL                      | 단위         |
-| `quantity`            | FLOAT    | NULL                      | 수량         |
-| `origin`              | VARCHAR  | NULL                      | 원산지/비고  |
-| `unit_price`          | FLOAT    | NULL                      | 단가         |
-| `supply_amount`       | FLOAT    | NULL                      | 공급가액     |
-| `tax_amount`          | FLOAT    | NULL                      | 세액         |
-| `notes`               | TEXT     | NULL                      | 비고         |
-| `created_at`          | DATETIME | NULL                      | 생성일시     |
-| `updated_at`          | DATETIME | NULL                      | 수정일시     |
+| Column                | Type     | Nullable | Default | PK  |
+| --------------------- | -------- | -------- | ------- | --- |
+| `id`                  | INTEGER  | NO       | NULL    | YES |
+| `inbound_document_id` | INTEGER  | NO       | NULL    |     |
+| `item_order`          | INTEGER  | NO       | NULL    |     |
+| `bean_name`           | VARCHAR  | YES      | NULL    |     |
+| `specification`       | VARCHAR  | YES      | NULL    |     |
+| `unit`                | VARCHAR  | YES      | NULL    |     |
+| `quantity`            | FLOAT    | YES      | NULL    |     |
+| `origin`              | VARCHAR  | YES      | NULL    |     |
+| `unit_price`          | FLOAT    | YES      | NULL    |     |
+| `supply_amount`       | FLOAT    | YES      | NULL    |     |
+| `tax_amount`          | FLOAT    | YES      | NULL    |     |
+| `notes`               | TEXT     | YES      | NULL    |     |
+| `created_at`          | DATETIME | YES      | NULL    |     |
+| `updated_at`          | DATETIME | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `inbound_document_id` -> `inbound_documents.id`
 
 ---
 
@@ -215,17 +224,21 @@ parent_bean_id → beans.id
 
 **목적**: 모든 재고 변동 추적 (감사 로그)
 
-| 컬럼명                | 타입        | 제약                      | 설명                      |
-| --------------------- | ----------- | ------------------------- | ------------------------- |
-| `id`                  | INTEGER     | PK, AUTO_INCREMENT        | 로그 ID                   |
-| `bean_id`             | INTEGER     | FK → beans.id, NOT NULL   | 원두 ID                   |
-| `change_type`         | VARCHAR(15) | NOT NULL                  | 변동 유형                 |
-| `change_amount`       | FLOAT       | NOT NULL                  | 변동량 (+: 증가, -: 감소) |
-| `current_quantity`    | FLOAT       | NOT NULL                  | 변동 후 잔고              |
-| `notes`               | TEXT        | NULL                      | 비고/사유                 |
-| `related_id`          | INTEGER     | NULL                      | 관련 ID (예: 로스팅 ID)   |
-| `created_at`          | DATETIME    | NOT NULL, DEFAULT NOW()   | 발생일시                  |
-| `inbound_document_id` | INTEGER     | FK → inbound_documents.id | 관련 입고 문서 ID         |
+| Column                | Type        | Nullable | Default | PK  |
+| --------------------- | ----------- | -------- | ------- | --- |
+| `id`                  | INTEGER     | NO       | NULL    | YES |
+| `bean_id`             | INTEGER     | NO       | NULL    |     |
+| `change_type`         | VARCHAR(15) | NO       | NULL    |     |
+| `change_amount`       | FLOAT       | NO       | NULL    |     |
+| `current_quantity`    | FLOAT       | NO       | NULL    |     |
+| `notes`               | TEXT        | YES      | NULL    |     |
+| `related_id`          | INTEGER     | YES      | NULL    |     |
+| `created_at`          | DATETIME    | YES      | NULL    |     |
+| `inbound_document_id` | INTEGER     | YES      | NULL    |     |
+
+**Foreign Keys**:
+- `inbound_document_id` -> `inbound_documents.id`
+- `bean_id` -> `beans.id`
 
 **Enum 값 (change_type)**:
 - `PURCHASE`: 구매 입고 (+)
