@@ -24,7 +24,7 @@ interface InventoryValueTableProps {
 export function InventoryValueTable({ data }: InventoryValueTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 5 // Showing pagination for verification
+    const itemsPerPage = 10
 
     const totalValue = data.reduce((sum, item) => sum + item.total_value, 0)
 
@@ -78,7 +78,7 @@ export function InventoryValueTable({ data }: InventoryValueTableProps) {
                     </div>
                 </div>
 
-                <div className="rounded-[1em] border overflow-hidden">
+                <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                     <Table>
                         <TableHeader>
                             <TableRow>
