@@ -597,5 +597,5 @@ MIT License - 자유롭게 사용 가능
 
 **버전:** 0.4.0
 **최종 업데이트:** 2025-12-21
-**최종 커밋:** 13dad7d
+**최종 커밋:** 8de563e
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`
