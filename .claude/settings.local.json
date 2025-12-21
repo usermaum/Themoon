@@ -56,7 +56,8 @@
       "mcp__playwright__playwright_screenshot",
       "mcp__playwright__playwright_get_visible_html",
       "mcp__playwright__playwright_evaluate",
-      "mcp__playwright__playwright_close"
+      "mcp__playwright__playwright_close",
+      "Bash(bash dev.sh)"
     ],
     "deny": [],
     "ask": []

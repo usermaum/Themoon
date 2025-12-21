@@ -18,3 +18,6 @@ api_router.include_router(inbound.router, prefix="/inbound", tags=["inbound"])
 
 from app.api.v1.endpoints import dashboard
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+
+from app.api.v1 import analytics
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])

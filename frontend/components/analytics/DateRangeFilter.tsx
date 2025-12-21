@@ -15,6 +15,7 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
     const [activePreset, setActivePreset] = useState<string>("all")
 
     const handlePreset = (preset: string) => {
+        console.log("handlePreset called:", preset)
         setActivePreset(preset)
         const today = new Date()
         let start: Date | null = null
@@ -46,8 +47,12 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
         if (start) {
             const startStr = start.toISOString().split("T")[0]
             const endStr = today.toISOString().split("T")[0]
+
+            // UI Update
             setStartDate(startStr)
             setEndDate(endStr)
+
+            // Parent Callback
             onDateChange(startStr, endStr)
         }
     }
