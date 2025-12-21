@@ -25,42 +25,34 @@
 
 TheMoon 프로젝트는 **Render.com 무료 티어**를 활용하여 프로덕션 환경에 배포됩니다.
 
+```mermaid
+graph TD
+    subgraph Render [Render.com Cloud (Oregon)]
+        subgraph FE [Frontend Service]
+            NextJS[Next.js 14<br/>Node.js 18]
+        end
+        
+        subgraph BE [Backend Service]
+            FastAPI[FastAPI<br/>Python 3.10+]
+        end
+        
+        subgraph DB [Database]
+            Postgres[(PostgreSQL 18)]
+        end
+        
+        NextJS -->|HTTPS| FastAPI
+        FastAPI -->|PostgreSQL Protocol| Postgres
+    end
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     Render.com Cloud                     │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  Frontend Service (themoon-frontend)              │  │
-│  │  - Next.js 14 (Node.js 18)                       │  │
-│  │  - Region: Oregon (us-west-2)                    │  │
-│  │  - URL: themoon-frontend-0s4m.onrender.com       │  │
-│  └───────────────────┬──────────────────────────────┘  │
-│                      │ HTTPS                            │
-│                      ↓                                   │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  Backend API Service (themoon-api)                │  │
-│  │  - FastAPI (Python 3.10+)                        │  │
-│  │  - Region: Oregon (us-west-2)                    │  │
-│  │  - URL: themoon-api-gv1u.onrender.com            │  │
-│  └───────────────────┬──────────────────────────────┘  │
-│                      │ PostgreSQL Protocol              │
-│                      ↓                                   │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  PostgreSQL Database (themoon-db)                 │  │
-│  │  - PostgreSQL 18                                 │  │
-│  │  - Database: themoon_p922                        │  │
-│  │  - User: themoon                                 │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+
 
 ### 배포 환경
 
-| 구분 | 서비스 이름 | 타입 | 리전 | URL |
-|------|-----------|------|------|-----|
+| 구분         | 서비스 이름      | 타입                  | 리전   | URL                                        |
+| ------------ | ---------------- | --------------------- | ------ | ------------------------------------------ |
 | **Frontend** | themoon-frontend | Web Service (Node.js) | Oregon | https://themoon-frontend-0s4m.onrender.com |
-| **Backend** | themoon-api | Web Service (Python) | Oregon | https://themoon-api-gv1u.onrender.com |
-| **Database** | themoon-db | PostgreSQL 18 | Oregon | (내부 연결) |
+| **Backend**  | themoon-api      | Web Service (Python)  | Oregon | https://themoon-api-gv1u.onrender.com      |
+| **Database** | themoon-db       | PostgreSQL 18         | Oregon | (내부 연결)                                |
 
 ---
 
@@ -103,15 +95,15 @@ services:
 
 **설정 설명**:
 
-| 설정 항목 | 값 | 설명 |
-|----------|---|------|
-| `type` | web | 웹 서비스 타입 (HTTP/HTTPS 지원) |
-| `runtime` | python | Python 런타임 (자동으로 최신 Python 3 사용) |
-| `rootDir` | backend | 프로젝트 루트가 아닌 backend 폴더를 루트로 설정 |
-| `buildCommand` | pip install -r requirements.txt | 빌드 시 의존성 설치 |
-| `startCommand` | uvicorn app.main:app --host 0.0.0.0 --port $PORT | FastAPI 앱 실행 (포트는 Render가 자동 할당) |
-| `healthCheckPath` | /health | Health Check 엔드포인트 (서비스 상태 모니터링) |
-| `autoDeployTrigger` | commit | Git 커밋 시 자동 배포 |
+| 설정 항목           | 값                                               | 설명                                            |
+| ------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| `type`              | web                                              | 웹 서비스 타입 (HTTP/HTTPS 지원)                |
+| `runtime`           | python                                           | Python 런타임 (자동으로 최신 Python 3 사용)     |
+| `rootDir`           | backend                                          | 프로젝트 루트가 아닌 backend 폴더를 루트로 설정 |
+| `buildCommand`      | pip install -r requirements.txt                  | 빌드 시 의존성 설치                             |
+| `startCommand`      | uvicorn app.main:app --host 0.0.0.0 --port $PORT | FastAPI 앱 실행 (포트는 Render가 자동 할당)     |
+| `healthCheckPath`   | /health                                          | Health Check 엔드포인트 (서비스 상태 모니터링)  |
+| `autoDeployTrigger` | commit                                           | Git 커밋 시 자동 배포                           |
 
 ---
 
@@ -138,14 +130,14 @@ services:
 
 **설정 설명**:
 
-| 설정 항목 | 값 | 설명 |
-|----------|---|------|
-| `runtime` | node | Node.js 런타임 (자동으로 최신 Node 18 사용) |
-| `rootDir` | frontend | frontend 폴더를 루트로 설정 |
-| `buildCommand` | npm install && npm run build | Next.js 프로덕션 빌드 |
-| `startCommand` | npm start | 빌드된 Next.js 앱 실행 (포트 3000) |
-| `NEXT_PUBLIC_API_URL` | https://themoon-api-gv1u.onrender.com | Backend API URL (클라이언트에서 접근) |
-| `NODE_ENV` | production | 프로덕션 모드 활성화 |
+| 설정 항목             | 값                                    | 설명                                        |
+| --------------------- | ------------------------------------- | ------------------------------------------- |
+| `runtime`             | node                                  | Node.js 런타임 (자동으로 최신 Node 18 사용) |
+| `rootDir`             | frontend                              | frontend 폴더를 루트로 설정                 |
+| `buildCommand`        | npm install && npm run build          | Next.js 프로덕션 빌드                       |
+| `startCommand`        | npm start                             | 빌드된 Next.js 앱 실행 (포트 3000)          |
+| `NEXT_PUBLIC_API_URL` | https://themoon-api-gv1u.onrender.com | Backend API URL (클라이언트에서 접근)       |
+| `NODE_ENV`            | production                            | 프로덕션 모드 활성화                        |
 
 ---
 
@@ -166,13 +158,13 @@ databases:
 
 **설정 설명**:
 
-| 설정 항목 | 값 | 설명 |
-|----------|---|------|
-| `databaseName` | themoon_p922 | 데이터베이스 이름 |
-| `user` | themoon | 데이터베이스 사용자 |
-| `plan` | free | 무료 티어 (90일 후 자동 중지, 수동 재시작 가능) |
-| `postgresMajorVersion` | "18" | PostgreSQL 18 (최신 버전) |
-| `ipAllowList` | 0.0.0.0/0 | 모든 IP 허용 (개발 단계, 프로덕션에서는 제한 필요) |
+| 설정 항목              | 값           | 설명                                               |
+| ---------------------- | ------------ | -------------------------------------------------- |
+| `databaseName`         | themoon_p922 | 데이터베이스 이름                                  |
+| `user`                 | themoon      | 데이터베이스 사용자                                |
+| `plan`                 | free         | 무료 티어 (90일 후 자동 중지, 수동 재시작 가능)    |
+| `postgresMajorVersion` | "18"         | PostgreSQL 18 (최신 버전)                          |
+| `ipAllowList`          | 0.0.0.0/0    | 모든 IP 허용 (개발 단계, 프로덕션에서는 제한 필요) |
 
 **무료 티어 제약사항**:
 - **90일 후 자동 중지**: 수동으로 재시작 필요 (Render.com 대시보드)
@@ -185,12 +177,12 @@ databases:
 
 ### Backend 환경 변수
 
-| 환경 변수 | 소스 | 설명 |
-|----------|------|------|
-| `DATABASE_URL` | 자동 (fromDatabase) | PostgreSQL 연결 문자열<br>예: `postgresql://themoon:password@dpg-xxx.oregon-postgres.render.com/themoon_p922` |
-| `SECRET_KEY` | 자동 생성 (generateValue) | JWT 토큰 서명용 비밀 키 (Render가 자동 생성) |
-| `DEBUG` | "false" | 프로덕션 모드 (디버그 로그 비활성화) |
-| `BACKEND_CORS_ORIGINS` | JSON 배열 | CORS 허용 Origin<br>`["https://themoon-frontend-0s4m.onrender.com"]` |
+| 환경 변수              | 소스                      | 설명                                                                                                          |
+| ---------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`         | 자동 (fromDatabase)       | PostgreSQL 연결 문자열<br>예: `postgresql://themoon:password@dpg-xxx.oregon-postgres.render.com/themoon_p922` |
+| `SECRET_KEY`           | 자동 생성 (generateValue) | JWT 토큰 서명용 비밀 키 (Render가 자동 생성)                                                                  |
+| `DEBUG`                | "false"                   | 프로덕션 모드 (디버그 로그 비활성화)                                                                          |
+| `BACKEND_CORS_ORIGINS` | JSON 배열                 | CORS 허용 Origin<br>`["https://themoon-frontend-0s4m.onrender.com"]`                                          |
 
 **로컬 개발 환경 (.env 파일)**:
 
@@ -206,10 +198,10 @@ SECRET_KEY=your-local-secret-key
 
 ### Frontend 환경 변수
 
-| 환경 변수 | 값 | 설명 |
-|----------|---|------|
+| 환경 변수             | 값                                    | 설명                                |
+| --------------------- | ------------------------------------- | ----------------------------------- |
 | `NEXT_PUBLIC_API_URL` | https://themoon-api-gv1u.onrender.com | Backend API URL (브라우저에서 접근) |
-| `NODE_ENV` | production | 프로덕션 모드 (최적화 활성화) |
+| `NODE_ENV`            | production                            | 프로덕션 모드 (최적화 활성화)       |
 
 **로컬 개발 환경 (.env.local 파일)**:
 
@@ -228,37 +220,28 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 Render.com은 **Git 기반 자동 배포**를 제공합니다.
 
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Git as GitHub Repository
+    participant Render as Render.com
+    participant Prod as Production Env
+
+    Dev->>Git: git push origin <branch>
+    Git->>Render: Webhook Trigger
+    
+    rect rgb(240, 248, 255)
+        Note right of Render: Auto-Deploy Process
+        Render->>Render: 1. Git Clone
+        Render->>Render: 2. Install Dependencies
+        Render->>Render: 3. Build Project
+        Render->>Render: 4. Health Check (/health)
+        Render->>Prod: 5. Zero-Downtime Deploy
+    end
+    
+    Prod-->>Dev: Success ✅
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Git Workflow                          │
-└─────────────────────────────────────────────────────────┘
-                        │
-                        │ git push origin <branch>
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│              GitHub Repository (Themoon)                │
-│  Branch: claude/render-deeply-016Jz7DRD33bXZjAo158y3Ck  │
-└─────────────────────────────────────────────────────────┘
-                        │
-                        │ Webhook Trigger
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                 Render.com Auto-Deploy                  │
-│  1. Git Clone                                           │
-│  2. Install Dependencies                                │
-│  3. Build (npm run build / pip install)                 │
-│  4. Health Check (/health)                              │
-│  5. Zero-Downtime Deploy                                │
-└─────────────────────────────────────────────────────────┘
-                        │
-                        │ Success ✅
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│              Production Environment                     │
-│  - Frontend: https://themoon-frontend-0s4m...           │
-│  - Backend: https://themoon-api-gv1u...                 │
-└─────────────────────────────────────────────────────────┘
-```
+
 
 ### 배포 단계
 
@@ -384,12 +367,12 @@ Render.com은 실시간 로그 스트리밍을 제공합니다.
 
 Render.com은 기본적으로 다음 메트릭을 제공합니다:
 
-| 메트릭 | 설명 | 확인 방법 |
-|--------|------|----------|
-| **CPU Usage** | CPU 사용률 (%) | Dashboard → Metrics |
-| **Memory Usage** | 메모리 사용량 (MB) | Dashboard → Metrics |
-| **HTTP Status** | 응답 상태 코드 (200, 404, 500 등) | Dashboard → Logs |
-| **Response Time** | API 응답 시간 (ms) | Dashboard → Logs |
+| 메트릭            | 설명                              | 확인 방법           |
+| ----------------- | --------------------------------- | ------------------- |
+| **CPU Usage**     | CPU 사용률 (%)                    | Dashboard → Metrics |
+| **Memory Usage**  | 메모리 사용량 (MB)                | Dashboard → Metrics |
+| **HTTP Status**   | 응답 상태 코드 (200, 404, 500 등) | Dashboard → Logs    |
+| **Response Time** | API 응답 시간 (ms)                | Dashboard → Logs    |
 
 ---
 
@@ -568,11 +551,11 @@ ipAllowList:
 
 #### 1️⃣ 무료 티어 제약사항
 
-| 제약사항 | 값 | 영향 |
-|---------|---|------|
-| **Cold Start** | 최대 30초 | 15분간 요청 없으면 서비스 중지 → 다음 요청 시 재시작 (30초 지연) |
-| **CPU** | 0.1 vCPU (공유) | 느린 빌드 (5~10분) |
-| **Memory** | 512MB | OOM 위험 (큰 의존성 설치 시) |
+| 제약사항       | 값              | 영향                                                             |
+| -------------- | --------------- | ---------------------------------------------------------------- |
+| **Cold Start** | 최대 30초       | 15분간 요청 없으면 서비스 중지 → 다음 요청 시 재시작 (30초 지연) |
+| **CPU**        | 0.1 vCPU (공유) | 느린 빌드 (5~10분)                                               |
+| **Memory**     | 512MB           | OOM 위험 (큰 의존성 설치 시)                                     |
 
 **해결 방법**:
 - **Ping 서비스 사용**: 15분마다 Health Check 호출 (Cold Start 방지)

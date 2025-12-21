@@ -34,131 +34,58 @@ TheMoon 시스템의 데이터는 **프론트엔드 → 백엔드 → 데이터�
 
 ### 읽기 (Read) 흐름
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 사용자
+    participant FE as Frontend (Next.js)
+    participant API as Backend (FastAPI)
+    participant SVC as Service Layer
+    participant DB as Database (PostgreSQL)
+
+    User->>FE: 페이지 접속 / 데이터 요청
+    FE->>FE: useBeans() (SWR Cache Check)
+    alt Cache Miss
+        FE->>API: GET /api/v1/beans
+        API->>SVC: BeanService.get_beans()
+        SVC->>DB: SQL Query (SELECT)
+        DB-->>SVC: Result Rows
+        SVC-->>API: Pydantic Service Objects
+        API-->>FE: JSON Response
+    else Cache Hit
+        FE-->>FE: Return cached data
+    end
+    FE->>User: UI 업데이트
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  1. 사용자 요청                                                │
-│     - 페이지 접속 또는 데이터 새로고침                         │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  2. Frontend (Next.js)                                        │
-│     useBeans() 훅 실행 (SWR)                                  │
-│     ├─ Cache Hit? → 즉시 반환                                 │
-│     └─ Cache Miss → API 호출                                  │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  3. HTTP Request                                              │
-│     GET /api/v1/beans?skip=0&limit=100                       │
-│     Headers: {                                                │
-│       Content-Type: application/json                          │
-│       Accept: application/json                                │
-│     }                                                          │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  4. Backend (FastAPI)                                         │
-│     API Endpoint: GET /api/v1/beans/                          │
-│     ├─ Query Parameter 검증 (Pydantic)                        │
-│     ├─ Service 호출: BeanService.get_beans()                  │
-│     └─ Response Schema 변환                                    │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  5. Service Layer                                             │
-│     BeanService.get_beans(skip, limit, search)                │
-│     ├─ 비즈니스 로직 처리                                      │
-│     ├─ Repository 호출 (ORM 쿼리)                             │
-│     └─ 결과 반환                                               │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  6. Database (PostgreSQL)                                     │
-│     SQL Query:                                                │
-│     SELECT * FROM beans                                       │
-│     WHERE name LIKE '%search%'                                │
-│     ORDER BY created_at DESC                                  │
-│     LIMIT 100 OFFSET 0;                                       │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  7. Response 역순 전파                                         │
-│     DB → Service → API → Frontend                             │
-│     각 계층에서 데이터 변환:                                   │
-│     - DB Row → SQLAlchemy Model                               │
-│     - Model → Pydantic Schema                                 │
-│     - JSON → TypeScript Interface                             │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  8. Frontend State 업데이트                                    │
-│     SWR Cache 갱신 → React State 업데이트 → UI 재렌더링      │
-└──────────────────────────────────────────────────────────────┘
-```
+
 
 ### 쓰기 (Write) 흐름
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 사용자
+    participant FE as Frontend (Next.js)
+    participant API as Backend (FastAPI)
+    participant SVC as Service Layer
+    participant DB as Database (PostgreSQL)
+
+    User->>FE: 폼 제출 (Action)
+    FE->>FE: Validate Input (Client-side)
+    FE->>API: POST /api/v1/beans (JSON Body)
+    API->>API: Validate Schema (Pydantic)
+    API->>SVC: BeanService.create_bean()
+    SVC->>SVC: Business Logic (SKU Gen, etc.)
+    SVC->>DB: BEGIN Transaction
+    DB->>DB: INSERT INTO beans
+    DB->>DB: INSERT INTO inventory_logs
+    DB-->>SVC: COMMIT
+    SVC-->>API: Created Object
+    API-->>FE: Response (201 Created)
+    FE->>FE: SWR Mutate (Cache Invalidation)
+    FE->>User: UI Update (Toast/Redirect)
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  1. 사용자 액션                                                │
-│     - 폼 제출 (생두 등록, 로스팅 실행 등)                      │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  2. Frontend Validation                                       │
-│     클라이언트 측 검증:                                        │
-│     - 필수 필드 확인                                           │
-│     - 타입 검증                                                │
-│     - 범위 검증 (예: 수량 > 0)                                │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  3. HTTP Request                                              │
-│     POST /api/v1/beans/                                       │
-│     Body: {                                                   │
-│       name: "예가체프",                                       │
-│       type: "GREEN_BEAN",                                     │
-│       origin: "Ethiopia",                                     │
-│       quantity_kg: 20,                                        │
-│       avg_price: 12000                                        │
-│     }                                                          │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  4. Backend Validation                                        │
-│     Pydantic Schema 검증:                                     │
-│     - 타입 강제 변환                                           │
-│     - 필드 검증 (max_length, min_value 등)                    │
-│     - 커스텀 검증 로직                                         │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  5. Service Layer (Transaction)                               │
-│     BeanService.create_bean(data)                             │
-│     ├─ 비즈니스 로직:                                          │
-│     │  - SKU 자동 생성                                         │
-│     │  - 초기 재고 로그 생성                                   │
-│     ├─ DB 트랜잭션 시작                                       │
-│     ├─ Bean 생성                                               │
-│     ├─ InventoryLog 생성                                       │
-│     └─ 트랜잭션 커밋                                           │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  6. Database Transaction                                      │
-│     BEGIN;                                                    │
-│       INSERT INTO beans (...) VALUES (...);                   │
-│       INSERT INTO inventory_logs (...) VALUES (...);          │
-│     COMMIT;                                                   │
-└──────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────────────────────────────────────────────┐
-│  7. Response + Cache Invalidation                             │
-│     - 생성된 Bean 반환                                         │
-│     - SWR Cache 무효화 (mutate)                               │
-│     - UI 자동 재렌더링                                         │
-└──────────────────────────────────────────────────────────────┘
-```
+
 
 ---
 
@@ -166,147 +93,121 @@ TheMoon 시스템의 데이터는 **프론트엔드 → 백엔드 → 데이터�
 
 ### 1. 생두 등록 (Bean Registration)
 
+```mermaid
+flowchart TD
+    User[사용자] -->|1. 폼 입력| FE[BeanForm 컴포넌트]
+    FE -->|2. 클라이언트 검증| Func[createBean 함수]
+    Func -->|3. POST /api/v1/beans| API[FastAPI Endpoint]
+    API -->|4. Pydantic 검증| SVC[BeanService]
+    SVC -->|5. 비즈니스 로직| Logic{로직 처리}
+    Logic -->|Bean 객체 생성| DB1[INSERT beans]
+    Logic -->|InventoryLog 생성| DB2[INSERT inventory_logs]
+    DB1 & DB2 -->|8. 데이터 저장| DB[(PostgreSQL)]
+    DB -->|9. 생성된 Bean 반환| Response[Response]
+    Response -->|10. Cache 무효화| SWR[SWR]
+    SWR -->|11. 목록 자동 갱신| UI[UI]
 ```
-[사용자]
-   ↓ 1. 폼 입력
-[BeanForm 컴포넌트]
-   ↓ 2. 클라이언트 검증
-[createBean() 함수]
-   ↓ 3. POST /api/v1/beans/
-[FastAPI Endpoint]
-   ↓ 4. Pydantic 검증
-[BeanService]
-   ↓ 5. 비즈니스 로직
-   ├─ Bean 객체 생성
-   └─ InventoryLog 생성 (PURCHASE)
-[SQLAlchemy]
-   ↓ 6. INSERT INTO beans
-   ↓ 7. INSERT INTO inventory_logs
-[PostgreSQL]
-   ↓ 8. 데이터 저장
-[Response]
-   ↓ 9. 생성된 Bean 반환
-[SWR]
-   ↓ 10. Cache 무효화
-[UI]
-   └─ 11. 목록 자동 갱신
-```
+
 
 ### 2. Single Origin 로스팅 (Roasting)
 
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant API as Roasting API
+    participant SVC as RoastingService
+    participant DB as Database
+
+    User->>API: 1. 로스팅 폼 제출
+    Note right of User: green_bean_id: 1<br/>input: 20kg, output: 17kg<br/>profile: MEDIUM
+    
+    API->>SVC: 2. 로스팅 요청
+    SVC->>SVC: 3. 손실률 & 원가 계산
+    Note right of SVC: loss = 15%<br/>price = 14,118원/kg
+    
+    SVC->>DB: 4. 트랜잭션 시작
+    DB->>DB: 5a. 생두 재고 감소 (-20kg)
+    DB->>DB: 5b. 원두 생성 (17kg)
+    DB->>DB: 5c. 원두 재고 증가 (+17kg)
+    DB-->>SVC: 6. 커밋
+    
+    SVC-->>API: 결과 반환
+    API-->>User: 7. Response
+    Note right of API: success: true<br/>cost: 14,118
 ```
-[사용자]
-   ↓ 1. 로스팅 폼 제출
-      - green_bean_id: 1
-      - input_weight: 20kg
-      - output_weight: 17kg
-      - roast_profile: MEDIUM
-[RoastingService]
-   ↓ 2. 손실률 계산
-      loss_rate = (20 - 17) / 20 = 15%
-   ↓ 3. 원가 계산
-      roasted_price = green_price / (1 - loss_rate)
-                    = 12,000 / 0.85 = 14,118원/kg
-   ↓ 4. 트랜잭션 시작
-   ├─ 5a. 생두 재고 감소 (-20kg)
-   │   └─ InventoryLog 생성 (ROASTING_INPUT, -20kg)
-   ├─ 5b. 원두 객체 생성 (17kg, 14,118원/kg)
-   │   └─ Bean 테이블 INSERT
-   └─ 5c. 원두 재고 증가 (+17kg)
-       └─ InventoryLog 생성 (ROASTING_OUTPUT, +17kg)
-   ↓ 6. 트랜잭션 커밋
-[Response]
-   └─ 7. 로스팅 결과 반환
-      {
-        "success": true,
-        "roasted_bean": { ... },
-        "loss_rate_percent": 15,
-        "production_cost": 14118
-      }
-```
+
 
 ### 3. 블렌드 레시피 생성 (Blend Creation)
 
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant API as Blend API
+    participant SVC as BlendService
+    participant DB as Database
+
+    User->>API: 1. 블렌드 폼 제출
+    Note right of User: Full Moon<br/>Beans: A(40), B(40), C(10), D(10)
+    
+    API->>SVC: 2. 검증 요청
+    SVC->>SVC: 비율 합계(1.0) 및 ID 검증
+    
+    SVC->>DB: 3. Blend 생성 (INSERT)
+    DB-->>SVC: ID 반환
+    
+    SVC-->>API: 생성된 블렌드 객체
+    API-->>User: 5. Response
 ```
-[사용자]
-   ↓ 1. 블렌드 폼 제출
-      name: "Full Moon"
-      recipe: [
-        {bean_id: 6, ratio: 0.4},
-        {bean_id: 9, ratio: 0.4},
-        {bean_id: 2, ratio: 0.1},
-        {bean_id: 5, ratio: 0.1}
-      ]
-[BlendService]
-   ↓ 2. 검증
-      - 비율 합계 = 1.0 확인
-      - 모든 bean_id 존재 확인
-   ↓ 3. Blend 생성
-      - recipe를 JSON으로 저장
-      - 목표 로스팅 레벨 저장
-[Database]
-   ↓ 4. INSERT INTO blends
-[Response]
-   └─ 5. 생성된 블렌드 반환
-```
+
 
 ### 4. 블렌드 로스팅 (Blend Roasting)
 
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant API as Roasting API
+    participant SVC as RoastingService
+    participant DB as Database
+
+    User->>API: 1. 블렌드 로스팅 요청
+    Note right of User: blend_id: 1<br/>output: 10kg
+    
+    API->>SVC: 2. 레시피 조회 요청
+    SVC->>SVC: 3. 필요량 계산
+    Note right of SVC: A: 4kg, B: 4kg<br/>C: 1kg, D: 1kg
+    
+    SVC->>DB: 4. 트랜잭션 시작
+    DB->>DB: 5a. 각 원두 재고 차감 (로그 4개)
+    DB->>DB: 5b. 블렌드 원두 생성
+    DB->>DB: 5c. 블렌드 재고 증가 (+10kg)
+    DB-->>SVC: 6. 커밋
+    
+    SVC->>SVC: 가중 평균 원가 계산
+    
+    SVC-->>API: 결과 반환
+    API-->>User: 8. Response
 ```
-[사용자]
-   ↓ 1. 블렌드 로스팅 요청
-      - blend_id: 1 (Full Moon)
-      - output_weight: 10kg
-[RoastingService]
-   ↓ 2. 블렌드 레시피 조회
-      recipe = Blend.get(1).recipe
-   ↓ 3. 각 원두 필요량 계산
-      마사이: 10kg × 0.4 = 4kg
-      안티구아: 10kg × 0.4 = 4kg
-      모모라: 10kg × 0.1 = 1kg
-      시다모: 10kg × 0.1 = 1kg
-   ↓ 4. 트랜잭션 시작
-   ├─ 5a. 각 원두 재고 차감
-   │   ├─ 마사이 -4kg (InventoryLog)
-   │   ├─ 안티구아 -4kg (InventoryLog)
-   │   ├─ 모모라 -1kg (InventoryLog)
-   │   └─ 시다모 -1kg (InventoryLog)
-   ├─ 5b. 블렌드 원두 생성
-   │   └─ Bean 테이블 INSERT (type=BLEND_BEAN)
-   └─ 5c. 블렌드 원두 재고 증가 (+10kg)
-       └─ InventoryLog 생성 (ROASTING_OUTPUT, +10kg)
-   ↓ 6. 가중 평균 원가 계산
-      cost = (마사이 단가 × 0.4) + (안티구아 × 0.4) +
-             (모모라 × 0.1) + (시다모 × 0.1)
-   ↓ 7. 트랜잭션 커밋
-[Response]
-   └─ 8. 블렌드 로스팅 결과 반환
-```
+
 
 ### 5. 재고 조회 및 검색 (Inventory Search)
 
+```mermaid
+sequenceDiagram
+    actor User as 사용자
+    participant FE as Frontend
+    participant API as API
+    participant DB as Check Database
+
+    User->>FE: 1. 검색어 입력 ("예가")
+    FE->>FE: 2. Debounce (300ms)
+    FE->>API: 3. GET /beans?search=예가
+    API->>DB: 4. LIKE Query
+    Note right of DB: SELECT ... LIKE '%예가%'
+    DB-->>API: 5. Result
+    API-->>FE: 6. Response JSON
+    FE-->>User: 결과 목록 표시
 ```
-[사용자]
-   ↓ 1. 검색어 입력 ("예가")
-[Frontend]
-   ↓ 2. Debounce (300ms 대기)
-[SWR]
-   ↓ 3. GET /api/v1/beans?search=예가&limit=12
-[BeanService]
-   ↓ 4. LIKE 쿼리 실행
-      SELECT * FROM beans
-      WHERE name LIKE '%예가%'
-         OR origin LIKE '%예가%'
-         OR variety LIKE '%예가%'
-[PostgreSQL]
-   ↓ 5. Full-text Search
-[Response]
-   └─ 6. 필터링된 결과 반환
-      [
-        {id: 1, name: "예가체프", ...},
-        ...
-      ]
-```
+
 
 ---
 
@@ -314,25 +215,25 @@ TheMoon 시스템의 데이터는 **프론트엔드 → 백엔드 → 데이터�
 
 ### Frontend → Backend
 
-| Frontend (TypeScript) | HTTP Body (JSON) | Backend (Python) |
-|----------------------|------------------|------------------|
-| `name: string` | `"name": "예가체프"` | `name: str` |
-| `type: BeanType` | `"type": "GREEN_BEAN"` | `type: BeanType (Enum)` |
-| `quantity_kg: number` | `"quantity_kg": 20` | `quantity_kg: float` |
-| `avg_price: number` | `"avg_price": 12000` | `avg_price: float` |
-| `created_at: string` | `"created_at": "2025-12-07T12:00:00Z"` | `created_at: datetime` |
+| Frontend (TypeScript) | HTTP Body (JSON)                       | Backend (Python)        |
+| --------------------- | -------------------------------------- | ----------------------- |
+| `name: string`        | `"name": "예가체프"`                   | `name: str`             |
+| `type: BeanType`      | `"type": "GREEN_BEAN"`                 | `type: BeanType (Enum)` |
+| `quantity_kg: number` | `"quantity_kg": 20`                    | `quantity_kg: float`    |
+| `avg_price: number`   | `"avg_price": 12000`                   | `avg_price: float`      |
+| `created_at: string`  | `"created_at": "2025-12-07T12:00:00Z"` | `created_at: datetime`  |
 
 ### Backend → Database
 
-| Python (SQLAlchemy) | PostgreSQL (Column Type) | 예시 값 |
-|---------------------|--------------------------|---------|
-| `id: int` | `INTEGER PRIMARY KEY` | `1` |
-| `name: str` | `VARCHAR(255)` | `"예가체프"` |
-| `type: BeanType` | `VARCHAR(20)` | `"GREEN_BEAN"` |
-| `quantity_kg: float` | `NUMERIC(10, 3)` | `20.000` |
-| `avg_price: float` | `NUMERIC(10, 2)` | `12000.00` |
-| `created_at: datetime` | `TIMESTAMP WITH TIME ZONE` | `2025-12-07 12:00:00+00` |
-| `recipe: List[dict]` | `JSONB` | `[{"bean_id": 1, "ratio": 0.4}]` |
+| Python (SQLAlchemy)    | PostgreSQL (Column Type)   | 예시 값                          |
+| ---------------------- | -------------------------- | -------------------------------- |
+| `id: int`              | `INTEGER PRIMARY KEY`      | `1`                              |
+| `name: str`            | `VARCHAR(255)`             | `"예가체프"`                     |
+| `type: BeanType`       | `VARCHAR(20)`              | `"GREEN_BEAN"`                   |
+| `quantity_kg: float`   | `NUMERIC(10, 3)`           | `20.000`                         |
+| `avg_price: float`     | `NUMERIC(10, 2)`           | `12000.00`                       |
+| `created_at: datetime` | `TIMESTAMP WITH TIME ZONE` | `2025-12-07 12:00:00+00`         |
+| `recipe: List[dict]`   | `JSONB`                    | `[{"bean_id": 1, "ratio": 0.4}]` |
 
 ### Database → Frontend
 
@@ -374,61 +275,47 @@ interface Bean {
 
 ### 검증 에러 (Validation Error)
 
+```mermaid
+sequenceDiagram
+    participant FE as Frontend
+    participant API as Backend
+
+    FE->>API: 1. 폼 제출 (quantity: -10)
+    API-->>FE: 2. 422 Unprocessable Entity
+    Note right of API: msg: ensure this value is greater than 0
+    FE-->>FE: 3. UI 에러 메시지 표시
 ```
-[Frontend]
-   ↓ 1. 폼 제출 (잘못된 데이터)
-      quantity_kg: -10 (음수)
-[Backend - Pydantic]
-   ↓ 2. 검증 실패
-   └─ 422 Unprocessable Entity
-      {
-        "detail": [
-          {
-            "loc": ["body", "quantity_kg"],
-            "msg": "ensure this value is greater than 0",
-            "type": "value_error.number.not_gt"
-          }
-        ]
-      }
-[Frontend - Error Handling]
-   └─ 3. 에러 메시지 표시
-      "수량은 0보다 커야 합니다"
-```
+
 
 ### 비즈니스 로직 에러
 
+```mermaid
+sequenceDiagram
+    participant FE as Frontend
+    participant SVC as Service
+
+    FE->>SVC: 1. 로스팅 요청 (100kg)
+    SVC-->>FE: 2. 400 Bad Request
+    Note right of SVC: 재고 부족 (현재: 20kg)
+    FE-->>FE: 3. ErrorState 표시 (Retry 버튼)
 ```
-[Frontend]
-   ↓ 1. 로스팅 요청 (재고 부족)
-      green_bean_id: 1
-      input_weight: 100kg (현재 재고: 20kg)
-[Backend - RoastingService]
-   ↓ 2. 재고 확인
-   └─ raise HTTPException(
-        status_code=400,
-        detail="재고가 부족합니다. (필요: 100kg, 현재: 20kg)"
-      )
-[Frontend]
-   └─ 3. ErrorState 컴포넌트 표시
-      + "다시 시도" 버튼
-```
+
 
 ### 네트워크 에러
 
+```mermaid
+sequenceDiagram
+    participant FE as Frontend
+    participant NET as Network
+
+    FE->>NET: 1. API 호출
+    NET-->>FE: 2. Connection Failure
+    loop Exponential Backoff
+        FE->>FE: 3. Auto Retry (5s, 10s...)
+    end
+    FE-->>FE: 4. Retry Failed -> Error UI
 ```
-[Frontend]
-   ↓ 1. API 호출
-[Network]
-   ↓ 2. 연결 실패
-   └─ Network Error / Timeout
-[SWR - Error Retry]
-   ↓ 3. 자동 재시도 (최대 5회)
-      지수 백오프: 5초 → 10초 → 20초 → 40초 → 60초
-[Frontend]
-   └─ 4. 재시도 실패 시
-      ErrorState 컴포넌트 표시
-      "네트워크 연결을 확인해주세요"
-```
+
 
 ---
 
