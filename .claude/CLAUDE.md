@@ -498,7 +498,7 @@ MAJOR: 호환성 변경 (년 1~2회)
 - 현재 브랜치: main
 - 원격보다 30커밋 앞서 있음
 - Working tree: modified (문서 업데이트 예정)
-- 최종 커밋: 8de563e (Analytics UI Polish & Docs)
+- 최종 커밋: c47cf05 (Analytics UI Polish & Docs)
 
 **🎯 다음 작업 옵션**:
 1. Invoice 페이지를 실제 OCR 데이터와 연동
