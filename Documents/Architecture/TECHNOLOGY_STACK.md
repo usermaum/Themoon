@@ -26,15 +26,15 @@
 ```mermaid
 graph TD
     subgraph Frontend [Frontend Layer]
-        Next[Next.js 14 + TypeScript<br/>Shadcn UI + Tailwind CSS]
+        Next["Next.js 14 + TypeScript<br/>Shadcn UI + Tailwind CSS"]
     end
 
     subgraph Backend [Backend Layer]
-        FastAPI[FastAPI + Pydantic<br/>SQLAlchemy + Uvicorn]
+        FastAPI["FastAPI + Pydantic<br/>SQLAlchemy + Uvicorn"]
     end
 
     subgraph Database [Database Layer]
-        DB[(PostgreSQL Prod / SQLite Dev)]
+        DB[("PostgreSQL Prod / SQLite Dev")]
     end
 
     Frontend -->|REST API axios| Backend
