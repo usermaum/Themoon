@@ -98,6 +98,11 @@
   - 오래된 백업 DB 파일 제거
   - 프로젝트 구조 단순화
 
+### 📝 Documentation
+- **System Architecture**: `Documents/Architecture/SYSTEM_ARCHITECTURE.md` 최신화
+  - 현재 기술 스택 (Next.js + FastAPI + SQLite) 반영
+  - OCR 데이터 처리 및 저장/재고 관리 데이터 흐름도(Mermaid) 추가
+
 ---
 
 ## [0.2.2] - 2025-12-20
