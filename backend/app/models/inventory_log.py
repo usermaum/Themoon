@@ -26,7 +26,8 @@ class InventoryLog(Base):
     
     change_amount = Column(Float, nullable=False, comment="변동량") # +: 증가, -: 감소
     current_quantity = Column(Float, nullable=False, comment="변동 후 잔고")
-    
+    unit_cost = Column(Float, nullable=True, comment="단가 (FIFO 원가, kg당)")
+
     notes = Column(Text, nullable=True, comment="비고/사유")
     related_id = Column(Integer, nullable=True, comment="관련 ID (로스팅ID 등)")
     

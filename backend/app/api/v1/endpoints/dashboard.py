@@ -25,6 +25,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     total_blends = blend_service.get_blends_count(db)
     total_stock = bean_service.get_total_stock(db)
     low_stock_beans = bean_service.get_low_stock_beans(db, threshold=5.0, limit=5)
+    low_stock_count = bean_service.count_low_stock_beans(db, threshold=5.0)
     
     # Explicitly convert ORM objects to Pydantic models
     low_stock_beans_data = [Bean.model_validate(b) for b in low_stock_beans]
@@ -33,5 +34,6 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         "total_beans": total_beans,
         "total_blends": total_blends,
         "total_stock_kg": total_stock,
-        "low_stock_beans": low_stock_beans_data
+        "low_stock_beans": low_stock_beans_data,
+        "low_stock_count": low_stock_count
     }

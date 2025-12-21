@@ -2,7 +2,7 @@
 원두 관리 API 엔드포인트
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.bean import Bean, BeanCreate, BeanUpdate, BeanListResponse
@@ -69,3 +69,11 @@ def delete_bean(bean_id: int, db: Session = Depends(get_db)):
     if not success:
         raise HTTPException(status_code=404, detail="Bean not found")
     return {"ok": True}
+
+
+@router.post("/check-batch", response_model=List[dict])
+def check_beans_batch(names: List[str] = Body(...), db: Session = Depends(get_db)):
+    """
+    여러 원두 이름에 대해 DB 존재 여부 확인
+    """
+    return bean_service.check_existing_beans(db, names)

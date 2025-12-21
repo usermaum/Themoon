@@ -3,9 +3,11 @@
 import { useState, useCallback, useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { useRouter } from "next/navigation"
-import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2, FileText } from "lucide-react"
+import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2, FileText, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { BeanAPI } from "@/lib/api"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -48,6 +50,7 @@ export default function InboundPage() {
 
     const [ocrResult, setOcrResult] = useState<any>(null) // Temporary for debugging
     const [duplicateStatus, setDuplicateStatus] = useState<{ status: 'idle' | 'checking' | 'duplicate' | 'available', message: string }>({ status: 'idle', message: '' })
+    const [itemStatus, setItemStatus] = useState<Record<string, { status: string, bean_id: number | null }>>({})
 
     const { toast } = useToast()
 
@@ -158,10 +161,38 @@ export default function InboundPage() {
             setDriveLink(data.drive_link)
 
             toast({ title: "분석 완료", description: "명세서 내용을 자동으로 입력했습니다." })
+
+            // Check items existence
+            if (data.items && data.items.length > 0) {
+                const names = data.items.map((i: any) => i.bean_name || "").filter((n: string) => n !== "")
+                checkItemsBatch(names)
+            }
+
         } catch (error: any) {
             toast({ title: "오류 발생", description: error.message, variant: "destructive" })
         } finally {
             setIsAnalyzing(false)
+        }
+    }
+
+    // Check Status Logic
+    const checkItemsBatch = async (names: string[]) => {
+        console.log("Checking items:", names)
+        if (names.length === 0) return
+        try {
+            const results = await BeanAPI.checkBatch(names)
+            console.log("Check results:", results)
+
+            // Functional update to avoid stale state
+            setItemStatus(prev => {
+                const newStatus: any = { ...prev }
+                results.forEach((r: any) => {
+                    newStatus[r.input_name] = { status: r.status, bean_id: r.bean_id }
+                })
+                return newStatus
+            })
+        } catch (e) {
+            console.error("Failed to check items", e)
         }
     }
 
@@ -460,22 +491,38 @@ export default function InboundPage() {
                                 <div className="space-y-2">
                                     <Label>품목 (Items)</Label>
                                     <div className="border rounded-md divide-y">
-                                        {fields.map((field: any, index: number) => (
-                                            <div key={field.id} className="p-3 grid grid-cols-12 gap-2 item-center text-sm">
-                                                <div className="col-span-5">
-                                                    <Input {...register(`items.${index}.bean_name`)} placeholder="원두명" className="h-8" />
+
+                                        {fields.map((field: any, index: number) => {
+                                            // Watch current item name to show status
+                                            const currentName = watch(`items.${index}.bean_name`)
+                                            const status = itemStatus[currentName]
+
+                                            return (
+                                                <div key={field.id} className="p-3 grid grid-cols-12 gap-2 item-center text-sm relative">
+                                                    <div className="col-span-12 mb-1 flex gap-2 h-5">
+                                                        {status?.status === 'MATCH' && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] py-0 px-2">기존 상품 (Matched)</Badge>}
+                                                        {status?.status === 'NEW' && <Badge variant="secondary" className="text-[10px] py-0 px-2 bg-blue-100 text-blue-800 hover:bg-blue-200">신규 상품 (New)</Badge>}
+                                                    </div>
+                                                    <div className="col-span-5">
+                                                        <Input
+                                                            {...register(`items.${index}.bean_name`)}
+                                                            placeholder="원두명"
+                                                            className="h-8"
+                                                            onBlur={(e) => checkItemsBatch([e.target.value])}
+                                                        />
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                        <Input {...register(`items.${index}.quantity`)} type="number" step="0.1" placeholder="수량" className="h-8" />
+                                                    </div>
+                                                    <div className="col-span-3">
+                                                        <Input {...register(`items.${index}.amount`)} type="number" placeholder="금액" className="h-8" />
+                                                    </div>
+                                                    <div className="col-span-2 flex justify-end">
+                                                        <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>삭제</Button>
+                                                    </div>
                                                 </div>
-                                                <div className="col-span-2">
-                                                    <Input {...register(`items.${index}.quantity`)} type="number" step="0.1" placeholder="수량" className="h-8" />
-                                                </div>
-                                                <div className="col-span-3">
-                                                    <Input {...register(`items.${index}.amount`)} type="number" placeholder="금액" className="h-8" />
-                                                </div>
-                                                <div className="col-span-2 flex justify-end">
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>삭제</Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                     <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => append({ bean_name: "", quantity: 0, unit_price: 0, amount: 0 })}>
                                         + 항목 추가

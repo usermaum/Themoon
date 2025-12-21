@@ -20,9 +20,9 @@ env_path = os.path.join(backend_dir, ".env")
 load_dotenv(env_path)
 
 from app.database import engine, Base, SessionLocal
-from app.models.bean import Bean, BeanType
-from app.models.inventory_log import InventoryLog, InventoryChangeType
-from app.models.blend import Blend
+from app.models import Bean, InboundDocument, InboundDocumentDetail, InboundReceiver, InboundItem, InventoryLog, Supplier, Blend
+from app.models.bean import BeanType
+from app.models.inventory_log import InventoryChangeType
 
 def init_db():
     print("🗑️  Dropping all tables...")
