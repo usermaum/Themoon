@@ -187,14 +187,14 @@ npm run dev
 
 ## 📁 핵심 문서 위치
 
-| 문서 | 위치 | 용도 |
-|------|------|------|
-| **파일 구조** | `Documents/Architecture/FILE_STRUCTURE.md` | 프로젝트 파일 맵 |
-| **개발 가이드** | `Documents/Architecture/DEVELOPMENT_GUIDE.md` | 5단계 개발 프로세스 |
+| 문서                | 위치                                            | 용도                         |
+| ------------------- | ----------------------------------------------- | ---------------------------- |
+| **파일 구조**       | `Documents/Architecture/FILE_STRUCTURE.md`      | 프로젝트 파일 맵             |
+| **개발 가이드**     | `Documents/Architecture/DEVELOPMENT_GUIDE.md`   | 5단계 개발 프로세스          |
 | **시스템 아키텍처** | `Documents/Architecture/SYSTEM_ARCHITECTURE.md` | 3계층 아키텍처 & 데이터 흐름 |
-| **문제 해결** | `Documents/Architecture/TROUBLESHOOTING.md` | 16가지 오류 & 해결법 |
-| **자주 하는 작업** | `Documents/Architecture/COMMON_TASKS.md` | 25가지 작업 단계 가이드 |
-| **진행 현황** | `Documents/Progress/SESSION_SUMMARY_*.md` | 세션별 진행 상황 |
+| **문제 해결**       | `Documents/Architecture/TROUBLESHOOTING.md`     | 16가지 오류 & 해결법         |
+| **자주 하는 작업**  | `Documents/Architecture/COMMON_TASKS.md`        | 25가지 작업 단계 가이드      |
+| **진행 현황**       | `Documents/Progress/SESSION_SUMMARY_*.md`       | 세션별 진행 상황             |
 
 ---
 
@@ -298,14 +298,14 @@ Themoon/                    # 신규 프로젝트 (Next.js + FastAPI)
 
 ### 필수 파일 (어제 정한 공식 시스템)
 
-| 파일 | 위치 | 용도 | 필수 여부 |
-|------|------|------|---------|
-| **SESSION_START_CHECKLIST** | `Documents/Progress/SESSION_START_CHECKLIST.md` | 세션 시작 시 반드시 확인 | ✅ 필수 |
-| **SESSION_END_CHECKLIST** | `Documents/Progress/SESSION_END_CHECKLIST.md` | 세션 종료 시 반드시 완료 | ✅ 필수 |
-| **VERSION_MANAGEMENT** | `logs/VERSION_MANAGEMENT.md` | 버전 관리 규칙 | ✅ 필수 |
-| **SESSION_SUMMARY** | `Documents/Progress/SESSION_SUMMARY_*.md` | 각 세션별 진행 기록 | ✅ 필수 |
-| **CHANGELOG** | `logs/CHANGELOG.md` | 프로젝트 변경 로그 | ✅ 필수 |
-| **VERSION** | `logs/VERSION` | 현재 버전 파일 | ✅ 필수 |
+| 파일                        | 위치                                            | 용도                     | 필수 여부 |
+| --------------------------- | ----------------------------------------------- | ------------------------ | --------- |
+| **SESSION_START_CHECKLIST** | `Documents/Progress/SESSION_START_CHECKLIST.md` | 세션 시작 시 반드시 확인 | ✅ 필수    |
+| **SESSION_END_CHECKLIST**   | `Documents/Progress/SESSION_END_CHECKLIST.md`   | 세션 종료 시 반드시 완료 | ✅ 필수    |
+| **VERSION_MANAGEMENT**      | `logs/VERSION_MANAGEMENT.md`                    | 버전 관리 규칙           | ✅ 필수    |
+| **SESSION_SUMMARY**         | `Documents/Progress/SESSION_SUMMARY_*.md`       | 각 세션별 진행 기록      | ✅ 필수    |
+| **CHANGELOG**               | `logs/CHANGELOG.md`                             | 프로젝트 변경 로그       | ✅ 필수    |
+| **VERSION**                 | `logs/VERSION`                                  | 현재 버전 파일           | ✅ 필수    |
 
 ### 세션 시작 (매번 필수)
 
@@ -498,7 +498,7 @@ MAJOR: 호환성 변경 (년 1~2회)
 - 현재 브랜치: main
 - 원격보다 30커밋 앞서 있음
 - Working tree: modified (문서 업데이트 예정)
-- 최종 커밋: 2827e7c (statusline 빠른 동기화 기능)
+- 최종 커밋: 82b94f6 (Analytics Dashboard UI Enhancements)
 
 **🎯 다음 작업 옵션**:
 1. Invoice 페이지를 실제 OCR 데이터와 연동
