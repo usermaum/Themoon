@@ -305,6 +305,47 @@ def main():
                 print("❌ Usage must be a number (0-100)")
                 sys.exit(1)
 
+        elif sys.argv[1] == "--quick-sync" or sys.argv[1] == "-q":
+            # 빠른 동기화 (퍼센트만 입력, 리셋 시간 자동 계산)
+            if len(sys.argv) < 3:
+                print("❌ Usage: python statusline.py --quick-sync <usage%>")
+                print("   Example: python statusline.py --quick-sync 64")
+                print("   Example: python statusline.py -q 85")
+                print("\n   리셋 시간은 자동으로 5시간으로 설정됩니다.")
+                sys.exit(1)
+
+            try:
+                usage_percent = int(sys.argv[2])
+
+                if usage_percent < 0 or usage_percent > 100:
+                    print("❌ 사용량은 0-100 사이의 값이어야 합니다.")
+                    sys.exit(1)
+
+                # 리셋 시간 자동 계산 (5시간 고정)
+                time_remaining = "5시간 0분"
+
+                if get_claude_usage_api is None:
+                    print("❌ claude_usage_api 모듈을 불러올 수 없습니다.")
+                    sys.exit(1)
+
+                api = get_claude_usage_api()
+                result = api.sync_baseline(usage_percent, time_remaining)
+
+                if result['success']:
+                    print(result['message'])
+                    print(f"\n📊 빠른 동기화 완료:")
+                    print(f"  - 사용량: {usage_percent}%")
+                    print(f"  - 리셋: 5시간 후")
+                    print(f"\n💡 더 정확한 리셋 시간을 원하면:")
+                    print(f"   python statusline.py --sync {usage_percent} \"4시간 30분\"")
+                else:
+                    print(result['message'])
+                    sys.exit(1)
+
+            except ValueError:
+                print("❌ 사용량은 숫자여야 합니다 (0-100)")
+                sys.exit(1)
+
         elif sys.argv[1] == "--continuous" or sys.argv[1] == "-c":
             # 연속 모드 (60초 간격)
             interval = 60
@@ -326,22 +367,27 @@ Claude Code 상태바 스크립트
 
 사용법:
   python statusline.py              # 한 번 출력 (컴팩트)
-  python statusline.py -s 100 "2시간 21분"  # 사용량 동기화
+  python statusline.py -q 64        # 빠른 동기화 (추천!)
+  python statusline.py -s 100 "2시간 21분"  # 정확한 동기화
   python statusline.py -c           # 연속 모드 (60초 간격)
-  python statusline.py -c 30        # 연속 모드 (30초 간격)
   python statusline.py -d           # 상세 출력
-  python statusline.py -h           # 도움말
 
 옵션:
-  -s, --sync <사용량%> <리셋시간>  웹/앱 사용량 동기화
+  -q, --quick-sync <사용량%>       빠른 동기화 (리셋 5시간 자동 설정)
+  -s, --sync <사용량%> <리셋시간>  정확한 동기화 (리셋 시간 수동 지정)
   -c, --continuous [INTERVAL]      연속 모드로 실행 (기본: 60초)
-  -d, --detail                     상세 정보 출력
+  -d, --detail                     상세 정보 출력 (Settings 스타일)
   -h, --help                       이 도움말 출력
 
-동기화 예시:
-  python statusline.py --sync 100 "2시간 21분"
-  python statusline.py --sync 85 "1시간 30분"
-  python statusline.py --sync 50 "3시간"
+📌 빠른 동기화 (추천):
+  1. Claude Code에서 /config 실행
+  2. 사용량 퍼센트 확인 (예: 64%)
+  3. python statusline.py -q 64
+
+📌 정확한 동기화:
+  python statusline.py -s 64 "4시간 30분"
+  python statusline.py -s 85 "1시간 30분"
+  python statusline.py -s 100 "5시간"
             """)
         else:
             run_once()
