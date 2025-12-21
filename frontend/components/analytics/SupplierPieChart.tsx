@@ -15,7 +15,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 export function SupplierPieChart({ data }: SupplierPieChartProps) {
     return (
-        <Card>
+        <Card className="rounded-[1em]">
             <CardHeader>
                 <CardTitle>공급자별 매입 비중</CardTitle>
                 <CardDescription>

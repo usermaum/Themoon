@@ -126,6 +126,9 @@ export default function InboundPage() {
 
             if (!response.ok) {
                 const err = await response.json()
+                if (err.detail === "INVALID_DOCUMENT") {
+                    throw new Error("명세서 형식이 아닙니다. 올바른 문서 이미지를 업로드하거나 다시 확인해주세요.")
+                }
                 throw new Error(err.detail || "분석 실패")
             }
 
@@ -316,30 +319,61 @@ export default function InboundPage() {
 
                                 <div className="mt-4 space-y-4">
                                     <TabsContent value="file">
-                                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                                            <Label htmlFor="picture">명세서 이미지</Label>
-                                            <Input id="picture" type="file" accept="image/*" onChange={handleFileChange} />
+                                        <div className="space-y-2">
+                                            <Label htmlFor="picture" className="text-sm font-medium text-latte-700">명세서 이미지</Label>
+                                            <div className="relative group">
+                                                <label
+                                                    htmlFor="picture"
+                                                    className={`flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-latte-200 border-dashed rounded-[1em] appearance-none cursor-pointer hover:border-latte-400 hover:bg-latte-50/50 focus:outline-none ${selectedFile ? 'border-latte-400 bg-latte-50/30' : ''}`}
+                                                >
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                        {selectedFile ? (
+                                                            <>
+                                                                <CheckCircle2 className="w-8 h-8 mb-2 text-green-500 animate-in zoom-in-50 duration-300" />
+                                                                <p className="text-sm font-medium text-latte-800">{selectedFile.name}</p>
+                                                                <p className="text-xs text-latte-500 mt-1">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB • 클릭하여 변경</p>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Upload className="w-8 h-8 mb-2 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                                                                <p className="text-sm font-medium text-latte-700">파일을 클릭하거나 여기로 드래그하세요</p>
+                                                                <p className="text-xs text-latte-400 mt-1">이미지 파일 (JPG, PNG) 최대 10MB</p>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <input
+                                                        id="picture"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleFileChange}
+                                                    />
+                                                </label>
+                                            </div>
                                         </div>
                                     </TabsContent>
 
                                     <TabsContent value="clipboard">
-                                        <div className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center text-muted-foreground bg-muted/50">
-                                            <Clipboard className="h-8 w-8 mb-2" />
-                                            <p>Ctrl+V를 눌러 이미지를 붙여넣으세요</p>
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-medium text-latte-700">명세서 이미지</Label>
+                                            <div className="h-32 border-2 border-dashed rounded-[1em] flex flex-col items-center justify-center text-latte-500 bg-latte-50/30 border-latte-200">
+                                                <Clipboard className="h-8 w-8 mb-2 text-latte-400" />
+                                                <p className="text-sm font-medium">Ctrl+V를 눌러 이미지를 붙여넣으세요</p>
+                                            </div>
                                         </div>
                                     </TabsContent>
 
                                     <TabsContent value="url">
                                         <div className="grid w-full items-center gap-1.5">
-                                            <Label htmlFor="url">이미지 URL</Label>
-                                            <Input id="url" placeholder="https://..." value={urlInput} onChange={(e) => setUrlInput(e.target.value)} />
+                                            <Label htmlFor="url" className="text-sm font-medium text-latte-700">이미지 URL</Label>
+                                            <Input id="url" placeholder="https://..." value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="rounded-xl border-latte-200" />
                                         </div>
                                     </TabsContent>
                                 </div>
                             </Tabs>
 
                             {previewUrl && (
-                                <div className="mt-6 border rounded-lg overflow-hidden relative aspect-video bg-black/5">
+                                <div className="mt-6 border-2 border-latte-200 rounded-[1em] overflow-hidden relative aspect-video bg-latte-50/50">
                                     <Image src={previewUrl} alt="Preview" fill className="object-contain" />
                                 </div>
                             )}

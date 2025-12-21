@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Hero from '@/components/home/Hero'
 import { ErrorState, LoadingSkeleton } from '@/components/ui/error-state'
-import { Coffee, Palette, Package, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Coffee, Layers, Package, AlertTriangle, ArrowRight } from 'lucide-react'
 
 export default function HomePage() {
   const [stats, setStats] = useState<{
@@ -96,7 +96,7 @@ export default function HomePage() {
                     <p className="text-latte-500 text-sm font-medium">블렌드 레시피</p>
                     <p className="text-3xl font-bold text-latte-900 mt-1">{totalBlends}</p>
                   </div>
-                  <Palette className="w-10 h-10 text-latte-300" />
+                  <Layers className="w-10 h-10 text-latte-300" />
                 </CardContent>
               </Card>
 
@@ -133,7 +133,7 @@ export default function HomePage() {
                   <AlertTriangle className="w-6 h-6 text-red-500" />
                   재고 부족 알림
                 </h2>
-                <div className="bg-white rounded-[2rem] border border-red-200 p-6 shadow-sm">
+                <div className="bg-white rounded-[1em] border border-red-200 p-6 shadow-sm">
                   <ul className="space-y-3">
                     {lowStockBeans.map((bean) => (
                       <li key={bean.id} className="flex justify-between items-center bg-red-50/50 p-3 rounded-xl">
@@ -168,7 +168,7 @@ export default function HomePage() {
               <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
                 최근 입출고 내역
               </h2>
-              <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-latte-200">
+              <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                 {recentLogs.length === 0 ? (
                   <p className="p-8 text-center text-latte-500">최근 활동이 없습니다.</p>
                 ) : (
@@ -248,7 +248,7 @@ export default function HomePage() {
                     <CardHeader>
                       <CardTitle className="flex justify-between items-center">
                         블렌드 레시피
-                        <Palette className="w-5 h-5 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                        <Layers className="w-5 h-5 text-latte-400 group-hover:text-latte-600 transition-colors" />
                       </CardTitle>
                       <CardDescription>나만의 커피 블렌드를 만듭니다.</CardDescription>
                     </CardHeader>

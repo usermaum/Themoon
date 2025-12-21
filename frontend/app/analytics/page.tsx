@@ -1,20 +1,45 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState, useRef } from "react"
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CostTrendChart } from "@/components/analytics/CostTrendChart"
 import { SupplierPieChart } from "@/components/analytics/SupplierPieChart"
 import { InventoryValueTable } from "@/components/analytics/InventoryValueTable"
 import { DateRangeFilter } from "@/components/analytics/DateRangeFilter"
-import { PageHero } from "@/components/PageHero"
+import { AnalysisBriefing } from "@/components/analytics/AnalysisBriefing"
+import PageHero from "@/components/ui/page-hero"
 import { BarChart3, TrendingUp, DollarSign } from "lucide-react"
 import axios from "axios"
+
+function Counter({ value, prefix = "", suffix = "" }: { value: number, prefix?: string, suffix?: string }) {
+    const count = useMotionValue(0)
+    const rounded = useTransform(count, (latest) => {
+        return prefix + Math.round(latest).toLocaleString() + suffix
+    })
+
+    useEffect(() => {
+        const controls = animate(count, value, { duration: 1.5, ease: "easeOut" })
+        return controls.stop
+    }, [value, count])
+
+    return <motion.div>{rounded}</motion.div>
+}
+
 
 export default function AnalyticsPage() {
     const [supplierStats, setSupplierStats] = useState([])
     const [costTrends, setCostTrends] = useState([])
     const [inventoryValue, setInventoryValue] = useState([])
+    const [inventoryStats, setInventoryStats] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [startDate, setStartDate] = useState<string | null>(null)
     const [endDate, setEndDate] = useState<string | null>(null)
@@ -36,22 +61,23 @@ export default function AnalyticsPage() {
             })
             setSupplierStats(supplierRes.data)
 
-            // 3. Fetch Inventory (and get Bean List for Selector)
-            const beansRes = await axios.get("http://localhost:8000/api/v1/beans/")
+            // 3. Fetch Inventory (Filtered by Date)
+            const inventoryRes = await axios.get("http://localhost:8000/api/v1/analytics/stats/inventory", {
+                params: dateParams
+            })
+            const invData = inventoryRes.data
+            setInventoryValue(invData.items || [])
+            setInventoryStats(invData)
+
+            // 4. Fetch All Beans (for Selector and possibly other lists)
+            const beansRes = await axios.get("http://localhost:8000/api/v1/beans/", {
+                params: { size: 100 }
+            })
             const allBeans = beansRes.data.items
 
             // Set Available Beans for Selector (Unique names)
             const beanNames = Array.from(new Set(allBeans.map((b: any) => b.name))) as string[]
             setAvailableBeans(beanNames)
-
-            // Set Inventory Data
-            const inventoryData = allBeans.map((bean: any) => ({
-                bean_name: bean.name,
-                quantity_kg: bean.quantity_kg,
-                avg_price: bean.avg_price,
-                total_value: bean.quantity_kg * bean.avg_price
-            })).filter((item: any) => item.quantity_kg > 0)
-            setInventoryValue(inventoryData)
 
             // 2. Fetch Cost Trends (Using selectedBeanForTrend)
             // Note: If selectedBeanForTrend is not in list (initial load), default to first available or "예가체프"
@@ -78,22 +104,20 @@ export default function AnalyticsPage() {
         setEndDate(end)
     }
 
-    // ... handleDateChange ...
-
     // ... if loading ...
     if (loading) {
         return <div className="p-8">데이터를 불러오는 중...</div>
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-20">
             <PageHero
-                icon={BarChart3}
                 title="비즈니스 분석"
                 description="원가 분석 및 재고 가치 통계 대시보드입니다."
-                variant="midnight"
+                icon={<BarChart3 />}
+                image="/images/hero/analytics_hero.png"
+                className="mb-8"
             />
-            {/* ... DateFilter ... */}
 
             <div className="container mx-auto px-4 max-w-7xl">
                 {/* Date Range Filter */}
@@ -109,9 +133,8 @@ export default function AnalyticsPage() {
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4">
-                        {/* ... Overview Content ... */}
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                            <Card className="col-span-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <Card className="col-span-1 rounded-[1em]">
                                 <CardHeader>
                                     <CardTitle>공급자 분석</CardTitle>
                                 </CardHeader>
@@ -119,20 +142,96 @@ export default function AnalyticsPage() {
                                     <SupplierPieChart data={supplierStats} />
                                 </CardContent>
                             </Card>
-                            <Card className="col-span-3">
+                            <Card className="rounded-[1em]">
                                 <CardHeader>
-                                    <CardTitle>주요 지표</CardTitle>
+                                    <div className="flex items-center gap-2">
+                                        <TrendingUp className="h-5 w-5 text-blue-500" />
+                                        <CardTitle>주요 지표</CardTitle>
+                                    </div>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center">
-                                            <DollarSign className="mr-2 h-4 w-4 opacity-70" />
-                                            <span className="text-sm font-medium">총 재고 가치</span>
+                                <CardContent className="space-y-6">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center text-sm text-muted-foreground gap-1.5 mb-1">
+                                            <DollarSign className="h-4 w-4" />
+                                            <span>총 재고 가치</span>
                                         </div>
-                                        <div className="text-2xl font-bold">
-                                            ₩{inventoryValue.reduce((sum: any, item: any) => sum + item.total_value, 0).toLocaleString()}
+                                        <div className="text-4xl font-bold tracking-tight">
+                                            <Counter value={inventoryStats?.total_value || 0} prefix="₩" />
                                         </div>
-                                        <p className="text-xs text-muted-foreground">FIFO 기준 평가액</p>
+                                        <p className="text-xs text-muted-foreground mt-1">FIFO 기준 평가액</p>
+                                    </div>
+
+                                    {/* 공급자별 재고 비중 (1단계) */}
+                                    <div className="border-t pt-4">
+                                        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                            <BarChart3 className="h-4 w-4 text-emerald-500" />
+                                            공급자별 자산 비중
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {inventoryStats?.suppliers?.slice(0, 3).map((s: any) => (
+                                                <div key={s.name} className="flex items-center justify-between text-sm">
+                                                    <span className="text-gray-600 truncate mr-2">{s.name}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
+                                                            <motion.div
+                                                                className="h-full bg-blue-500"
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${s.percentage}%` }}
+                                                                transition={{ duration: 1, ease: "easeOut" }}
+                                                            />
+                                                        </div>
+                                                        <span className="font-medium text-blue-600 w-10 text-right">{Math.round(s.percentage)}%</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 자산 집중도 Top 3 (2단계) */}
+                                    <div className="border-t pt-4">
+                                        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                            <TrendingUp className="h-4 w-4 text-amber-500" />
+                                            자산 집중도 (Top 3)
+                                        </h4>
+                                        <motion.div
+                                            className="space-y-3"
+                                            initial="hidden"
+                                            animate="show"
+                                            variants={{
+                                                hidden: { opacity: 0 },
+                                                show: {
+                                                    opacity: 1,
+                                                    transition: {
+                                                        staggerChildren: 0.2,
+                                                        delayChildren: 0.2
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {inventoryStats?.top_items?.map((item: any, idx: number) => (
+                                                <motion.div
+                                                    key={item.bean_name}
+                                                    variants={{
+                                                        hidden: { opacity: 0, x: -30 },
+                                                        show: {
+                                                            opacity: 1,
+                                                            x: 0,
+                                                            transition: {
+                                                                duration: 0.5,
+                                                                ease: "easeOut"
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="flex items-center justify-between bg-gray-50/50 p-2.5 rounded-lg border border-transparent hover:border-amber-200 hover:bg-amber-50/30 transition-colors shadow-sm"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="flex items-center justify-center text-xs font-bold text-amber-600 bg-amber-100 w-5 h-5 rounded-full">{idx + 1}</span>
+                                                        <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">{item.bean_name}</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-gray-900 font-mono">₩{item.total_value.toLocaleString()}</span>
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -141,30 +240,41 @@ export default function AnalyticsPage() {
 
                     <TabsContent value="cost" className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                            <div className="col-span-1">
-                                <div className="mb-4">
-                                    <label className="text-sm font-medium mb-2 block">품목 선택</label>
-                                    <select
-                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={selectedBeanForTrend}
-                                        onChange={(e) => setSelectedBeanForTrend(e.target.value)}
-                                    >
-                                        {availableBeans.map(bean => (
-                                            <option key={bean} value={bean}>{bean}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <CostTrendChart data={costTrends} />
-                            </div>
-                            <Card className="col-span-1">
-                                <CardHeader>
-                                    <CardTitle>분석 가이드</CardTitle>
+                            <Card className="col-span-1 rounded-[1em]">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <div className="space-y-1">
+                                        <CardTitle>단가 변동 추이</CardTitle>
+                                        <CardDescription>최근 입고된 품목의 단가 변화</CardDescription>
+                                    </div>
+                                    <div className="w-[180px]">
+                                        <Select
+                                            value={selectedBeanForTrend}
+                                            onValueChange={setSelectedBeanForTrend}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="품목 선택" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableBeans.map(bean => (
+                                                    <SelectItem key={bean} value={bean}>{bean}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">
-                                        선택한 품목의 최근 입고 단가 추이를 보여줍니다.
-                                        기간 필터를 통해 조회 범위를 조정할 수 있습니다.
-                                    </p>
+                                    <CostTrendChart data={costTrends} />
+                                </CardContent>
+                            </Card>
+                            <Card className="col-span-1 rounded-[1em]">
+                                <CardHeader>
+                                    <CardTitle>스마트 분석 브리핑</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <AnalysisBriefing
+                                        beanName={selectedBeanForTrend}
+                                        data={costTrends}
+                                    />
                                 </CardContent>
                             </Card>
                         </div>

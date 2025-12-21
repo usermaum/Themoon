@@ -74,7 +74,7 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
     }
 
     return (
-        <Card>
+        <Card className="rounded-[1em]">
             <CardContent className="pt-6">
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -82,91 +82,97 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
                         <h3 className="text-sm font-medium">기간 선택</h3>
                     </div>
 
-                    {/* Preset Buttons */}
-                    <div className="flex flex-wrap gap-2">
-                        <Button
-                            size="sm"
-                            variant={activePreset === "all" ? "default" : "outline"}
-                            onClick={() => handlePreset("all")}
-                        >
-                            전체
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={activePreset === "30days" ? "default" : "outline"}
-                            onClick={() => handlePreset("30days")}
-                        >
-                            최근 30일
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={activePreset === "3months" ? "default" : "outline"}
-                            onClick={() => handlePreset("3months")}
-                        >
-                            최근 3개월
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={activePreset === "6months" ? "default" : "outline"}
-                            onClick={() => handlePreset("6months")}
-                        >
-                            최근 6개월
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant={activePreset === "1year" ? "default" : "outline"}
-                            onClick={() => handlePreset("1year")}
-                        >
-                            최근 1년
-                        </Button>
-                    </div>
-
-                    {/* Custom Date Range */}
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                            <label className="text-xs text-muted-foreground">시작일</label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => {
-                                    const newStart = e.target.value
-                                    setStartDate(newStart)
-                                    setActivePreset("custom")
-                                    if (newStart && endDate) {
-                                        onDateChange(newStart, endDate)
-                                    }
-                                }}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            />
+                    <div className="flex flex-col xl:flex-row xl:items-center gap-6">
+                        {/* Left: Presets */}
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                size="sm"
+                                variant={activePreset === "all" ? "secondary" : "ghost"}
+                                className={`rounded-full px-4 ${activePreset === "all" ? "bg-stone-800 text-white hover:bg-stone-700" : "bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"}`}
+                                onClick={() => handlePreset("all")}
+                            >
+                                전체
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={activePreset === "30days" ? "secondary" : "ghost"}
+                                className={`rounded-full px-4 ${activePreset === "30days" ? "bg-stone-800 text-white hover:bg-stone-700" : "bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"}`}
+                                onClick={() => handlePreset("30days")}
+                            >
+                                최근 30일
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={activePreset === "3months" ? "secondary" : "ghost"}
+                                className={`rounded-full px-4 ${activePreset === "3months" ? "bg-stone-800 text-white hover:bg-stone-700" : "bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"}`}
+                                onClick={() => handlePreset("3months")}
+                            >
+                                최근 3개월
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={activePreset === "6months" ? "secondary" : "ghost"}
+                                className={`rounded-full px-4 ${activePreset === "6months" ? "bg-stone-800 text-white hover:bg-stone-700" : "bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"}`}
+                                onClick={() => handlePreset("6months")}
+                            >
+                                최근 6개월
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={activePreset === "1year" ? "secondary" : "ghost"}
+                                className={`rounded-full px-4 ${activePreset === "1year" ? "bg-stone-800 text-white hover:bg-stone-700" : "bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"}`}
+                                onClick={() => handlePreset("1year")}
+                            >
+                                최근 1년
+                            </Button>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-xs text-muted-foreground">종료일</label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => {
-                                    const newEnd = e.target.value
-                                    setEndDate(newEnd)
-                                    setActivePreset("custom")
-                                    if (startDate && newEnd) {
-                                        onDateChange(startDate, newEnd)
-                                    }
-                                }}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            />
-                        </div>
-                    </div>
 
-                    {/* Reset Button Only */}
-                    <div>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleReset}
-                            className="w-full"
-                        >
-                            초기화
-                        </Button>
+                        {/* Separator (Desktop Only) */}
+                        <div className="hidden xl:block h-5 w-px bg-stone-200" />
+
+                        {/* Right: Date Inputs & Reset */}
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm text-stone-500 whitespace-nowrap">시작일</label>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => {
+                                        const newStart = e.target.value
+                                        setStartDate(newStart)
+                                        setActivePreset("custom")
+                                        if (newStart && endDate) {
+                                            onDateChange(newStart, endDate)
+                                        }
+                                    }}
+                                    className="w-[140px] rounded-full border border-[#F5E6D3] bg-[#FFF9F2] px-4 py-1.5 text-sm text-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-400"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm text-stone-500 whitespace-nowrap">종료일</label>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => {
+                                        const newEnd = e.target.value
+                                        setEndDate(newEnd)
+                                        setActivePreset("custom")
+                                        if (startDate && newEnd) {
+                                            onDateChange(startDate, newEnd)
+                                        }
+                                    }}
+                                    className="w-[140px] rounded-full border border-[#F5E6D3] bg-[#FFF9F2] px-4 py-1.5 text-sm text-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-400"
+                                />
+                            </div>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleReset}
+                                className="rounded-full px-5 bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"
+                            >
+                                초기화
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </CardContent>
