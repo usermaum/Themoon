@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.2.2
+> **버전**: 0.3.0
 
 ---
 
@@ -23,6 +23,9 @@
 2. **Frontend Tech Stack**:
     * **Framework**: Next.js (App Router)
     * **UI Library**: **Shadcn UI** (v2, CSS Modules)
+
+3. **Documentation Tools**:
+    * **Mermaid**: 모든 아키텍처, 플로우, ERD 다이어그램은 **반드시 Mermaid 문법**으로 작성합니다. (이미지 업로드 지양)
 
 ---
 
@@ -249,8 +252,8 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 **참고**: 상세 내용은 `Documents/Guides/PROGRAMMING_RULES.md` 참조
 
-**마지막 업데이트**: 2025-12-19
-**프로젝트 버전**: 0.2.2
+**마지막 업데이트**: 2025-12-21
+**프로젝트 버전**: 0.3.0
 
 ---
 
