@@ -172,6 +172,11 @@ export default function InboundPage() {
             }
 
         } catch (error: any) {
+            reset({
+                items: [{ bean_name: "", quantity: 0, unit_price: 0, amount: 0 }]
+            })
+            setOcrResult(null)
+            setDriveLink(null)
             toast({ title: "오류 발생", description: error.message, variant: "destructive" })
         } finally {
             setIsAnalyzing(false)
