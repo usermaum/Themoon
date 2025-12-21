@@ -19,14 +19,19 @@
  
 ```mermaid
 erDiagram
-    %% Relationships
+    %% Core Relationships
     beans ||--o{ beans : "parent_bean_id"
     beans ||--o{ inventory_logs : "has_history"
-    suppliers ||--o{ inbound_documents : "issues"
-    inbound_documents ||--o{ inventory_logs : "triggers"
+    
+    %% Blend Relationships (Logical)
+    blends }|..|{ beans : "uses_in_recipe"
+
+    %% Inbound & Supplier Relationships
+    suppliers ||--o{ inbound_documents : "issues_invoice"
+    inbound_documents ||--o{ inventory_logs : "updates_inventory"
     inbound_documents ||--|| inbound_document_details : "has_details"
-    inbound_documents ||--|| inbound_receivers : "has_receiver"
-    inbound_documents ||--o{ inbound_items : "contains"
+    inbound_documents ||--|| inbound_receivers : "shipped_to"
+    inbound_documents ||--o{ inbound_items : "contains_items"
 ```
 
 ---
