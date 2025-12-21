@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, X } from "lucide-react"
 
 interface InventoryValueTableProps {
     data: {
@@ -57,17 +57,28 @@ export function InventoryValueTable({ data }: InventoryValueTableProps) {
                         총 자산: ₩{totalValue.toLocaleString()}
                     </div>
                     <div className="relative w-full md:w-64">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="품목 검색..."
                             value={searchTerm}
                             onChange={handleSearch}
-                            className="pl-8"
+                            className="pl-9 pr-8"
                         />
+                        {searchTerm && (
+                            <button
+                                onClick={() => {
+                                    setSearchTerm("")
+                                    setCurrentPage(1)
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                <div className="rounded-md border">
+                <div className="rounded-[1em] border overflow-hidden">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -100,7 +111,7 @@ export function InventoryValueTable({ data }: InventoryValueTableProps) {
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-end space-x-2 py-4">
+                    <div className="flex items-center justify-center space-x-2 py-4">
                         <Button
                             variant="outline"
                             size="sm"
