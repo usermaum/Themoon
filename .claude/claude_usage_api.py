@@ -340,6 +340,99 @@ class ClaudeUsageAPI:
         except Exception:
             return "⬜" * width + " N/A"
 
+    def _count_weekly_messages(self):
+        """Count messages in the past 7 days"""
+        try:
+            if not self.history_file.exists():
+                return 0
+
+            now = datetime.now()
+            week_start = now - timedelta(days=7)
+            week_start_ms = int(week_start.timestamp() * 1000)
+
+            message_count = 0
+
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        timestamp = entry.get('timestamp', 0)
+
+                        if timestamp >= week_start_ms:
+                            message_count += 1
+
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+
+            return message_count
+
+        except Exception:
+            return 0
+
+    def _calculate_next_monday(self):
+        """Calculate next Monday 10pm (Asia/Seoul)"""
+        try:
+            import pytz
+            kst = pytz.timezone('Asia/Seoul')
+            now = datetime.now(kst)
+
+            # Days until next Monday (0=Mon, 6=Sun)
+            days_ahead = 7 - now.weekday()
+            if days_ahead == 7:
+                days_ahead = 7  # If today is Monday, next Monday
+
+            next_monday = now + timedelta(days=days_ahead)
+            next_monday = next_monday.replace(hour=22, minute=0, second=0, microsecond=0)
+
+            return next_monday
+
+        except Exception:
+            return datetime.now() + timedelta(days=7)
+
+    def get_weekly_usage(self):
+        """Get weekly usage statistics"""
+        try:
+            message_count = self._count_weekly_messages()
+
+            # Assume weekly limit is 500 messages (adjust as needed)
+            weekly_limit = 500
+
+            percentage = min(int((message_count / weekly_limit) * 100), 100)
+            remaining = max(weekly_limit - message_count, 0)
+
+            # Next Monday 10pm
+            reset_time = self._calculate_next_monday()
+
+            # Time remaining
+            now = datetime.now()
+            delta = reset_time.replace(tzinfo=None) - now
+            days = delta.days
+            hours = delta.seconds // 3600
+
+            if days > 0:
+                time_remaining = f"{days}d {hours}h"
+            else:
+                time_remaining = f"{hours}h"
+
+            return {
+                "weekly_limit": weekly_limit,
+                "used": message_count,
+                "remaining": remaining,
+                "percentage": percentage,
+                "reset_time": reset_time.isoformat(),
+                "time_remaining": time_remaining
+            }
+
+        except Exception as e:
+            return {
+                "weekly_limit": 500,
+                "used": 0,
+                "remaining": 500,
+                "percentage": 0,
+                "time_remaining": "N/A",
+                "status": f"error: {str(e)}"
+            }
+
 
 # 싱글톤 인스턴스
 _usage_api = None
