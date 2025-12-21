@@ -1,0 +1,825 @@
+{
+  "beans": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR(12)",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "sku",
+        "type": "VARCHAR(100)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "name_ko",
+        "type": "VARCHAR(100)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "name_en",
+        "type": "VARCHAR(200)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "origin",
+        "type": "VARCHAR(100)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "origin_ko",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "origin_en",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "variety",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "grade",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "processing_method",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "roast_profile",
+        "type": "VARCHAR(6)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "parent_bean_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "quantity_kg",
+        "type": "FLOAT",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "avg_price",
+        "type": "FLOAT",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "purchase_price_per_kg",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "cost_price",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "expected_loss_rate",
+        "type": "FLOAT",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "beans",
+        "from": "parent_bean_id",
+        "to": "id"
+      }
+    ]
+  },
+  "suppliers": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "representative_name",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "contact_phone",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "contact_email",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "address",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "registration_number",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": []
+  },
+  "blends": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(200)",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "recipe",
+        "type": "JSON",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "target_roast_level",
+        "type": "VARCHAR(50)",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": "CURRENT_TIMESTAMP",
+        "pk": 0
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": []
+  },
+  "inbound_documents": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "contract_number",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_name",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "receiver_name",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "invoice_date",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "total_amount",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "image_url",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "drive_file_id",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "suppliers",
+        "from": "supplier_id",
+        "to": "id"
+      }
+    ]
+  },
+  "inventory_logs": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "bean_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "change_type",
+        "type": "VARCHAR(15)",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "change_amount",
+        "type": "FLOAT",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "current_quantity",
+        "type": "FLOAT",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "related_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "inbound_document_id",
+        "type": "INTEGER",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "inbound_documents",
+        "from": "inbound_document_id",
+        "to": "id"
+      },
+      {
+        "table": "beans",
+        "from": "bean_id",
+        "to": "id"
+      }
+    ]
+  },
+  "inbound_document_details": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "inbound_document_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "document_number",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "issue_date",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "delivery_date",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "payment_due_date",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "invoice_type",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_business_number",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_address",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_phone",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_fax",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_email",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_representative",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_contact_person",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supplier_contact_phone",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "subtotal",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "tax_amount",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "grand_total",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "currency",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "payment_terms",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "shipping_method",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "remarks",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "inbound_documents",
+        "from": "inbound_document_id",
+        "to": "id"
+      }
+    ]
+  },
+  "inbound_receivers": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "inbound_document_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "business_number",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "address",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "contact_person",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "inbound_documents",
+        "from": "inbound_document_id",
+        "to": "id"
+      }
+    ]
+  },
+  "inbound_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 1
+      },
+      {
+        "name": "inbound_document_id",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "item_order",
+        "type": "INTEGER",
+        "notnull": 1,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "bean_name",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "specification",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "unit",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "origin",
+        "type": "VARCHAR",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "unit_price",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "supply_amount",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "tax_amount",
+        "type": "FLOAT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": 0,
+        "default": null,
+        "pk": 0
+      }
+    ],
+    "foreign_keys": [
+      {
+        "table": "inbound_documents",
+        "from": "inbound_document_id",
+        "to": "id"
+      }
+    ]
+  }
+}
