@@ -48,7 +48,8 @@
       "Bash(https://api.anthropic.com/v1/usage)",
       "Bash(https://api.anthropic.com/v1/account)",
       "Bash(https://claude.ai/api/organizations)",
-      "Bash(https://claude.ai/api/bootstrap)"
+      "Bash(https://claude.ai/api/bootstrap)",
+      "Bash(source ../venv/bin/activate)"
     ],
     "deny": [],
     "ask": []
