@@ -37,6 +37,10 @@ def create_single_origin_roasting(
     if green_bean.quantity_kg < input_weight:
         raise HTTPException(status_code=400, detail=f"Not enough green bean inventory. Current: {green_bean.quantity_kg}kg")
 
+    # 원가 계산 (FIFO 기반)
+    # 단순화: 가스비, 인건비 등 제외하고 재료비만 계산
+    fifo_unit_cost = calculate_fifo_cost(db, green_bean.id, input_weight)
+    
     # 2. 생두 재고 차감 (투입)
     old_quantity = green_bean.quantity_kg
     green_bean.quantity_kg -= input_weight
@@ -56,9 +60,6 @@ def create_single_origin_roasting(
     sku = generate_roasted_bean_sku(green_bean, roast_profile)
     roasted_bean = db.query(Bean).filter(Bean.sku == sku).first()
 
-    # 원가 계산 (FIFO 기반)
-    # 단순화: 가스비, 인건비 등 제외하고 재료비만 계산
-    fifo_unit_cost = calculate_fifo_cost(db, green_bean.id, input_weight)
     input_cost = input_weight * fifo_unit_cost
     production_cost = input_cost / output_weight if output_weight > 0 else 0
     
