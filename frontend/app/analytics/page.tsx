@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
         <div className="space-y-8">
             <PageHero
                 icon={BarChart3}
-                title="Business Analytics"
+                title="비즈니스 분석"
                 description="원가 분석 및 재고 가치 통계 대시보드입니다."
                 variant="midnight"
             />
