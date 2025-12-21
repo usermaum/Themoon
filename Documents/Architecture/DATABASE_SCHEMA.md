@@ -19,24 +19,6 @@
  
 ```mermaid
 erDiagram
-    %% Entities
-    beans {
-    }
-    suppliers {
-    }
-    blends {
-    }
-    inbound_documents {
-    }
-    inbound_document_details {
-    }
-    inbound_receivers {
-    }
-    inbound_items {
-    }
-    inventory_logs {
-    }
-
     %% Relationships
     beans ||--o{ beans : "parent_bean_id"
     beans ||--o{ inventory_logs : "has_history"
