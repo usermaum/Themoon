@@ -55,6 +55,12 @@ class OCRItem(BaseModel):
     amount: Optional[float] = None
     note: Optional[str] = None
 
+    # 매칭 상태 정보 (NEW)
+    matched: Optional[bool] = None  # 기존 생두와 매칭 여부
+    match_field: Optional[str] = None  # 매칭된 필드: "name", "name_en", "name_ko", "new"
+    match_method: Optional[str] = None  # 매칭 방법: "exact", "new"
+    bean_id: Optional[int] = None  # 매칭된 생두 ID (matched=True일 때)
+
 class AdditionalInfo(BaseModel):
     """추가 정보"""
     payment_terms: Optional[str] = None
