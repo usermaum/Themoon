@@ -13,7 +13,7 @@ import {
     PanelLeft,
     LogOut,
     Sparkles,
-    FileInput,
+    FileText,
     BarChart3
 } from 'lucide-react'
 
@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { name: 'Roasting', href: '/roasting', icon: Flame },
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
-        { name: 'Inbound', href: '/inventory/inbound', icon: FileInput },
+        { name: 'Inbound', href: '/inventory/inbound', icon: FileText },
         { name: 'Analytics', href: '/analytics', icon: BarChart3 },
 
     ]

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { useRouter } from "next/navigation"
-import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2, FileText, RefreshCw } from "lucide-react"
+import { Upload, Link as LinkIcon, Clipboard, Image as ImageIcon, Loader2, Save, AlertCircle, CheckCircle2, FileText, RefreshCw, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
+import PageHero from "@/components/ui/page-hero"
 import Image from "next/image"
 
 // Types
@@ -301,8 +302,17 @@ export default function InboundPage() {
             }
 
             toast({ title: "저장 완료", description: "입고 데이터가 성공적으로 저장되었습니다." })
-            // Optional: Reset form or redirect
-            // reset()
+
+            // 입력 폼 전체 초기화 (Full Reset)
+            reset()
+            setOcrResult(null)
+            setDriveLink(null)
+            setDuplicateStatus({ status: 'idle', message: '' })
+            setSelectedFile(null)
+            setPastedImage(null)
+            setUrlInput("")
+            setPreviewUrl(null)
+            setItemStatus({})
         } catch (error: any) {
             // Check if it's a duplicate error and show a friendly message
             if (error.message.includes("Duplicate Contract Number") || error.message.includes("이미 등록된")) {
@@ -314,290 +324,302 @@ export default function InboundPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">명세서 입고 (Inbound)</h1>
-                    <p className="text-muted-foreground">명세서 사진을 업로드하면 자동으로 재고를 등록합니다.</p>
-                </div>
-            </div>
+        <div className="space-y-8 pb-20">
+            <PageHero
+                title="명세서 입고 (Inbound)"
+                description="명세서 사진을 업로드하면 자동으로 재고를 등록합니다."
+                icon={<FileText />}
+                image="/images/hero/inbound_hero.png"
+                className="mb-8"
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left: Input & Preview */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>입력 소스</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="file"><Upload className="w-4 h-4 mr-2" /> 파일 업로드</TabsTrigger>
-                                    <TabsTrigger value="clipboard"><Clipboard className="w-4 h-4 mr-2" /> 붙여넣기</TabsTrigger>
-                                    <TabsTrigger value="url"><LinkIcon className="w-4 h-4 mr-2" /> URL 입력</TabsTrigger>
-                                </TabsList>
-
-                                <div className="mt-4 space-y-4">
-                                    <TabsContent value="file">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="picture" className="text-sm font-medium text-latte-700">명세서 이미지</Label>
-                                            <div className="relative group">
-                                                <label
-                                                    htmlFor="picture"
-                                                    className={`flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-latte-200 border-dashed rounded-[1em] appearance-none cursor-pointer hover:border-latte-400 hover:bg-latte-50/50 focus:outline-none ${selectedFile ? 'border-latte-400 bg-latte-50/30' : ''}`}
-                                                >
-                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                        {selectedFile ? (
-                                                            <>
-                                                                <CheckCircle2 className="w-8 h-8 mb-2 text-green-500 animate-in zoom-in-50 duration-300" />
-                                                                <p className="text-sm font-medium text-latte-800">{selectedFile.name}</p>
-                                                                <p className="text-xs text-latte-500 mt-1">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB • 클릭하여 변경</p>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Upload className="w-8 h-8 mb-2 text-latte-400 group-hover:text-latte-600 transition-colors" />
-                                                                <p className="text-sm font-medium text-latte-700">파일을 클릭하거나 여기로 드래그하세요</p>
-                                                                <p className="text-xs text-latte-400 mt-1">이미지 파일 (JPG, PNG) 최대 10MB</p>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <input
-                                                        id="picture"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="hidden"
-                                                        onChange={handleFileChange}
-                                                    />
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </TabsContent>
-
-                                    <TabsContent value="clipboard">
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-medium text-latte-700">명세서 이미지</Label>
-                                            <div className="h-32 border-2 border-dashed rounded-[1em] flex flex-col items-center justify-center text-latte-500 bg-latte-50/30 border-latte-200">
-                                                <Clipboard className="h-8 w-8 mb-2 text-latte-400" />
-                                                <p className="text-sm font-medium">Ctrl+V를 눌러 이미지를 붙여넣으세요</p>
-                                            </div>
-                                        </div>
-                                    </TabsContent>
-
-                                    <TabsContent value="url">
-                                        <div className="grid w-full items-center gap-1.5">
-                                            <Label htmlFor="url" className="text-sm font-medium text-latte-700">이미지 URL</Label>
-                                            <Input id="url" placeholder="https://..." value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="rounded-xl border-latte-200" />
-                                        </div>
-                                    </TabsContent>
-                                </div>
-                            </Tabs>
-
-                            {previewUrl && (
-                                <div className="mt-6 border-2 border-latte-200 rounded-[1em] overflow-hidden relative aspect-video bg-latte-50/50">
-                                    <Image src={previewUrl} alt="Preview" fill className="object-contain" />
-                                </div>
-                            )}
-
-                            <Button
-                                className="w-full mt-6"
-                                onClick={handleAnalyze}
-                                disabled={isAnalyzing || (!selectedFile && !pastedImage && !urlInput)}
-                            >
-                                {isAnalyzing ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gemini가 분석 중입니다...
-                                    </>
-                                ) : (
-                                    <>
-                                        <ImageIcon className="mr-2 h-4 w-4" /> 명세서 분석 시작 (OCR)
-                                    </>
-                                )}
-                            </Button>
-                        </CardContent>
-                    </Card>
-
-                    {driveLink && (
-                        <Alert>
-                            <AlertTitle>이미지 저장됨</AlertTitle>
-                            <AlertDescription>
-                                이미지가 서버에 저장되었습니다. <a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${driveLink}`} target="_blank" className="underline font-bold">이미지 보기</a>
-                            </AlertDescription>
-                        </Alert>
-                    )}
-
-                    {/* Temporary Debug View with Invoice Button */}
-                    {ocrResult && (
-                        <Card className="border-blue-400 bg-blue-50/50">
-                            <CardHeader className="py-3">
-                                <CardTitle className="text-sm font-mono text-blue-800 flex items-center justify-between">
-                                    <span className="flex items-center gap-2">
-                                        ✅ OCR 분석 완료
-                                    </span>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => {
-                                            sessionStorage.setItem('ocrResult', JSON.stringify(ocrResult))
-                                            router.push('/inbound/invoice')
-                                        }}
-                                        className="bg-blue-600 hover:bg-blue-700"
-                                    >
-                                        <FileText className="w-4 h-4 mr-2" />
-                                        📄 거래명세서 보기
-                                    </Button>
-                                </CardTitle>
+            <div className="container mx-auto px-4 max-w-7xl">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Left: Input & Preview */}
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>입력 소스</CardTitle>
                             </CardHeader>
-                            <CardContent className="py-2 pb-4 space-y-3">
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div className="bg-white p-2 rounded border">
-                                        <span className="text-gray-600 text-xs">공급자:</span>
-                                        <div className="font-semibold">{ocrResult.supplier?.name || ocrResult.supplier_name || '-'}</div>
+                            <CardContent>
+                                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                                    <TabsList className="grid w-full grid-cols-3">
+                                        <TabsTrigger value="file"><Upload className="w-4 h-4 mr-2" /> 파일 업로드</TabsTrigger>
+                                        <TabsTrigger value="clipboard"><Clipboard className="w-4 h-4 mr-2" /> 붙여넣기</TabsTrigger>
+                                        <TabsTrigger value="url"><LinkIcon className="w-4 h-4 mr-2" /> URL 입력</TabsTrigger>
+                                    </TabsList>
+
+                                    <div className="mt-4 space-y-4">
+                                        <TabsContent value="file">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="picture" className="text-sm font-medium text-latte-700">명세서 이미지</Label>
+                                                <div className="relative group">
+                                                    <label
+                                                        htmlFor="picture"
+                                                        className={`flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-latte-200 border-dashed rounded-[1em] appearance-none cursor-pointer hover:border-latte-400 hover:bg-latte-50/50 focus:outline-none ${selectedFile ? 'border-latte-400 bg-latte-50/30' : ''}`}
+                                                    >
+                                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                            {selectedFile ? (
+                                                                <>
+                                                                    <CheckCircle2 className="w-8 h-8 mb-2 text-green-500 animate-in zoom-in-50 duration-300" />
+                                                                    <p className="text-sm font-medium text-latte-800">{selectedFile.name}</p>
+                                                                    <p className="text-xs text-latte-500 mt-1">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB • 클릭하여 변경</p>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Upload className="w-8 h-8 mb-2 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                                                                    <p className="text-sm font-medium text-latte-700">파일을 클릭하거나 여기로 드래그하세요</p>
+                                                                    <p className="text-xs text-latte-400 mt-1">이미지 파일 (JPG, PNG) 최대 10MB</p>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                        <input
+                                                            id="picture"
+                                                            type="file"
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={handleFileChange}
+                                                        />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="clipboard">
+                                            <div className="space-y-2">
+                                                <Label className="text-sm font-medium text-latte-700">명세서 이미지</Label>
+                                                <div className="h-32 border-2 border-dashed rounded-[1em] flex flex-col items-center justify-center text-latte-500 bg-latte-50/30 border-latte-200">
+                                                    <Clipboard className="h-8 w-8 mb-2 text-latte-400" />
+                                                    <p className="text-sm font-medium">Ctrl+V를 눌러 이미지를 붙여넣으세요</p>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="url">
+                                            <div className="grid w-full items-center gap-1.5">
+                                                <Label htmlFor="url" className="text-sm font-medium text-latte-700">이미지 URL</Label>
+                                                <Input id="url" placeholder="https://..." value={urlInput} onChange={(e) => setUrlInput(e.target.value)} className="rounded-xl border-latte-200" />
+                                            </div>
+                                        </TabsContent>
                                     </div>
-                                    <div className="bg-white p-2 rounded border">
-                                        <span className="text-gray-600 text-xs">계약번호:</span>
-                                        <div className="font-semibold">{ocrResult.document_info?.contract_number || ocrResult.contract_number || '-'}</div>
+                                </Tabs>
+
+                                {previewUrl && (
+                                    <div className="mt-6 border-2 border-latte-200 rounded-[1em] overflow-hidden relative aspect-video bg-latte-50/50">
+                                        <Image src={previewUrl} alt="Preview" fill className="object-contain" />
                                     </div>
-                                    <div className="bg-white p-2 rounded border">
-                                        <span className="text-gray-600 text-xs">품목 수:</span>
-                                        <div className="font-semibold">{ocrResult.items?.length || 0}개</div>
-                                    </div>
-                                    <div className="bg-white p-2 rounded border">
-                                        <span className="text-gray-600 text-xs">합계:</span>
-                                        <div className="font-semibold">{(ocrResult.amounts?.total_amount || ocrResult.total_amount || 0).toLocaleString()}원</div>
-                                    </div>
-                                </div>
-                                <details className="text-xs bg-white p-2 rounded border">
-                                    <summary className="cursor-pointer font-semibold text-gray-700">🔍 원본 데이터 보기 (개발자용)</summary>
-                                    <pre className="mt-2 p-2 bg-gray-50 rounded overflow-auto max-h-40 font-mono text-xs">
-                                        {JSON.stringify(ocrResult, null, 2)}
-                                    </pre>
-                                </details>
+                                )}
+
+                                <Button
+                                    className="w-full mt-6"
+                                    onClick={handleAnalyze}
+                                    disabled={isAnalyzing || (!selectedFile && !pastedImage && !urlInput)}
+                                >
+                                    {isAnalyzing ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gemini가 분석 중입니다...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ImageIcon className="mr-2 h-4 w-4" /> 명세서 분석 시작 (OCR)
+                                        </>
+                                    )}
+                                </Button>
                             </CardContent>
                         </Card>
-                    )}
-                </div>
 
-                {/* Right: Form */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>입고 상세 정보</CardTitle>
-                            <CardDescription>추출된 정보를 확인하고 수정하세요.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-destructive font-bold">계약/주문 번호 (필수)*</Label>
-                                        <div className="relative">
-                                            <Input
-                                                {...register("contract_number")}
-                                                placeholder="발주번호 or 문서번호"
-                                                className={`bg-muted/10 border-destructive/20 ${duplicateStatus.status === 'duplicate' ? 'border-red-500 focus-visible:ring-red-500' : duplicateStatus.status === 'available' ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
-                                                onBlur={(e) => checkDuplicate(e.target.value)}
-                                            />
-                                            <div className="absolute right-3 top-2.5">
-                                                {duplicateStatus.status === 'checking' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                                                {duplicateStatus.status === 'duplicate' && <AlertCircle className="h-4 w-4 text-red-500" />}
-                                                {duplicateStatus.status === 'available' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                                            </div>
+                        {driveLink && (
+                            <Alert>
+                                <AlertTitle>이미지 저장됨</AlertTitle>
+                                <AlertDescription>
+                                    이미지가 서버에 저장되었습니다. <a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${driveLink}`} target="_blank" className="underline font-bold">이미지 보기</a>
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
+                        {/* Temporary Debug View with Invoice Button */}
+                        {ocrResult && (
+                            <Card className="border-blue-400 bg-blue-50/50">
+                                <CardHeader className="py-3">
+                                    <CardTitle className="text-sm font-mono text-blue-800 flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            ✅ OCR 분석 완료
+                                        </span>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                sessionStorage.setItem('ocrResult', JSON.stringify(ocrResult))
+                                                router.push('/inbound/invoice')
+                                            }}
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                        >
+                                            <FileText className="w-4 h-4 mr-2" />
+                                            📄 거래명세서 보기
+                                        </Button>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="py-2 pb-4 space-y-3">
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div className="bg-white p-2 rounded border">
+                                            <span className="text-gray-600 text-xs">공급자:</span>
+                                            <div className="font-semibold">{ocrResult.supplier?.name || ocrResult.supplier_name || '-'}</div>
                                         </div>
-                                        {duplicateStatus.status !== 'idle' && (
-                                            <p className={`text-xs ${duplicateStatus.status === 'duplicate' ? 'text-red-500' : duplicateStatus.status === 'available' ? 'text-green-500' : 'text-muted-foreground'}`}>
-                                                {duplicateStatus.message}
-                                            </p>
-                                        )}
+                                        <div className="bg-white p-2 rounded border">
+                                            <span className="text-gray-600 text-xs">계약번호:</span>
+                                            <div className="font-semibold">{ocrResult.document_info?.contract_number || ocrResult.contract_number || '-'}</div>
+                                        </div>
+                                        <div className="bg-white p-2 rounded border">
+                                            <span className="text-gray-600 text-xs">품목 수:</span>
+                                            <div className="font-semibold">{ocrResult.items?.length || 0}개</div>
+                                        </div>
+                                        <div className="bg-white p-2 rounded border">
+                                            <span className="text-gray-600 text-xs">합계:</span>
+                                            <div className="font-semibold">{(ocrResult.amounts?.total_amount || ocrResult.total_amount || 0).toLocaleString()}원</div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>날짜 (Date)</Label>
-                                        <Input {...register("invoice_date")} type="date" />
-                                    </div>
-                                </div>
+                                    <details className="text-xs bg-white p-2 rounded border">
+                                        <summary className="cursor-pointer font-semibold text-gray-700">🔍 원본 데이터 보기 (개발자용)</summary>
+                                        <pre className="mt-2 p-2 bg-gray-50 rounded overflow-auto max-h-40 font-mono text-xs">
+                                            {JSON.stringify(ocrResult, null, 2)}
+                                        </pre>
+                                    </details>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
 
-                                <Separator className="my-2" />
-
-                                <div className="space-y-4">
-                                    <Label className="text-base font-semibold">공급처 정보 (Supplier)</Label>
+                    {/* Right: Form */}
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>입고 상세 정보</CardTitle>
+                                <CardDescription>추출된 정보를 확인하고 수정하세요.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>상호명 (Company Name) *</Label>
-                                            <Input {...register("supplier_name")} placeholder="지에스씨인터내셔날(주)" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>담당자 (Contact Person)</Label>
-                                            <Input {...register("receiver_name")} placeholder="이혜인" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>공급처 대표 전화 (Main Phone)</Label>
-                                            <Input {...register("supplier_phone")} placeholder="070-4366-6276" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>담당자 전화 (Contact Phone)</Label>
-                                            <Input {...register("contact_phone")} placeholder="010-9269-3047" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>이메일 (Email)</Label>
-                                            <Input {...register("supplier_email")} placeholder="h.y.lee@coffeegsc.co.kr" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <Separator className="my-2" />
-
-                                <div className="space-y-2">
-                                    <Label>품목 (Items)</Label>
-                                    <div className="border rounded-md divide-y">
-
-                                        {fields.map((field: any, index: number) => {
-                                            // Watch current item name to show status
-                                            const currentName = watch(`items.${index}.bean_name`)
-                                            const status = itemStatus[currentName]
-
-                                            return (
-                                                <div key={field.id} className="p-3 grid grid-cols-12 gap-2 item-center text-sm relative">
-                                                    <div className="col-span-12 mb-1 flex gap-2 h-5">
-                                                        {status?.status === 'MATCH' && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] py-0 px-2">기존 상품 (Matched)</Badge>}
-                                                        {status?.status === 'NEW' && <Badge variant="secondary" className="text-[10px] py-0 px-2 bg-blue-100 text-blue-800 hover:bg-blue-200">신규 상품 (New)</Badge>}
-                                                    </div>
-                                                    <div className="col-span-5">
-                                                        <Input
-                                                            {...register(`items.${index}.bean_name`)}
-                                                            placeholder="원두명"
-                                                            className="h-8"
-                                                            onBlur={(e) => checkItemsBatch([e.target.value])}
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-2">
-                                                        <Input {...register(`items.${index}.quantity`)} type="number" step="0.1" placeholder="수량" className="h-8" />
-                                                    </div>
-                                                    <div className="col-span-3">
-                                                        <Input {...register(`items.${index}.amount`)} type="number" placeholder="금액" className="h-8" />
-                                                    </div>
-                                                    <div className="col-span-2 flex justify-end">
-                                                        <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>삭제</Button>
-                                                    </div>
+                                            <Label className="text-destructive font-bold">계약/주문 번호 (필수)*</Label>
+                                            <div className="relative">
+                                                <Input
+                                                    {...register("contract_number")}
+                                                    placeholder="발주번호 or 문서번호"
+                                                    className={`bg-muted/10 border-destructive/20 ${duplicateStatus.status === 'duplicate' ? 'border-red-500 focus-visible:ring-red-500' : duplicateStatus.status === 'available' ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
+                                                    onBlur={(e) => checkDuplicate(e.target.value)}
+                                                />
+                                                <div className="absolute right-3 top-2.5">
+                                                    {duplicateStatus.status === 'checking' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                                                    {duplicateStatus.status === 'duplicate' && <AlertCircle className="h-4 w-4 text-red-500" />}
+                                                    {duplicateStatus.status === 'available' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                                                 </div>
-                                            )
-                                        })}
+                                            </div>
+                                            {duplicateStatus.status !== 'idle' && (
+                                                <p className={`text-xs ${duplicateStatus.status === 'duplicate' ? 'text-red-500' : duplicateStatus.status === 'available' ? 'text-green-500' : 'text-muted-foreground'}`}>
+                                                    {duplicateStatus.message}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>날짜 (Date)</Label>
+                                            <Input {...register("invoice_date")} type="date" />
+                                        </div>
                                     </div>
-                                    <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => append({ bean_name: "", quantity: 0, unit_price: 0, amount: 0 })}>
-                                        + 항목 추가
-                                    </Button>
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                    <Separator className="my-2" />
+
+                                    <div className="space-y-4">
+                                        <Label className="text-base font-semibold">공급처 정보 (Supplier)</Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>상호명 (Company Name) *</Label>
+                                                <Input {...register("supplier_name")} placeholder="지에스씨인터내셔날(주)" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>담당자 (Contact Person)</Label>
+                                                <Input {...register("receiver_name")} placeholder="이혜인" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>공급처 대표 전화 (Main Phone)</Label>
+                                                <Input {...register("supplier_phone")} placeholder="070-4366-6276" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>담당자 전화 (Contact Phone)</Label>
+                                                <Input {...register("contact_phone")} placeholder="010-9269-3047" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>이메일 (Email)</Label>
+                                                <Input {...register("supplier_email")} placeholder="h.y.lee@coffeegsc.co.kr" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <Separator className="my-2" />
+
                                     <div className="space-y-2">
-                                        <Label>총 금액 (Total)</Label>
-                                        <Input {...register("total_amount")} type="number" />
+                                        <Label>품목 (Items)</Label>
+                                        <div className="border rounded-md divide-y">
+
+                                            {fields.map((field: any, index: number) => {
+                                                // Watch current item name to show status
+                                                const currentName = watch(`items.${index}.bean_name`)
+                                                const status = itemStatus[currentName]
+
+                                                return (
+                                                    <div key={field.id} className="p-3 grid grid-cols-12 gap-2 item-center text-sm relative">
+                                                        <div className="col-span-12 mb-1 flex gap-2 h-5">
+                                                            {status?.status === 'MATCH' && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-[10px] py-0 px-2">기존 상품 (Matched)</Badge>}
+                                                            {status?.status === 'NEW' && <Badge variant="secondary" className="text-[10px] py-0 px-2 bg-blue-100 text-blue-800 hover:bg-blue-200">신규 상품 (New)</Badge>}
+                                                        </div>
+                                                        <div className="col-span-5">
+                                                            <Input
+                                                                {...register(`items.${index}.bean_name`)}
+                                                                placeholder="원두명"
+                                                                className="h-8"
+                                                                onBlur={(e) => checkItemsBatch([e.target.value])}
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-2">
+                                                            <Input {...register(`items.${index}.quantity`)} type="number" step="0.1" placeholder="수량" className="h-8" />
+                                                        </div>
+                                                        <div className="col-span-3">
+                                                            <Input {...register(`items.${index}.amount`)} type="number" placeholder="금액" className="h-8" />
+                                                        </div>
+                                                        <div className="col-span-2 flex justify-end">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => remove(index)}
+                                                                className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-1" />
+                                                                삭제
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                        <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => append({ bean_name: "", quantity: 0, unit_price: 0, amount: 0 })}>
+                                            + 항목 추가
+                                        </Button>
                                     </div>
-                                </div>
 
-                                <Separator />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>총 금액 (Total)</Label>
+                                            <Input {...register("total_amount")} type="number" />
+                                        </div>
+                                    </div>
 
-                                <Button type="submit" className="w-full" size="lg">
-                                    <Save className="mr-2 h-4 w-4" /> 입고 확정 및 저장
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
+                                    <Separator />
+
+                                    <Button type="submit" className="w-full" size="lg">
+                                        <Save className="mr-2 h-4 w-4" /> 저장
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>
