@@ -185,6 +185,13 @@ export default function InboundPage() {
             setOcrResult(null)
             setDriveLink(null)
             setDuplicateStatus({ status: 'idle', message: '' })
+
+            // 입력 소스 초기화 (Reset Input Sources)
+            setSelectedFile(null)
+            setPastedImage(null)
+            setUrlInput("")
+            setPreviewUrl(null)
+
             toast({ title: "오류 발생", description: error.message, variant: "destructive" })
         } finally {
             setIsAnalyzing(false)
