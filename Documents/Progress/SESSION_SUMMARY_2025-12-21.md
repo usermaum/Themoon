@@ -45,10 +45,11 @@
 - **해결**: `fetchData` 호출 시 불필요한 전체 페이지 로딩(`setLoading(true)`)을 제거하여 컴포넌트 Unmount 방지.
 - **이슈**: 대시보드 데이터 없음 (Empty Charts)
 - **해결**: `seed_analytics_data.py` 스크립트 작성 및 실행하여 과거 6개월치 모의 입고 데이터(20건) 생성 완료.
+- **이슈**: 로스팅 서비스 코드 오류 (`UnboundLocalError`)
+- **해결**: `roasting_service.py` 내의 `fifo_unit_cost` 계산 순서를 변경하여 로스팅 로그에 정확한 원가가 기록되도록 수정.
 
 ## 🔜 다음 계획
-1. **로스팅 로그 연동**: 구현된 `calculate_fifo_cost`를 실제 로스팅 로그 저장 시점에 적용하여 `cost_per_kg` 기록.
-2. **PostgreSQL 마이그레이션**: 프로덕션 배포를 위한 데이터베이스 이전 준비.
+1. **PostgreSQL 마이그레이션**: 프로덕션 배포를 위한 데이터베이스 이전 준비.
 
 ---
 
