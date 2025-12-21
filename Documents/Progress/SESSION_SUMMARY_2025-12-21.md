@@ -43,6 +43,8 @@
 - **해결**: 모델 정의를 확인하여 `total_amount`로 필드명 수정.
 - **이슈**: `Analytics Page`에서 프리셋 버튼 클릭 시 입력값이 사라지는 현상
 - **해결**: `fetchData` 호출 시 불필요한 전체 페이지 로딩(`setLoading(true)`)을 제거하여 컴포넌트 Unmount 방지.
+- **이슈**: 대시보드 데이터 없음 (Empty Charts)
+- **해결**: `seed_analytics_data.py` 스크립트 작성 및 실행하여 과거 6개월치 모의 입고 데이터(20건) 생성 완료.
 
 ## 🔜 다음 계획
 1. **로스팅 로그 연동**: 구현된 `calculate_fifo_cost`를 실제 로스팅 로그 저장 시점에 적용하여 `cost_per_kg` 기록.
