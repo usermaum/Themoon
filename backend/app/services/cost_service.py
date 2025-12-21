@@ -8,49 +8,33 @@ from fastapi import HTTPException
 def calculate_fifo_cost(db: Session, bean_id: int, quantity_kg: float) -> float:
     """
     Calculate the estimated cost for a specific quantity of beans using FIFO logic.
-    
+
     Args:
         db: Database session
         bean_id: The ID of the bean (Green Bean)
         quantity_kg: The amount of bean to be used
-        
+
     Returns:
         float: The weighted average cost per kg for the requested quantity.
     """
     if quantity_kg <= 0:
         return 0.0
 
-    # 1. Fetch Inbound History (sorted by date)
-    inbound_items = db.query(InboundItem).join(InboundItem.inbound_document).filter(
-        InboundItem.bean_name.has(Bean.name) | (InboundItem.bean_name == db.query(Bean.name).filter(Bean.id == bean_id).scalar_subquery())
-    ).order_by(InboundItem.created_at).all()
-    
-    # Note on InboundItem linking: 
-    # Currently InboundItem stores 'bean_name' as string. 
-    # We need to robustly match it to the Bean table. 
-    # For this implementation, we try to match by name or context. 
-    # A better schema would have InboundItem.bean_id, but per current schema it's loose.
-    # Let's verify if we can match by name.
-    
+    # 1. Fetch target bean
     target_bean = db.query(Bean).filter(Bean.id == bean_id).first()
     if not target_bean:
         raise HTTPException(status_code=404, detail="Bean not found")
 
-    # Re-fetch strictly filtering by name matching
-    # In a real scenario, we should ensure InboundItem has a linked bean_id or consistent logic.
-    # Here we filter in python for safety if strict join fails.
-    relevant_inbounds = []
-    for item in db.query(InboundItem).order_by(InboundItem.created_at).all():
-        # Loose matching logic: check if InboundItem name is part of Bean name or vice versa
-        # This is temporary until InboundItem has strict bean_id
-        if item.bean_name and (item.bean_name in target_bean.name or target_bean.name in item.bean_name):
-            relevant_inbounds.append(item)
-            
+    # 2. Fetch Inbound History (sorted by date, matched by bean_id)
+    relevant_inbounds = db.query(InboundItem).filter(
+        InboundItem.bean_id == bean_id
+    ).order_by(InboundItem.created_at).all()
+
     if not relevant_inbounds:
         # Fallback to current average price if no inbound history
         return target_bean.avg_price
 
-    # 2. Calculate Total Usage so far
+    # 3. Calculate Total Usage so far
     usage_logs = db.query(InventoryLog).filter(
         InventoryLog.bean_id == bean_id,
         InventoryLog.change_amount < 0  # Usage is negative
@@ -58,7 +42,7 @@ def calculate_fifo_cost(db: Session, bean_id: int, quantity_kg: float) -> float:
     
     total_used_amount = sum(abs(log.change_amount) for log in usage_logs)
     
-    # 3. Virtual FIFO matching
+    # 4. Virtual FIFO matching
     # Skip inbound items that are already depleted
     remaining_inbounds = []
     accumulated_qty = 0.0
@@ -96,7 +80,7 @@ def calculate_fifo_cost(db: Session, bean_id: int, quantity_kg: float) -> float:
             pass
         accumulated_qty += qty
 
-    # 4. Calculate cost for requested quantity
+    # 5. Calculate cost for requested quantity
     cost_accumulator = 0.0
     qty_needed = quantity_kg
     

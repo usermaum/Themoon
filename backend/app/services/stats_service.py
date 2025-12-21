@@ -5,6 +5,8 @@ from app.models.inbound_document import InboundDocument
 from app.models.supplier import Supplier
 from datetime import datetime, timedelta
 
+import re
+
 def get_supplier_stats(db: Session):
     """
     Get aggregated statistics by supplier.
@@ -24,8 +26,23 @@ def get_supplier_stats(db: Session):
     
     for r in results:
         raw_name = r.supplier_name or "Unknown"
-        # Remove common suffixes: (주), 주식회사, and extra spaces
-        norm_name = raw_name.replace("(주)", "").replace("주식회사", "").strip()
+        
+        # 1. Remove text in parenthesis (e.g. (주), (Inc))
+        norm_name = re.sub(r'\([^)]*\)', '', raw_name)
+        # 2. Remove dangling (주 if OCR failed to close it
+        norm_name = norm_name.replace("(주", "").replace("주)", "")
+        # 3. Remove 주식회사
+        norm_name = norm_name.replace("주식회사", "")
+        
+        # 4. Strip whitespace
+        norm_name = norm_name.strip()
+        
+        # 5. Fix common spelling variations (GSC)
+        if "지에스씨" in norm_name:
+            norm_name = norm_name.replace("인터네셔날", "인터내셔날")
+            
+        if norm_name == "":
+            norm_name = "Unknown"
         
         if norm_name not in aggregated:
             aggregated[norm_name] = {"name": norm_name, "total_amount": 0.0, "count": 0}

@@ -146,3 +146,61 @@ def get_low_stock_beans(db: Session, threshold: float = 5.0, limit: int = 5) -> 
         .order_by(Bean.quantity_kg.asc())\
         .limit(limit)\
         .all()
+
+
+
+def count_low_stock_beans(db: Session, threshold: float = 5.0) -> int:
+    """재고 부족 원두 총 개수 조회"""
+    return db.query(Bean).filter(Bean.quantity_kg < threshold).count()
+
+
+def check_existing_beans(db: Session, names: List[str]) -> List[dict]:
+    """
+    여러 원두 이름에 대해 DB 존재 여부 확인
+    Return:List[{'name': str, 'exists': bool, 'bean_id': int, 'similar_match': str}]
+    """
+    results = []
+    # 정확/일부 매칭을 위해 모든 name, name_ko, name_en 로딩해서 메모리 비교? 
+    # 데이터가 적으므로(25개) 전체 로딩 후 비교가 빠름.
+    all_beans = db.query(Bean).all()
+    
+    for name in names:
+        name_clean = name.strip().lower().replace(" ", "")
+        found = None
+        
+        for bean in all_beans:
+            # Check Korean Name
+            if bean.name_ko and bean.name_ko.strip().replace(" ", "") == name_clean: # Exact match attempt on simplified string
+                 found = bean
+                 break
+            # Check English Name
+            if bean.name_en and bean.name_en.strip().lower().replace(" ", "") == name_clean:
+                 found = bean
+                 break
+            # Check Main Name
+            if bean.name and bean.name.strip().lower().replace(" ", "") == name_clean:
+                 found = bean
+                 break
+            
+            # Substring match (if the input is simple like "예가체프" and db has "에티오피아 예가체프")
+            # This can be risky but useful. Let's stick to exact logic for "New" vs "Match" for now,
+            # or maybe try simple contains if exact fails.
+            if bean.name_ko and name_clean in bean.name_ko.replace(" ", ""):
+                found = bean
+            
+        if found:
+            results.append({
+                "input_name": name,
+                "status": "MATCH",
+                "bean_id": found.id,
+                "bean_name": found.name_ko or found.name
+            })
+        else:
+            results.append({
+                "input_name": name,
+                "status": "NEW",
+                "bean_id": None,
+                "bean_name": None
+            })
+            
+    return results

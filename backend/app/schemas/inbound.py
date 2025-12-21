@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, BeforeValidator
+from typing import List, Optional, Dict, Any, Union, Annotated
 from datetime import datetime
 
 # --- OCR/Analysis Schemas ---
@@ -44,7 +44,7 @@ class AmountsInfo(BaseModel):
 
 class OCRItem(BaseModel):
     """품목 정보 (확장)"""
-    item_number: Optional[str] = None
+    item_number: Optional[Annotated[str, BeforeValidator(str)]] = None
     bean_name: Optional[str] = None
     bean_name_kr: Optional[str] = None
     specification: Optional[str] = None

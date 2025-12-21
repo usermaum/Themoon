@@ -24,6 +24,7 @@ export default function HomePage() {
     total_blends: number
     total_stock_kg: number
     low_stock_beans: Bean[]
+    low_stock_count: number
   } | null>(null)
 
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
@@ -113,7 +114,7 @@ export default function HomePage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
                     <p className="text-red-600/80 text-sm font-medium">재고 부족</p>
-                    <p className="text-3xl font-bold text-red-600 mt-1">{lowStockBeans.length}</p>
+                    <p className="text-3xl font-bold text-red-600 mt-1">{stats?.low_stock_count || 0}</p>
                   </div>
                   <AlertTriangle className="w-10 h-10 text-red-300" />
                 </CardContent>
@@ -178,13 +179,13 @@ export default function HomePage() {
                           날짜
                         </th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
+                          품목
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           유형
                         </th>
                         <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
                           수량
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-latte-500 uppercase tracking-wider">
-                          사유
                         </th>
                       </tr>
                     </thead>
@@ -194,6 +195,9 @@ export default function HomePage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-700">
                             {new Date(log.created_at).toLocaleString('ko-KR')}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-900 font-medium">
+                            {log.bean?.name_ko || log.bean?.name || '-'}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
                               className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
@@ -202,9 +206,6 @@ export default function HomePage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">
                             {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                            {log.notes || '-'}
                           </td>
                         </tr>
                       ))}

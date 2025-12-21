@@ -15,15 +15,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import engine, Base
 from sqlalchemy.orm import sessionmaker
-from app.models.bean import Bean, BeanType, RoastProfile
-from app.models.supplier import Supplier
-from app.models.inventory_log import InventoryLog, InventoryChangeType
-from app.models.blend import Blend
-# Import InboundDocument to ensure it's registered
-try:
-    from app.models.inbound_document import InboundDocument
-except ImportError:
-    pass
+# Import all models to ensure they are registered for metadata drop/create
+from app.models import Bean, InboundDocument, InboundDocumentDetail, InboundReceiver, InboundItem, InventoryLog, Supplier, Blend
+from app.models.bean import BeanType, RoastProfile
+from app.models.inventory_log import InventoryChangeType
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -150,47 +145,9 @@ def seed_beans(db):
         db.flush()
         bean_map[item['name_ko']] = bean.id
         
-        # Initial Stock Log
-        initial_qty = random.randint(20, 100)
-        bean.quantity_kg = initial_qty
-        
-        log = InventoryLog(
-            bean_id=bean.id,
-            change_type=InventoryChangeType.PURCHASE,
-            change_amount=initial_qty,
-            current_quantity=initial_qty,
-            notes="Initial Seed Stock"
-        )
-        db.add(log)
+        bean.quantity_kg = 0.0
+        # No initial stock log needed for 0 quantity
         print(f"   Created: {bean.name_ko} ({bean.quantity_kg}kg)")
-
-    # Roasted variants (Sample)
-    print("🌱 Seeding Roasted Variants...")
-    yirga_id = bean_map.get("예가체프")
-    if yirga_id:
-        parent = db.query(Bean).get(yirga_id)
-        r_bean = Bean(
-            name=f"Roasting: {parent.name_ko}",
-            name_ko=f"볶은 {parent.name_ko}",
-            name_en=f"Roasted {parent.name_en}",
-            type=BeanType.ROASTED_BEAN,
-            sku=f"RB-{parent.sku.split('-')[1]}-L",
-            roast_profile=RoastProfile.LIGHT,
-            parent_bean_id=parent.id,
-            avg_price=parent.avg_price * 1.2,
-            quantity_kg=5.0
-        )
-        db.add(r_bean)
-        db.flush()
-        
-        log = InventoryLog(
-             bean_id=r_bean.id,
-             change_type=InventoryChangeType.ROASTING_OUTPUT,
-             change_amount=5.0,
-             current_quantity=5.0,
-             notes="Sample Roasting"
-        )
-        db.add(log)
 
     db.commit()
     return bean_map

@@ -12,6 +12,7 @@ class InboundItem(Base):
     item_order = Column(Integer, nullable=False, default=0, comment="품목 순서")
 
     # 품목 기본 정보
+    bean_id = Column(Integer, ForeignKey("beans.id"), nullable=True, comment="원두 ID (매칭된 경우)")
     bean_name = Column(String, nullable=True, comment="품목명")
     specification = Column(String, nullable=True, comment="규격")
     unit = Column(String, nullable=True, default="kg", comment="단위 (kg, g, etc.)")
@@ -31,3 +32,4 @@ class InboundItem(Base):
 
     # Relationships
     inbound_document = relationship("app.models.inbound_document.InboundDocument", back_populates="items")
+    bean = relationship("app.models.bean.Bean", foreign_keys=[bean_id])

@@ -220,6 +220,11 @@ export const BeanAPI = {
     const response = await api.put<Bean>(`/api/v1/beans/${id}`, data)
     return response.data
   },
+
+  checkBatch: async (names: string[]) => {
+    const response = await api.post<Array<{ input_name: string, status: string, bean_id: number | null, bean_name: string | null }>>('/api/v1/beans/check-batch', names)
+    return response.data
+  }
 }
 
 // --- Roasting API ---
@@ -373,6 +378,7 @@ export interface DashboardStats {
   total_blends: number
   total_stock_kg: number
   low_stock_beans: Bean[]
+  low_stock_count: number
 }
 
 export const DashboardAPI = {

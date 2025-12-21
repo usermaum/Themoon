@@ -4,7 +4,7 @@ Bean API 엔드포인트
 원본 참조: /mnt/d/Ai/WslProject/TheMoon_Project/app/pages/BeanManagement.py
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 import math
 
@@ -97,3 +97,11 @@ def update_bean_quantity(
     if updated_bean is None:
         raise HTTPException(status_code=404, detail="Bean not found")
     return Bean.model_validate(updated_bean)
+
+
+@router.post("/check-batch", response_model=List[dict])
+def check_beans_batch(names: List[str] = Body(...), db: Session = Depends(get_db)):
+    """
+    여러 원두 이름에 대해 DB 존재 여부 확인
+    """
+    return bean_service.check_existing_beans(db, names)
