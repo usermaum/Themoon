@@ -39,6 +39,15 @@
   - InventoryLog 3개, InboundItem 1개 레코드 업데이트
   - 중복 Bean 레코드 2개 삭제
 
+### 📝 Documentation
+- **Architecture Diagrams**: `Documents/Architecture/` 내 모든 ASCII 다이어그램을 Mermaid로 변환.
+  - `SYSTEM_ARCHITECTURE.md`: 시스템 아키텍처 및 데이터 흐름도 변환.
+  - `DATA_FLOW.md`: 데이터 흐름 다이어그램 변환.
+  - `SYSTEM_OVERVIEW.md`: 시스템 개요 다이어그램 변환.
+  - `DEPLOYMENT_ARCHITECTURE.md`: 배포 아키텍처 및 Git 워크플로우 변환.
+  - `TECHNOLOGY_STACK.md`: 기술 스택 아키텍처 변환.
+
+
 ### ⚙️ statusline 자동 사용량 추적 시스템 (2025-12-20)
 - **하이브리드 동기화 시스템**: 웹/앱 사용량 수동 입력 + CLI 자동 추적
   - Baseline 동기화: `python3 .claude/statusline.py --sync 100 "2시간 21분"`
@@ -746,13 +755,13 @@ Gemini 3 Pro가 작성한 복잡한 마이그레이션 구조를 완전히 제�
 
 #### 📊 주요 성과
 
-| 항목 | Before (Gemini) | After (Clean Slate) | 개선율 |
-|------|-----------------|---------------------|--------|
-| **총 크기** | 17MB | 36KB | **99.8% ↓** |
-| **총 파일** | 632개 | 17개 | **97% ↓** |
-| **Backend 파일** | 538개 | 8개 | **98.5% ↓** |
-| **Frontend 파일** | 미완성 | 9개 | **완성** |
-| **코드 중복** | 심각 (2곳) | 0% | **완전 제거** |
+| 항목              | Before (Gemini) | After (Clean Slate) | 개선율        |
+| ----------------- | --------------- | ------------------- | ------------- |
+| **총 크기**       | 17MB            | 36KB                | **99.8% ↓**   |
+| **총 파일**       | 632개           | 17개                | **97% ↓**     |
+| **Backend 파일**  | 538개           | 8개                 | **98.5% ↓**   |
+| **Frontend 파일** | 미완성          | 9개                 | **완성**      |
+| **코드 중복**     | 심각 (2곳)      | 0%                  | **완전 제거** |
 
 #### 🗑️ 삭제된 구조 (Gemini 작업물)
 
