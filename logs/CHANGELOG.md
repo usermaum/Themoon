@@ -20,6 +20,21 @@
 
 ## [Unreleased]
 
+### ✨ 생두 매칭 시스템 개선 (2025-12-21)
+- **다중 필드 매칭**: name, name_en, name_ko 모두 검사하여 매칭률 향상
+  - 이전: Bean.name만 exact match 검사
+  - 현재: 3개 필드 모두 검사하여 매칭 성공률 대폭 향상
+- **매칭 상태 확인 기능**: OCRItem에 매칭 정보 필드 추가
+  - `matched`: 매칭 성공 여부 (true/false)
+  - `match_field`: 매칭된 필드 ("name", "name_en", "name_ko", "new")
+  - `match_method`: 매칭 방법 ("exact", "new")
+  - `bean_id`: 매칭된 생두 ID
+- **데이터 정리**: 중복 생두 통합 및 관련 레코드 업데이트
+  - ID=18 (Colombia Supremo Huila, 50kg) → ID=8 (후일라, 84kg)
+  - ID=19 (Popayan Sugarcane Decaf, 30kg) → ID=14 (디카페 SM, 68kg)
+  - InventoryLog 3개, InboundItem 1개 레코드 업데이트
+  - 중복 Bean 레코드 2개 삭제
+
 ### ⚙️ statusline 자동 사용량 추적 시스템 (2025-12-20)
 - **하이브리드 동기화 시스템**: 웹/앱 사용량 수동 입력 + CLI 자동 추적
   - Baseline 동기화: `python3 .claude/statusline.py --sync 100 "2시간 21분"`
