@@ -99,19 +99,19 @@
 
 ### 2.2 기술적 이유
 
-| 항목 | Streamlit | Next.js + FastAPI |
-|------|-----------|-------------------|
-| **성능** | 느림 (전체 재실행) | 매우 빠름 (SSR + 부분 렌더링) |
-| **SEO** | ❌ (CSR만) | ✅ (SSR/SSG) |
-| **UI 자유도** | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **확장성** | ⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **모바일** | ⭐ | ⭐⭐⭐⭐⭐ |
-| **API 지원** | ❌ | ✅ (내장 API Routes) |
-| **실시간** | ❌ | ✅ (WebSocket) |
-| **라우팅** | 수동 | 자동 (파일 기반) |
-| **이미지 최적화** | ❌ | ✅ (자동) |
-| **개발 속도** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **학습 곡선** | 낮음 | 중간 |
+| 항목              | Streamlit          | Next.js + FastAPI             |
+| ----------------- | ------------------ | ----------------------------- |
+| **성능**          | 느림 (전체 재실행) | 매우 빠름 (SSR + 부분 렌더링) |
+| **SEO**           | ❌ (CSR만)          | ✅ (SSR/SSG)                   |
+| **UI 자유도**     | ⭐⭐                 | ⭐⭐⭐⭐⭐                         |
+| **확장성**        | ⭐⭐                 | ⭐⭐⭐⭐⭐                         |
+| **모바일**        | ⭐                  | ⭐⭐⭐⭐⭐                         |
+| **API 지원**      | ❌                  | ✅ (내장 API Routes)           |
+| **실시간**        | ❌                  | ✅ (WebSocket)                 |
+| **라우팅**        | 수동               | 자동 (파일 기반)              |
+| **이미지 최적화** | ❌                  | ✅ (자동)                      |
+| **개발 속도**     | ⭐⭐⭐⭐⭐              | ⭐⭐⭐⭐                          |
+| **학습 곡선**     | 낮음               | 중간                          |
 
 ### 2.3 ROI 분석
 
@@ -135,19 +135,19 @@
 
 ### 3.1 프론트엔드 (Next.js 풀스택)
 
-| 기술 | 버전 | 용도 | Next.js 통합 |
-|------|------|------|--------------|
-| **Next.js** | 14.x | 풀스택 프레임워크 | 핵심 |
-| **React** | 18.x | UI 라이브러리 | Next.js 포함 |
-| **TypeScript** | 5.x | 타입 안정성 | 기본 지원 |
-| **TailwindCSS** | 3.x | 스타일링 | 공식 플러그인 |
-| **shadcn/ui** | latest | UI 컴포넌트 | Next.js 템플릿 |
-| **TanStack Query** | 5.x | 서버 상태 관리 | Server Components 보완 |
-| **Zustand** | 4.x | 클라이언트 상태 | 필요시만 |
-| **React Hook Form** | 7.x | 폼 관리 | Server Actions 활용 |
-| **Recharts** | 2.x | 차트 | SSR 가능 |
-| **next/image** | 내장 | 이미지 최적화 | 자동 최적화 |
-| **next/font** | 내장 | 폰트 최적화 | 자동 로드 |
+| 기술                | 버전   | 용도              | Next.js 통합           |
+| ------------------- | ------ | ----------------- | ---------------------- |
+| **Next.js**         | 14.x   | 풀스택 프레임워크 | 핵심                   |
+| **React**           | 18.x   | UI 라이브러리     | Next.js 포함           |
+| **TypeScript**      | 5.x    | 타입 안정성       | 기본 지원              |
+| **TailwindCSS**     | 3.x    | 스타일링          | 공식 플러그인          |
+| **shadcn/ui**       | latest | UI 컴포넌트       | Next.js 템플릿         |
+| **TanStack Query**  | 5.x    | 서버 상태 관리    | Server Components 보완 |
+| **Zustand**         | 4.x    | 클라이언트 상태   | 필요시만               |
+| **React Hook Form** | 7.x    | 폼 관리           | Server Actions 활용    |
+| **Recharts**        | 2.x    | 차트              | SSR 가능               |
+| **next/image**      | 내장   | 이미지 최적화     | 자동 최적화            |
+| **next/font**       | 내장   | 폰트 최적화       | 자동 로드              |
 
 **Next.js의 독보적 장점:**
 - ✅ **API Routes**: 백엔드 로직을 같은 프로젝트에 구현 (FastAPI 보완)
@@ -158,41 +158,41 @@
 
 ### 3.2 백엔드
 
-| 기술 | 버전 | 용도 |
-|------|------|------|
-| **FastAPI** | 0.109+ | API 서버 |
-| **Python** | 3.12+ | 언어 |
-| **SQLAlchemy** | 2.0+ | ORM (유지) |
-| **Alembic** | 1.13+ | DB 마이그레이션 |
-| **PostgreSQL** | 16.x | 메인 DB |
-| **Redis** | 7.x | 캐시, 세션 |
-| **Celery** | 5.x | 백그라운드 작업 |
-| **RabbitMQ** | 3.x | 메시지 큐 |
-| **Pydantic** | 2.x | 데이터 검증 |
+| 기술           | 버전   | 용도            |
+| -------------- | ------ | --------------- |
+| **FastAPI**    | 0.109+ | API 서버        |
+| **Python**     | 3.12+  | 언어            |
+| **SQLAlchemy** | 2.0+   | ORM (유지)      |
+| **Alembic**    | 1.13+  | DB 마이그레이션 |
+| **PostgreSQL** | 16.x   | 메인 DB         |
+| **Redis**      | 7.x    | 캐시, 세션      |
+| **Celery**     | 5.x    | 백그라운드 작업 |
+| **RabbitMQ**   | 3.x    | 메시지 큐       |
+| **Pydantic**   | 2.x    | 데이터 검증     |
 
 ### 3.3 인프라
 
-| 기술 | 용도 |
-|------|------|
-| **Docker** | 컨테이너화 |
-| **Docker Compose** | 로컬 개발 |
-| **Nginx** | 리버스 프록시 |
-| **AWS EC2** | 애플리케이션 서버 |
-| **AWS RDS** | PostgreSQL 호스팅 |
-| **AWS S3** | 이미지 저장 |
-| **AWS CloudFront** | CDN |
-| **GitHub Actions** | CI/CD |
+| 기술               | 용도              |
+| ------------------ | ----------------- |
+| **Docker**         | 컨테이너화        |
+| **Docker Compose** | 로컬 개발         |
+| **Nginx**          | 리버스 프록시     |
+| **AWS EC2**        | 애플리케이션 서버 |
+| **AWS RDS**        | PostgreSQL 호스팅 |
+| **AWS S3**         | 이미지 저장       |
+| **AWS CloudFront** | CDN               |
+| **GitHub Actions** | CI/CD             |
 
 ### 3.4 개발 도구
 
-| 도구 | 용도 |
-|------|------|
-| **Vite** | 프론트엔드 빌드 |
-| **ESLint** | 코드 린팅 |
-| **Prettier** | 코드 포맷팅 |
-| **Jest** | 유닛 테스트 |
-| **Playwright** | E2E 테스트 |
-| **Storybook** | 컴포넌트 문서 |
+| 도구           | 용도            |
+| -------------- | --------------- |
+| **Vite**       | 프론트엔드 빌드 |
+| **ESLint**     | 코드 린팅       |
+| **Prettier**   | 코드 포맷팅     |
+| **Jest**       | 유닛 테스트     |
+| **Playwright** | E2E 테스트      |
+| **Storybook**  | 컴포넌트 문서   |
 
 ---
 
@@ -1361,47 +1361,45 @@ git push --tags
 
 ### 5.1 전체 시스템 아키텍처
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                        Client                            │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │   Browser   │  │  Mobile App │  │   Desktop   │     │
-│  │   (React)   │  │   (React    │  │   (Electron)│     │
-│  │             │  │   Native)   │  │             │     │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
-└─────────┼─────────────────┼─────────────────┼───────────┘
-          │                 │                 │
-          └─────────────────┼─────────────────┘
-                            │ HTTPS
-                  ┌─────────▼─────────┐
-                  │   Load Balancer   │
-                  │   (Nginx/ALB)     │
-                  └─────────┬─────────┘
-                            │
-          ┌─────────────────┼─────────────────┐
-          │                 │                 │
-┌─────────▼──────┐ ┌────────▼────────┐ ┌─────▼──────┐
-│  Frontend      │ │   API Server    │ │  WebSocket │
-│  (Next.js)     │ │   (FastAPI)     │ │  Server    │
-│  - SSR/SSG     │ │   - REST API    │ │  - Real-   │
-│  - Static      │ │   - Auth        │ │    time    │
-│    Assets      │ │   - Business    │ │            │
-└────────────────┘ └─────────┬───────┘ └────────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-┌─────────▼──────┐ ┌─────────▼─────┐ ┌─────────▼──────┐
-│   PostgreSQL   │ │     Redis     │ │   RabbitMQ     │
-│   - Main DB    │ │   - Cache     │ │   - Message    │
-│   - Replicas   │ │   - Session   │ │     Queue      │
-└────────────────┘ └───────────────┘ └────────┬───────┘
-                                              │
-                                    ┌─────────▼─────┐
-                                    │    Celery     │
-                                    │    Workers    │
-                                    │  - OCR        │
-                                    │  - Reports    │
-                                    └───────────────┘
+```mermaid
+graph TD
+    subgraph Client
+        Browser["Browser (React)"]
+        MobileApp["Mobile App (React Native)"]
+        Desktop["Desktop (Electron)"]
+    end
+
+    LB["Load Balancer (Nginx/ALB)"]
+
+    subgraph App_Servers
+        Frontend["Frontend (Next.js)<br/>- SSR/SSG<br/>- Static Assets"]
+        API["API Server (FastAPI)<br/>- REST API<br/>- Auth<br/>- Business"]
+        WS["WebSocket Server<br/>- Real-time"]
+    end
+
+    subgraph Data_Layer
+        PostgreSQL["PostgreSQL<br/>- Main DB<br/>- Replicas"]
+        Redis["Redis<br/>- Cache<br/>- Session"]
+        RabbitMQ["RabbitMQ<br/>- Message Queue"]
+    end
+
+    subgraph Workers
+        Celery["Celery Workers<br/>- OCR<br/>- Reports"]
+    end
+
+    Browser --> LB
+    MobileApp --> LB
+    Desktop --> LB
+    LB -- HTTPS --> Frontend
+    LB -- HTTPS --> API
+    LB -- WSS --> WS
+
+    API --> PostgreSQL
+    API --> Redis
+    API --> RabbitMQ
+    WS --> Redis
+
+    RabbitMQ --> Celery
 ```
 
 ### 5.2 디렉토리 구조 (최종)
@@ -1677,14 +1675,14 @@ CREATE TABLE transactions_2025_02 PARTITION OF transactions
 
 ### 7.1 주요 리스크
 
-| 리스크 | 영향도 | 발생 확률 | 완화 전략 |
-|--------|--------|----------|-----------|
-| **학습 곡선** | High | High | - 온라인 강의 수강<br>- 튜토리얼 프로젝트 먼저 구축<br>- 코드 리뷰 |
-| **일정 지연** | Medium | Medium | - 버퍼 시간 20% 추가<br>- MVP 우선 개발<br>- 주간 진행 상황 점검 |
-| **데이터 손실** | High | Low | - 백업 자동화<br>- 마이그레이션 전 테스트<br>- 롤백 계획 수립 |
-| **성능 저하** | Medium | Low | - 부하 테스트<br>- 모니터링 설정<br>- 캐싱 전략 |
-| **보안 취약점** | High | Medium | - 보안 스캔 도구 사용<br>- OWASP Top 10 준수<br>- 정기 감사 |
-| **사용자 거부감** | Medium | Medium | - 베타 테스트<br>- 피드백 수렴<br>- 점진적 전환 |
+| 리스크            | 영향도 | 발생 확률 | 완화 전략                                                          |
+| ----------------- | ------ | --------- | ------------------------------------------------------------------ |
+| **학습 곡선**     | High   | High      | - 온라인 강의 수강<br>- 튜토리얼 프로젝트 먼저 구축<br>- 코드 리뷰 |
+| **일정 지연**     | Medium | Medium    | - 버퍼 시간 20% 추가<br>- MVP 우선 개발<br>- 주간 진행 상황 점검   |
+| **데이터 손실**   | High   | Low       | - 백업 자동화<br>- 마이그레이션 전 테스트<br>- 롤백 계획 수립      |
+| **성능 저하**     | Medium | Low       | - 부하 테스트<br>- 모니터링 설정<br>- 캐싱 전략                    |
+| **보안 취약점**   | High   | Medium    | - 보안 스캔 도구 사용<br>- OWASP Top 10 준수<br>- 정기 감사        |
+| **사용자 거부감** | Medium | Medium    | - 베타 테스트<br>- 피드백 수렴<br>- 점진적 전환                    |
 
 ### 7.2 롤백 계획
 
@@ -1714,26 +1712,26 @@ aws s3 cp /backups/themoon_$DATE.sql s3://themoon-backups/
 
 ### 8.1 기술 지표
 
-| 지표 | 현재 (Streamlit) | 목표 (React) |
-|------|------------------|--------------|
-| **페이지 로딩 시간** | 2-3초 | <1초 |
-| **API 응답 시간** | N/A | <200ms (P95) |
-| **Lighthouse 점수** | 60 | >95 |
-| **테스트 커버리지** | 96% | >90% |
-| **번들 크기** | N/A | <300KB (gzip) |
-| **동시 사용자** | 1명 | 100명+ |
-| **가동률 (Uptime)** | 95% | 99.9% |
+| 지표                 | 현재 (Streamlit) | 목표 (React)  |
+| -------------------- | ---------------- | ------------- |
+| **페이지 로딩 시간** | 2-3초            | <1초          |
+| **API 응답 시간**    | N/A              | <200ms (P95)  |
+| **Lighthouse 점수**  | 60               | >95           |
+| **테스트 커버리지**  | 96%              | >90%          |
+| **번들 크기**        | N/A              | <300KB (gzip) |
+| **동시 사용자**      | 1명              | 100명+        |
+| **가동률 (Uptime)**  | 95%              | 99.9%         |
 
 ### 8.2 비즈니스 지표
 
-| 지표 | 목표 |
-|------|------|
-| **사용자 만족도** | >90% |
-| **이탈률** | <10% |
-| **모바일 사용률** | >30% |
-| **API 사용률** | >20% |
-| **버그 리포트** | <5건/월 |
-| **기능 요청** | >10건/월 |
+| 지표              | 목표     |
+| ----------------- | -------- |
+| **사용자 만족도** | >90%     |
+| **이탈률**        | <10%     |
+| **모바일 사용률** | >30%     |
+| **API 사용률**    | >20%     |
+| **버그 리포트**   | <5건/월  |
+| **기능 요청**     | >10건/월 |
 
 ### 8.3 ROI 계산
 
@@ -1787,26 +1785,28 @@ aws s3 cp /backups/themoon_$DATE.sql s3://themoon-backups/
 
 ### 9.3 최종 아키텍처 비전
 
-```
-현재 (v0.50.4)                    →         미래 (v2.0.0)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```mermaid
+graph LR
+    subgraph Current["현재 (v0.50.4)"]
+        Streamlit["Streamlit (All-in-One)"]
+        SQLite["SQLite"]
+        Streamlit --> SQLite
+    end
 
-Streamlit (All-in-One)              Next.js (풀스택 프레임워크)
-    ↓                                   ├── Frontend (SSR/SSG)
-  SQLite                                │   - Server Components
-                                        │   - Client Components
-                                        │   - Image Optimization
-                                        │
-                                        ├── API Routes (내장 백엔드)
-                                        │   - /api/beans
-                                        │   - /api/blends
-                                        │   - /api/analytics
-                                        │
-                                        └── FastAPI (고급 백엔드)
-                                            - OCR 처리 (Celery)
-                                            - 복잡한 비즈니스 로직
-                                            ↓
-                                        PostgreSQL + Redis + RabbitMQ
+    subgraph Future["미래 (v2.0.0)"]
+        NextJS["Next.js (풀스택 프레임워크)"]
+        Frontend["Frontend (SSR/SSG)<br/>- Server Components<br/>- Client Components<br/>- Image Optimization"]
+        APIRoutes["API Routes (내장 백엔드)<br/>- /api/beans<br/>- /api/blends<br/>- /api/analytics"]
+        FastAPI["FastAPI (고급 백엔드)<br/>- OCR 처리 (Celery)<br/>- 복잡한 비즈니스 로직"]
+        Infra["PostgreSQL + Redis + RabbitMQ"]
+
+        NextJS --> Frontend
+        NextJS --> APIRoutes
+        NextJS --> FastAPI
+        FastAPI --> Infra
+    end
+
+    Current -.-> Future
 ```
 
 **Next.js의 게임 체인저 기능:**
@@ -1838,18 +1838,18 @@ Streamlit (All-in-One)              Next.js (풀스택 프레임워크)
 
 ### React vs Next.js 비교
 
-| 기능 | React (CRA/Vite) | Next.js |
-|------|------------------|---------|
-| **라우팅** | React Router (수동 설정) | 파일 기반 (자동) |
-| **SSR** | ❌ | ✅ |
-| **SSG** | ❌ | ✅ |
-| **ISR** | ❌ | ✅ |
-| **SEO** | 제한적 (CSR만) | 완벽 (SSR/SSG) |
-| **이미지 최적화** | 수동 | 자동 (next/image) |
-| **코드 스플리팅** | 수동 | 자동 |
-| **API 구현** | 별도 서버 필요 | API Routes 내장 |
-| **배포** | 정적 호스팅만 | 서버리스/Edge |
-| **학습 곡선** | 낮음 | 중간 |
+| 기능              | React (CRA/Vite)         | Next.js           |
+| ----------------- | ------------------------ | ----------------- |
+| **라우팅**        | React Router (수동 설정) | 파일 기반 (자동)  |
+| **SSR**           | ❌                        | ✅                 |
+| **SSG**           | ❌                        | ✅                 |
+| **ISR**           | ❌                        | ✅                 |
+| **SEO**           | 제한적 (CSR만)           | 완벽 (SSR/SSG)    |
+| **이미지 최적화** | 수동                     | 자동 (next/image) |
+| **코드 스플리팅** | 수동                     | 자동              |
+| **API 구현**      | 별도 서버 필요           | API Routes 내장   |
+| **배포**          | 정적 호스팅만            | 서버리스/Edge     |
+| **학습 곡선**     | 낮음                     | 중간              |
 
 ### TheMoon Project에 Next.js가 완벽한 이유
 

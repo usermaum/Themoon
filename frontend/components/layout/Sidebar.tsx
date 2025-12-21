@@ -13,7 +13,8 @@ import {
     PanelLeft,
     LogOut,
     Sparkles,
-    FileInput
+    FileInput,
+    BarChart3
 } from 'lucide-react'
 
 import { useLoading } from '@/components/providers/loading-provider'
@@ -34,6 +35,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         { name: 'Blends', href: '/blends', icon: Layers },
         { name: 'Inventory', href: '/inventory', icon: Package },
         { name: 'Inbound', href: '/inventory/inbound', icon: FileInput },
+        { name: 'Analytics', href: '/analytics', icon: BarChart3 },
 
     ]
 

@@ -230,77 +230,67 @@ class Transaction:
 
 ### 3.1 계층 구조
 
-```
-┌─────────────────────────────────────────┐
-│         Presentation Layer              │
-│  (Streamlit Pages - UI/UX)             │
-├─────────────────────────────────────────┤
-│  - CostCalculator.py (신규)            │
-│    ├─ 투입량 계산기 탭                    │
-│    ├─ 재고 현황 탭                        │
-│    ├─ 입고 관리 탭                        │
-│    └─ 출고 관리 탭                        │
-│                                         │
-│  - RoastingRecord.py (기존)            │
-│    └─ 로스팅 기록 관리                    │
-│                                         │
-│  - BeanManagement.py (신규)            │
-│    └─ 원두 정보 관리                     │
-└─────────────────────────────────────────┘
-               ↕
-┌─────────────────────────────────────────┐
-│         Business Logic Layer            │
-│  (Services - 비즈니스 로직)             │
-├─────────────────────────────────────────┤
-│  - cost_calculator_service.py (신규)   │
-│    ├─ calculate_required_input()       │
-│    ├─ get_bean_statistics()            │
-│    └─ predict_output()                 │
-│                                         │
-│  - inventory_service.py (신규)         │
-│    ├─ add_stock()                      │
-│    ├─ reduce_stock()                   │
-│    ├─ get_current_inventory()          │
-│    └─ process_roasting_transaction()   │
-│                                         │
-│  - roasting_service.py (기존)          │
-│  - bean_service.py (기존)              │
-└─────────────────────────────────────────┘
-               ↕
-┌─────────────────────────────────────────┐
-│         Data Access Layer               │
-│  (Models - 데이터베이스)                │
-├─────────────────────────────────────────┤
-│  - Bean (기존, 확장)                    │
-│  - RoastingLog (기존)                   │
-│  - Inventory (기존, 확장)               │
-│  - Transaction (기존, 확장)             │
-│  - BeanStatistics (신규)                │
-└─────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Presentation_Layer["Presentation Layer (Streamlit Pages - UI/UX)"]
+        CostCalculator["CostCalculator.py (신규)<br/>- 투입량 계산기 탭<br/>- 재고 현황 탭<br/>- 입고 관리 탭<br/>- 출고 관리 탭"]
+        RoastingRecord["RoastingRecord.py (기존)<br/>- 로스팅 기록 관리"]
+        BeanManagement["BeanManagement.py (신규)<br/>- 원두 정보 관리"]
+    end
+
+    subgraph Business_Logic_Layer["Business Logic Layer (Services - 비즈니스 로직)"]
+        CostService["cost_calculator_service.py (신규)<br/>- calculate_required_input()<br/>- get_bean_statistics()<br/>- predict_output()"]
+        InventoryService["inventory_service.py (신규)<br/>- add_stock()<br/>- reduce_stock()<br/>- get_current_inventory()<br/>- process_roasting_transaction()"]
+        RoastingService["roasting_service.py (기존)"]
+        BeanService["bean_service.py (기존)"]
+    end
+
+    subgraph Data_Access_Layer["Data Access Layer (Models - 데이터베이스)"]
+        BeanModel["Bean (기존, 확장)"]
+        RoastingLogModel["RoastingLog (기존)"]
+        InventoryModel["Inventory (기존, 확장)"]
+        TransactionModel["Transaction (기존, 확장)"]
+        BeanStatsModel["BeanStatistics (신규)"]
+    end
+
+    Presentation_Layer <--> Business_Logic_Layer
+    Business_Logic_Layer <--> Data_Access_Layer
 ```
 
 ### 3.2 데이터 흐름
 
 #### 시나리오 1: 투입량 계산
-```
-사용자 → CostCalculator 페이지
-      → "10kg 원두 필요" 입력
-      → cost_calculator_service.calculate_required_input()
-      → Bean 모델에서 평균 손실률 조회
-      → 계산 결과 반환: "11.8kg 투입 권장"
+```mermaid
+sequenceDiagram
+    participant User as 사용자
+    participant Page as CostCalculator 페이지
+    participant Service as cost_calculator_service
+    participant Model as Bean 모델
+
+    User->>Page: "10kg 원두 필요" 입력
+    Page->>Service: calculate_required_input()
+    Service->>Model: 평균 손실률 조회
+    Model-->>Service: 손실률 반환
+    Service-->>Page: 계산 결과 반환 ("11.8kg 투입 권장")
 ```
 
 #### 시나리오 2: 로스팅 및 재고 자동 연동
-```
-사용자 → RoastingRecord 페이지
-      → 생두 12kg, 원두 10.2kg 입력
-      → roasting_service.create_roasting_log()
-      → 손실률 계산 (15%)
-      → inventory_service.process_roasting_transaction()
-         ├─ 생두 재고 -12kg
-         └─ 원두 재고 +10.2kg
-      → bean_service.update_statistics()
-         └─ 평균 손실률 재계산
+```mermaid
+sequenceDiagram
+    participant User as 사용자
+    participant Page as RoastingRecord 페이지
+    participant RService as roasting_service
+    participant IService as inventory_service
+    participant BService as bean_service
+
+    User->>Page: 생두 12kg, 원두 10.2kg 입력
+    Page->>RService: create_roasting_log()
+    RService->>RService: 손실률 계산 (15%)
+    RService->>IService: process_roasting_transaction()
+    IService->>IService: 생두 재고 -12kg
+    IService->>IService: 원두 재고 +10.2kg
+    RService->>BService: update_statistics()
+    BService->>BService: 평균 손실률 재계산
 ```
 
 ---
@@ -687,57 +677,64 @@ class BeanStatistics(Base):
 
 ### 5.1 ERD (Entity-Relationship Diagram)
 
-```
-┌─────────────────┐
-│     Bean        │
-├─────────────────┤
-│ id (PK)         │
-│ name            │
-│ country_name    │
-│ price_per_kg    │
-│ brand ★         │
-└─────────────────┘
-        │
-        │ 1:1
-        ▼
-┌─────────────────┐
-│ BeanStatistics★ │
-├─────────────────┤
-│ id (PK)         │
-│ bean_id (FK)    │
-│ avg_loss_rate   │
-│ std_loss_rate   │
-│ total_count     │
-└─────────────────┘
-        │
-        │ 1:N
-        ▼
-┌─────────────────┐       ┌─────────────────┐
-│  RoastingLog    │       │   Inventory ★   │
-├─────────────────┤       ├─────────────────┤
-│ id (PK)         │       │ id (PK)         │
-│ bean_id (FK)    │───────│ bean_id (FK)    │
-│ raw_weight_kg   │       │ type ★          │
-│ roasted_weight  │       │ quantity_kg     │
-│ loss_rate       │       └─────────────────┘
-└─────────────────┘               │
-        │                         │ 1:N
-        │ 1:N                     ▼
-        ▼                 ┌─────────────────┐
-┌─────────────────┐       │  Transaction ★  │
-│LossRateWarning  │       ├─────────────────┤
-├─────────────────┤       │ id (PK)         │
-│ id (PK)         │       │ bean_id (FK)    │
-│ roasting_log_id │       │ type ★          │
-│ warning_type    │       │ inventory_type★ │
-│ severity        │       │ quantity_kg     │
-└─────────────────┘       │ roasting_log_id │
-                          │ unit_price      │
-                          │ total_price     │
-                          └─────────────────┘
+```mermaid
+erd
+    Bean {
+        int id PK
+        string name
+        string country_name
+        float price_per_kg
+        string brand "★"
+    }
 
-★ = 신규 또는 확장 필드
+    BeanStatistics {
+        int id PK
+        int bean_id FK "Unique"
+        float avg_loss_rate
+        float std_loss_rate
+        int total_count
+    }
+
+    RoastingLog {
+        int id PK
+        int bean_id FK
+        float raw_weight_kg
+        float roasted_weight
+        float loss_rate
+    }
+
+    Inventory {
+        int id PK
+        int bean_id FK
+        string type "★"
+        float quantity_kg
+    }
+
+    Transaction {
+        int id PK
+        int bean_id FK
+        string type "★"
+        string inventory_type "★"
+        float quantity_kg
+        int roasting_log_id FK
+        float unit_price
+        float total_price
+    }
+
+    LossRateWarning {
+        int id PK
+        int roasting_log_id FK
+        string warning_type
+        string severity
+    }
+
+    Bean ||--|| BeanStatistics : "1:1"
+    Bean ||--o{ RoastingLog : "1:N"
+    Bean ||--o{ Inventory : "1:N"
+    Inventory ||--o{ Transaction : "1:N"
+    RoastingLog ||--o{ LossRateWarning : "1:N"
 ```
+**★ = 신규 또는 확장 필드**
 
 ### 5.2 테이블 정의 (SQL)
 

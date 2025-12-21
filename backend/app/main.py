@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.v1 import api_router
+from app.api.v1 import beans, roasting, blends, analytics
+from app.api.v1.endpoints import inbound, inventory_logs, dashboard
 from app.database import engine, Base
 from app.config import settings
 
@@ -64,7 +65,13 @@ app.add_middleware(
 )
 
 # API 라우터 등록 (중앙 라우터 사용)
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(beans.router, prefix="/api/v1/beans", tags=["beans"])
+app.include_router(inbound.router, prefix="/api/v1/inbound", tags=["inbound"])
+app.include_router(inventory_logs.router, prefix="/api/v1/inventory-logs", tags=["inventory-logs"])
+app.include_router(roasting.router, prefix="/api/v1/roasting", tags=["roasting"])
+app.include_router(blends.router, prefix="/api/v1/blends", tags=["blends"])
+app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
+app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 
 @app.get("/")
 def read_root():
