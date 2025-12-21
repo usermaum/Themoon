@@ -20,6 +20,16 @@
 
 ## [Unreleased]
 
+### 🚀 Statusline 빠른 동기화 기능 (2025-12-21)
+- **빠른 동기화 옵션 추가**: `--quick-sync (-q)` 명령어 추가
+  - 사용법: `python3 .claude/statusline.py -q 64`
+  - 퍼센트만 입력하면 자동으로 5시간 리셋 설정
+  - /config와 statusline 사용량 불일치 문제 해결
+- **도움말 개선**: 사용 예시 및 옵션 설명 추가
+- **README 업데이트**: statusline 사용법 섹션 추가
+  - 빠른 동기화, 정확한 동기화, 상세 출력, 연속 모드 설명
+  - 실제 출력 예시 포함
+
 ### ✨ 생두 매칭 시스템 개선 (2025-12-21)
 - **다중 필드 매칭**: name, name_en, name_ko 모두 검사하여 매칭률 향상
   - 이전: Bean.name만 exact match 검사

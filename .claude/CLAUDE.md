@@ -475,31 +475,33 @@ MAJOR: 호환성 변경 (년 1~2회)
 
 ---
 
-### 📅 마지막 세션: 2025-12-20
+### 📅 마지막 세션: 2025-12-21
 
 **✅ 완료된 작업**:
-1. ✅ statusline 자동 사용량 추적 시스템 구현
-   - 하이브리드 동기화: 웹/앱 수동 입력 + CLI 자동 추적
-   - Baseline 관리 시스템 구현
-   - 경고 수준 시각화 (💎/🟡/🔴)
-   - 리셋 시간 자동 계산 및 초기화
-   - **사용법**: `python3 .claude/statusline.py --sync 100 "2시간 21분"`
+1. ✅ Statusline 빠른 동기화 기능 구현
+   - `/config` 64% vs statusline 22% 불일치 문제 해결
+   - `--quick-sync (-q)` 옵션 추가: `python3 .claude/statusline.py -q 64`
+   - 1초 만에 완료되는 간편한 동기화
+   - README에 사용법 섹션 추가
 
-2. ✅ 버전 0.3.0 업데이트 (0.2.2 → 0.3.0)
-   - MINOR 버전 올림 (새 기능 6개 누적)
-   - 포함 기능: statusline, DB 재설계, OCR 항목, 거래명세서 뷰 등
+2. ✅ 문서 업데이트
+   - CHANGELOG.md: Unreleased 섹션에 변경사항 추가
+   - SESSION_SUMMARY_2025-12-21.md: 오후 세션 내용 추가
+   - README.md: "📊 Claude Code Statusline 사용법" 섹션 추가
 
-3. ✅ 세션 종료 체크리스트 완료
-   - 모든 변경사항 커밋
-   - 문서 5종 세트 동기화 (README, CLAUDE.md, VERSION, CHANGELOG, SESSION_SUMMARY)
+3. ✅ 기술 분석 및 학습
+   - Anthropic API 사용량 조회 시도 (엔드포인트 없음 확인)
+   - ccusage 명령어 분석 (블록 데이터만 제공)
+   - 실용적 해결책 선택: 수동 입력 + 자동 추적
 
 **Git 상태**:
 - 현재 브랜치: main
-- 원격보다 9커밋 앞서 있음
-- Working tree: clean ✅
-- 최종 커밋: 716d57f
+- 원격보다 30커밋 앞서 있음
+- Working tree: modified (문서 업데이트 예정)
+- 최종 커밋: 2827e7c (statusline 빠른 동기화 기능)
 
 **🎯 다음 작업 옵션**:
 1. Invoice 페이지를 실제 OCR 데이터와 연동
 2. OCR 기능 전체 플로우 테스트
-3. UI/UX 개선 (인쇄, 다운로드 기능)
+3. 생두 매칭 시스템 추가 개선 (Fuzzy matching 고려)
+4. UI/UX 개선 (인쇄, 다운로드 기능)
