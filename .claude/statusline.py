@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Claude Code 상태바 스크립트
-컬러풀한 이모지와 실시간 정보를 표시하는 상태바
-60초마다 자동 새로고침
+Claude Code Statusline Script
+Display colorful status bar with emojis and real-time info
+Auto-refresh every 60 seconds
 """
 
 import os
@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# 같은 디렉토리의 claude_usage_api 모듈 import
+# Import claude_usage_api module from same directory
 sys.path.insert(0, str(Path(__file__).parent))
 try:
     from claude_usage_api import get_claude_usage_api
@@ -22,7 +22,7 @@ except ImportError:
 
 
 def get_git_branch():
-    """현재 Git 브랜치 이름 가져오기"""
+    """Get current Git branch name"""
     try:
         result = subprocess.run(
             ["git", "branch", "--show-current"],
@@ -37,9 +37,9 @@ def get_git_branch():
 
 
 def get_claude_info():
-    """Claude 모델 및 세션 정보 가져오기"""
+    """Get Claude model and session information"""
     try:
-        # ccusage 명령어로 상태 정보 가져오기
+        # Get status info via ccusage command
         result = subprocess.run(
             ["npx", "-y", "ccusage@latest", "statusline", "--cache", "--no-offline"],
             capture_output=True,
@@ -48,21 +48,21 @@ def get_claude_info():
             cwd=Path(__file__).parent.parent
         )
 
-        # 기본 정보
+        # Default info
         model_name = "Sonnet 4.5"
         context_usage = "N/A"
         session_id = "unknown"
 
-        # ccusage 출력에서 정보 파싱
+        # Parse info from ccusage output
         output = result.stdout
         if "%" in output:
-            # 퍼센트 표시 찾기
+            # Find percentage indicator
             for part in output.split():
                 if "%" in part:
                     context_usage = part.strip().replace("%", "") + "%"
                     break
 
-        # 세션 ID는 환경변수나 프로세스 ID로 대체
+        # Replace session ID with env var or process ID
         session_id = os.environ.get("CLAUDE_SESSION_ID", str(os.getpid())[:8])
 
         return {
@@ -79,7 +79,7 @@ def get_claude_info():
 
 
 def get_app_version():
-    """앱 버전 가져오기"""
+    """Get application version"""
     try:
         version_file = Path(__file__).parent.parent / "logs" / "VERSION"
         if version_file.exists():
@@ -90,7 +90,7 @@ def get_app_version():
 
 
 def get_claude_usage():
-    """Claude Pro 사용량 정보"""
+    """Get Claude Pro usage information"""
     if get_claude_usage_api is None:
         return {
             "daily_limit": 100,
@@ -111,59 +111,108 @@ def get_claude_usage():
         }
 
 
+def format_usage_bar(percentage, width=50):
+    """Create Settings-style progress bar"""
+    filled = int(width * percentage / 100)
+    empty = width - filled
+
+    # Use block character (same as Settings)
+    bar = "█" * filled
+
+    # Fill partial block (using partial block chars)
+    remainder = (width * percentage / 100) - filled
+    if remainder > 0 and empty > 0:
+        if remainder < 0.25:
+            bar += "▏"
+        elif remainder < 0.50:
+            bar += "▎"
+        elif remainder < 0.75:
+            bar += "▌"
+        else:
+            bar += "▋"
+        empty -= 1
+
+    bar += " " * empty
+    return bar
+
+
 def format_statusline(compact=True):
-    """상태바 한 줄로 포맷팅"""
-    # 현재 시간/날짜
+    """Format statusline in one line (Settings Usage style)"""
+    # Current time/date
     now = datetime.now()
     time_str = now.strftime("%H:%M:%S")
     date_str = now.strftime("%Y-%m-%d")
     weekday = now.strftime("%a")
 
-    # Git 브랜치
+    # Git branch
     branch = get_git_branch()
 
-    # Claude 정보
+    # Claude info
     claude_info = get_claude_info()
 
-    # 앱 버전
+    # App version
     version = get_app_version()
 
-    # Claude 사용량
+    # Claude usage
     usage = get_claude_usage()
 
-    # 사용량 색상 표시 (이모지로 경고 수준 표시)
+    # Usage color indicator (emoji for warning level)
     percentage = usage.get('percentage', 0)
     if percentage >= 90:
-        usage_icon = "🔴"  # 90% 이상: 위험
+        usage_icon = "🔴"  # 90%+: Critical
     elif percentage >= 70:
-        usage_icon = "🟡"  # 70-89%: 경고
+        usage_icon = "🟡"  # 70-89%: Warning
     else:
-        usage_icon = "💎"  # 70% 미만: 정상
+        usage_icon = "💎"  # <70%: Normal
 
     if compact:
-        # 컴팩트 버전 (한 줄)
+        # Compact version (one line) - English to prevent UTF-8 boundary errors
         statusline_parts = [
-            f"📅 {date_str}({weekday})",
-            f"🕐 {time_str}",
-            f"🌿 {branch}",
-            f"🤖 {claude_info['model']}",
-            f"📊 {claude_info['context']}",
-            f"📦 v{version}",
-            f"{usage_icon} {usage['used']}/{usage['daily_limit']} ({usage['percentage']}%)",
-            f"⏰ {usage.get('time_remaining', 'N/A')}"
+            f"{date_str}({weekday})",
+            f"{time_str}",
+            f"br:{branch}",
+            f"{claude_info['model']}",
+            f"ctx:{claude_info['context']}",
+            f"v{version}",
+            f"{usage_icon}{usage['used']}/{usage['daily_limit']}({usage['percentage']}%)",
+            f"reset:{usage.get('time_remaining', 'N/A')}"
         ]
-        return " • ".join(statusline_parts)
+        return " | ".join(statusline_parts)
     else:
-        # 상세 버전 (여러 줄)
+        # Settings Usage 스타일 (여러 줄)
+        session_bar = format_usage_bar(percentage, width=50)
+
+        # 리셋 시간 계산 (Asia/Seoul 기준)
+        from datetime import timezone
+        import pytz
+
+        try:
+            reset_time = datetime.fromisoformat(usage.get('reset_time', ''))
+            kst = pytz.timezone('Asia/Seoul')
+            reset_time_kst = reset_time.astimezone(kst)
+            reset_str = reset_time_kst.strftime("%I%p (Asia/Seoul)").lstrip("0").lower()
+        except:
+            reset_str = "N/A"
+
         return f"""
-╔══════════════════════════════════════════════════════════════
-║ 🕐 시간: {time_str}  📅 날짜: {date_str} ({weekday})
-║ 🌿 브랜치: {branch}
-║ 🤖 모델: {claude_info['model']}  📊 컨텍스트: {claude_info['context']}
-║ 🆔 세션: {claude_info['session_id']}  📦 버전: v{version}
-║ {usage_icon} 플랜 사용량: {usage['used']}/{usage['daily_limit']} ({usage['percentage']}%)
-║ ⏰ 리셋까지: {usage.get('time_remaining', 'N/A')}
-╚══════════════════════════════════════════════════════════════
+╔═══════════════════════════════════════════════════════════
+║ Settings: Status Config [Usage] (tab to cycle)
+║
+║ Current session - Resets {reset_str}
+║ {session_bar}
+║ {percentage}% used
+║
+║ Current week (all models) - Resets Dec 24, 10pm (Asia/Seoul)
+║ ████████████████████████████████▌
+║ 58% used (example)
+║
+║ Extra usage
+║ Extra usage not enabled - /extra-usage to enable
+║
+║ Time: {time_str}  Date: {date_str} ({weekday})
+║ Branch: {branch}  Model: {claude_info['model']}
+║ Version: v{version}  Reset: {usage.get('time_remaining', 'N/A')}
+╚═══════════════════════════════════════════════════════════
         """.strip()
 
 
@@ -186,7 +235,7 @@ def run_continuous(interval=60):
             time.sleep(interval)
 
     except KeyboardInterrupt:
-        print("\n\n상태바 모니터링을 종료합니다.")
+        print("\n\nStatusline monitoring stopped.")
         sys.exit(0)
 
 
@@ -197,9 +246,9 @@ def main():
         if sys.argv[1] == "--sync" or sys.argv[1] == "-s":
             # 동기화 모드
             if len(sys.argv) < 4:
-                print("❌ 사용법: python statusline.py --sync <사용량%> <리셋 시간>")
-                print("   예시: python statusline.py --sync 100 \"2시간 21분\"")
-                print("   예시: python statusline.py --sync 85 \"1시간 30분\"")
+                print("❌ Usage: python statusline.py --sync <usage%> <reset_time>")
+                print("   Example: python statusline.py --sync 100 \"2h 21m\"")
+                print("   Example: python statusline.py --sync 85 \"1h 30m\"")
                 sys.exit(1)
 
             try:
@@ -215,17 +264,17 @@ def main():
 
                 if result['success']:
                     print(result['message'])
-                    print(f"\n📊 동기화 정보:")
-                    print(f"  - 기준 사용량: {result['baseline']['baseline_used']}%")
-                    print(f"  - CLI 메시지 수: {result['baseline']['baseline_cli_messages']}")
-                    print(f"  - 리셋 시간: {result['baseline']['reset_time']}")
-                    print(f"\n이제 statusline이 자동으로 CLI 사용량을 추적합니다.")
+                    print(f"\n📊 Sync Information:")
+                    print(f"  - Baseline usage: {result['baseline']['baseline_used']}%")
+                    print(f"  - CLI messages: {result['baseline']['baseline_cli_messages']}")
+                    print(f"  - Reset time: {result['baseline']['reset_time']}")
+                    print(f"\nStatusline will now automatically track CLI usage.")
                 else:
                     print(result['message'])
                     sys.exit(1)
 
             except ValueError:
-                print("❌ 사용량은 숫자로 입력해주세요. (0-100)")
+                print("❌ Usage must be a number (0-100)")
                 sys.exit(1)
 
         elif sys.argv[1] == "--continuous" or sys.argv[1] == "-c":

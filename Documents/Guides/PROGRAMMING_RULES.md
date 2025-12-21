@@ -239,6 +239,11 @@ price: Decimal
 - FastAPI 자동 문서 활용 (`/docs`)
 - Endpoint별 설명, 파라미터, 응답 예시 작성
 
+### 다이어그램 규칙 (MANDATORY)
+
+- **Mermaid 사용 필수**: 모든 다이어그램(ERD, Sequence, Flowchart 등)은 이미지 파일 대신 **Mermaid 문법**으로 작성해야 합니다.
+- **예외**: Mermaid로 표현이 불가능한 복잡한 UI 디자인 시안 등은 이미지 허용.
+
 ---
 
 ## 🔖 버전 관리 규칙
@@ -383,14 +388,14 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 ## 📖 참고 문서
 
-| 문서 | 위치 | 용도 |
-|------|------|------|
-| **개발 가이드** | `Documents/Architecture/DEVELOPMENT_GUIDE.md` | 5단계 개발 프로세스 |
+| 문서                | 위치                                            | 용도                         |
+| ------------------- | ----------------------------------------------- | ---------------------------- |
+| **개발 가이드**     | `Documents/Architecture/DEVELOPMENT_GUIDE.md`   | 5단계 개발 프로세스          |
 | **시스템 아키텍처** | `Documents/Architecture/SYSTEM_ARCHITECTURE.md` | 3계층 아키텍처 & 데이터 흐름 |
-| **문제 해결** | `Documents/Architecture/TROUBLESHOOTING.md` | 16가지 오류 & 해결법 |
-| **자주 하는 작업** | `Documents/Architecture/COMMON_TASKS.md` | 25가지 작업 단계 가이드 |
-| **버전 관리** | `logs/VERSION_MANAGEMENT.md` | 공식 버전 관리 가이드 |
-| **버전 전략** | `logs/VERSION_STRATEGY.md` | 효율적인 버전관리 전략 |
+| **문제 해결**       | `Documents/Architecture/TROUBLESHOOTING.md`     | 16가지 오류 & 해결법         |
+| **자주 하는 작업**  | `Documents/Architecture/COMMON_TASKS.md`        | 25가지 작업 단계 가이드      |
+| **버전 관리**       | `logs/VERSION_MANAGEMENT.md`                    | 공식 버전 관리 가이드        |
+| **버전 전략**       | `logs/VERSION_STRATEGY.md`                      | 효율적인 버전관리 전략       |
 
 ---
 
