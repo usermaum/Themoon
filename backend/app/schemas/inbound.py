@@ -70,6 +70,9 @@ class AdditionalInfo(BaseModel):
 
 class OCRResponse(BaseModel):
     """OCR 분석 결과 (전체 명세서 데이터)"""
+    # 에러 정보 (문서 유효성 등)
+    error: Optional[str] = None
+
     # 디버그 원본 텍스트
     debug_raw_text: Optional[str] = None
 

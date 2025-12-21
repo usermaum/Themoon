@@ -40,7 +40,7 @@ def get_supplier_statistics(
     """
     # Parse dates if provided
     start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
 
     return stats_service.get_supplier_stats(db, start_dt, end_dt)
 
@@ -71,6 +71,21 @@ def get_item_trends(
     """
     # Parse dates if provided
     start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    end_dt = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
 
     return stats_service.get_item_price_trends(db, bean_name, start_dt, end_dt)
+
+@router.get("/stats/inventory")
+def get_inventory_statistics(
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    db: Session = Depends(get_db)
+):
+    """
+    Get current inventory value aggregated by bean, filtered by the date range they were purchased.
+    """
+    start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
+
+    return stats_service.get_inventory_stats(db, start_dt, end_dt)
+

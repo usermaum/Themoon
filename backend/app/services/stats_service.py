@@ -115,6 +115,94 @@ def get_item_price_trends(db: Session, bean_name: str, start_date: Optional[date
     results = query.order_by(InboundItem.created_at).all()
     
     return [
-        {"date": r.created_at.strftime("%Y-%m-%d"), "price": r.unit_price}
+        {"date": r.created_at.strftime("%Y-%m-%d %H:%M"), "price": r.unit_price}
         for r in results
     ]
+
+def get_inventory_stats(db: Session, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
+    """
+    Calculate the current inventory value of items purchased within a specific date range,
+    using FIFO (First-In-First-Out) logic. Returns aggregated stats by bean, supplier, and top items.
+    """
+    from app.models.bean import Bean
+    from app.models.inventory_log import InventoryLog
+    from app.models.inbound_document import InboundDocument
+
+    beans = db.query(Bean).all()
+    
+    bean_results = []
+    supplier_results = {}
+    total_inventory_value = 0.0
+    
+    for bean in beans:
+        # Fetch Inbound History with supplier info joined
+        relevant_inbounds = db.query(InboundItem).join(InboundDocument).filter(
+            InboundItem.bean_id == bean.id
+        ).order_by(InboundItem.created_at).all()
+
+        if not relevant_inbounds:
+            continue
+
+        usage_logs = db.query(InventoryLog).filter(
+            InventoryLog.bean_id == bean.id,
+            InventoryLog.change_amount < 0
+        ).all()
+        
+        total_used_amount = sum(abs(log.change_amount) for log in usage_logs)
+        
+        bean_total_qty = 0.0
+        bean_total_value = 0.0
+        accumulated_qty = 0.0
+        
+        for item in relevant_inbounds:
+            qty = item.quantity or 0
+            if accumulated_qty + qty > total_used_amount:
+                remaining_qty = (accumulated_qty + qty) - max(accumulated_qty, total_used_amount)
+                
+                is_in_range = True
+                if start_date and item.created_at < start_date:
+                    is_in_range = False
+                if end_date and item.created_at > end_date:
+                    is_in_range = False
+                
+                if is_in_range:
+                    item_value = remaining_qty * (item.unit_price or 0)
+                    bean_total_qty += remaining_qty
+                    bean_total_value += item_value
+                    total_inventory_value += item_value
+                    
+                    # Aggregate by supplier
+                    supplier_name = item.inbound_document.supplier_name or "Unknown"
+                    supplier_results[supplier_name] = supplier_results.get(supplier_name, 0.0) + item_value
+            
+            accumulated_qty += qty
+            
+        if bean_total_qty > 0:
+            bean_results.append({
+                "bean_name": bean.name,
+                "quantity_kg": bean_total_qty,
+                "avg_price": bean_total_value / bean_total_qty,
+                "total_value": bean_total_value
+            })
+            
+    # Sort and refine
+    bean_results.sort(key=lambda x: x["total_value"], reverse=True)
+    
+    # Format suppliers list with percentages
+    supplier_list = []
+    for name, value in supplier_results.items():
+        supplier_list.append({
+            "name": name,
+            "value": value,
+            "percentage": (value / total_inventory_value * 100) if total_inventory_value > 0 else 0
+        })
+    supplier_list.sort(key=lambda x: x["value"], reverse=True)
+
+    return {
+        "items": bean_results,
+        "suppliers": supplier_list,
+        "top_items": bean_results[:3],
+        "total_value": total_inventory_value
+    }
+
+

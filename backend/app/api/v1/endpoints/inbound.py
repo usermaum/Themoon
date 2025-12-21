@@ -116,7 +116,22 @@ async def analyze_inbound_document(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty image data")
 
-    # 2. Save to Local Storage (Instead of Google Drive)
+    # 3. Perform OCR (Validate first)
+    try:
+        ocr_result = ocr_service.analyze_image(image_bytes, mime_type)
+        if ocr_result.get("error") == "INVALID_DOCUMENT":
+            logger.warning(f"Invalid document detected: {filename}")
+            raise HTTPException(
+                status_code=400, 
+                detail="INVALID_DOCUMENT"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OCR Analysis Failed: {e}")
+        raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
+
+    # 2. Save to Local Storage (Only if valid)
     drive_link = None
     try:
         # Create directory if not exists
@@ -125,6 +140,8 @@ async def analyze_inbound_document(
         
         # Generate unique filename
         file_ext = os.path.splitext(filename)[1]
+        if not file_ext: # Fallback for URLs
+            file_ext = ".jpg"
         unique_filename = f"{uuid.uuid4()}{file_ext}"
         file_path = os.path.join(upload_dir, unique_filename)
         
@@ -132,30 +149,12 @@ async def analyze_inbound_document(
         with open(file_path, "wb") as f:
             f.write(image_bytes)
             
-        # Generate URL (Assuming backend is running on localhost:8000 or using relative path)
-        # We store relative path or full URL. Frontend usually needs full URL to load image.
-        # But for portability, relative path is better, and frontend adds base URL.
-        # However, `drive_link` field expects a full URL usually.
-        # Let's return the full URL based on settings or request.base_url?
-        # For simplicity MVP: http://localhost:8000/static/uploads/inbound/...
-        # But better: /static/uploads/inbound/... and let frontend handle base.
         drive_link = f"/static/uploads/inbound/{unique_filename}"
-        
         logger.info(f"Image saved locally at: {file_path}")
 
     except Exception as e:
         logger.error(f"Local File Save Failed: {e}")
-        # Continue with OCR even if save fails? No, if we can't save locally, something is wrong.
-        # But strictly speaking OCR can run without saving.
-        # Let's warn and continue?
         logger.warning(f"Continuing without Local Save due to error: {e}")
-
-    # 3. Perform OCR
-    try:
-        ocr_result = ocr_service.analyze_image(image_bytes, mime_type)
-    except Exception as e:
-        logger.error(f"OCR Analysis Failed: {e}")
-        raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
 
     # 4. Merge Results (새로운 구조화된 데이터 + 하위 호환성)
     from app.schemas.inbound import (

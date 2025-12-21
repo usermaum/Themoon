@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, X, ChevronsUpDown, ChevronUp, ChevronDown } from "lucide-react"
 
 interface InventoryValueTableProps {
     data: {
@@ -24,6 +24,7 @@ interface InventoryValueTableProps {
 export function InventoryValueTable({ data }: InventoryValueTableProps) {
     const [searchTerm, setSearchTerm] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
     const itemsPerPage = 10
 
     const totalValue = data.reduce((sum, item) => sum + item.total_value, 0)
@@ -33,18 +34,45 @@ export function InventoryValueTable({ data }: InventoryValueTableProps) {
         item.bean_name.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    // Sort Logic
+    const sortedData = [...filteredData].sort((a, b) => {
+        if (!sortConfig) return 0
+
+        const { key, direction } = sortConfig
+        const aValue = (a as any)[key]
+        const bValue = (b as any)[key]
+
+        if (aValue < bValue) return direction === 'asc' ? -1 : 1
+        if (aValue > bValue) return direction === 'asc' ? 1 : -1
+        return 0
+    })
+
     // Pagination Logic
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+    const totalPages = Math.ceil(sortedData.length / itemsPerPage)
     const startIndex = (currentPage - 1) * itemsPerPage
-    const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage)
+    const currentData = sortedData.slice(startIndex, startIndex + itemsPerPage)
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value)
         setCurrentPage(1) // Reset to first page on search
     }
 
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc'
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc'
+        }
+        setSortConfig({ key, direction })
+    }
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) return <ChevronsUpDown className="ml-2 h-4 w-4" />
+        if (sortConfig.direction === 'asc') return <ChevronUp className="ml-2 h-4 w-4" />
+        return <ChevronDown className="ml-2 h-4 w-4" />
+    }
+
     return (
-        <Card>
+        <Card className="rounded-[1em]">
             <CardHeader>
                 <CardTitle>재고 자산 가치</CardTitle>
                 <CardDescription>
@@ -82,10 +110,42 @@ export function InventoryValueTable({ data }: InventoryValueTableProps) {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>품목명</TableHead>
-                                <TableHead className="text-right">보유량 (kg)</TableHead>
-                                <TableHead className="text-right">평균단가</TableHead>
-                                <TableHead className="text-right">평가액</TableHead>
+                                <TableHead
+                                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => handleSort('bean_name')}
+                                >
+                                    <div className="flex items-center">
+                                        품목명
+                                        {getSortIcon('bean_name')}
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => handleSort('quantity_kg')}
+                                >
+                                    <div className="flex items-center justify-end">
+                                        보유량 (kg)
+                                        {getSortIcon('quantity_kg')}
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => handleSort('avg_price')}
+                                >
+                                    <div className="flex items-center justify-end">
+                                        평균단가
+                                        {getSortIcon('avg_price')}
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => handleSort('total_value')}
+                                >
+                                    <div className="flex items-center justify-end">
+                                        평가액
+                                        {getSortIcon('total_value')}
+                                    </div>
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
