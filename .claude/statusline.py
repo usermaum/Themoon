@@ -179,10 +179,10 @@ def format_statusline(compact=True):
         ]
         return " | ".join(statusline_parts)
     else:
-        # Settings Usage 스타일 (여러 줄)
+        # Settings Usage style (multi-line)
         session_bar = format_usage_bar(percentage, width=50)
 
-        # 리셋 시간 계산 (Asia/Seoul 기준)
+        # Session reset time (Asia/Seoul timezone)
         from datetime import timezone
         import pytz
 
@@ -194,17 +194,45 @@ def format_statusline(compact=True):
         except:
             reset_str = "N/A"
 
+        # Weekly usage
+        if get_claude_usage_api is not None:
+            try:
+                api = get_claude_usage_api()
+                weekly = api.get_weekly_usage()
+                weekly_percentage = weekly.get('percentage', 0)
+                weekly_bar = format_usage_bar(weekly_percentage, width=50)
+                weekly_used = weekly.get('used', 0)
+                weekly_limit = weekly.get('weekly_limit', 500)
+
+                # Parse reset time
+                weekly_reset_time = datetime.fromisoformat(weekly.get('reset_time', ''))
+                weekly_reset_kst = weekly_reset_time.astimezone(kst)
+                weekly_reset_str = weekly_reset_kst.strftime("%b %d, %I%p (Asia/Seoul)").lstrip("0").lower()
+
+            except:
+                weekly_percentage = 0
+                weekly_bar = format_usage_bar(0, width=50)
+                weekly_used = 0
+                weekly_limit = 500
+                weekly_reset_str = "N/A"
+        else:
+            weekly_percentage = 0
+            weekly_bar = format_usage_bar(0, width=50)
+            weekly_used = 0
+            weekly_limit = 500
+            weekly_reset_str = "N/A"
+
         return f"""
 ╔═══════════════════════════════════════════════════════════
 ║ Settings: Status Config [Usage] (tab to cycle)
 ║
 ║ Current session - Resets {reset_str}
 ║ {session_bar}
-║ {percentage}% used
+║ {percentage}% used ({usage['used']}/{usage['daily_limit']})
 ║
-║ Current week (all models) - Resets Dec 24, 10pm (Asia/Seoul)
-║ ████████████████████████████████▌
-║ 58% used (example)
+║ Current week (all models) - Resets {weekly_reset_str}
+║ {weekly_bar}
+║ {weekly_percentage}% used ({weekly_used}/{weekly_limit})
 ║
 ║ Extra usage
 ║ Extra usage not enabled - /extra-usage to enable
