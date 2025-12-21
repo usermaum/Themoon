@@ -46,6 +46,11 @@
   - `SYSTEM_OVERVIEW.md`: 시스템 개요 다이어그램 변환.
   - `DEPLOYMENT_ARCHITECTURE.md`: 배포 아키텍처 및 Git 워크플로우 변환.
   - `TECHNOLOGY_STACK.md`: 기술 스택 아키텍처 변환.
+- **Syntax Fixes**:
+  - 일부 문서의 Mermaid 문법 오류(중첩 코드블록, 특수문자 라벨) 수정.
+  - `DATABASE_SCHEMA.md`: Mermaid v8.8.0 호환성을 위해 ER 다이어그램을 관계(Relationship) 위주로 단순화 (속성 정의 제거).
+
+
 
 
 ### ⚙️ statusline 자동 사용량 추적 시스템 (2025-12-20)
