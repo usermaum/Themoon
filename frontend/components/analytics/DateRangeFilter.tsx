@@ -129,8 +129,12 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => {
-                                    setStartDate(e.target.value)
+                                    const newStart = e.target.value
+                                    setStartDate(newStart)
                                     setActivePreset("custom")
+                                    if (newStart && endDate) {
+                                        onDateChange(newStart, endDate)
+                                    }
                                 }}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             />
@@ -141,28 +145,25 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => {
-                                    setEndDate(e.target.value)
+                                    const newEnd = e.target.value
+                                    setEndDate(newEnd)
                                     setActivePreset("custom")
+                                    if (startDate && newEnd) {
+                                        onDateChange(startDate, newEnd)
+                                    }
                                 }}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                             />
                         </div>
                     </div>
 
-                    {/* Apply/Reset Buttons */}
-                    <div className="flex gap-2">
-                        <Button
-                            size="sm"
-                            onClick={handleCustomDate}
-                            disabled={!startDate || !endDate}
-                            className="flex-1"
-                        >
-                            적용
-                        </Button>
+                    {/* Reset Button Only */}
+                    <div>
                         <Button
                             size="sm"
                             variant="outline"
                             onClick={handleReset}
+                            className="w-full"
                         >
                             초기화
                         </Button>
