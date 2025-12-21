@@ -20,7 +20,8 @@ export default function AnalyticsPage() {
     const [endDate, setEndDate] = useState<string | null>(null)
 
     const fetchData = async (start?: string | null, end?: string | null) => {
-        setLoading(true)
+        // Only set loading on initial load or handle it differently
+        // setLoading(true) <--- Removing this to prevent unmounting DateRangeFilter
         try {
             // Build params
             const dateParams: any = {}
@@ -40,6 +41,9 @@ export default function AnalyticsPage() {
             setCostTrends(trendRes.data)
 
             // 3. Fetch Inventory for Valuation (no date filter)
+            // Only fetch if not already loaded or if needed? 
+            // For now, let's keep fetching it or optimize.
+            // But to be safe, we fetch everything.
             const beansRes = await axios.get("http://localhost:8000/api/v1/beans/")
             const inventoryData = beansRes.data.items.map((bean: any) => ({
                 bean_name: bean.name,
