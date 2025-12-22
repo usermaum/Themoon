@@ -47,11 +47,12 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
+logs/*
 !logs/CHANGELOG.md
 !logs/VERSION
 !logs/VERSION_MANAGEMENT.md
 !logs/VERSION_STRATEGY.md
+!logs/update_version.py
 
 
 # Next.js
