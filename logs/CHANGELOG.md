@@ -13,10 +13,32 @@
 
 ## [0.4.5] - 2025-12-22
 
-### 🐛 패치 (Bug Fix): 이미지 서비스 고도화 (보안, 안정성, 테스트, 운영 개선)
+### 🐛 패치 (Bug Fix): 이미지 서비스 고도화 및 타입 안정성 강화
 
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
+#### 📝 주요 변경사항
+
+**이미지 서비스 타입 안정성 강화**:
+- Optional 타입 명시 (`upload_base_dir`, `output_dir`, `custom_filename`)
+- PIL.Image.Image 타입 정확화 (모듈이 아닌 클래스 사용)
+- 변수 타입 주석 추가 (`results`, `saved_paths`, `file_ext`, `rel_path_str`)
+- Python 3.10+ `no_implicit_optional=True` 정책 준수
+- mypy 타입 체크 완전 통과 (image_service.py)
+
+**메뉴 구조 문서화**:
+- 7개 주요 메뉴 섹션 전체 계층 분석
+- 총 44개 페이지 구조 매핑
+- 5개 Mermaid 다이어그램 작성 (계층, Inbound 플로우, Roasting 플로우, Bean CRUD, 상호연결)
+- 개발 가이드 및 개선 제안 포함
+
+**생두 이미지 최적화**:
+- 16개 생두 품종 이미지 3종 생성 (original/webview/thumbnail)
+- 총 48개 최적화 이미지 파일 추가
+- `optimize_bean_images.py` 배치 처리 스크립트 구현
+
+**코드 품질 개선**:
+- 이미지 서비스 개선 플랜 작성 (13개 작업, 우선순위별 분류)
+- Priority 1 (Critical) 작업 완료
+- IDE 자동완성 및 리팩토링 지원 강화
 
 ## [0.4.4] - 2025-12-22
 
