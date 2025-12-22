@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.4.3
+> **버전**: 0.4.4
 
 ---
 
@@ -253,7 +253,7 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 **참고**: 상세 내용은 `Documents/Guides/PROGRAMMING_RULES.md` 참조
 
 **마지막 업데이트**: 2025-12-22
-**프로젝트 버전**: 0.4.3
+**프로젝트 버전**: 0.4.4
 
 ---
 
@@ -272,28 +272,26 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 ---
 
-### 📅 마지막 세션: 2025-12-22 (Image Optimization Planning & Google Drive Infrastructure)
+### 📅 마지막 세션: 2025-12-22 (Image Optimization Implementation Phase 1)
 
-**✅ 완료된 작업 (v0.4.3)**:
+**✅ 완료된 작업 (v0.4.4)**:
 
-1. ✅ **인바운드 UI/UX 고도화 (v0.4.2)**
-   - **저장 로직 단순화**: 버튼 명칭을 "저장"으로 단순화하고 저장 성공 시 폼 자동 초기화.
-   - **삭제 버튼 스타일링**: `Trash2` 아이콘과 레드 컬러 테마 적용.
-   - **아이콘 통일**: 사이드바 및 인바운드 페이지 아이콘을 `FileText`로 일치시킴.
+1. ✅ **이미지 최적화 및 계층형 로컬 저장 구현 (Phase 1)**
+   - **보안 검증**: Magic Bytes 기반 실제 이미지 여부 검증 엔진 구축.
+   - **최적화 엔진 (Pillow)**: 원본 최적화, Webview(WebP), Thumbnail(WebP) 3종 이미지 자동 생성.
+   - **저장 시스템**: 연/월 폴더별 자동 분류 저장 로직 구현.
+   - **DB 스키마 확장**: 3종 이미지 경로 및 메타데이터(크기, 용량 등) 저장 컬럼 추가.
+   - **Inbound API 연동**: 분석 엔드포인트(`analyze`)에 실시간 최적화 로직 통합.
 
-2. ✅ **스마트 이미지 처리 전략 수립**
-   - **이미지 최적화 플랜**: 업로드 이미지 압축, 썸네일 자동 생성, Invoice 기능 연동을 위한 상세 구현 계획서([IMAGE_OPTIMIZATION_PLAN.md](file:///d:/Ai/WslProject/Themoon/Documents/Planning/IMAGE_OPTIMIZATION_PLAN.md)) 작성.
-
-3. ✅ **Google Drive API 기반 정비**
-   - **의존성 해결**: WSL venv에 구글 클라우드 관련 라이브러리 설치.
-   - **보안 가이드**: 구글 클라우드 조직 정책 차단 현상 진단 및 대응 가이드 제공.
-   - **인증 방식 검토**: 서비스 계정 기반의 자동 업로드 환경 점검.
+2. ✅ **Google Drive 통합 제거**
+   - 불필요한 Drive 관련 서비스 및 테스트 스크립트 삭제.
+   - 개인 유저 저장 공간 제약(Storage Quota) 이슈 대응.
 
 **Git 상태**:
 - 현재 브랜치: main
-- 최신 커밋: v0.4.2 업데이트 완료
+- 최신 커밋: v0.4.4 이미지 최적화 Phase 1 구현 완료
 
 **🎯 다음 작업 옵션**:
 1. 로스팅 로그 연동 (FIFO 원가 기록)
-2. 이미지 최적화 (Compression & Thumbnail) 구현
-3. 명세서 목록(Invoice List) UI 구현
+2. 명세서 목록(Invoice List) UI 구현
+3. 원두 이미지 최적화 일괄 적용

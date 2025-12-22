@@ -44,6 +44,19 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     CONTEXT7_API_KEY: Optional[str] = None
 
+    # Image Processing Settings
+    IMAGE_UPLOAD_BASE_DIR: str = "static/uploads/inbound"
+    IMAGE_MAX_FILE_SIZE: int = 20 * 1024 * 1024  # 20MB
+    IMAGE_MIN_FREE_DISK_SPACE_GB: int = 5  # 최소 여유 공간
+
+    # Image Quality Profiles
+    IMAGE_ORIGINAL_MAX_SIZE: tuple[int, int] = (1600, 2400)
+    IMAGE_ORIGINAL_QUALITY: int = 95
+    IMAGE_WEBVIEW_MAX_SIZE: tuple[int, int] = (1200, 1800)
+    IMAGE_WEBVIEW_QUALITY: int = 85
+    IMAGE_THUMBNAIL_MAX_SIZE: tuple[int, int] = (400, 400)
+    IMAGE_THUMBNAIL_QUALITY: int = 75
+
     class Config:
         # 프로젝트 루트의 .env 파일 사용 (모노레포 구조)
         env_file = os.path.join(_ROOT_DIR, ".env")
