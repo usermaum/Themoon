@@ -13,12 +13,22 @@ class OCRService:
         if api_key:
             # 새로운 google.genai Client 사용
             self.client = genai.Client(api_key=api_key)
-            # Gemini 2.0 Flash 모델 사용
-            self.model_name = 'gemini-2.0-flash-exp'
+            # 사용할 모델 리스트 (순서대로 시도)
+            # 우선순위: 1) 안정성 2) Rate Limit 관대함 3) 최신 기능
+            # 1. Gemini 2.5 Flash (최신 안정 버전, 테스트 통과 ✅)
+            # 2. Gemini Flash Latest (원래 사용, 안정적, 테스트 통과 ✅)
+            # 3. Gemini 2.0 Flash (Stable 버전)
+            # 4. Gemini 2.0 Flash Exp (Experimental, Rate Limit 엄격, 최후 수단)
+            self.models = [
+                'gemini-2.5-flash',
+                'gemini-flash-latest',
+                'gemini-2.0-flash',
+                'gemini-2.0-flash-exp'
+            ]
         else:
             print("Warning: GOOGLE_API_KEY not found in environment variables.")
             self.client = None
-            self.model_name = None
+            self.models = []
 
     def analyze_image(self, image_bytes: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
         if not self.client:
@@ -111,34 +121,48 @@ class OCRService:
         5. Return ONLY valid JSON, no markdown code blocks.
         """
 
-        try:
-            # 새로운 API: client.models.generate_content() 사용
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=[
-                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-                    prompt
-                ]
-            )
+        last_exception = None
 
-            text = response.text
-            # Clean up markdown if present
-            if text.strip().startswith("```json"):
-                text = text.strip()[7:]
-                if text.endswith("```"):
-                    text = text[:-3]
-            elif text.strip().startswith("```"):
-                text = text.strip()[3:]
-                if text.endswith("```"):
-                    text = text[:-3]
+        for model_name in self.models:
+            print(f"🔄 Trying OCR with model: {model_name}...")
+            try:
+                # 새로운 API: client.models.generate_content() 사용
+                response = self.client.models.generate_content(
+                    model=model_name,
+                    contents=[
+                        types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                        prompt
+                    ]
+                )
 
-            return json.loads(text.strip())
+                text = response.text
+                # Clean up markdown if present
+                if text.strip().startswith("```json"):
+                    text = text.strip()[7:]
+                    if text.endswith("```"):
+                        text = text[:-3]
+                elif text.strip().startswith("```"):
+                    text = text.strip()[3:]
+                    if text.endswith("```"):
+                        text = text[:-3]
+                
+                print(f"✅ OCR Success with {model_name}")
+                return json.loads(text.strip())
 
-        except Exception as e:
-            error_str = str(e)
-            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-                print(f"⚠️ Gemini API Quota Exceeded: {e}")
-                # Raise a specific error message that can be caught by the endpoint
-                raise Exception("GEMINI_QUOTA_EXCEEDED")
-            print(f"Error during Gemini OCR analysis: {e}")
-            raise e
+            except Exception as e:
+                error_str = str(e)
+                last_exception = e
+                
+                # Quota 관련 에러인 경우 다음 모델 시도
+                if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                    print(f"⚠️ Quota Exceeded for {model_name}. Switching to next model...")
+                    continue
+                
+                # 다른 에러라면 바로 실패 처리
+                print(f"❌ Error during Gemini OCR analysis ({model_name}): {e}")
+                raise e
+
+        # 모든 모델 실패 시 (여기까지 오면 마지막 에러가 Quota 에러임)
+        if last_exception:
+            print("❌ All models exhausted quotas.")
+            raise Exception("GEMINI_QUOTA_EXCEEDED")
