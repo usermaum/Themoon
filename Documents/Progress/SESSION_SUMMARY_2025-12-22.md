@@ -47,17 +47,86 @@
 - **보안 이슈 진단**: 구글 클라우드의 조직 정책(`iam.disableServiceAccountKeyCreation`)에 따른 키 생성 차단 원인을 분석하고 해제 방법을 사용자에게 가이드했습니다.
 - **인증 방식 최적화**: 서비스 계정(Service Account)과 OAuth 2.0 방식의 차이를 설명하고, 서버 자동 업로드를 위한 최적의 인증 방식(SA)을 제안했습니다.
 
+### 5. 이미지 최적화 시스템 Phase 1 구현 완료 (2025-12-22 저녁)
+- **ImageService 클래스 구현** (`backend/app/services/image_service.py`, 121줄):
+    - 4단계 보안 검증: 파일 크기, 확장자, MIME 타입, 이미지 무결성 체크
+    - 3종 이미지 생성: original(1600x2400, JPEG), webview(1200x1800, WEBP), thumbnail(400x400, WEBP)
+    - 연/월별 폴더 자동 생성 (`YYYY/MM` 구조)
+    - inbound.py 라우터 완벽 통합
+
+- **코드 분석 및 개선 플랜 수립**:
+    - 3개 Explore 에이전트 병렬 실행으로 코드 품질 분석
+    - 10개 주요 이슈 식별 (Critical 1개, High 6개, Medium 3개)
+    - 우선순위별 13개 작업 정의 (예상 4시간 소요)
+    - `Documents/Planning/IMAGE_SERVICE_IMPROVEMENT_PLAN.md` 작성
+
+- **생두 이미지 배치 최적화**:
+    - 16개 생두 품종 이미지 최적화 완료
+    - 총 48개 파일 생성 (original/webview/thumbnail × 16품종)
+    - `optimize_bean_images.py` 스크립트 구현
+    - `frontend/public/images/raw_material/` 디렉토리 생성
+
+### 6. 프로젝트 메뉴 구조 문서화 (2025-12-22 저녁)
+- **메뉴 계층 분석** (`Documents/Architecture/MENU_STRUCTURE.md`):
+    - 7개 주요 메뉴 섹션 정의 (Home, Beans, Roasting, Blends, Inventory, Inbound, Analytics)
+    - 총 44개 페이지 구조 분석 및 계층 매핑
+    - 사용 빈도 및 우선순위 분석
+
+- **Mermaid 다이어그램 작성**:
+    - 메뉴 계층 구조도 (3계층 트리)
+    - Inbound 처리 플로우차트 (14단계)
+    - Roasting 워크플로우 (단일/블렌드 분기)
+    - Bean 관리 CRUD 플로우
+    - 메뉴 상호연결 다이어그램
+
+- **개발 가이드 포함**:
+    - 네이밍 컨벤션 및 아이콘 선택 원칙
+    - 새 메뉴 추가 방법 (Sidebar.tsx 수정 가이드)
+    - 단기/중기/장기 개선 제안
+
 ---
 
-## 🛠️ 작업 파일 요약 (v0.4.2)
-- `frontend/app/inventory/inbound/page.tsx`: UI 개선, 저장 후 초기화 로직 추가.
-- `frontend/components/layout/Sidebar.tsx`: 인바운드 아이콘 통일.
-- `logs/CHANGELOG.md`, `README.md`, `GEMINI.md`, `VERSION`: 버전 업데이트 (v0.4.2).
-- `Documents/Progress/SESSION_SUMMARY_2025-12-22.md`: 본 요약 문서.
+## 🛠️ 작업 파일 요약
+
+### 문서 (Documentation)
+- `Documents/Architecture/MENU_STRUCTURE.md`: 메뉴 구조 전체 분석 및 다이어그램 (신규)
+- `Documents/Planning/IMAGE_OPTIMIZATION_PLAN.md`: v2.0 → v2.1 업데이트
+- `Documents/Planning/IMAGE_SERVICE_IMPROVEMENT_PLAN.md`: 개선 플랜 작성 (신규)
+- `Documents/Progress/SESSION_SUMMARY_2025-12-22.md`: 세션 요약 업데이트
+
+### 백엔드 (Backend)
+- `backend/app/services/image_service.py`: Phase 1 구현 완료 (121줄)
+- `backend/app/services/inventory_service.py`: 재고 서비스 추가 (신규)
+- `backend/app/api/v1/endpoints/inbound.py`: ImageService 통합
+- `backend/app/models/inbound_item.py`: 이미지 경로 컬럼 추가
+- `backend/scripts/optimize_bean_images.py`: 생두 이미지 배치 최적화 스크립트 (신규)
+- `backend/tests/image_service_test.py`: 테스트 파일
+
+### 프론트엔드 (Frontend)
+- `frontend/app/inventory/inbound/page.tsx`: UI 개선, 저장 후 초기화
+- `frontend/app/beans/page.tsx`: 페이지 업데이트
+- `frontend/app/roasting/*.tsx`: 로스팅 페이지 개선
+- `frontend/components/ui/dialog.tsx`: Dialog 컴포넌트 추가 (신규)
+- `frontend/components/ui/skeleton.tsx`: Skeleton 컴포넌트 추가 (신규)
+- `frontend/public/images/raw_material/*`: 생두 최적화 이미지 48개 (신규)
 
 ---
 
 ## 🎯 다음 작업 제안
-1. **로스팅 로그 연동**: FIFO 원가 기록을 위한 실제 로스팅 데이터 연동 작업.
-2. **이미지 최적화 구현**: 수립된 계획에 따른 이미지 압축 및 썸네일 생성 로직 구현.
-3. **명세서 목록(Invoice List) UI**: 저장된 명세서들을 썸네일과 함께 조회하고 관리하는 통합 페이지 구현.
+
+### 우선순위 1: 이미지 서비스 개선 (Critical)
+1. **타입 힌트 오류 수정**: `image_service.py` Line 56 (`any` → `Any`)
+2. **보안 강화**: EXIF 데이터 제거, 경로 검증 추가
+3. **안정성 개선**: 원자적 저장, 디스크 용량 체크, 롤백 로직
+
+### 우선순위 2: 기능 확장
+4. **Invoice 목록 UI**: 저장된 명세서를 썸네일과 함께 조회/관리
+5. **OCR 전처리 최적화**: 그레이스케일, 대비 향상 (Phase 3)
+6. **백업 자동화**: rsync 스크립트 및 Cron 설정 (Phase 2)
+
+### 우선순위 3: 테스트 및 모니터링
+7. **단위 테스트 확장**: `test_image_service.py` 커버리지 80% 이상
+8. **성능 메트릭 추적**: 처리 시간, 압축률, 디스크 사용량
+9. **로깅 개선**: 구조화된 로깅 및 에러 추적
+
+**참고 문서**: `Documents/Planning/IMAGE_SERVICE_IMPROVEMENT_PLAN.md`
