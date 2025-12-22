@@ -151,3 +151,10 @@ class InboundConfirmRequest(BaseModel):
     receiver: Optional[ReceiverInfo] = None
     amounts: Optional[AmountsInfo] = None
     additional_info: Optional[AdditionalInfo] = None
+
+class PaginatedInboundResponse(BaseModel):
+    items: List[InboundDocument]
+    total: int
+    page: int
+    size: int
+    total_pages: int
