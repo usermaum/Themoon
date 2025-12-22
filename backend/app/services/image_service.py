@@ -8,6 +8,7 @@ from datetime import datetime
 from PIL import Image
 from pathlib import Path
 from typing import Tuple, Dict, Optional, Any
+from PIL.Image import Image as PILImage
 
 import time
 from app.config import settings
@@ -15,7 +16,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 class ImageService:
-    def __init__(self, upload_base_dir: str = None):
+    def __init__(self, upload_base_dir: Optional[str] = None):
         self.base_dir = Path(upload_base_dir or settings.IMAGE_UPLOAD_BASE_DIR)
         self.allowed_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.tiff'}
         self.allowed_mime_types = {'image/jpeg', 'image/png', 'image/webp', 'image/tiff'}
@@ -28,18 +29,18 @@ class ImageService:
             'thumbnail': {'max_size': settings.IMAGE_THUMBNAIL_MAX_SIZE, 'quality': settings.IMAGE_THUMBNAIL_QUALITY, 'format': 'WEBP', 'suffix': '_thumb'}
         }
 
-    def _strip_sensitive_exif(self, img: Image) -> Image:
+    def _strip_sensitive_exif(self, img: PILImage) -> PILImage:
         """EXIF 민감 데이터 제거 (GPS, 카메라 정보 등)"""
         from PIL import ImageOps
-        
+
         # 1. 방향 정보 적용 (회전)
         img = ImageOps.exif_transpose(img)
-        
+
         # 2. 모든 EXIF 데이터 제거
         data = list(img.getdata())
         img_without_exif = Image.new(img.mode, img.size)
         img_without_exif.putdata(data)
-        
+
         return img_without_exif
 
     def _validate_path_security(self, path: Path) -> bool:
@@ -84,7 +85,7 @@ class ImageService:
 
         logger.debug(f"Disk space OK: {free_gb:.2f}GB free")
 
-    def _save_atomic(self, img: Image, target_path: Path, **save_kwargs) -> None:
+    def _save_atomic(self, img: PILImage, target_path: Path, **save_kwargs) -> None:
         """원자적 이미지 저장 (임시 파일 + rename)"""
         import tempfile
 
@@ -149,11 +150,11 @@ class ImageService:
 
         return True, ""
 
-    def process_and_save(self, 
-                        file_content: bytes, 
-                        original_filename: str, 
-                        output_dir: Path = None,
-                        custom_filename: str = None) -> Dict[str, Any]:
+    def process_and_save(self,
+                        file_content: bytes,
+                        original_filename: str,
+                        output_dir: Optional[Path] = None,
+                        custom_filename: Optional[str] = None) -> Dict[str, Any]:
         """
         Main entry point to process an image and save it in 3 tiers.
         Returns a dictionary with paths and metadata.
@@ -191,13 +192,13 @@ class ImageService:
         if self.base_dir.exists() and not output_dir:
              self._check_disk_space(min_free_gb=settings.IMAGE_MIN_FREE_DISK_SPACE_GB)
 
-        results = {
+        results: Dict[str, Any] = {
             "file_size_bytes": len(file_content),
             "original_filename": original_filename,
             "paths": {}
         }
-        
-        saved_paths = []
+
+        saved_paths: list[Path] = []
         start_time = time.time()
 
         try:
@@ -214,24 +215,25 @@ class ImageService:
                 for tier, config in self.profiles.items():
                     # For custom output (e.g. batch processing), we might not want all tiers or want flat structure
                     # But for now, let's keep the logic consistent or adapt based on output_dir presence
-                    
+
                     tier_img = img.copy()
                     tier_img.thumbnail(config['max_size'], Image.Resampling.LANCZOS)
-                    
-                    file_ext = config['format'].lower()
+
+                    file_ext: str = str(config['format']).lower()
                     if file_ext == 'jpeg': file_ext = 'jpg'
-                    
+
                     tier_filename = f"{safe_base_name}{config['suffix']}.{file_ext}"
-                    
+
                     if output_dir:
                         # Flat structure for batch optimization usually
-                        # But let's check if we want flat or tiered. 
+                        # But let's check if we want flat or tiered.
                         # For bean images, we probably want them in the same folder.
                         abs_path = abs_base_dir / tier_filename
-                        rel_path = tier_filename # Just filename
+                        rel_path_str = tier_filename # Just filename
                     else:
-                        rel_path = rel_dir / tier / tier_filename
-                        abs_path = self.base_dir / rel_path
+                        rel_path_obj = rel_dir / tier / tier_filename
+                        abs_path = self.base_dir / rel_path_obj
+                        rel_path_str = str(rel_path_obj)
                     
                     # Security Check: Path Validation
                     # Skip for custom output_dir as it implies trusted system operation
@@ -248,9 +250,9 @@ class ImageService:
                     )
                     
                     saved_paths.append(abs_path)
-                    
+
                     # Store results (using forward slashes for URL compatibility)
-                    results["paths"][tier] = str(rel_path).replace("\\", "/")
+                    results["paths"][tier] = rel_path_str.replace("\\", "/")
 
             elapsed_ms = (time.time() - start_time) * 1000
             
