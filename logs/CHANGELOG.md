@@ -13,8 +13,19 @@
 
 ## [0.4.3] - 2025-12-22
 ### Added
-- **Image Optimization Plan**: 명세서 이미지 최적화 및 썸네일 생성 상세 계획 수립 및 문서화.
-- **Google Drive API Infrastructure**: WSL venv에 필수 라이브러리 설치 및 보안 정책(Organization Policy) 대응 가이드 제공.
+- **Image Optimization Plan v2.1**: 명세서 이미지 최적화 로컬 스토리지 중심 재설계
+  - **정책 대응**: Google Drive 조직 정책 제약으로 로컬 파일시스템 중심 전환
+  - **보안 검증**: 악성 파일 업로드 차단 (Magic Bytes, MIME Type 검증)
+  - **로컬 스토리지 아키텍처**: 연/월별 폴더 구조, 원자적 저장, 권한 관리
+  - **OCR 전처리 최적화**: 그레이스케일, 대비 향상, 품질 검증
+  - **3종 이미지 생성**: 원본(1600x2400, OCR용), 웹뷰(1200x1800), 썸네일(400x400)
+  - **모니터링 및 로깅**: 업로드 성공률, 처리 시간, OCR 정확도, 디스크 사용량 추적
+  - **백업 전략**: 로컬(Primary) + NAS/외장HDD(Secondary) + DB 메타데이터(Tertiary)
+  - **백업 자동화**: rsync 기반 주간 백업 스크립트 제공
+  - **캐싱 전략**: 브라우저 캐시(24시간), 서버 메모리 캐시(LRU 100개)
+  - **파일 명명 규칙**: UUID 기반 충돌 방지 체계
+  - **5단계 로드맵**: Phase 1(기반) → Phase 2(스토리지/백업) → Phase 3(OCR) → Phase 4(프론트엔드) → Phase 5(모니터링)
+- **Google Drive API Infrastructure**: WSL venv에 필수 라이브러리 설치 및 보안 정책(Organization Policy) 대응 가이드 제공 (※ 정책 제약으로 사용 보류).
 
 ## [0.4.2] - 2025-12-22
 

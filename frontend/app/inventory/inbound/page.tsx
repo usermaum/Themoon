@@ -36,6 +36,12 @@ interface InboundForm {
     total_amount: number
     items: InboundItem[]
     drive_link?: string
+    original_image_path?: string
+    webview_image_path?: string
+    thumbnail_image_path?: string
+    image_width?: number
+    image_height?: number
+    file_size_bytes?: number
     notes?: string
 }
 
@@ -278,7 +284,14 @@ export default function InboundPage() {
                     invoice_date: data.invoice_date,
                     total_amount: data.total_amount,
                     image_url: driveLink, // Using the local link
-                    notes: data.notes
+                    notes: data.notes,
+                    // Tiered Storage
+                    original_image_path: ocrResult?.original_image_path,
+                    webview_image_path: ocrResult?.webview_image_path,
+                    thumbnail_image_path: ocrResult?.thumbnail_image_path,
+                    image_width: ocrResult?.image_width,
+                    image_height: ocrResult?.image_height,
+                    file_size_bytes: ocrResult?.file_size_bytes,
                 },
                 // NEW: Include full OCR data for detailed storage (Option B)
                 document_info: ocrResult?.document_info,

@@ -4,8 +4,8 @@ import httpx
 import logging
 import os
 import uuid
-from app.services.google_drive_service import GoogleDriveService
 from app.services.ocr_service import OCRService
+from app.services.image_service import image_service
 from app.schemas.inbound import OCRResponse, AnalyzeUrlRequest
 from app.config import settings
 from sqlalchemy.orm import Session
@@ -23,7 +23,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 # Initialize services
-drive_service = GoogleDriveService()
 ocr_service = OCRService()
 
 # === 생두 매칭 헬퍼 함수 ===
@@ -116,6 +115,12 @@ async def analyze_inbound_document(
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Empty image data")
 
+    # 1. Security Validation
+    is_valid, error_msg = image_service.validate_image(image_bytes, filename)
+    if not is_valid:
+        logger.warning(f"Image validation failed: {filename} - {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
+
     # 3. Perform OCR (Validate first)
     try:
         ocr_result = ocr_service.analyze_image(image_bytes, mime_type)
@@ -131,30 +136,17 @@ async def analyze_inbound_document(
         logger.error(f"OCR Analysis Failed: {e}")
         raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
 
-    # 2. Save to Local Storage (Only if valid)
-    drive_link = None
+    # 2. Process and Save to Local Storage (Tiered)
+    image_data = None
     try:
-        # Create directory if not exists
-        upload_dir = os.path.join("static", "uploads", "inbound")
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        # Generate unique filename
-        file_ext = os.path.splitext(filename)[1]
-        if not file_ext: # Fallback for URLs
-            file_ext = ".jpg"
-        unique_filename = f"{uuid.uuid4()}{file_ext}"
-        file_path = os.path.join(upload_dir, unique_filename)
-        
-        # Save file
-        with open(file_path, "wb") as f:
-            f.write(image_bytes)
-            
-        drive_link = f"/static/uploads/inbound/{unique_filename}"
-        logger.info(f"Image saved locally at: {file_path}")
-
+        image_data = image_service.process_and_save(image_bytes, filename)
+        drive_link = f"/static/uploads/inbound/{image_data['paths']['original']}"
+        logger.info(f"Image processed and saved: {image_data['paths']}")
     except Exception as e:
-        logger.error(f"Local File Save Failed: {e}")
-        logger.warning(f"Continuing without Local Save due to error: {e}")
+        logger.error(f"Image processing failed: {e}")
+        # Fallback to simple save if needed, or raise error. 
+        # For now, we prefer raising error to ensure data integrity.
+        raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
 
     # 4. Merge Results (새로운 구조화된 데이터 + 하위 호환성)
     from app.schemas.inbound import (
@@ -206,8 +198,14 @@ async def analyze_inbound_document(
         invoice_date=ocr_result.get("document_info", {}).get("invoice_date"),
         total_amount=ocr_result.get("amounts", {}).get("total_amount"),
 
-        # 메타 정보
-        drive_link=drive_link
+        # 메타 정보 (Tiered Storage)
+        drive_link=drive_link,
+        original_image_path=image_data['paths'].get('original') if image_data else None,
+        webview_image_path=image_data['paths'].get('webview') if image_data else None,
+        thumbnail_image_path=image_data['paths'].get('thumbnail') if image_data else None,
+        image_width=image_data.get('width') if image_data else None,
+        image_height=image_data.get('height') if image_data else None,
+        file_size_bytes=image_data.get('file_size_bytes') if image_data else None
     )
 
     return response
