@@ -23,36 +23,9 @@ import {
 import { Separator } from "@/components/ui/separator"
 
 // Types (should ideally be in a shared type file)
-interface InboundDocument {
-    id: number
-    contract_number?: string
-    supplier_name?: string
-    invoice_date?: string
-    total_amount?: number
-    thumbnail_image_path?: string
-    webview_image_path?: string
-    processing_status: string
-    created_at: string
-    item_count?: number
-    supplier_business_number?: string
-}
-
-interface InboundListResponse {
-    items: InboundDocument[]
-    total: number
-    page: number
-    size: number
-    total_pages: number
-}
+import { InboundDocument, InboundListResponse, InboundDetail } from "@/types/inbound"
 
 // === NEW: Detail Component ===
-interface InboundDetail {
-    document: InboundDocument
-    items: any[]
-    detail?: any
-    receiver?: any
-}
-
 function InboundDetailDialog({ docId, trigger }: { docId: number, trigger: React.ReactNode }) {
     const [detail, setDetail] = useState<InboundDetail | null>(null)
     const [loading, setLoading] = useState(false)
@@ -162,6 +135,24 @@ function InboundDetailDialog({ docId, trigger }: { docId: number, trigger: React
                                 </div>
                             </div>
                         </div>
+
+                        {/* Actions */}
+                        {(detail.document.original_image_path || detail.document.webview_image_path) && (
+                            <div className="flex justify-end pt-4 border-t border-gray-200">
+                                <Button
+                                    onClick={() => {
+                                        const path = detail.document.original_image_path || detail.document.webview_image_path;
+                                        const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/static/uploads/inbound/${path}`;
+                                        window.open(url, '_blank');
+                                    }}
+                                    variant="outline"
+                                    className="flex items-center gap-2"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                    원본 이미지 보기
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="py-20 text-center text-muted-foreground italic text-black">
@@ -169,7 +160,7 @@ function InboundDetailDialog({ docId, trigger }: { docId: number, trigger: React
                     </div>
                 )}
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }
 
@@ -268,6 +259,21 @@ export default function InvoiceListPage() {
     const getImageUrl = (path?: string) => {
         if (!path) return null
         return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/static/uploads/inbound/${path}`
+    }
+
+    // Helper to download image
+    const handleDownload = (path?: string, filename?: string) => {
+        if (!path) return;
+        const url = getImageUrl(path);
+        if (!url) return;
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename || 'downloaded_image';
+        link.target = "_blank"; // Fallback
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     return (
@@ -407,6 +413,19 @@ export default function InvoiceListPage() {
                                                                         className="bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
+                                                                            handleDownload(item.original_image_path, `invoice_${item.contract_number}.jpg`);
+                                                                        }}
+                                                                    >
+                                                                        {/* Download Icon */}
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+                                                                        다운로드
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        className="bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
                                                                             window.open(getImageUrl(item.webview_image_path || item.thumbnail_image_path) || "", "_blank")
                                                                         }}
                                                                     >
@@ -484,7 +503,39 @@ export default function InvoiceListPage() {
                         </div>
                     )}
                 </Card>
+
+                {/* System Status Bar (Admin Only) */}
+                <SystemStatusBar />
             </div>
+        </div>
+    )
+}
+
+function SystemStatusBar() {
+    const [status, setStatus] = useState<any>(null)
+
+    useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+                const res = await fetch(`${apiUrl}/api/v1/system/status`)
+                if (res.ok) {
+                    setStatus(await res.json())
+                }
+            } catch (e) {
+                console.error("Failed to fetch system status", e)
+            }
+        }
+        fetchStatus()
+    }, [])
+
+    if (!status) return null
+
+    return (
+        <div className="fixed bottom-0 left-0 right-0 bg-black/80 text-white p-1 text-[10px] flex justify-center gap-4 z-50 pointer-events-none opacity-50 hover:opacity-100 transition-opacity">
+            <span className="font-mono">💾 Disk: {status.disk.percent_used}% ({status.disk.free_gb}GB Free)</span>
+            <span className="text-gray-400">|</span>
+            <span className="font-mono">🖼️ Images: {status.storage.total_images} files ({status.storage.total_size_mb}MB)</span>
         </div>
     )
 }

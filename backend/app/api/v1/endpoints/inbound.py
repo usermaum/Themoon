@@ -79,7 +79,11 @@ def match_bean_multi_field(bean_name: str, db: Session) -> tuple[Bean | None, st
     # 7. 매칭 실패
     return None, "new", "new"
 
-@router.post("/analyze", response_model=OCRResponse)
+from fastapi.responses import StreamingResponse
+import json
+import asyncio
+
+@router.post("/analyze")
 async def analyze_inbound_document(
     file: Optional[UploadFile] = File(None),
     url: Optional[str] = Form(None),
@@ -87,134 +91,194 @@ async def analyze_inbound_document(
 ):
     """
     Analyze an inbound document (invoice) from a file upload or a URL.
-    1. Uploads the image to Google Drive (Inbound Folder).
-    2. Performs OCR using Gemini.
-    3. Returns structured data + Drive Link.
+    Returns a Server-Sent Events (SSE) stream with status updates.
     """
-    image_bytes = None
-    filename = "unknown.jpg"
-    mime_type = "image/jpeg"
-
-    # 1. Get Image Data
+    
+    # Eagerly read file content to prevent "I/O operation on closed file" error
+    # because UploadFile is closed when the request handler exits, but the generator runs later.
+    upload_file_bytes = None
+    upload_filename = "unknown.jpg"
+    upload_content_type = "image/jpeg"
+    
     if file:
-        image_bytes = await file.read()
-        filename = file.filename
-        mime_type = file.content_type or "image/jpeg"
-    elif url:
+        upload_file_bytes = await file.read()
+        upload_filename = file.filename
+        upload_content_type = file.content_type or "image/jpeg"
+
+    async def analyze_generator():
+        image_bytes = None
+        filename = "unknown.jpg"
+        mime_type = "image/jpeg"
+        
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(url, follow_redirects=True)
-                response.raise_for_status()
-                image_bytes = response.content
-                filename = "url_import.jpg" # Generate a better name if possible
-                mime_type = response.headers.get("content-type", "image/jpeg")
+            # Step 1: Image Fetching
+            yield json.dumps({"status": "progress", "message": "이미지를 가져오는 중..."}) + "\n"
+            
+            if upload_file_bytes:
+                image_bytes = upload_file_bytes
+                filename = upload_filename
+                mime_type = upload_content_type
+            elif url:
+                yield json.dumps({"status": "progress", "message": "외부 URL에서 이미지 다운로드 중..."}) + "\n"
+                try:
+                    # Google Drive Link Helper
+                    import re
+                    drive_pattern = r"(?:https?:\/\/)?(?:drive|docs)\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)"
+                    match = re.search(drive_pattern, url)
+                    fetch_url = url
+                    if match:
+                        file_id = match.group(1)
+                        fetch_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                        yield json.dumps({"status": "progress", "message": "Google Drive 링크 변환 중..."}) + "\n"
+
+                    async with httpx.AsyncClient() as client:
+                        response = await client.get(fetch_url, follow_redirects=True)
+                        response.raise_for_status()
+                        image_bytes = response.content
+                        
+                        # Try to extract filename
+                        import cgi
+                        content_disposition = response.headers.get("content-disposition")
+                        if content_disposition:
+                            try:
+                                _, params = cgi.parse_header(content_disposition)
+                                if 'filename' in params:
+                                    filename = params['filename']
+                                    if not any(filename.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.webp']):
+                                        filename += ".jpg"
+                                else:
+                                    filename = "gdrive_upload.jpg"
+                            except:
+                                filename = "gdrive_upload.jpg"
+                        else:
+                            filename = "gdrive_upload.jpg"
+                        
+                        mime_type = response.headers.get("content-type", "image/jpeg")
+                except Exception as e:
+                    yield json.dumps({"status": "error", "message": f"이미지 다운로드 실패: {str(e)}"}) + "\n"
+                    return
+            else:
+                 yield json.dumps({"status": "error", "message": "파일 또는 URL을 제공해야 합니다."}) + "\n"
+                 return
+
+            if not image_bytes:
+                 yield json.dumps({"status": "error", "message": "이미지 데이터가 비어있습니다."}) + "\n"
+                 return
+
+            # Step 2: Validation
+            yield json.dumps({"status": "progress", "message": "이미지 보안 및 품질 검증 중..."}) + "\n"
+            is_valid, error_msg = image_service.validate_image(image_bytes, filename)
+            if not is_valid:
+                yield json.dumps({"status": "error", "message": f"유효하지 않은 이미지: {error_msg}"}) + "\n"
+                return
+
+            # Step 3: Preprocessing
+            yield json.dumps({"status": "progress", "message": "OCR 최적화를 위한 전처리 중..."}) + "\n"
+            processed_image_bytes = image_bytes
+            try:
+                from PIL import Image
+                import io
+                
+                # Explicit BytesIO to prevent premature GC/Closure
+                with io.BytesIO(image_bytes) as buf:
+                    with Image.open(buf) as img:
+                        img.load() # Force load data into memory
+                        processed_img = image_service.preprocess_for_ocr(img)
+                        
+                        output = io.BytesIO()
+                        if processed_img.mode in ('RGBA', 'LA'):
+                            processed_img = processed_img.convert('RGB')
+                        processed_img.save(output, format='JPEG', quality=95)
+                        processed_image_bytes = output.getvalue()
+                        mime_type = "image/jpeg"
+            except Exception as e:
+                logger.warning(f"Preprocessing failed: {e}", exc_info=True)
+                # Continue with original
+
+            # Step 4: OCR Analysis (Streaming from Service)
+            ocr_result = None
+            async for update in ocr_service.analyze_image_stream(processed_image_bytes, mime_type):
+                if update["status"] == "complete":
+                    ocr_result = update["data"]
+                elif update["status"] == "error":
+                    yield json.dumps({"status": "error", "message": update["message"]}) + "\n"
+                    return
+                else:
+                    # Progress update from OCR Service
+                    yield json.dumps(update) + "\n"
+
+            if not ocr_result:
+                yield json.dumps({"status": "error", "message": "OCR 분석 결과가 없습니다."}) + "\n"
+                return
+                
+            if ocr_result.get("error") == "INVALID_DOCUMENT":
+                 yield json.dumps({"status": "error", "message": "INVALID_DOCUMENT: 명세서 형식이 아닙니다."}) + "\n"
+                 return
+
+            # Step 5: Save Image (Local Storage)
+            yield json.dumps({"status": "progress", "message": "이미지 저장 중..."}) + "\n"
+            image_data = None
+            try:
+                # Run sync S3/Local IO in thread to avoid blocking pipeline
+                image_data = await asyncio.to_thread(image_service.process_and_save, image_bytes, filename)
+                drive_link = f"/static/uploads/inbound/{image_data['paths']['original']}"
+            except Exception as e:
+                yield json.dumps({"status": "error", "message": f"이미지 저장 실패: {str(e)}"}) + "\n"
+                return
+
+            # Step 6: Post-processing (Bean Matching)
+            yield json.dumps({"status": "progress", "message": "생두 데이터베이스 매칭 중..."}) + "\n"
+            
+            from app.schemas.inbound import (DocumentInfo, SupplierInfo, ReceiverInfo, AmountsInfo, AdditionalInfo)
+
+            document_info = DocumentInfo(**ocr_result.get("document_info", {})) if "document_info" in ocr_result else None
+            supplier_info = SupplierInfo(**ocr_result.get("supplier", {})) if "supplier" in ocr_result else None
+            receiver_info = ReceiverInfo(**ocr_result.get("receiver", {})) if "receiver" in ocr_result else None
+            amounts_info = AmountsInfo(**ocr_result.get("amounts", {})) if "amounts" in ocr_result else None
+            additional_info = AdditionalInfo(**ocr_result.get("additional_info", {})) if "additional_info" in ocr_result else None
+
+            items_with_match_info = []
+            for item_data in ocr_result.get("items", []):
+                bean_name = item_data.get("bean_name")
+                matched_bean, match_field, match_method = match_bean_multi_field(bean_name, db)
+                item_data["matched"] = matched_bean is not None
+                item_data["match_field"] = match_field
+                item_data["match_method"] = match_method
+                item_data["bean_id"] = matched_bean.id if matched_bean else None
+                items_with_match_info.append(item_data)
+
+            final_response = OCRResponse(
+                debug_raw_text=ocr_result.get("debug_raw_text"),
+                document_info=document_info,
+                supplier=supplier_info,
+                receiver=receiver_info,
+                amounts=amounts_info,
+                items=items_with_match_info,
+                additional_info=additional_info,
+                supplier_name=ocr_result.get("supplier", {}).get("name"),
+                contract_number=ocr_result.get("document_info", {}).get("contract_number"),
+                supplier_phone=ocr_result.get("supplier", {}).get("phone"),
+                supplier_email=ocr_result.get("supplier", {}).get("email"),
+                receiver_name=ocr_result.get("receiver", {}).get("name"),
+                invoice_date=ocr_result.get("document_info", {}).get("invoice_date"),
+                total_amount=ocr_result.get("amounts", {}).get("total_amount"),
+                drive_link=drive_link,
+                original_image_path=image_data['paths'].get('original') if image_data else None,
+                webview_image_path=image_data['paths'].get('webview') if image_data else None,
+                thumbnail_image_path=image_data['paths'].get('thumbnail') if image_data else None,
+                image_width=image_data.get('width') if image_data else None,
+                image_height=image_data.get('height') if image_data else None,
+                file_size_bytes=image_data.get('file_size_bytes') if image_data else None
+            )
+
+            # Final Success Yield
+            yield json.dumps({"status": "complete", "data": final_response.dict()}) + "\n"
+
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Failed to fetch image from URL: {str(e)}")
-    else:
-        raise HTTPException(status_code=400, detail="Must provide either 'file' or 'url'")
+            logger.error(f"Analysis Generator Error: {e}", exc_info=True)
+            yield json.dumps({"status": "error", "message": f"서버 내부 오류: {str(e)}"}) + "\n"
 
-    if not image_bytes:
-        raise HTTPException(status_code=400, detail="Empty image data")
-
-    # 1. Security Validation
-    is_valid, error_msg = image_service.validate_image(image_bytes, filename)
-    if not is_valid:
-        logger.warning(f"Image validation failed: {filename} - {error_msg}")
-        raise HTTPException(status_code=400, detail=error_msg)
-
-    # 3. Perform OCR (Validate first)
-    try:
-        ocr_result = ocr_service.analyze_image(image_bytes, mime_type)
-        if ocr_result.get("error") == "INVALID_DOCUMENT":
-            logger.warning(f"Invalid document detected: {filename}")
-            raise HTTPException(
-                status_code=400, 
-                detail="INVALID_DOCUMENT"
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"OCR Analysis Failed: {e}")
-        if "GEMINI_QUOTA_EXCEEDED" in str(e):
-             raise HTTPException(
-                status_code=429, 
-                detail="Google Gemini API Quota Exceeded. Please try again later (approx. 1 min)."
-            )
-        raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
-
-    # 2. Process and Save to Local Storage (Tiered)
-    image_data = None
-    try:
-        image_data = image_service.process_and_save(image_bytes, filename)
-        drive_link = f"/static/uploads/inbound/{image_data['paths']['original']}"
-        logger.info(f"Image processed and saved: {image_data['paths']}")
-    except Exception as e:
-        logger.error(f"Image processing failed: {e}")
-        # Fallback to simple save if needed, or raise error. 
-        # For now, we prefer raising error to ensure data integrity.
-        raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
-
-    # 4. Merge Results (새로운 구조화된 데이터 + 하위 호환성)
-    from app.schemas.inbound import (
-        DocumentInfo, SupplierInfo, ReceiverInfo,
-        AmountsInfo, AdditionalInfo
-    )
-
-    # 새로운 구조화된 데이터 생성
-    document_info = DocumentInfo(**ocr_result.get("document_info", {})) if "document_info" in ocr_result else None
-    supplier_info = SupplierInfo(**ocr_result.get("supplier", {})) if "supplier" in ocr_result else None
-    receiver_info = ReceiverInfo(**ocr_result.get("receiver", {})) if "receiver" in ocr_result else None
-    amounts_info = AmountsInfo(**ocr_result.get("amounts", {})) if "amounts" in ocr_result else None
-    additional_info = AdditionalInfo(**ocr_result.get("additional_info", {})) if "additional_info" in ocr_result else None
-
-    # 5. 각 아이템에 대해 생두 매칭 시도 (NEW)
-    items_with_match_info = []
-    for item_data in ocr_result.get("items", []):
-        bean_name = item_data.get("bean_name")
-
-        # 매칭 시도
-        matched_bean, match_field, match_method = match_bean_multi_field(bean_name, db)
-
-        # 매칭 정보 추가
-        item_data["matched"] = matched_bean is not None
-        item_data["match_field"] = match_field
-        item_data["match_method"] = match_method
-        item_data["bean_id"] = matched_bean.id if matched_bean else None
-
-        items_with_match_info.append(item_data)
-
-    response = OCRResponse(
-        # 디버그 텍스트
-        debug_raw_text=ocr_result.get("debug_raw_text"),
-
-        # 새로운 구조화된 데이터
-        document_info=document_info,
-        supplier=supplier_info,
-        receiver=receiver_info,
-        amounts=amounts_info,
-        items=items_with_match_info,  # 매칭 정보가 포함된 아이템
-        additional_info=additional_info,
-
-        # 하위 호환성 (기존 필드)
-        supplier_name=ocr_result.get("supplier", {}).get("name"),
-        contract_number=ocr_result.get("document_info", {}).get("contract_number"),
-        supplier_phone=ocr_result.get("supplier", {}).get("phone"),
-        supplier_email=ocr_result.get("supplier", {}).get("email"),
-        receiver_name=ocr_result.get("receiver", {}).get("name"),
-        invoice_date=ocr_result.get("document_info", {}).get("invoice_date"),
-        total_amount=ocr_result.get("amounts", {}).get("total_amount"),
-
-        # 메타 정보 (Tiered Storage)
-        drive_link=drive_link,
-        original_image_path=image_data['paths'].get('original') if image_data else None,
-        webview_image_path=image_data['paths'].get('webview') if image_data else None,
-        thumbnail_image_path=image_data['paths'].get('thumbnail') if image_data else None,
-        image_width=image_data.get('width') if image_data else None,
-        image_height=image_data.get('height') if image_data else None,
-        file_size_bytes=image_data.get('file_size_bytes') if image_data else None
-    )
-
-    return response
+    return StreamingResponse(analyze_generator(), media_type="application/x-ndjson")
 
 @router.get("/list", response_model=PaginatedInboundResponse)
 def get_inbound_list(

@@ -72,6 +72,8 @@ app.include_router(roasting.router, prefix="/api/v1/roasting", tags=["roasting"]
 app.include_router(blends.router, prefix="/api/v1/blends", tags=["blends"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
+from app.api.v1.endpoints import system
+app.include_router(system.router, prefix="/api/v1/system", tags=["system"])
 
 @app.get("/")
 def read_root():
@@ -83,7 +85,15 @@ import os
 # Create static directory if not exists
 os.makedirs("static/uploads", exist_ok=True)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Custom StaticFiles to add Cache-Control headers for images
+class CachedStaticFiles(StaticFiles):
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        # 1년 캐싱 (이미지는 불변으로 간주)
+        response.headers["Cache-Control"] = "public, max-age=31536000"
+        return response
+
+app.mount("/static", CachedStaticFiles(directory="static"), name="static")
 
 @app.get("/health")
 def health_check():

@@ -1,0 +1,8 @@
+------- Claude API Debugger -------
+?뵎 API Key found: sk-ant-api...m-QAA
+
+Attempting to send a simple 'Hello' message to Claude 3.5 Sonnet (20241022)...
+
+??API Call Failed!
+Type: NotFoundError
+Message: Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-3-5-sonnet-20241022'}, 'request_id': 'req_011CWN2kH7QPTqDbZ68tag9r'}

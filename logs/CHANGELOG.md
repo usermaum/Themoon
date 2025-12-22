@@ -11,6 +11,13 @@
 
 ---
 
+## [0.4.6] - 2025-12-23
+
+### 🐛 패치 (Bug Fix): OCR 서비스 Claude 모델 연동 안정화 및 MIME Type 버그 수정, JSON 파싱 견고성 강화
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
 ## [Unreleased]
 
 ### ✨ 기능 추가 (Features) - Gemini 작업 완료 (91개 작업)
@@ -112,6 +119,30 @@
 - **이미지 최적화 플랜 업데이트**
   - v2.2 → v2.3 (디렉토리 구조 정정)
   - 시간 우선 구조로 변경 (코드 구현과 일치)
+
+---
+
+## [0.4.6] - 2025-12-23
+
+### ✨ 기능 추가 (Feature): 실시간 OCR 분석 피드백 (Streaming)
+
+#### 🚀 New Features
+- **실시간 상태 스트리밍 (SSE)**:
+  - Inbound 분석 시 진행 상황을 실시간으로 사용자에게 피드백.
+  - 단계별 메시지 표시: "이미지 전처리 중...", "Claude 3.5 Sonnet 모델로 분석 중...", "생두 매칭 중..." 등.
+  - Server-Sent Events (NDJSON) 기반 스트리밍 구현.
+
+#### 🔧 Backend Improvements
+- **Generator Pattern**:
+  - `OCRService.analyze_image_stream`: 비동기 제너레이터 패턴 적용으로 분석 진행율 산출.
+  - `StreamingResponse`: Inbound API 응답을 스트림으로 전환하여 Timeout 방지 및 UX 개선.
+- **Resource Management**:
+  - `UploadFile` 처리 개선: 스트리밍 응답 전 파일을 즉시 읽어 `I/O operation on closed file` 오류 원천 차단.
+
+#### 💻 Frontend Updates
+- **Interactive Feedback**:
+  - 분석 버튼에 로딩 스피너와 함께 현재 진행 중인 작업 텍스트 표시.
+  - 에러 발생 시 즉각적인 피드백 제공.
 
 ---
 
