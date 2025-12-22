@@ -67,7 +67,7 @@ htmlcov/
 .pytest_cache/
 
 # Google Drive Upload
-.gemini/service_account.json
+.gemini/service_account.json    
 .gemini/service_account.json.backup
 
 # Uploaded files

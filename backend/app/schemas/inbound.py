@@ -93,8 +93,14 @@ class OCRResponse(BaseModel):
     invoice_date: Optional[str] = None
     total_amount: Optional[float] = None
 
-    # 메타 정보
+    # 메타 정보 (Tiered Storage)
     drive_link: Optional[str] = None
+    original_image_path: Optional[str] = None
+    webview_image_path: Optional[str] = None
+    thumbnail_image_path: Optional[str] = None
+    image_width: Optional[int] = None
+    image_height: Optional[int] = None
+    file_size_bytes: Optional[int] = None
 
 # --- Inbound Document DB Schemas ---
 class InboundDocumentBase(BaseModel):
@@ -107,6 +113,15 @@ class InboundDocumentBase(BaseModel):
     total_amount: Optional[float] = None
     image_url: Optional[str] = None
     drive_file_id: Optional[str] = None
+    
+    # Tiered Storage
+    original_image_path: Optional[str] = None
+    webview_image_path: Optional[str] = None
+    thumbnail_image_path: Optional[str] = None
+    image_width: Optional[int] = None
+    image_height: Optional[int] = None
+    file_size_bytes: Optional[int] = None
+    processing_status: Optional[str] = "pending"
     notes: Optional[str] = None
 
 class InboundDocumentCreate(InboundDocumentBase):

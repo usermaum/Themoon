@@ -16,8 +16,17 @@ class InboundDocument(Base):
     
     invoice_date = Column(String, nullable=True)
     total_amount = Column(Float, nullable=True)
-    image_url = Column(String, nullable=True, comment="Google Drive WebView Link or Local Path")
-    drive_file_id = Column(String, nullable=True, comment="Google Drive File ID or Local Filename")
+    image_url = Column(String, nullable=True, comment="Legacy / Primary View Link")
+    drive_file_id = Column(String, nullable=True, comment="Legacy / Main Filename")
+    
+    # Tiered Storage
+    original_image_path = Column(String(500), nullable=True)
+    webview_image_path = Column(String(500), nullable=True)
+    thumbnail_image_path = Column(String(500), nullable=True)
+    image_width = Column(Integer, nullable=True)
+    image_height = Column(Integer, nullable=True)
+    file_size_bytes = Column(Integer, nullable=True)
+    processing_status = Column(String(20), default="pending")
     
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=get_kst_now)
