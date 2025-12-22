@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { format } from "date-fns"
-import { Search, Plus, Calendar, FileText, ChevronLeft, ChevronRight, ImageIcon, ExternalLink, RefreshCw } from "lucide-react"
+import { Search, Plus, Calendar, FileText, ChevronLeft, ChevronRight, ImageIcon, ExternalLink, RefreshCw, Package, X } from "lucide-react"
 import PageHero from "@/components/ui/page-hero"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,8 +17,10 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 
 // Types (should ideally be in a shared type file)
 interface InboundDocument {
@@ -32,6 +34,7 @@ interface InboundDocument {
     processing_status: string
     created_at: string
     item_count?: number
+    supplier_business_number?: string
 }
 
 interface InboundListResponse {
@@ -40,6 +43,154 @@ interface InboundListResponse {
     page: number
     size: number
     total_pages: number
+}
+
+// === NEW: Detail Component ===
+interface InboundDetail {
+    document: InboundDocument
+    items: any[]
+    detail?: any
+    receiver?: any
+}
+
+function InboundDetailDialog({ docId, trigger }: { docId: number, trigger: React.ReactNode }) {
+    const [detail, setDetail] = useState<InboundDetail | null>(null)
+    const [loading, setLoading] = useState(false)
+
+    const fetchDetail = async () => {
+        setLoading(true)
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+            const res = await fetch(`${apiUrl}/api/v1/inbound/${docId}`)
+            if (!res.ok) throw new Error("Failed to fetch detail")
+            const result = await res.json()
+            setDetail(result)
+        } catch (error) {
+            console.error("Error fetching detail:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <Dialog onOpenChange={(open: boolean) => { if (open) fetchDetail() }}>
+            <DialogTrigger asChild>
+                {trigger}
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6 bg-white border-[3px] border-black text-black">
+                {loading ? (
+                    <div className="space-y-4 py-10">
+                        <Skeleton className="h-10 w-48 mx-auto" />
+                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-64 w-full" />
+                    </div>
+                ) : detail ? (
+                    <div className="space-y-6">
+                        {/* Header Section */}
+                        <div className="flex items-start justify-between">
+                            <div className="w-24 h-16 bg-[#8B0000] flex items-center justify-center shrink-0">
+                                <div className="text-white text-center leading-none">
+                                    <div className="text-xl font-bold">GSC</div>
+                                    <div className="text-[8px]">GREEN COFFEE</div>
+                                </div>
+                            </div>
+                            <div className="flex-1 text-center">
+                                <h1 className="text-3xl font-bold tracking-tight">거 래 명 세 서</h1>
+                                <p className="text-xs text-muted-foreground mt-1 text-black">(공급받는자용)</p>
+                            </div>
+                            <div className="w-24 hidden sm:block"></div>
+                        </div>
+
+                        {/* Info Section */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="border border-black p-2 space-y-1">
+                                <InvoiceInfoRow label="등록번호" value={detail.receiver?.business_number || '-'} />
+                                <InvoiceInfoRow label="상호(성명)" value={detail.receiver?.name || 'The Moon Coffee'} />
+                                <InvoiceInfoRow label="사업장소재지" value={detail.receiver?.address || '-'} small />
+                                <InvoiceInfoRow label="담당자" value={detail.receiver?.phone || '-'} />
+                            </div>
+                            <div className="border border-black p-2 space-y-1 relative">
+                                <InvoiceInfoRow label="등록번호" value={detail.document.supplier_business_number || '-'} />
+                                <InvoiceInfoRow label="상호(성명)" value={detail.document.supplier_name || '-'} />
+                                <InvoiceInfoRow label="사업장소재지" value={detail.detail?.supplier_address || '-'} small />
+                                <InvoiceInfoRow label="대표자/담당" value={detail.detail?.supplier_representative || detail.detail?.supplier_contact_person || '-'} />
+                                <div className="absolute top-1 right-1 w-12 h-12 bg-red-100/50 rounded-full border-2 border-red-600/30 flex items-center justify-center pointer-events-none opacity-50 text-red-700/50 text-[10px] font-bold">
+                                    인
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Items Table */}
+                        <div className="border-t-2 border-b-2 border-black">
+                            <Table className="text-xs">
+                                <TableHeader>
+                                    <TableRow className="bg-gray-100 hover:bg-gray-100 border-b border-black">
+                                        <TableHead className="w-10 text-center text-black font-bold h-8">NO</TableHead>
+                                        <TableHead className="text-black font-bold h-8">품목명</TableHead>
+                                        <TableHead className="w-16 text-center text-black font-bold h-8">규격</TableHead>
+                                        <TableHead className="w-16 text-right text-black font-bold h-8">수량</TableHead>
+                                        <TableHead className="w-24 text-right text-black font-bold h-8">단가</TableHead>
+                                        <TableHead className="w-28 text-right text-black font-bold h-8">금액</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {detail.items.map((item, idx) => (
+                                        <TableRow key={idx} className="border-b border-gray-200 h-8 hover:bg-muted/10">
+                                            <TableCell className="text-center py-1 text-black">{idx + 1}</TableCell>
+                                            <TableCell className="py-1 font-medium text-black">{item.bean_name}</TableCell>
+                                            <TableCell className="text-center py-1 text-black">{item.unit || '1kg'}</TableCell>
+                                            <TableCell className="text-right py-1 font-mono text-black">{item.quantity?.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right py-1 font-mono text-black">{item.unit_price?.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right py-1 font-mono font-bold text-black">{item.supply_amount?.toLocaleString()}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Summary Section */}
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                            <div className="space-y-1 text-sm border-r border-gray-200 pr-4">
+                                <InvoiceSummaryItem label="총 품목 수" value={`${detail.items.length}종`} />
+                                <InvoiceSummaryItem label="발행일자" value={detail.document.invoice_date || '-'} />
+                                <InvoiceSummaryItem label="계약번호" value={detail.document.contract_number || '-'} />
+                            </div>
+                            <div className="flex flex-col items-end justify-center">
+                                <div className="text-sm font-bold text-muted-foreground mb-1">합계 금액(VAT 포함)</div>
+                                <div className="text-2xl font-black font-mono text-black">
+                                    {(detail.document.total_amount || 0).toLocaleString()}원
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="py-20 text-center text-muted-foreground italic text-black">
+                        상세 정보를 불러올 수 없습니다.
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function InvoiceInfoRow({ label, value, small = false }: { label: string; value: string; small?: boolean }) {
+    return (
+        <div className="flex items-center text-[11px] leading-tight text-black">
+            <span className="w-20 font-bold bg-gray-50 px-1.5 py-1 border-r border-gray-200 shrink-0">{label}</span>
+            <span className={`px-2 py-1 flex-1 overflow-hidden text-ellipsis whitespace-nowrap ${small ? 'text-[10px]' : ''}`}>
+                {value}
+            </span>
+        </div>
+    )
+}
+
+function InvoiceSummaryItem({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-center text-xs gap-2 text-black">
+            <span className="font-bold text-muted-foreground min-w-[60px]">● {label}:</span>
+            <span className="font-medium">{value}</span>
+        </div>
+    )
 }
 
 export default function InvoiceListPage() {
@@ -126,6 +277,7 @@ export default function InvoiceListPage() {
                 description="등록된 입고 명세서(Invoices) 이력을 조회하고 관리합니다."
                 icon={<FileText />}
                 image="/images/hero/inbound_hero.png" // Reuse existing hero
+                compact={true}
             />
 
             <div className="container mx-auto px-4 max-w-7xl space-y-6">
@@ -236,24 +388,35 @@ export default function InvoiceListPage() {
                                                                 />
                                                             </div>
                                                         </DialogTrigger>
-                                                        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-transparent border-none shadow-none">
-                                                            <div className="relative w-full h-[80vh]">
-                                                                <Image
-                                                                    src={getImageUrl(item.webview_image_path || item.thumbnail_image_path) || ""}
-                                                                    alt="Invoice Preview"
-                                                                    fill
-                                                                    className="object-contain"
-                                                                />
+                                                        <DialogContent className="sm:left-[calc(50%+var(--sidebar-width,0px)/2)] w-fit h-fit max-w-[95vw] max-h-[95vh] p-0 overflow-hidden bg-transparent border-none shadow-none flex flex-col items-center justify-center transition-all duration-300">
+                                                            {/* Custom Backdrop for "Click outside to close" focus */}
+                                                            <div className="relative group w-fit h-fit flex items-center justify-center">
+                                                                <div className="relative w-full max-h-[85vh] overflow-hidden rounded-lg shadow-2xl border border-white/10">
+                                                                    <img
+                                                                        src={getImageUrl(item.webview_image_path || item.thumbnail_image_path) || ""}
+                                                                        alt="Invoice Preview"
+                                                                        className="max-w-full max-h-[85vh] object-contain block"
+                                                                    />
+                                                                </div>
+
+                                                                {/* Floating Button Overlay */}
+                                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        className="bg-white/90 hover:bg-white text-black shadow-lg backdrop-blur-sm"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.open(getImageUrl(item.webview_image_path || item.thumbnail_image_path) || "", "_blank")
+                                                                        }}
+                                                                    >
+                                                                        <ExternalLink className="w-4 h-4 mr-2" /> 새 탭에서 열기
+                                                                    </Button>
+                                                                </div>
                                                             </div>
-                                                            <div className="text-center mt-2">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                    onClick={() => window.open(getImageUrl(item.webview_image_path || item.thumbnail_image_path) || "", "_blank")}
-                                                                >
-                                                                    <ExternalLink className="w-4 h-4 mr-2" /> 원본 보기
-                                                                </Button>
-                                                            </div>
+                                                            <p className="mt-4 text-white/60 text-sm font-light select-none">
+                                                                빈 공간을 클릭하면 닫힙니다.
+                                                            </p>
                                                         </DialogContent>
                                                     </Dialog>
                                                 ) : (
@@ -280,9 +443,14 @@ export default function InvoiceListPage() {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                                </Button>
+                                                <InboundDetailDialog
+                                                    docId={item.id}
+                                                    trigger={
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-latte-100/50 hover:text-latte-700">
+                                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                                        </Button>
+                                                    }
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     ))

@@ -1,4 +1,4 @@
-# 시스템 아키텍처 & 데이터 흐름
+# inbound/viewinbound/view시스템 아키텍처 & 데이터 흐름
 
 > 프로젝트의 기술 스택, 시스템 구조, 데이터 흐름을 설명하는 문서입니다.
 
@@ -15,7 +15,7 @@ graph TD
         React[React / TypeScript]
         UI[Shadcn UI / Tailwind CSS]
         PortFE[Port: 3500]
-        
+      
         Next --- React
         React --- UI
     end
@@ -25,7 +25,7 @@ graph TD
         Pydantic[Pydantic Models]
         SQLAlchemy[SQLAlchemy ORM]
         PortBE[Port: 8000]
-        
+      
         Fast --- Pydantic
         Fast --- SQLAlchemy
     end
@@ -38,7 +38,6 @@ graph TD
     Next -->|HTTP / JSON| Fast
     Fast -->|SQL| SQLite
 ```
-
 
 ---
 
@@ -59,7 +58,7 @@ sequenceDiagram
     Backend->>OCR_Service: 이미지 분석 요청 (Google Gemini)
     OCR_Service-->>Backend: 구조화된 JSON 데이터 반환
     Backend-->>Frontend: OCRData 반환 (SessionStorage 저장)
-    
+  
     User->>Frontend: 데이터 확인 및 확정
     Frontend->>Backend: POST /api/v1/inbound/confirm
     Backend->>DB: Transaction (Atomic)
@@ -90,17 +89,18 @@ sequenceDiagram
 ### 핵심 테이블 그룹
 
 1. **Master Data**
+
    - `beans`: 원두 마스터 (품종, 원산지 등)
    - `suppliers`: 공급자 정보
    - `blends`: 블렌딩 레시피
-
 2. **Inbound & OCR Data** (OCR 데이터 100% 저장)
+
    - `inbound_documents`: 헤더 정보 (계약번호, 이미지 등)
    - `inbound_document_details`: 상세 정보 (세금, 결제조건 등 25개 필드)
    - `inbound_receivers`: 공급받는자 정보
    - `inbound_items`: 품목 리스트
-
 3. **Inventory**
+
    - `inventory_logs`: 모든 수량 변화 기록
 
 ---
@@ -112,6 +112,7 @@ sequenceDiagram
 3. **통계 대시보드**: 공급자별, 품목별 매입 현황 시각화
 
 ---
+
 **Last Updated**: 2025-12-21
 
 > 시스템이 어떻게 동작하는지, 데이터가 어떻게 흐르는지 이해하기 위한 가이드입니다.
@@ -152,7 +153,6 @@ graph TD
     Models --> DB
 ```
 
-
 ---
 
 ## 🔄 데이터 흐름
@@ -168,7 +168,6 @@ flowchart TD
     ORM --> DB[(6. SQLite 데이터베이스에 저장)]
     DB --> Success[7. 확인 메시지 표시]
 ```
-
 
 **예시: 새 원두 추가**
 
@@ -225,7 +224,6 @@ flowchart TD
     Render --> Browser[7. 브라우저에 표시]
 ```
 
-
 **예시: 원두 목록 표시**
 
 ```python
@@ -259,21 +257,20 @@ flowchart TD
     Input --> OutWeight[로스팅 후 무게 kg]
     Input --> Price[원두 가격 원/kg]
     Input --> Other[기타 비용]
-    
+  
     Input --> Calc[analytics_service.calculate_cost]
-    
+  
     Calc --> CostCalc[비용 계산]
     CostCalc --> BeanCost[원두 비용 = 무게 × 가격]
     CostCalc --> RoastCost[로스팅 비용 = 무게 × 로스팅비]
     CostCalc --> Labor[인건비 = 시간 × 시급]
     CostCalc --> Elec[전기료 = 고정값]
     CostCalc --> Total[총 비용 = 합계]
-    
+  
     Total --> UnitCost[kg당 비용 계산]
     UnitCost --> Margin[마진율 계산]
     Margin --> Display[화면에 표시]
 ```
-
 
 ---
 
@@ -285,13 +282,12 @@ flowchart TD
     Service --> SaveName[1. 블렌드 이름 저장]
     Service --> SaveCombi[2. 원두 조합 저장]
     Service --> PriceCheck[3. 각 원두의 비용 조회]
-    
+  
     PriceCheck --> BeanSvc[bean_service.get_bean]
     BeanSvc --> CostCalc[총 원가 계산]
     CostCalc --> SellPrice[판매가 = 원가 × 마진율 2.5배]
     SellPrice --> DB[(데이터베이스 저장)]
 ```
-
 
 ---
 
@@ -303,12 +299,11 @@ flowchart TD
     Trans --> Record[2. 판매량 기록]
     Record --> InvSvc[3. inventory_service.update_inventory]
     InvSvc --> CalcUsed[4. 사용된 원두 계산]
-    
+  
     CalcUsed --> Decrease[각 원두의 재고 감소]
     Decrease --> Example[예: 블렌드가 에티오피아 200g 사용 -> 에티오피아 재고에서 200g 차감]
     Example --> Display[현재 재고량 표시]
 ```
-
 
 ---
 
@@ -336,21 +331,20 @@ graph TD
     subgraph Models [Models 데이터]
         Entities[Bean, Blend, Inventory<br/>Transaction, CostSetting]
     end
-    
+  
     subgraph DB [SQLite DB]
         SQLite[(roasting_data.db)]
     end
 
     Pages -->|호출| Services
-    
+  
     BeanSvc --> AnalSvc
     BlendSvc --> RepSvc
     TranSvc --> ExcelSvc
-    
+  
     Services -->|사용| Models
     Models -->|쿼리| DB
 ```
-
 
 ---
 
@@ -385,10 +379,12 @@ graph TD
 ```
 
 이 구조의 장점:
+
 - ✅ 간단함 (서버 설정 불필요)
 - ✅ 빠름 (네트워크 지연 없음)
 
 단점:
+
 - ❌ 확장성 낮음 (다중 사용자 동시 접근 어려움)
 - ❌ 모바일 접근 불가능
 
@@ -460,6 +456,7 @@ flowchart TD
 ```
 
 **디버깅 명령어:**
+
 ```bash
 # 에러 로그 확인
 ./venv/bin/streamlit run app/app.py 2>&1 | grep -i error
@@ -474,6 +471,7 @@ sqlite3 data/roasting_data.db "SELECT * FROM beans LIMIT 5;"
 ## 🔗 확장 포인트
 
 ### 1. API 서버 추가 (향후)
+
 ```
 추가될 예정:
 FastAPI 서버 추가
@@ -482,12 +480,14 @@ FastAPI 서버 추가
 ```
 
 ### 2. 실시간 동기화 (향후)
+
 ```
 WebSocket 추가
   └─ 여러 사용자 실시간 협업
 ```
 
 ### 3. 클라우드 마이그레이션 (향후)
+
 ```
 PostgreSQL 또는 MySQL로 변경
   └─ 클라우드 배포

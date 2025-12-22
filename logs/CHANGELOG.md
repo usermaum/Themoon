@@ -11,6 +11,110 @@
 
 ---
 
+## [Unreleased]
+
+### ✨ 기능 추가 (Features) - Gemini 작업 완료 (91개 작업)
+
+#### 🎨 Analytics UI/UX 전면 개선 (Phase 1 - 34개 작업)
+- **DateRangeFilter 컴포넌트 고도화**
+  - 데스크톱 단일 라인 레이아웃 구현
+  - Pill shape 디자인 및 inline labels 적용
+- **Cost Trend Chart 버그 수정**
+  - 날짜 및 필터링 이슈 해결
+- **Bean Selector 개선**
+  - 드롭다운 제한 해제 (16개 생두 전체 표시)
+- **Inventory Value Table 기능 강화**
+  - 정렬 기능 구현
+  - FIFO 기반 날짜 필터 적용
+  - `/stats/inventory` 백엔드 엔드포인트 생성
+- **Analysis Briefing 업그레이드**
+  - `AnalysisBriefing.tsx` 스마트 컴포넌트 생성
+- **Overview 'Major Metrics' 카드 스마트화**
+  - 공급업체별 재고 분포 계산 (Backend)
+  - Top 3 가치 품목 계산 (Backend)
+  - 애니메이션 및 레이아웃 스타일링
+- **아이콘 및 UI 통합**
+  - Blend 아이콘 동기화 (Dashboard → Layers)
+  - Inbound 아이콘 통일 (Sidebar, PageHero)
+- **Inbound 페이지 전면 개선**
+  - File Input 디자인 개선
+  - Gemini 기반 이미지 컨텐츠 검증 구현
+  - 분석 실패 시 입력 폼 자동 리셋
+  - PageHero 커스텀 이미지 통합
+  - 저장 버튼 이름 변경, 삭제 버튼 스타일링
+  - 저장 성공 후 폼 자동 리셋
+
+#### 🛡️ 이미지 서비스 엔터프라이즈급 강화 (Phase 2 - 6개 작업)
+- **보안 강화**
+  - EXIF 민감 데이터 제거 (GPS, 카메라 정보)
+  - 경로 보안 검증 (심볼릭 링크, 경로 순회 방어)
+  - Magic Bytes, MIME Type 검증
+- **안정성 강화**
+  - 원자적 저장 (임시 파일 + rename)
+  - 디스크 여유 공간 체크 (최소 5GB)
+  - 부분 실패 시 자동 롤백
+- **운영 개선**
+  - 구조화된 JSON 로깅
+  - 설정 분리 (config.py)
+  - mypy 타입 체크 완전 통과
+- **OCR 폴백 메커니즘**
+  - Gemini 2.0 → 1.5 자동 전환
+  - Rate Limit 대응
+
+#### 📋 명세서 목록 UI (Phase 3 - 4개 작업)
+- **Backend 작업**
+  - 명세서 목록 조회 API 구현
+  - 필터링 (날짜, 키워드)
+  - 페이지네이션 (page, limit)
+- **Frontend 작업**
+  - `/inventory/inbound/list` 페이지 구현
+  - 필터 및 검색 기능
+  - 썸네일 이미지 및 상세 보기 연동
+
+#### 💰 FIFO 재고 및 원가 계산 시스템 (Phase 4 - 5개 작업)
+- **Backend 작업**
+  - FIFO 재고 차감 로직 구현 (InventoryService)
+  - 로스팅 로그 생성 시 원가 자동 계산
+  - `remaining_quantity` 컬럼 추가 (DB 마이그레이션)
+  - 로스팅 로그 조회 API에 원가 정보 추가
+- **Frontend 작업**
+  - 로스팅 완료 시 원가 정보 표시
+
+#### 🖼️ 원두 이미지 최적화 일괄 적용 (Phase 5 - 4개 작업)
+- **Backend 작업**
+  - ImageService 리팩토링 (범용성 확보)
+  - `optimize_bean_images.py` 일괄 변환 스크립트
+  - 16개 생두 품종 × 3종 이미지 = 총 48개 파일 생성
+- **Frontend 작업**
+  - 최적화된 WebP 이미지 사용 적용
+
+#### 🎨 UI/UX 개선 (Phase 6-8 - 11개 작업)
+- **PageHero 컴포넌트 개선** (Phase 6)
+  - `compact` 속성 추가 (높이 50% 축소 옵션)
+  - Inbound 페이지에 적용
+- **명세서 상세 조회** (Phase 7)
+  - `GET /api/v1/inbound/{id}` API 구현
+  - 상세 보기 다이얼로그 구현
+  - 이미지 프리뷰 UI 개선 (사이드바 차단, 외부 클릭 닫기)
+- **디자인 고도화** (Phase 8)
+  - "Paper Invoice" UI 스타일 적용
+  - InboundDetailDialog 고급 디자인
+
+### 🐛 버그 수정 (Bug Fixes)
+- **₩0 표시 버그 수정** (Inventory 테이블 state 업데이트 누락)
+- **터미널 빌드 오류 수정** (Inbound 페이지)
+
+### 📚 문서화 (Documentation)
+- **Gemini 작업 내역 문서화**
+  - `GEMINI_TASKS_2025-12-22.md` 생성
+  - 91개 작업 상세 내역 정리
+  - Phase별 통계 및 성과 요약
+- **이미지 최적화 플랜 업데이트**
+  - v2.2 → v2.3 (디렉토리 구조 정정)
+  - 시간 우선 구조로 변경 (코드 구현과 일치)
+
+---
+
 ## [0.4.5] - 2025-12-22
 
 ### 🐛 패치 (Bug Fix): 이미지 서비스 고도화 및 타입 안정성 강화

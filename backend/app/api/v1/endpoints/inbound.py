@@ -263,6 +263,26 @@ def get_inbound_list(
         "total_pages": total_pages
     }
 
+@router.get("/{document_id}")
+def get_inbound_detail(document_id: int, db: Session = Depends(get_db)):
+    """
+    명세서 상세 정보 조회 (Document + Detail + Receiver + Items)
+    """
+    doc = db.query(InboundDocument).filter(InboundDocument.id == document_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Eager loading isn't strictly necessary here if using standard relationships,
+    # but let's ensure we return what we need. 
+    # The models have relationships defined.
+    
+    return {
+        "document": doc,
+        "detail": doc.detail,
+        "receiver": doc.receiver,
+        "items": doc.items
+    }
+
 @router.get("/check-duplicate/{contract_number}")
 
 @router.get("/check-duplicate/{contract_number}")

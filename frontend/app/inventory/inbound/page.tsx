@@ -347,6 +347,7 @@ export default function InboundPage() {
                 icon={<FileText />}
                 image="/images/hero/inbound_hero.png"
                 className="mb-8"
+                compact={true}
             />
 
             <div className="container mx-auto px-4 max-w-7xl">
