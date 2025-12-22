@@ -84,6 +84,18 @@
     - 새 메뉴 추가 방법 (Sidebar.tsx 수정 가이드)
     - 단기/중기/장기 개선 제안
 
+### 7. 이미지 서비스 타입 안정성 강화 (2025-12-22 저녁)
+- **타입 힌트 오류 수정** (Priority 1 작업 완료):
+    - Optional 타입 명시: `upload_base_dir`, `output_dir`, `custom_filename`
+    - PIL.Image.Image 타입 정확화 (모듈이 아닌 클래스 사용)
+    - 변수 타입 주석 추가: `results`, `saved_paths`, `file_ext`, `rel_path_str`
+    - Python 3.10+ `no_implicit_optional=True` 정책 준수
+
+- **mypy 타입 체크 완전 통과**:
+    - `image_service.py` 모든 타입 오류 해결
+    - IDE 자동완성 및 리팩토링 지원 강화
+    - 런타임 오류 사전 방지 체계 구축
+
 ---
 
 ## 🛠️ 작업 파일 요약
