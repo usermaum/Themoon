@@ -36,7 +36,8 @@ const getBeanImage = (bean: Bean) => {
     const isRoasted = bean.type === 'ROASTED_BEAN' || (bean.roast_profile && bean.roast_profile !== null);
 
     let folder = '/images/raw_material/';
-    let suffix = '_raw.png';
+    // Use optimized WebP thumbnail for raw materials
+    let suffix = '_raw_thumb.webp';
 
     if (isRoasted) {
         folder = '/images/roasted/';

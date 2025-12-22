@@ -497,17 +497,29 @@ export default function SingleOriginRoastingPage() {
                                                 SKU: {result.roasted_bean.sku}
                                             </p>
                                         </div>
-                                        <div className="flex gap-4">
-                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm flex-1 border border-white/10">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
                                                 <p className="text-green-100 text-xs mb-1">최종 생산량</p>
                                                 <p className="text-2xl font-mono font-bold">
                                                     {result.roasted_bean.quantity_kg.toFixed(2)} kg
                                                 </p>
                                             </div>
-                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm flex-1 border border-white/10">
+                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
                                                 <p className="text-green-100 text-xs mb-1">최종 손실률</p>
                                                 <p className="text-2xl font-mono font-bold">
                                                     {result.loss_rate_percent.toFixed(1)} %
+                                                </p>
+                                            </div>
+                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+                                                <p className="text-green-100 text-xs mb-1">kg당 원가 (FIFO)</p>
+                                                <p className="text-xl font-mono font-bold">
+                                                    {Math.round(result.production_cost).toLocaleString()} 원
+                                                </p>
+                                            </div>
+                                            <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+                                                <p className="text-green-100 text-xs mb-1">총 생산 원가</p>
+                                                <p className="text-xl font-mono font-bold">
+                                                    {Math.round(result.production_cost * result.roasted_bean.quantity_kg).toLocaleString()} 원
                                                 </p>
                                             </div>
                                         </div>

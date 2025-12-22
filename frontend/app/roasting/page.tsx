@@ -40,7 +40,7 @@ export default function RoastingMainPage() {
                                 {/* 상단 이미지 */}
                                 <div
                                     className="w-full h-48 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                                    style={{ backgroundImage: "url('/images/raw_material/01_yirgacheffe_raw.png')" }}
+                                    style={{ backgroundImage: "url('/images/raw_material/01_yirgacheffe_raw_web.webp')" }}
                                 >
                                     <div className="w-full h-full bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                                 </div>

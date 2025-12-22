@@ -141,6 +141,9 @@ export default function InboundPage() {
             })
 
             if (!response.ok) {
+                if (response.status === 429) {
+                    throw new Error("일일 사용량이 초과되었습니다. 잠시 후(약 1분) 다시 시도해주세요.")
+                }
                 const err = await response.json()
                 if (err.detail === "INVALID_DOCUMENT") {
                     throw new Error("명세서 형식이 아닙니다. 올바른 문서 이미지를 업로드하거나 다시 확인해주세요.")

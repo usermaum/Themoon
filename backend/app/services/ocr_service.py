@@ -135,5 +135,10 @@ class OCRService:
             return json.loads(text.strip())
 
         except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                print(f"⚠️ Gemini API Quota Exceeded: {e}")
+                # Raise a specific error message that can be caught by the endpoint
+                raise Exception("GEMINI_QUOTA_EXCEEDED")
             print(f"Error during Gemini OCR analysis: {e}")
             raise e

@@ -149,25 +149,46 @@ class ImageService:
 
         return True, ""
 
-    def process_and_save(self, file_content: bytes, original_filename: str) -> Dict[str, Any]:
+    def process_and_save(self, 
+                        file_content: bytes, 
+                        original_filename: str, 
+                        output_dir: Path = None,
+                        custom_filename: str = None) -> Dict[str, Any]:
         """
         Main entry point to process an image and save it in 3 tiers.
         Returns a dictionary with paths and metadata.
+        
+        Args:
+            file_content: Raw image bytes
+            original_filename: Original filename (for logging/extension)
+            output_dir: Optional absolute path to save images (overrides default year/month logic)
+            custom_filename: Optional base filename to use (overrides random generation)
         """
-        # Create base filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_id = uuid.uuid4().hex[:8]
-        safe_base_name = f"invoice_{timestamp}_{unique_id}"
+        # Determine base filename
+        if custom_filename:
+            safe_base_name = custom_filename
+        else:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            unique_id = uuid.uuid4().hex[:8]
+            safe_base_name = f"invoice_{timestamp}_{unique_id}"
 
-        # Get relative directory based on year/month
-        rel_dir = Path(datetime.now().strftime("%Y/%m"))
-        abs_base_dir = self.base_dir / rel_dir
+        # Determine output directory
+        if output_dir:
+            abs_base_dir = output_dir
+            rel_dir = Path(".") # Relative path is current dir relative to output_dir
+        else:
+            # Default: Get relative directory based on year/month
+            rel_dir = Path(datetime.now().strftime("%Y/%m"))
+            abs_base_dir = self.base_dir / rel_dir
         
         # Ensure directories exist
-        for tier in self.profiles.keys():
-            (abs_base_dir / tier).mkdir(parents=True, exist_ok=True)
+        if output_dir:
+             abs_base_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            for tier in self.profiles.keys():
+                (abs_base_dir / tier).mkdir(parents=True, exist_ok=True)
 
-        if self.base_dir.exists():
+        if self.base_dir.exists() and not output_dir:
              self._check_disk_space(min_free_gb=settings.IMAGE_MIN_FREE_DISK_SPACE_GB)
 
         results = {
@@ -191,6 +212,9 @@ class ImageService:
                     logger.warning(f"Failed to strip EXIF data: {e}")
 
                 for tier, config in self.profiles.items():
+                    # For custom output (e.g. batch processing), we might not want all tiers or want flat structure
+                    # But for now, let's keep the logic consistent or adapt based on output_dir presence
+                    
                     tier_img = img.copy()
                     tier_img.thumbnail(config['max_size'], Image.Resampling.LANCZOS)
                     
@@ -198,11 +222,20 @@ class ImageService:
                     if file_ext == 'jpeg': file_ext = 'jpg'
                     
                     tier_filename = f"{safe_base_name}{config['suffix']}.{file_ext}"
-                    rel_path = rel_dir / tier / tier_filename
-                    abs_path = self.base_dir / rel_path
+                    
+                    if output_dir:
+                        # Flat structure for batch optimization usually
+                        # But let's check if we want flat or tiered. 
+                        # For bean images, we probably want them in the same folder.
+                        abs_path = abs_base_dir / tier_filename
+                        rel_path = tier_filename # Just filename
+                    else:
+                        rel_path = rel_dir / tier / tier_filename
+                        abs_path = self.base_dir / rel_path
                     
                     # Security Check: Path Validation
-                    if not self._validate_path_security(abs_path.parent):
+                    # Skip for custom output_dir as it implies trusted system operation
+                    if not output_dir and not self._validate_path_security(abs_path.parent):
                          raise ValueError(f"Security check failed for path: {abs_path}")
                     
                     # Save image atomically

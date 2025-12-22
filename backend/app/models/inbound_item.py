@@ -17,6 +17,7 @@ class InboundItem(Base):
     specification = Column(String, nullable=True, comment="규격")
     unit = Column(String, nullable=True, default="kg", comment="단위 (kg, g, etc.)")
     quantity = Column(Float, nullable=True, comment="수량")
+    remaining_quantity = Column(Float, nullable=True, default=0.0, comment="잔여 수량 (FIFO)")
     origin = Column(String, nullable=True, comment="원산지")
 
     # 금액 정보

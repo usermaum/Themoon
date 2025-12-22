@@ -135,6 +135,11 @@ async def analyze_inbound_document(
         raise
     except Exception as e:
         logger.error(f"OCR Analysis Failed: {e}")
+        if "GEMINI_QUOTA_EXCEEDED" in str(e):
+             raise HTTPException(
+                status_code=429, 
+                detail="Google Gemini API Quota Exceeded. Please try again later (approx. 1 min)."
+            )
         raise HTTPException(status_code=500, detail=f"OCR Analysis Failed: {str(e)}")
 
     # 2. Process and Save to Local Storage (Tiered)
@@ -426,6 +431,7 @@ def confirm_inbound(
             specification=item.specification,
             unit=item.unit,
             quantity=item.quantity,
+            remaining_quantity=item.quantity,  # FIFO Initial State
             origin=item.origin,
             unit_price=item.unit_price,
             supply_amount=item.amount,  # OCRItem.amount maps to supply_amount
