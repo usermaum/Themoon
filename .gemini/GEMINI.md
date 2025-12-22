@@ -2,7 +2,7 @@
 
 > **프로젝트**: TheMoon - 커피 로스팅 원가 계산 시스템
 > **스택**: Next.js (Frontend) + FastAPI (Backend) + PostgreSQL
-> **버전**: 0.4.5
+> **버전**: 0.4.6
 
 ---
 
@@ -253,7 +253,7 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 **참고**: 상세 내용은 `Documents/Guides/PROGRAMMING_RULES.md` 참조
 
 **마지막 업데이트**: 2025-12-22
-**프로젝트 버전**: 0.4.5
+**프로젝트 버전**: 0.4.6
 
 ---
 
@@ -272,22 +272,21 @@ cat Documents/Progress/SESSION_END_CHECKLIST.md
 
 ---
 
-### 📅 마지막 세션: 2025-12-22 (Image Service Improvements Phase 2)
+### 📅 마지막 세션: 2025-12-23 (OCR Service Refactoring & Fixes)
 
-**✅ 완료된 작업 (v0.4.5)**:
+**✅ 완료된 작업 (v0.4.6)**:
 
-1. ✅ **이미지 서비스 고도화 (Phase 2)**
-   - **보안 강화**: EXIF 민감 정보 제거, 경로 순회 공격 방어 로직 추가.
-   - **안정성 강화**: 원자적 저장(Atomic Save), 디스크 공간 체크, 부분 실패 시 자동 롤백 구현.
-   - **테스트 인프라**: 의존성 주입 패턴 적용 및 Pytest 단위 테스트 슈트 구축.
-   - **운영 개선**: 구조화된 JSON 로깅 및 성능 메트릭(처리 시간, 압축률) 기록.
-   - **타입 안정성**: `mypy` 기반 타입 힌팅 오류 전수 수정.
+1. ✅ **OCR 서비스 고도화 (Phase 16)**
+   - **Claude 연동 안정화**: `claude-sonnet-4-5` 모델 ID 적용 및 404 오류 해결.
+   - **안정성 강화**: Claude 응답의 마크다운/사족 처리를 위한 정규식(Regex) 기반 JSON 파싱 도입.
+   - **치명적 버그 수정**: 이미지 전처리 시 MIME Type(PNG vs JPEG) 불일치 문제 해결 → Claude 400 Bad Request 원천 차단.
+   - **실시간 피드백**: 분석 단계별 상태 스트리밍 구현 완료.
 
 **Git 상태**:
 - 현재 브랜치: main
-- 최신 커밋: v0.4.5 이미지 서비스 고도화 완료
+- 최신 커밋: v0.4.6 OCR 서비스 안정화 완료
 
 **🎯 다음 작업 옵션**:
-1. 로스팅 로그 연동 (FIFO 원가 기록)
-2. 명세서 목록(Invoice List) UI 구현
+1. 로스팅 로그 연동 고도화 (잔여 작업 점검)
+2. 명세서 목록 UI 필터 기능 개선
 3. 원두 이미지 최적화 일괄 적용

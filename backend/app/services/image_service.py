@@ -12,6 +12,7 @@ from PIL.Image import Image as PILImage
 
 import time
 from app.config import settings
+from PIL import ImageOps, ImageEnhance, ImageFilter, ImageStat
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,111 @@ class ImageService:
         img_without_exif.putdata(data)
 
         return img_without_exif
+
+    def preprocess_for_ocr(self, 
+                           img: PILImage, 
+                           # Default args are now just fallbacks if config fails
+                           to_grayscale: bool = True, 
+                           enhance_contrast: bool = False, 
+                           contrast_factor: float = 1.8,
+                           remove_noise: bool = False,
+                           median_filter_size: int = 3) -> PILImage:
+        """
+        OCR 정확도를 높이기 위한 이미지 전처리 (옵션화 + Hot-reload Config 적용)
+
+        [MAINTENANCE GUIDE for AI Agents & Developers]
+        - 이 함수는 `backend/app/schemas/image_processing_config.json` 파일을 실시간으로 읽어 설정을 적용합니다.
+        - 서버 재시작 없이 옵션을 변경하려면 위 JSON 파일을 수정하세요.
+        - 파일 읽기 실패 시, 함수 인자로 전달된 기본값(Safe Defaults)을 사용합니다.
+        
+        Args:
+            img: PIL Image 객체
+            (이하 인자는 Config 파일이 없을 경우의 Fallback 값으로 동작합니다)
+        """
+        
+        # 0. Hot-reload Configuration
+        try:
+            config_path = Path(__file__).parent.parent / "schemas" / "image_processing_config.json"
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config = json.load(f).get("preprocess_for_ocr", {})
+                    
+                    # Override defaults with config values
+                    to_grayscale = config.get("to_grayscale", to_grayscale)
+                    enhance_contrast = config.get("enhance_contrast", enhance_contrast)
+                    contrast_factor = config.get("contrast_factor", contrast_factor)
+                    remove_noise = config.get("remove_noise", remove_noise)
+                    median_filter_size = config.get("median_filter_size", median_filter_size)
+                    
+                    # logger.debug(f"Loaded OCR Preprocess Config: {config}")
+        except Exception as e:
+            logger.warning(f"Failed to load image_processing_config.json: {e}. Using defaults.")
+
+        # 1. 그레이스케일 변환
+        if to_grayscale and img.mode != 'L':
+             img = img.convert('L')
+
+        # 2. 대비 향상 (Contrast Enhancement)
+        if enhance_contrast:
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(contrast_factor)
+
+        # 3. 노이즈 제거 (Median Filter)
+        if remove_noise:
+            img = img.filter(ImageFilter.MedianFilter(size=median_filter_size))
+
+        return img
+
+    def validate_image_quality_for_ocr(self, img: PILImage) -> dict:
+        """
+        OCR 품질 검증
+        Returns:
+            {
+                "is_valid": bool,
+                "warnings": list[str],
+                "metrics": dict
+            }
+        """
+        warnings = []
+        is_valid = True
+        
+        # 1. 해상도 체크
+        width, height = img.size
+        min_dimension = 800
+        if width < min_dimension or height < min_dimension:
+            warnings.append(f"Low resolution: {width}x{height} (Recommended: >{min_dimension}px)")
+            # 해상도가 너무 낮으면 False로 처리할 수도 있지만, 일단 경고만
+        
+        # 2. 밝기 및 대비 체크 (Grayscale 기준)
+        if img.mode != 'L':
+            gray_img = img.convert('L')
+        else:
+            gray_img = img
+
+        stat = ImageStat.Stat(gray_img)
+        brightness = stat.mean[0]
+        contrast = stat.stddev[0]
+
+        # 밝기 체크 (0~255)
+        if brightness < 40:
+            warnings.append(f"Image too dark (Brightness: {brightness:.1f})")
+        elif brightness > 230:
+            warnings.append(f"Image too bright (Brightness: {brightness:.1f})")
+
+        # 대비 체크
+        if contrast < 20:
+            warnings.append(f"Low contrast (StdDev: {contrast:.1f})")
+
+        return {
+            "is_valid": len(warnings) == 0,
+            "warnings": warnings,
+            "metrics": {
+                "width": width,
+                "height": height,
+                "brightness": brightness,
+                "contrast": contrast
+            }
+        }
 
     def _validate_path_security(self, path: Path) -> bool:
         """경로 보안 검증 (심볼릭 링크, 경로 순회 방어)"""

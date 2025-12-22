@@ -1,0 +1,12 @@
+------- Claude API Debugger -------
+?뵎 API Key found: sk-ant-api...3iwAA
+
+Attempting to send a simple 'Hello' message to Claude 3.5 Sonnet...
+
+??API Call Failed!
+Type: BadRequestError
+Message: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CWN1oeM4a1L24NJ8M9jVU'}
+
+?뮕 Diagnosis: This looks like a credit/balance issue.
+   Even if you charged $5, it might take a few minutes to propagate,
+   or you might need to check your billing limits in the Anthropic Console.

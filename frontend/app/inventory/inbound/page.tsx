@@ -117,9 +117,12 @@ export default function InboundPage() {
     }, [handlePaste])
 
     // Analyze Logic
+    const [statusMessage, setStatusMessage] = useState("")
+
     const handleAnalyze = async () => {
         setIsAnalyzing(true)
         setOcrResult(null)
+        setStatusMessage("분석 준비 중...")
         const formData = new FormData()
 
         if (activeTab === "file" && selectedFile) {
@@ -137,7 +140,7 @@ export default function InboundPage() {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/inbound/analyze`, {
                 method: "POST",
-                body: formData, // Auto sets Content-Type for multipart if file present
+                body: formData,
             })
 
             if (!response.ok) {
@@ -148,30 +151,69 @@ export default function InboundPage() {
                 if (err.detail === "INVALID_DOCUMENT") {
                     throw new Error("명세서 형식이 아닙니다. 올바른 문서 이미지를 업로드하거나 다시 확인해주세요.")
                 }
-                throw new Error(err.detail || "분석 실패")
+                throw new Error(err.detail || "분석 요청 실패")
             }
 
-            const data = await response.json()
-            setOcrResult(data) // Save raw data for debug view
+            // Stream Reader setup
+            const reader = response.body?.getReader()
+            if (!reader) throw new Error("분석 스트림을 읽을 수 없습니다.")
+
+            const decoder = new TextDecoder()
+            let finalData = null
+
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                const chunk = decoder.decode(value, { stream: true })
+                const lines = chunk.split("\n")
+
+                for (const line of lines) {
+                    if (!line.trim()) continue
+                    try {
+                        const update = JSON.parse(line)
+
+                        if (update.status === "progress") {
+                            setStatusMessage(update.message)
+                        } else if (update.status === "complete") {
+                            finalData = update.data
+                        } else if (update.status === "error") {
+                            throw new Error(update.message)
+                        }
+                    } catch (e) {
+                        // Ignore incomplete JSON chunks or parse errors
+                        // In production, might want to buffer incomplete lines.
+                        // But NDJSON is usually line-buffered.
+                        if ((e as Error).message !== "Unexpected end of JSON input") {
+                            console.warn("Stream parse error:", e)
+                        }
+                    }
+                }
+            }
+
+            if (!finalData) {
+                throw new Error("분석 결과가 없습니다.")
+            }
+
+            const data = finalData
+            setStatusMessage("분석 완료!")
+            setOcrResult(data)
 
             // Auto-fill form using structured data
-            // 계약번호 (우선순위: 구조화된 데이터 > 하위 호환성 필드)
             const contractNum = data.document_info?.contract_number || data.contract_number || ""
             setValue("contract_number", contractNum)
 
-            // Auto-trigger duplicate check
             if (contractNum) {
                 checkDuplicate(contractNum)
             }
 
-            // 공급처 정보 (Supplier Information)
+            // 공급처 정보
             setValue("supplier_name", data.supplier?.name || data.supplier_name || "")
             setValue("supplier_phone", data.supplier?.phone || data.supplier_phone || "")
             setValue("contact_phone", data.supplier?.contact_phone || "")
             setValue("supplier_email", data.supplier?.email || data.supplier_email || "")
 
-            // 공급처 담당자 (공급자의 contact_person 또는 representative)
-            // receiver_name 필드를 공급처 담당자로 사용 (폼 구조 유지)
+            // 공급처 담당자
             setValue("receiver_name", data.supplier?.contact_person || data.supplier?.representative || "")
 
             // 날짜 및 금액
@@ -184,7 +226,6 @@ export default function InboundPage() {
 
             toast({ title: "분석 완료", description: "명세서 내용을 자동으로 입력했습니다." })
 
-            // Check items existence
             if (data.items && data.items.length > 0) {
                 const names = data.items.map((i: any) => i.bean_name || "").filter((n: string) => n !== "")
                 checkItemsBatch(names)
@@ -195,8 +236,6 @@ export default function InboundPage() {
             setOcrResult(null)
             setDriveLink(null)
             setDuplicateStatus({ status: 'idle', message: '' })
-
-            // 입력 소스 초기화 (Reset Input Sources)
             setSelectedFile(null)
             setPastedImage(null)
             setUrlInput("")
@@ -205,6 +244,7 @@ export default function InboundPage() {
             toast({ title: "오류 발생", description: error.message, variant: "destructive" })
         } finally {
             setIsAnalyzing(false)
+            setStatusMessage("")
         }
     }
 
@@ -434,7 +474,8 @@ export default function InboundPage() {
                                 >
                                     {isAnalyzing ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gemini가 분석 중입니다...
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            {statusMessage || "분석 중..."}
                                         </>
                                     ) : (
                                         <>

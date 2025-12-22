@@ -1,0 +1,16 @@
+{
+    "_comments_guide": {
+        "to_grayscale": "흑백 변환 여부 (true: 색상 정보 제거, 텍스트 인식 집중)",
+        "enhance_contrast": "대비 향상 여부 (true: 흐린 글씨 강화, false: 밝은 이미지 손실 방지)",
+        "contrast_factor": "대비 강도 (1.0 = 원본, 1.8 = 80% 더 강하게, 높을수록 흰색/검은색이 뚜렷해짐)",
+        "remove_noise": "노이즈 제거 여부 (true: 점 같은 잡티 제거, 글자가 뭉개질 수 있음)",
+        "median_filter_size": "노이즈 제거 강도 (3: 약함, 5: 강함)"
+    },
+    "preprocess_for_ocr": {
+        "to_grayscale": true,
+        "enhance_contrast": false,
+        "contrast_factor": 1.8,
+        "remove_noise": false,
+        "median_filter_size": 3
+    }
+}

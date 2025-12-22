@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.4.5** | Next.js + FastAPI로 완전히 재작성
+> **v0.4.6** | Next.js + FastAPI로 완전히 재작성
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -47,6 +47,7 @@
 - 💹 **FIFO 재고 시스템** - 선입선출 기반 원가 계산 및 로스팅 로그 자동 연동
 - 📈 **Analytics 대시보드** - 공급업체별 재고 분포, Top 3 가치 품목, Smart Analysis Briefing
 - 🛡️ **엔터프라이즈급 보안** - EXIF 제거, Magic Bytes 검증, 원자적 저장, 경로 검증
+- ⏳ **실시간 분석** - SSE 기반 OCR 분석 상태 스트리밍 (v0.4.6)
 
 ---
 
@@ -81,7 +82,7 @@
 
 ## 📁 프로젝트 구조
 
-### 현재 구조 (v0.4.5)
+### 현재 구조 (v0.4.6)
 
 ```
 Themoon/                       # 신규 프로젝트 (Clean Slate)
@@ -603,7 +604,7 @@ MIT License - 자유롭게 사용 가능
 
 ---
 
-**버전:** 0.4.1
-**최종 업데이트:** 2025-12-22
+**버전:** 0.4.6
+**최종 업데이트:** 2025-12-23
 **최종 커밋:** c47cf05
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

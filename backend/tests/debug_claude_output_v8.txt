@@ -1,0 +1,21 @@
+------- Claude API Debugger -------
+?뵎 API Key found: sk-ant-api...m-QAA
+Authenticated Client created.
+
+Attempting to list available models...
+??Successfully listed 9 models.
+ - claude-opus-4-5-20251101 (2025-11-24 00:00:00+00:00)
+ - claude-haiku-4-5-20251001 (2025-10-15 00:00:00+00:00)
+ - claude-sonnet-4-5-20250929 (2025-09-29 00:00:00+00:00)
+ - claude-opus-4-1-20250805 (2025-08-05 00:00:00+00:00)
+ - claude-opus-4-20250514 (2025-05-22 00:00:00+00:00)
+ - claude-sonnet-4-20250514 (2025-05-22 00:00:00+00:00)
+ - claude-3-7-sonnet-20250219 (2025-02-24 00:00:00+00:00)
+ - claude-3-5-haiku-20241022 (2024-10-22 00:00:00+00:00)
+ - claude-3-haiku-20240307 (2024-03-07 00:00:00+00:00)
+
+Attempting to send a simple 'Hello' message to Claude Sonnet 4.5 (Latest)...
+
+??API Call Failed!
+Type: NotFoundError
+Message: Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-sonnet-4-5-latest'}, 'request_id': 'req_011CWN4vCg2C8uKjm9s6zcuu'}
