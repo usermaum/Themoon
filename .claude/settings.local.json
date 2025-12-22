@@ -57,7 +57,12 @@
       "mcp__playwright__playwright_get_visible_html",
       "mcp__playwright__playwright_evaluate",
       "mcp__playwright__playwright_close",
-      "Bash(bash dev.sh)"
+      "Bash(bash dev.sh)",
+      "Bash(python -m mypy:*)",
+      "WebSearch",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(for file in /mnt/d/Ai/WslProject/Themoon/backend/app/api/v1/endpoints/*.py)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

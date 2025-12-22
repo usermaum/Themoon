@@ -10,6 +10,7 @@ interface PageHeroProps {
     image?: string
     icon?: React.ReactNode
     className?: string
+    compact?: boolean
 }
 
 export default function PageHero({
@@ -17,7 +18,8 @@ export default function PageHero({
     description,
     image,
     icon,
-    className
+    className,
+    compact = false
 }: PageHeroProps) {
     return (
         <motion.div
@@ -25,7 +27,8 @@ export default function PageHero({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             className={cn(
-                "relative w-full min-h-[400px] flex items-center overflow-hidden bg-latte-900 text-white shadow-md transition-transform hover:shadow-lg",
+                "relative w-full flex items-center overflow-hidden bg-latte-900 text-white shadow-md transition-transform hover:shadow-lg",
+                compact ? "min-h-[200px]" : "min-h-[400px]",
                 className
             )}
         >
@@ -53,7 +56,10 @@ export default function PageHero({
                 </>
             )}
 
-            <div className="relative z-10 container mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-10 justify-center h-full">
+            <div className={cn(
+                "relative z-10 container mx-auto px-6 flex flex-col md:flex-row items-center gap-10 justify-center h-full",
+                compact ? "py-10" : "py-20"
+            )}>
                 {icon && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}

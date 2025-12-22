@@ -217,6 +217,17 @@ class ImageService:
                     # But for now, let's keep the logic consistent or adapt based on output_dir presence
 
                     tier_img = img.copy()
+                    
+                    # JPEG는 투명도(RGBA)를 지원하지 않으므로 RGB로 변환
+                    if config['format'] == 'JPEG' and tier_img.mode in ('RGBA', 'P', 'LA'):
+                        if tier_img.mode == 'RGBA':
+                             # 투명 배경을 흰색으로 채움
+                             background = Image.new("RGB", tier_img.size, (255, 255, 255))
+                             background.paste(tier_img, mask=tier_img.split()[3])
+                             tier_img = background
+                        else:
+                             tier_img = tier_img.convert('RGB')
+
                     tier_img.thumbnail(config['max_size'], Image.Resampling.LANCZOS)
 
                     file_ext: str = str(config['format']).lower()

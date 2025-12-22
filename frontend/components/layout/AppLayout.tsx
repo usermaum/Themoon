@@ -13,35 +13,45 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
     // Initialize sidebar state from prop
     const [isSidebarOpen, setIsSidebarOpen] = useState(initialSidebarState)
 
+    const updateSidebarWidth = (open: boolean) => {
+        const width = window.innerWidth < 1024 ? '0px' : (open ? '256px' : '80px')
+        document.documentElement.style.setProperty('--sidebar-width', width)
+    }
+
     useEffect(() => {
-        // Only add resize listener if we want responsive behavior
-        // But if we want to persist user choice, we should be careful about overriding it.
-        // Let's keep the mobile check: if screen is small, always close.
         const handleResize = () => {
             if (window.innerWidth < 1024) {
                 setIsSidebarOpen(false)
+                updateSidebarWidth(false)
+            } else {
+                updateSidebarWidth(isSidebarOpen)
             }
-            // If >= 1024, we don't necessarily force open, we respect the user's choice (or initial state).
-            // However, if we just resized from mobile to desktop, maybe we should restore?
-            // For now, let's just handle the mobile closing case to prevent broken layout.
         }
 
-        // Check on mount (in case of hydration mismatch or just initial check)
         handleResize()
-
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
-    }, [])
+    }, [isSidebarOpen])
 
     const toggleSidebar = () => {
         const newState = !isSidebarOpen
         setIsSidebarOpen(newState)
-        // Set cookie
-        document.cookie = `sidebar:state=${newState}; path=/; max-age=31536000` // 1 year
+        updateSidebarWidth(newState)
+        document.cookie = `sidebar:state=${newState}; path=/; max-age=31536000`
     }
 
+    // Use 0px as default for SSR to avoid ReferenceError
+    const sidebarWidth = typeof window !== 'undefined'
+        ? (window.innerWidth < 1024 ? '0px' : (isSidebarOpen ? '256px' : '80px'))
+        : '256px'
+
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div
+            className="flex h-screen overflow-hidden"
+            style={{
+                '--sidebar-width': sidebarWidth
+            } as React.CSSProperties}
+        >
             <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
 
             <main
