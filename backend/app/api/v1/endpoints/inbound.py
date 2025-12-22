@@ -6,10 +6,11 @@ import os
 import uuid
 from app.services.ocr_service import OCRService
 from app.services.image_service import image_service
-from app.schemas.inbound import OCRResponse, AnalyzeUrlRequest
+from app.schemas.inbound import OCRResponse, AnalyzeUrlRequest, PaginatedInboundResponse
 from app.config import settings
 from sqlalchemy.orm import Session
 from app.database import get_db
+from sqlalchemy import or_
 from app.models.inbound_document import InboundDocument
 from app.models.inbound_document_detail import InboundDocumentDetail
 from app.models.inbound_receiver import InboundReceiver
@@ -209,6 +210,55 @@ async def analyze_inbound_document(
     )
 
     return response
+
+@router.get("/list", response_model=PaginatedInboundResponse)
+def get_inbound_list(
+    page: int = 1,
+    limit: int = 20,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    keyword: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    명세서 목록 조회 (Pagination & Filtering)
+    """
+    query = db.query(InboundDocument)
+
+    # Filtering
+    if from_date:
+        query = query.filter(InboundDocument.invoice_date >= from_date)
+    if to_date:
+        query = query.filter(InboundDocument.invoice_date <= to_date)
+    
+    if keyword:
+        # Search in Contract Number or Supplier Name
+        query = query.filter(
+            or_(
+                InboundDocument.contract_number.ilike(f"%{keyword}%"),
+                InboundDocument.supplier_name.ilike(f"%{keyword}%")
+            )
+        )
+
+    # Sorting (Latest first)
+    query = query.order_by(InboundDocument.created_at.desc())
+
+    # Pagination
+    total = query.count()
+    total_pages = (total + limit - 1) // limit
+    
+    offset = (page - 1) * limit
+    items = query.offset(offset).limit(limit).all()
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": limit,
+        "total_pages": total_pages
+    }
+
+@router.get("/check-duplicate/{contract_number}")
 
 @router.get("/check-duplicate/{contract_number}")
 def check_duplicate_contract_number(contract_number: str, db: Session = Depends(get_db)):
