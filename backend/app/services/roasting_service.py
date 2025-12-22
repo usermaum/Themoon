@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from app.models.bean import Bean, BeanType, RoastProfile
 from app.models.inventory_log import InventoryLog, InventoryChangeType
 from app.models.blend import Blend
-from app.services.cost_service import calculate_fifo_cost
+from app.services.inventory_service import InventoryService
 
 def generate_roasted_bean_sku(green_bean: Bean, profile: RoastProfile) -> str:
     """원두 SKU 생성 (예: Yirgacheffe-신콩)"""
@@ -39,9 +39,14 @@ def create_single_origin_roasting(
 
     # 원가 계산 (FIFO 기반)
     # 단순화: 가스비, 인건비 등 제외하고 재료비만 계산
-    fifo_unit_cost = calculate_fifo_cost(db, green_bean.id, input_weight)
+    inventory_service = InventoryService(db)
+    fifo_unit_cost, total_input_cost = inventory_service.calculate_fifo_cost(green_bean.id, input_weight)
     
     # 2. 생두 재고 차감 (투입)
+    # InventoryService를 통해 실제 차감 수행 (InboundItem remaining_quantity 차감)
+    inventory_service.deduct_inventory(green_bean.id, input_weight)
+    
+    # Bean 테이블 재고도 차감 (동기화)
     old_quantity = green_bean.quantity_kg
     green_bean.quantity_kg -= input_weight
     
@@ -60,7 +65,7 @@ def create_single_origin_roasting(
     sku = generate_roasted_bean_sku(green_bean, roast_profile)
     roasted_bean = db.query(Bean).filter(Bean.sku == sku).first()
 
-    input_cost = input_weight * fifo_unit_cost
+    input_cost = total_input_cost
     production_cost = input_cost / output_weight if output_weight > 0 else 0
     
     if not roasted_bean:
@@ -161,8 +166,11 @@ def create_blend_roasting(
             raise HTTPException(status_code=400, detail=f"Not enough stock for {bean.name}. Required: {required_input:.2f}kg, Available: {bean.quantity_kg:.2f}kg")
 
         # FIFO 원가 계산
-        fifo_unit_cost = calculate_fifo_cost(db, bean.id, required_input)
-        cost = required_input * fifo_unit_cost
+        inventory_service = InventoryService(db)
+        fifo_unit_cost, item_cost = inventory_service.calculate_fifo_cost(bean.id, required_input)
+        
+        # 실제 비용 사용
+        cost = item_cost
 
         input_items.append({
             "bean": bean,
@@ -180,6 +188,9 @@ def create_blend_roasting(
         amount = item['required_input']
         unit_cost = item['unit_cost']
 
+        inventory_service = InventoryService(db)
+        inventory_service.deduct_inventory(bean.id, amount)
+        
         bean.quantity_kg -= amount
 
         log = InventoryLog(

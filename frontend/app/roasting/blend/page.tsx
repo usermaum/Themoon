@@ -225,7 +225,7 @@ export default function BlendRoastingPage() {
 
                 showDialog(
                     '로스팅 완료',
-                    `블렌드 로스팅이 성공적으로 기록되었습니다.\n\n생산된 원두: ${res.roasted_bean.name}\n생산 원가: ₩${Math.round(res.production_cost).toLocaleString()}/kg`,
+                    `블렌드 로스팅이 성공적으로 기록되었습니다.\n\n생산된 원두: ${res.roasted_bean.name}\n생산 원가: ₩${Math.round(res.production_cost).toLocaleString()}/kg\n총 생산 원가: ₩${Math.round(res.production_cost * res.roasted_bean.quantity_kg).toLocaleString()}`,
                     'alert',
                     () => {
                         setSelectedBlendId('')
