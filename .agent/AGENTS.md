@@ -1,123 +1,111 @@
-# AGENTS.md
+# AI Agents Common Manifesto (AGENTS.md)
 
-> **TheMoon - 커피 로스팅 원가 계산 시스템**
-> **Stack**: Next.js (App Router) + FastAPI + PostgreSQL (Prod) / SQLite (Dev)
-> **Version**: 0.3.0
-> **OS**: Windows (WSL2 Environment)
-
----
-
-## 🗣️ Language Rules (MANDATORY)
-
-**CRITICAL**: The user is a **beginner in English**. To ensure clear communication, you must perform all interactions in **Korean**.
-
-- **Output**: All explanations, status updates ("Checking..."), and results must be in **Korean**.
-- **Exceptions**: Keep code, original error messages, and log outputs in English, but **always** append a Korean explanation.
-- **Tone**: Professional, helpful, and concise.
+> **Master Rules for All AI Agents**
+> This file is the **Single Source of Truth** for strict project rules.
+> Whether you are **Claude** or **Gemini**, you MUST follow these instructions.
 
 ---
 
-## 🛠️ Setup & Commands
+## 🏗️ 아키텍처 원칙 (Clean Architecture Standard)
 
-### Development Server
+> **2025-12-23 도입**: 점진적 적용을 위한 하이브리드 전략
+> **적용 대상**: `Bean` 모듈(Refactoring) 및 **모든 신규 기능**(Phase 2+)
 
-**ALWAYS** use the provided script to start the environment. **NEVER** use `start_all.sh` or `npm run dev`/`uvicorn` directly unless debugging specific isolated components.
+### 1. Repository Pattern 필수 (Repository Pattern)
 
-```bash
-# Clean start (clears cache & restarts servers)
-wsl bash dev.sh
+* **원칙**: `Service` Layer에서 `db.query()`, `db.add()`, `db.commit()` 등을 직접 호출하지 않습니다.
+* **구현**: 모든 DB 접근은 `app/repositories/*` 패키지 내의 Repository 클래스를 통해서만 수행합니다.
+* **이유**: 비즈니스 로직과 데이터 접근 기술(SQLAlchemy)의 분리, 테스트 용이성 확보, 장기적 유지보수성 향상.
+
+### 2. 의존성 규칙 (Dependency Rule)
+
+* ✅ `Controller (Router)` → `Service` → `Repository` → `Model`
+* ❌ `Service`가 `Controller(HTTP Request 등)` 의존 금지.
+* ❌ `Repository`가 `UI/Web` 관련 로직 의존 금지.
+
+### 3. 서비스 순수성 (Service Purity)
+
+* Service 메서드는 오직 **Pydantic Schema**나 **Primitive Type** 만을 인자로 받고 반환해야 합니다.
+* `FastAPI.Request`, `FastAPI.Depends` 등의 웹 프레임워크 객체를 Service 내부로 침투시키지 마십시오.
+
+---
+
+## 🗣️ 언어 규칙 (MANDATORY)
+
+**중요**: 사용자는 영어 초보자입니다. 모든 대화, **결과 설명, 체크 상황, 진행 상태** 등 사용자가 읽어야 하는 모든 텍스트는 **반드시 한글**로 작성해야 합니다.
+
+* 코드, 로그, 에러 메시지 원본은 영어로 유지하되, **반드시 한글 설명**을 덧붙여야 합니다.
+* "Checking..." 같은 진행 상황도 "확인 중..."과 같이 한글로 표현해야 합니다.
+
+---
+
+## 🛠️ 핵심 도구 및 기술 스택 (MANDATORY)
+
+작업 시 다음 도구와 기술을 **무조건** 사용해야 합니다:
+
+1. **AI 도구 & MCP**:
+
+   * **Context7**: 라이브러리 문서 및 컨텍스트 검색  상황에따라 판단하여 사용 필수 아님.
+2. **Frontend Tech Stack**:
+
+   * **Framework**: Next.js (App Router)
+   * **UI Library**: **Shadcn UI** (v2, CSS Modules)
+3. **Documentation Tools**:
+
+   * **Mermaid**: 모든 아키텍처, 플로우, ERD 다이어그램은 **반드시 Mermaid 문법**으로 작성합니다. (이미지 업로드 지양)
+     * **v8.8.0 호환성 필수**: `subgraph ID [Label]` 문법 사용 금지 → `subgraph "Label"` 또는 `subgraph ID ["Label"]` 사용.
+     * **특수문자 Quoting**: 괄호 `()`, 대괄호 `[]` 등이 포함된 노드 라벨은 반드시 쌍따옴표로 감싸야 합니다. 예: `Node["Label (Info)"]`
+     * **Subgraph 연결 금지**: Subgraph 간 직접 연결 화살표 금지 → 내부 노드끼리 연결.
+
+---
+
+## 🎯 개발 프로세스 (7 Steps)
+
+**모든 프로그래밍 작업은 이 순서를 따를 것!**
+
+```text
+1️⃣ Constitution (원칙) → 기본 원칙 수립
+2️⃣ Specify (명세) → 무엇을 만들지 정의
+3️⃣ Clarify (명확화) → 불분명한 부분 질문으로 해소
+4️⃣ Plan (계획) → 기술 스택과 아키텍처 결정
+5️⃣ Tasks (작업 분해) → 작은 단위로 쪼개기 (TodoWrite 사용)
+6️⃣ Implement (구현) → 코드 작성 및 테스트 (Clean Architecture 준수)
+7️⃣ Analyze (검증) → 명세 대비 검증
 ```
 
-### Process Management
+**❌ 금지**: 명세 없이 바로 코딩, 추측으로 진행, 검증 없이 완료
 
-Before starting servers, ensure ports are free.
+---
 
-```bash
-# Kill existing processes on ports 3500 (Frontend) and 8000 (Backend)
-lsof -ti :3500,8000 | xargs kill -9
+## 🚨 작업 완료 3단계 (필수)
+
+**모든 작업은 아래 3단계를 완료해야만 "완료"**
+
+```text
+1️⃣ 코드/테스트 작성 완료
+   ↓
+2️⃣ git commit (한글 메시지)
+   ↓
+3️⃣ 문서 업데이트 (필수!) - 누락 시 작업 미완료 간주
+   ✅ logs/CHANGELOG.md
+   ✅ docs/Progress/SESSION_SUMMARY_YYYY-MM-DD.md
+   ✅ README.md (버전 동기화)
+   ✅ .agent/AGENTS.md (필요 시 업데이트)
 ```
 
-### Version Management
+**❌ 금지**: 커밋 후 문서 업데이트 없이 다음 작업으로 넘어가기
 
-To upgrade the project version (perform only at the end of a session):
+---
 
-```bash
-# Example: Patch update
-./venv/bin/python logs/update_version.py --type patch --summary "Session summary here"
+## 🔗 URL 작성 규칙 (MANDATORY)
+
+**❌ 절대 금지**:
+
+```text
+웹앱은 http://localhost:3000에서 실행 중입니다!  ← URL 뒤에 한글 붙음
 ```
 
----
-
-## 🏗️ Constitution (Workflows)
-
-### 1. 7-Step Development Methodology (MANDATORY)
-
-Follow this sequence for **ALL** programming tasks.
-
-1. **Constitution (원칙)**: Establish basic principles and constraints.
-2. **Specify (명세)**: Define detailed requirements (Input/Output, Data Structures).
-3. **Clarify (명확화)**: Ask questions to resolve ambiguities. **Do not guess.**
-4. **Plan (계획)**: Decide tech stack and architecture. Create `implementation_plan.md`.
-5. **Tasks (작업 분해)**: Break down work into small, testable items. Use `task.md`.
-6. **Implement (구현)**: Write code and tests.
-7. **Analyze (검증)**: Verify against the specification.
-
-### 2. Definition of Done (3-Step Rule)
-
-A task is **NOT complete** until all 3 steps are finished.
-
-1. **Code/Test**: Write code and pass tests.
-2. **Commit**: `git commit` (Do not update version here).
-3. **Documentation (The "5-Set")**: Update these files immediately after commit:
-   - `logs/CHANGELOG.md`
-   - `Documents/Progress/SESSION_SUMMARY_YYYY-MM-DD.md`
-   - `README.md` (Sync version)
-   - `.claude/CLAUDE.md` (Sync version)
-   - `.gemini/GEMINI.md` (Sync version)
-
----
-
-## 💻 Tech Stack & Conventions
-
-### Frontend
-
-- **Framework**: Next.js 14 (App Router)
-- **UI Library**: Shadcn UI (v2) + Tailwind CSS
-- **Language**: TypeScript (Strict Mode)
-- **Conventions**:
-  - Components: `PascalCase` (e.g., `BeanCard.tsx`)
-  - Utils: `camelCase` (e.g., `formatPrice.ts`)
-  - Functional Components required.
-
-### Backend
-
-- **Framework**: FastAPI
-- **Language**: Python 3.10+
-- **Database**: SQLite (Dev) / PostgreSQL (Prod)
-- **ORM**: SQLAlchemy
-- **Conventions**:
-  - Files: `snake_case` (e.g., `bean_service.py`)
-  - Classes: `PascalCase` (e.g., `BeanService`)
-  - Functions: `snake_case` (e.g., `get_bean_by_id`)
-  - **Type Hinting**: Mandatory for all functions (e.g., `def func(a: int) -> str:`).
-
-### Tools
-
-- **Mermaid**: **MANDATORY** for all diagrams (Architecture, Flow, ERD). No image uploads.
-
----
-
-## 📝 Documentation Rules
-
-### URL Formatting
-
-**Strictly** follow this format to ensure clickable links in the user's interface.
-
-**❌ BAD**:
-`App running at http://localhost:3000!` (No space after URL)
-`Check http://localhost:3000` (No newline before)
-
-**✅ GOOD**:
+**✅ 반드시**:
 
 ```text
 웹앱이 실행되었습니다:
@@ -127,37 +115,121 @@ http://localhost:3000
 위 주소로 접속하세요.
 ```
 
-### Version Update Criteria
-
-- **PATCH** (0.0.x → 0.0.y): 3+ bugs fixed OR 5+ docs updated.
-- **MINOR** (0.x.0 → 0.y.0): 3-4 new features accumulated.
-- **MAJOR** (x.0.0 → y.0.0): Breaking changes.
+**핵심**: URL 앞뒤로 반드시 공백/줄바꿈, URL 바로 뒤에 한글/특수문자 금지
 
 ---
 
-## 📋 Session Management
+## 💻 코딩 컨벤션
 
-### Files
+### Backend (Python/FastAPI)
 
-- `Documents/Progress/SESSION_START_CHECKLIST.md`: Read at start.
-- `Documents/Progress/SESSION_END_CHECKLIST.md`: Complete at end.
-- `Documents/Progress/SESSION_SUMMARY_*.md`: Read latest at start / Create new at end.
+* **타입 힌팅 필수**: `def get_user(user_id: int) -> User:`
+* **Docstring**: 중요 함수에 작성
+* **파일명**: `snake_case` (예: `bean_service.py`)
+* **클래스**: `PascalCase` (예: `BeanService`)
+* **함수**: `snake_case` (예: `get_bean_by_id`)
+* **Lint**: `check_quality.sh` 통과 필수 (Black, Pylint, Mypy)
 
-### Protocol
+### Frontend (TypeScript/Next.js)
 
-1. **Start**: Read checklist -> Read latest summary -> Check version strategy.
-2. **End**: Complete checklist -> Write session summary -> Update version (if criteria met) -> Sync all docs.
-
----
-
-## 📂 Core Directories
-
-- `backend/`: FastAPI source
-- `frontend/`: Next.js source
-- `Documents/Architecture/`: System design & specs (Source of Truth)
-- `logs/`: Version control & Changelogs
-- `data/`: Local SQLite database location
+* **타입 정의 필수**: `interface`, `type` 활용
+* **함수형 컴포넌트** 사용
+* **컴포넌트**: `PascalCase` (예: `BeanCard.tsx`)
+* **유틸**: `camelCase` (예: `formatPrice.ts`)
+* **에러 핸들링**: try-catch 필수
+* **Lint**: `npm run lint` 통과 필수
 
 ---
 
-*Generated based on .claude/CLAUDE.md and .gemini/GEMINI.md*
+## 🔖 버전 관리
+
+### 커밋 메시지 컨벤션
+
+```bash
+feat: 원두 관리 페이지 추가
+fix: 가격 계산 오류 수정
+refactor: Bean 서비스 리팩토링
+docs: README 업데이트
+chore: 패키지 업데이트
+test: 테스트 추가
+```
+
+### 버전 업데이트 기준
+
+**작업 완료 후**: `git commit` (버전 업데이트 ❌)
+
+**세션 종료 시**: 누적 기준 확인 후 버전 올림
+
+```text
+PATCH: 버그 3개 이상 OR 문서 5개 이상 누적 (주 1~3회)
+MINOR: 새 기능 3~4개 이상 추가 (월 1회)
+MAJOR: 호환성 변경 (년 1~2회)
+```
+
+---
+
+## 📋 세션 관리 (Session Protocol)
+
+### 세션 시작 시
+
+```bash
+# 1. 체크리스트 확인
+cat docs/Progress/SESSION_START_CHECKLIST.md
+
+# 2. 최신 세션 요약 읽기
+ls -lt docs/Progress/SESSION_SUMMARY_*.md | head -1
+```
+
+### 세션 종료 시
+
+```bash
+# 1. 종료 체크리스트 완료
+cat docs/Progress/SESSION_END_CHECKLIST.md
+
+# 2. 세션 요약 작성 (docs/Progress/SESSION_SUMMARY_YYYY-MM-DD.md)
+
+# 3. 버전 업데이트 (누적 기준 충족 시)
+./venv/bin/python logs/update_version.py --type patch --summary "요약"
+
+# 4. 모든 문서 버전 동기화
+```
+
+---
+
+## 🚫 절대 금지 사항
+
+**원본 프로젝트 코드 복사 금지** (참조만 가능)
+
+**새로운 세션 관리 파일 생성 금지** (기존 체계 유지)
+
+**작은 변경사항마다 버전 올리기 금지** (세션 종료 시 일괄 처리)
+
+**영어 답변 금지** (한글 설명 필수)
+
+---
+
+## 🔄 Context Handover Protocol (Last updated by Agent)
+
+> **이 섹션은 AI가 세션을 시작할 때 자동으로 읽어들이는 "기억" 영역입니다.**
+> **세션 종료 전 반드시 AI에게 "상태 저장해줘" 또는 "세션 종료"를 요청하여 이 부분을 업데이트하세요.**
+
+### 📅 마지막 세션: 2025-12-24 (Bean Refactoring & Clean Architecture)
+
+**✅ 완료된 작업 (v0.4.8)**:
+1. **Bean Module Refactoring (Clean Architecture)**:
+   - **Repository Pattern 적용**: `BeanRepository`에 검색 및 집계 메서드 추가.
+   - **Service Layer 개선**: `BeanService`의 직접 DB 접근 코드 제거.
+   - **Verification**: `tests/verify_bean_refactor.py` 스크립트로 기능 검증 완료.
+2. **Bug Fixes**:
+   - `logs/update_version.py`: `SyntaxError` (missing except block) 수정.
+3. **OCR Engine & UI (이전 작업)**:
+   - Auto-Deskew, Sharpening, Adaptive Upscale 등 이미지 전처리 고도화.
+   - 설정 페이지 UI 개선.
+
+**Git 상태**:
+- 현재 브랜치: main
+- 최신 커밋: fix: update_version.py 구문 오류 수정 (except 블록 추가)
+
+**🎯 다음 작업 (Immediate Next Step)**:
+1. **로스팅 로그 시스템 (Phase 2)**: 리팩토링된 `BeanRepository` 활용하여 로스팅 데이터 연동 구현.
+2. **OCR 테스트 & 튜닝**: 실제 영수증 이미지로 새로운 설정값 테스트.
