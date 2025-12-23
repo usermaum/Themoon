@@ -134,11 +134,61 @@ class VersionManager:
             with open(self.changelog_file, 'w', encoding='utf-8') as f:
                 f.write(new_content)
 
-            print(f"✅ CHANGELOG.md 업데이트: [{new_version}]")
-            return True
-        except IOError as e:
+
+        except Exception as e:
             print(f"❌ CHANGELOG.md 업데이트 실패: {e}")
+
+    def update_readme(self, new_version):
+        """README.md 버전 업데이트"""
+        readme_path = os.path.join(self.project_root, "README.md")
+        try:
+            with open(readme_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            import re
+            # Regex to find "> **v0.4.6**" pattern
+            pattern = r'> \*\*v\d+\.\d+\.\d+\*\*'
+            if re.search(pattern, content):
+                new_content = re.sub(pattern, f'> **v{new_version}**', content)
+                with open(readme_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print(f"✅ README.md 업데이트: v{new_version}")
+                return True
+            else:
+                print(f"⚠️ README.md에서 버전 패턴을 찾을 수 없습니다.")
+                return False
+        except Exception as e:
+            print(f"❌ README.md 업데이트 실패: {e}")
             return False
+
+    def update_system_config(self, new_version):
+        """system_config.json 버전 및 날짜 업데이트"""
+        config_path = os.path.join(self.project_root, "backend", "app", "configs", "system_config.json")
+        try:
+            import json
+            with open(config_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            data['system']['version'] = new_version
+            data['system']['last_updated'] = datetime.now().strftime('%Y-%m-%d')
+
+            with open(config_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            
+            print(f"✅ system_config.json 업데이트: {new_version}")
+            return True
+        except Exception as e:
+            print(f"❌ system_config.json 업데이트 실패: {e}")
+            return False
+
+    def update_all(self, new_version, version_type, summary, changes=None):
+        """모든 버전 관련 파일 업데이트"""
+        success = True
+        success &= self.write_version(new_version)
+        success &= self.update_changelog(new_version, version_type, summary, changes)
+        success &= self.update_readme(new_version)
+        success &= self.update_system_config(new_version)
+        return success
 
     def show_current_version(self):
         """현재 버전 표시"""
@@ -202,8 +252,7 @@ def main():
         print(f"  요약: {args.summary}\n")
 
         # 파일 업데이트
-        if manager.write_version(new_version):
-            manager.update_changelog(new_version, version_type, args.summary, args.changes)
+        if manager.update_all(new_version, version_type, args.summary, args.changes):
             print(f"\n✅ 버전 관리 완료!")
     else:
         print("❌ --type과 --summary 옵션이 필요합니다")
