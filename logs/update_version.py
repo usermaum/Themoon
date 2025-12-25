@@ -133,10 +133,13 @@ class VersionManager:
 
             with open(self.changelog_file, 'w', encoding='utf-8') as f:
                 f.write(new_content)
-
+            
+            print(f"✅ CHANGELOG.md 업데이트: {new_version}")
+            return True
 
         except Exception as e:
             print(f"❌ CHANGELOG.md 업데이트 실패: {e}")
+            return False
 
     def update_readme(self, new_version):
         """README.md 버전 업데이트"""
