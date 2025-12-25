@@ -74,12 +74,12 @@ backend/
 
 ## 🔗 원본 대응표
 
-| 원본 (Streamlit) | 신규 (FastAPI) | 설명 |
-|------------------|----------------|------|
-| `app/models/` | `backend/app/models/` | SQLAlchemy 모델 (재작성) |
-| `app/services/` | `backend/app/services/` | 비즈니스 로직 (재작성) |
-| `app/pages/` | `backend/app/api/v1/endpoints/` | UI → API 엔드포인트 |
-| `app/models/database.py` | `backend/app/database.py` | DB 연결 |
+| 원본 (Streamlit)         | 신규 (FastAPI)                  | 설명                     |
+| ------------------------ | ------------------------------- | ------------------------ |
+| `app/models/`            | `backend/app/models/`           | SQLAlchemy 모델 (재작성) |
+| `app/services/`          | `backend/app/services/`         | 비즈니스 로직 (재작성)   |
+| `app/pages/`             | `backend/app/api/v1/endpoints/` | UI → API 엔드포인트      |
+| `app/models/database.py` | `backend/app/database.py`       | DB 연결                  |
 
 ## 📚 API 문서
 
@@ -108,16 +108,16 @@ pytest tests/ -v
 **← 상위**: [프로젝트 루트](../README.md)
 
 **아키텍처 문서**:
-- [시스템 개요](../Documents/Architecture/SYSTEM_OVERVIEW.md) - 전체 시스템 개요 및 핵심 기능
-- [데이터 흐름도](../Documents/Architecture/DATA_FLOW.md) - 시스템 내 데이터 흐름 상세 분석
-- [데이터베이스 스키마](../Documents/Architecture/DATABASE_SCHEMA.md) - 테이블 구조 및 관계도
-- [API 명세](../Documents/Architecture/API_SPECIFICATION.md) ⭐ - 모든 API 엔드포인트 상세 문서
-- [기술 스택](../Documents/Architecture/TECHNOLOGY_STACK.md) ⭐ - 사용 기술 상세 설명
-- [배포 아키텍처](../Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ - 배포 환경 상세 구조
+- [시스템 개요](../docs/Architecture/SYSTEM_OVERVIEW.md) - 전체 시스템 개요 및 핵심 기능
+- [데이터 흐름도](../docs/Architecture/DATA_FLOW.md) - 시스템 내 데이터 흐름 상세 분석
+- [데이터베이스 스키마](../docs/Architecture/DATABASE_SCHEMA.md) - 테이블 구조 및 관계도
+- [API 명세](../docs/Architecture/API_SPECIFICATION.md) ⭐ - 모든 API 엔드포인트 상세 문서
+- [기술 스택](../docs/Architecture/TECHNOLOGY_STACK.md) ⭐ - 사용 기술 상세 설명
+- [배포 아키텍처](../docs/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ - 배포 환경 상세 구조
 
 **개발 가이드**:
-- [개발 가이드](../Documents/Architecture/DEVELOPMENT_GUIDE.md) - 5단계 개발 프로세스
-- [문제 해결](../Documents/Architecture/TROUBLESHOOTING.md) - 16가지 오류 & 해결법
+- [개발 가이드](../docs/Architecture/DEVELOPMENT_GUIDE.md) - 5단계 개발 프로세스
+- [문제 해결](../docs/Architecture/TROUBLESHOOTING.md) - 16가지 오류 & 해결법
 
 **Frontend**:
 - [Frontend README](../frontend/README.md) - Frontend 개발 가이드

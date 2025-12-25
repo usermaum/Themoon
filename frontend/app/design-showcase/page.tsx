@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Coffee,
   Palette,
@@ -32,17 +32,19 @@ import {
   Bell,
   BarChart3,
   PieChart,
-  Activity
-} from 'lucide-react'
+  Activity,
+} from 'lucide-react';
 
 export default function DesignShowcasePage() {
-  const [selectedTab, setSelectedTab] = useState<'components' | 'layouts' | 'interactions'>('components')
-  const [notification, setNotification] = useState<string | null>(null)
+  const [selectedTab, setSelectedTab] = useState<'components' | 'layouts' | 'interactions'>(
+    'components'
+  );
+  const [notification, setNotification] = useState<string | null>(null);
 
   const showNotification = (message: string) => {
-    setNotification(message)
-    setTimeout(() => setNotification(null), 3000)
-  }
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -50,10 +52,10 @@ export default function DesignShowcasePage() {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }
+        delayChildren: 0.2,
+      },
+    },
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -61,18 +63,18 @@ export default function DesignShowcasePage() {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5
-      }
-    }
-  }
+        duration: 0.5,
+      },
+    },
+  };
 
   const floatingAnimation = {
     y: [0, -10, 0],
     transition: {
       duration: 3,
-      repeat: Infinity
-    }
-  }
+      repeat: Infinity,
+    },
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-latte-50 via-white to-latte-100">
@@ -89,7 +91,7 @@ export default function DesignShowcasePage() {
             animate={{
               scale: [1, 1.2, 1],
               rotate: [0, 90, 0],
-              opacity: [0.1, 0.2, 0.1]
+              opacity: [0.1, 0.2, 0.1],
             }}
             transition={{ duration: 20, repeat: Infinity }}
             className="absolute -top-1/2 -left-1/2 w-full h-full bg-latte-400/10 rounded-full blur-3xl"
@@ -98,7 +100,7 @@ export default function DesignShowcasePage() {
             animate={{
               scale: [1.2, 1, 1.2],
               rotate: [90, 0, 90],
-              opacity: [0.2, 0.1, 0.2]
+              opacity: [0.2, 0.1, 0.2],
             }}
             transition={{ duration: 15, repeat: Infinity }}
             className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-latte-300/10 rounded-full blur-3xl"
@@ -112,10 +114,7 @@ export default function DesignShowcasePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center"
           >
-            <motion.div
-              animate={floatingAnimation}
-              className="inline-block mb-6"
-            >
+            <motion.div animate={floatingAnimation} className="inline-block mb-6">
               <div className="p-4 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 inline-block">
                 <Coffee className="w-16 h-16 text-latte-200" />
               </div>
@@ -143,8 +142,7 @@ export default function DesignShowcasePage() {
                 variant="outline"
                 className="text-lg bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-md"
               >
-                <Award className="w-5 h-5 mr-2" />
-                더 알아보기
+                <Award className="w-5 h-5 mr-2" />더 알아보기
               </Button>
             </div>
           </motion.div>
@@ -190,15 +188,13 @@ export default function DesignShowcasePage() {
             {[
               { id: 'components' as const, label: '컴포넌트', icon: Package },
               { id: 'layouts' as const, label: '레이아웃', icon: BarChart3 },
-              { id: 'interactions' as const, label: '인터랙션', icon: Zap }
-            ].map(tab => (
+              { id: 'interactions' as const, label: '인터랙션', icon: Zap },
+            ].map((tab) => (
               <Button
                 key={tab.id}
                 variant={selectedTab === tab.id ? 'default' : 'ghost'}
                 className={`text-base px-6 py-6 rounded-2xl transition-all ${
-                  selectedTab === tab.id
-                    ? 'bg-latte-800 text-white shadow-lg'
-                    : 'hover:bg-latte-50'
+                  selectedTab === tab.id ? 'bg-latte-800 text-white shadow-lg' : 'hover:bg-latte-50'
                 }`}
                 onClick={() => setSelectedTab(tab.id)}
               >
@@ -228,19 +224,29 @@ export default function DesignShowcasePage() {
                 {[
                   { icon: Coffee, label: '총 원두', value: '48', unit: '종류', color: 'latte' },
                   { icon: Palette, label: '블렌드', value: '23', unit: '레시피', color: 'latte' },
-                  { icon: TrendingUp, label: '매출', value: '₩2.4M', unit: '이번 달', color: 'green' },
-                  { icon: Users, label: '고객', value: '1,234', unit: '명', color: 'blue' }
+                  {
+                    icon: TrendingUp,
+                    label: '매출',
+                    value: '₩2.4M',
+                    unit: '이번 달',
+                    color: 'green',
+                  },
+                  { icon: Users, label: '고객', value: '1,234', unit: '명', color: 'blue' },
                 ].map((stat, idx) => (
                   <motion.div
                     key={idx}
                     whileHover={{ scale: 1.03, y: -5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
                   >
                     <Card className="border-latte-200 hover:border-latte-400 hover:shadow-xl transition-all">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className={`p-3 rounded-2xl bg-${stat.color === 'latte' ? 'latte' : stat.color}-100`}>
-                            <stat.icon className={`w-6 h-6 text-${stat.color === 'latte' ? 'latte' : stat.color}-600`} />
+                          <div
+                            className={`p-3 rounded-2xl bg-${stat.color === 'latte' ? 'latte' : stat.color}-100`}
+                          >
+                            <stat.icon
+                              className={`w-6 h-6 text-${stat.color === 'latte' ? 'latte' : stat.color}-600`}
+                            />
                           </div>
                           <Badge variant="secondary" className="bg-latte-50">
                             <TrendingUp className="w-3 h-3 mr-1" />
@@ -250,7 +256,9 @@ export default function DesignShowcasePage() {
                         <p className="text-latte-600 text-sm font-medium mb-1">{stat.label}</p>
                         <p className="text-3xl font-bold text-latte-900">
                           {stat.value}
-                          <span className="text-base text-latte-400 ml-2 font-normal">{stat.unit}</span>
+                          <span className="text-base text-latte-400 ml-2 font-normal">
+                            {stat.unit}
+                          </span>
                         </p>
                       </CardContent>
                     </Card>
@@ -267,23 +275,48 @@ export default function DesignShowcasePage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { icon: CheckCircle2, title: '성공', desc: '작업이 완료되었습니다', color: 'green', bg: 'green-50', border: 'green-200' },
-                  { icon: AlertTriangle, title: '경고', desc: '재고가 부족합니다', color: 'amber', bg: 'amber-50', border: 'amber-200' },
-                  { icon: XCircle, title: '오류', desc: '연결에 실패했습니다', color: 'red', bg: 'red-50', border: 'red-200' }
+                  {
+                    icon: CheckCircle2,
+                    title: '성공',
+                    desc: '작업이 완료되었습니다',
+                    color: 'green',
+                    bg: 'green-50',
+                    border: 'green-200',
+                  },
+                  {
+                    icon: AlertTriangle,
+                    title: '경고',
+                    desc: '재고가 부족합니다',
+                    color: 'amber',
+                    bg: 'amber-50',
+                    border: 'amber-200',
+                  },
+                  {
+                    icon: XCircle,
+                    title: '오류',
+                    desc: '연결에 실패했습니다',
+                    color: 'red',
+                    bg: 'red-50',
+                    border: 'red-200',
+                  },
                 ].map((alert, idx) => (
                   <motion.div
                     key={idx}
                     whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    transition={{ type: 'spring', stiffness: 400 }}
                   >
-                    <Card className={`border-${alert.border} bg-${alert.bg}/50 hover:shadow-lg transition-all`}>
+                    <Card
+                      className={`border-${alert.border} bg-${alert.bg}/50 hover:shadow-lg transition-all`}
+                    >
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
                           <div className={`p-3 rounded-2xl bg-${alert.color}-100`}>
                             <alert.icon className={`w-6 h-6 text-${alert.color}-600`} />
                           </div>
                           <div className="flex-1">
-                            <h3 className={`text-lg font-bold text-${alert.color}-900 mb-1`}>{alert.title}</h3>
+                            <h3 className={`text-lg font-bold text-${alert.color}-900 mb-1`}>
+                              {alert.title}
+                            </h3>
                             <p className={`text-${alert.color}-600 text-sm`}>{alert.desc}</p>
                           </div>
                         </div>
@@ -345,9 +378,7 @@ export default function DesignShowcasePage() {
                           <XCircle className="w-4 h-4 mr-2" />
                           Delete
                         </Button>
-                        <Button variant="destructive">
-                          Remove
-                        </Button>
+                        <Button variant="destructive">Remove</Button>
                       </div>
                     </div>
 
@@ -372,8 +403,7 @@ export default function DesignShowcasePage() {
             {/* Form Elements */}
             <motion.section variants={itemVariants}>
               <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6 flex items-center gap-3">
-                <Info className="w-8 h-8 text-latte-600" />
-                폼 요소
+                <Info className="w-8 h-8 text-latte-600" />폼 요소
               </h2>
               <Card className="border-latte-200">
                 <CardContent className="p-8">
@@ -402,9 +432,7 @@ export default function DesignShowcasePage() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-latte-700 mb-2 block">
-                        메모
-                      </label>
+                      <label className="text-sm font-medium text-latte-700 mb-2 block">메모</label>
                       <Textarea
                         placeholder="로스팅 노트를 입력하세요..."
                         className="border-latte-300 focus:border-latte-500 min-h-[120px]"
@@ -508,7 +536,7 @@ export default function DesignShowcasePage() {
                         {[
                           { time: '09:00', task: '원두 입고 검수', color: 'blue' },
                           { time: '14:00', task: '블렌딩 작업', color: 'green' },
-                          { time: '16:30', task: '재고 점검', color: 'amber' }
+                          { time: '16:30', task: '재고 점검', color: 'amber' },
                         ].map((item, idx) => (
                           <motion.div
                             key={idx}
@@ -531,9 +559,7 @@ export default function DesignShowcasePage() {
 
             {/* Grid Layouts */}
             <motion.section variants={itemVariants}>
-              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">
-                그리드 레이아웃
-              </h2>
+              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">그리드 레이아웃</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { name: 'Antigua', image: '/images/beans/antigua.png' },
@@ -543,12 +569,12 @@ export default function DesignShowcasePage() {
                   { name: 'El Tanque', image: '/images/beans/el-tanque.png' },
                   { name: 'Fazenda', image: '/images/beans/fazenda-carmo.png' },
                   { name: 'Decaf SDM', image: '/images/beans/decaf-sdm.png' },
-                  { name: 'Decaf SM', image: '/images/beans/decaf-sm.png' }
+                  { name: 'Decaf SM', image: '/images/beans/decaf-sm.png' },
                 ].map((bean, idx) => (
                   <motion.div
                     key={idx}
                     whileHover={{ scale: 1.05, y: -8 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
                     className="group aspect-square bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all overflow-hidden cursor-pointer border border-latte-200 hover:border-latte-400"
                   >
                     <div className="relative h-full flex flex-col">
@@ -603,14 +629,12 @@ export default function DesignShowcasePage() {
           >
             {/* Hover Effects */}
             <motion.section variants={itemVariants}>
-              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">
-                호버 효과
-              </h2>
+              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">호버 효과</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                   { title: 'Scale Up', icon: Zap, color: 'from-purple-500 to-pink-500' },
                   { title: 'Rotate', icon: Star, color: 'from-blue-500 to-cyan-500' },
-                  { title: 'Glow', icon: Sparkles, color: 'from-amber-500 to-orange-500' }
+                  { title: 'Glow', icon: Sparkles, color: 'from-amber-500 to-orange-500' },
                 ].map((item, idx) => (
                   <motion.div
                     key={idx}
@@ -627,9 +651,7 @@ export default function DesignShowcasePage() {
 
             {/* Loading States */}
             <motion.section variants={itemVariants}>
-              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">
-                로딩 상태
-              </h2>
+              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">로딩 상태</h2>
               <Card className="border-latte-200">
                 <CardContent className="p-8">
                   <div className="flex flex-col items-center justify-center space-y-6">
@@ -658,21 +680,19 @@ export default function DesignShowcasePage() {
 
             {/* Animated Cards */}
             <motion.section variants={itemVariants}>
-              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">
-                애니메이션 카드
-              </h2>
+              <h2 className="text-3xl font-serif font-bold text-latte-900 mb-6">애니메이션 카드</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
                   { title: '스무스 페이드인', desc: '부드러운 등장 애니메이션', icon: Sun },
                   { title: '스케일 효과', desc: '크기 변화와 함께', icon: Moon },
                   { title: '슬라이드 업', desc: '아래에서 위로', icon: Award },
-                  { title: '회전 애니메이션', desc: '3D 효과와 함께', icon: Target }
+                  { title: '회전 애니메이션', desc: '3D 효과와 함께', icon: Target },
                 ].map((card, idx) => (
                   <motion.div
                     key={idx}
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, margin: "-100px" }}
+                    viewport={{ once: false, margin: '-100px' }}
                     transition={{ duration: 0.6, delay: idx * 0.1 }}
                   >
                     <Card className="border-latte-200 hover:border-latte-400 group cursor-pointer">
@@ -696,5 +716,5 @@ export default function DesignShowcasePage() {
         )}
       </div>
     </div>
-  )
+  );
 }

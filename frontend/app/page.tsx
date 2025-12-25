@@ -1,65 +1,65 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI } from '@/lib/api'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI } from '@/lib/api';
+import Link from 'next/link';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import Hero from '@/components/home/Hero'
-import { ErrorState, LoadingSkeleton } from '@/components/ui/error-state'
-import { Coffee, Layers, Package, AlertTriangle, ArrowRight } from 'lucide-react'
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import Hero from '@/components/home/Hero';
+import { ErrorState, LoadingSkeleton } from '@/components/ui/error-state';
+import { Coffee, Layers, Package, AlertTriangle, ArrowRight } from 'lucide-react';
 
 export default function HomePage() {
   const [stats, setStats] = useState<{
-    total_beans: number
-    total_blends: number
-    total_stock_kg: number
-    low_stock_beans: Bean[]
-    low_stock_count: number
-  } | null>(null)
+    total_beans: number;
+    total_blends: number;
+    total_stock_kg: number;
+    low_stock_beans: Bean[];
+    low_stock_count: number;
+  } | null>(null);
 
-  const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<any>(null)
+  const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<any>(null);
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       const [statsData, logsData] = await Promise.all([
         DashboardAPI.getStats(),
         InventoryLogAPI.getAll({ limit: 10 }),
-      ])
+      ]);
 
-      setStats(statsData)
-      setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : [])
+      setStats(statsData);
+      setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : []);
     } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
-      setError(err)
+      console.error('Failed to fetch dashboard data:', err);
+      setError(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   // stats가 없으면 0으로 처리 (로딩 중 또는 에러)
-  const totalBeans = stats?.total_beans || 0
-  const totalBlends = stats?.total_blends || 0
-  const totalStock = stats?.total_stock_kg || 0
-  const lowStockBeans = stats?.low_stock_beans || []
+  const totalBeans = stats?.total_beans || 0;
+  const totalBlends = stats?.total_blends || 0;
+  const totalStock = stats?.total_stock_kg || 0;
+  const lowStockBeans = stats?.low_stock_beans || [];
 
   return (
     <div className="min-h-screen">
@@ -104,17 +104,23 @@ export default function HomePage() {
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
                     <p className="text-latte-500 text-sm font-medium">총 재고량</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalStock.toFixed(1)} <span className="text-lg text-latte-400">kg</span></p>
+                    <p className="text-3xl font-bold text-latte-900 mt-1">
+                      {totalStock.toFixed(1)} <span className="text-lg text-latte-400">kg</span>
+                    </p>
                   </div>
                   <Package className="w-10 h-10 text-latte-300" />
                 </CardContent>
               </Card>
 
-              <Card className={`hover:border-red-300 ${lowStockBeans.length > 0 ? 'border-red-200 bg-red-50/50' : ''}`}>
+              <Card
+                className={`hover:border-red-300 ${lowStockBeans.length > 0 ? 'border-red-200 bg-red-50/50' : ''}`}
+              >
                 <CardContent className="p-6 flex items-center justify-between">
                   <div>
                     <p className="text-red-600/80 text-sm font-medium">재고 부족</p>
-                    <p className="text-3xl font-bold text-red-600 mt-1">{stats?.low_stock_count || 0}</p>
+                    <p className="text-3xl font-bold text-red-600 mt-1">
+                      {stats?.low_stock_count || 0}
+                    </p>
                   </div>
                   <AlertTriangle className="w-10 h-10 text-red-300" />
                 </CardContent>
@@ -136,10 +142,14 @@ export default function HomePage() {
                 <div className="bg-white rounded-[1em] border border-red-200 p-6 shadow-sm">
                   <ul className="space-y-3">
                     {lowStockBeans.map((bean) => (
-                      <li key={bean.id} className="flex justify-between items-center bg-red-50/50 p-3 rounded-xl">
+                      <li
+                        key={bean.id}
+                        className="flex justify-between items-center bg-red-50/50 p-3 rounded-xl"
+                      >
                         <span className="text-latte-800 font-medium flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                          {bean.name} <span className="text-latte-500 text-sm">({bean.origin})</span>
+                          {bean.name}{' '}
+                          <span className="text-latte-500 text-sm">({bean.origin})</span>
                         </span>
                         <span className="text-red-600 font-bold bg-white px-3 py-1 rounded-full shadow-sm">
                           {bean.quantity_kg.toFixed(1)} kg
@@ -199,13 +209,18 @@ export default function HomePage() {
                             {log.bean?.name_ko || log.bean?.name || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge variant={log.change_amount >= 0 ? 'default' : 'destructive'}
-                              className={log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                            <Badge
+                              variant={log.change_amount >= 0 ? 'default' : 'destructive'}
+                              className={
+                                log.change_amount >= 0 ? 'bg-green-600 hover:bg-green-700' : ''
+                              }
+                            >
                               {log.change_amount >= 0 ? '입고' : '출고'}
                             </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">
-                            {log.change_amount > 0 ? '+' : ''}{log.change_amount.toFixed(1)} kg
+                            {log.change_amount > 0 ? '+' : ''}
+                            {log.change_amount.toFixed(1)} kg
                           </td>
                         </tr>
                       ))}
@@ -221,9 +236,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 }}
             >
-              <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
-                빠른 작업
-              </h2>
+              <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">빠른 작업</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Link href="/beans" className="block h-full">
                   <Card className="h-full hover:border-latte-400 group cursor-pointer border-latte-200">
@@ -284,5 +297,5 @@ export default function HomePage() {
         )}
       </div>
     </div>
-  )
+  );
 }

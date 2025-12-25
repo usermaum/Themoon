@@ -1,15 +1,18 @@
+import json
+import os
+import time
+from typing import Any, Dict
+
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-import os
-import json
-import time
-from typing import Dict, Any
-from dotenv import load_dotenv
 
 load_dotenv()
 
-import anthropic
 import base64
+
+import anthropic
+
 
 class OCRService:
     def __init__(self):
@@ -29,33 +32,41 @@ class OCRService:
             print("Warning: ANTHROPIC_API_KEY not found.")
             self.anthropic_client = None
 
-        # 3. Model Priority List (Provider, Model Name)
-        # 우선순위: 
-        # 1) Claude 4.5 Sonnet (최고 성능, 복잡한 문서 분석/한글에 강함)
-        # 2) Gemini 2.5 Flash (빠르고 안정적, Quota 넉넉함)
-        # 3) Gemini Flash Latest (레거시, 안정적)
-        self.models = []
-        
-        if self.anthropic_client:
-            self.models.append(('claude', 'claude-sonnet-4-5')) # Latest available Sonnet model
-        
-        if self.google_client:
-            self.models.append(('gemini', 'gemini-2.5-flash'))
-            self.models.append(('gemini', 'gemini-flash-latest'))
-            self.models.append(('gemini', 'gemini-2.0-flash'))
+    def _get_active_models(self) -> list[tuple[str, str]]:
+        """
+        ConfigService에서 우선순위 목록을 가져와
+        현재 사용 가능한(API Key가 있는) (provider, model_name) 리스트를 반환
+        """
+        from app.services.config_service import config_service
 
-    def _load_prompt_schema(self) -> str:
-        try:
-            from pathlib import Path
-            schema_path = Path(__file__).parent.parent / "schemas" / "ocr_prompt_structure.json"
-            with open(schema_path, "r", encoding="utf-8") as f:
-                return f.read()
-        except Exception as e:
-            print(f"Error loading OCR schema file: {e}")
-            raise Exception(f"Failed to load OCR prompt schema: {e}")
+        active_models = []
+        priority_list = config_service.get_ocr_config().model_priority
+
+        for model_name in priority_list:
+            provider = self._resolve_provider(model_name)
+
+            if provider == "gemini" and self.google_client:
+                active_models.append((provider, model_name))
+            elif provider == "claude" and self.anthropic_client:
+                active_models.append((provider, model_name))
+            else:
+                # Provider not supported or Client not initialized
+                continue
+
+        return active_models
+
+    def _resolve_provider(self, model_name: str) -> str:
+        if model_name.startswith("claude"):
+            return "claude"
+        return "gemini"  # Default to gemini for 'gemini-*' or others
 
     def _generate_prompt(self) -> str:
-        json_structure = self._load_prompt_schema()
+        from app.services.config_service import config_service
+
+        # Pydantic model -> dict -> json dump for prompt injection
+        prompt_structure_obj = config_service.get_ocr_config().prompt_structure
+        json_structure = prompt_structure_obj.model_dump_json(indent=2)
+
         return f"""
         You are an OCR and Business Document Intelligence Agent
         specialized in Korean transaction statements (거래명세서),
@@ -84,17 +95,19 @@ class OCRService:
         ────────────────────────────────────────
         If the image IS a business document:
 
-        1. Perform full OCR.
-        2. Transcribe EVERY visible text into "debug_raw_text".
-        3. Include:
+        1. First, analyze the overall structure (tables, headers, footer).
+           - Understand that columns may be miss-aligned. Look for coordinates implicitly.
+        2. Perform full OCR.
+        3. Transcribe EVERY visible text into "debug_raw_text".
+        4. Include:
            - Korean + English mixed text
            - Table headers and row values
            - Repeated values (e.g. 합계금액 appearing multiple times)
            - Parentheses text (예: 공급받는자용)
            - Units (kg, 원, ₩)
            - Stamps or seals (describe existence even if unreadable)
-        4. Do NOT summarize.
-        5. Preserve line order as much as possible.
+        5. Do NOT summarize.
+        6. Preserve line order as much as possible.
 
         ────────────────────────────────────────
         STEP 3. ROLE INTERPRETATION (VERY IMPORTANT)
@@ -111,10 +124,15 @@ class OCRService:
         *Self-Correction*: If 'The Moon Coffee' appears, it is likely the Receiver (us).
 
         ────────────────────────────────────────
-        STEP 4. KOREAN BUSINESS TERM MAPPING
+        STEP 4. KOREAN BUSINESS TERM MAPPING & TYPO CORRECTION
         ────────────────────────────────────────
-        Map Korean terms contextually to the schema fields:
+        Map Korean terms contextually to the schema fields.
+        
+        [CRITICAL: TYPO CORRECTION]
+        - Correct obvious Korean typos based on context (e.g., '코피' -> '커피', '원두명' -> '품명').
+        - Do not hallucinate, but fix single-character OCR errors if the meaning is clear.
 
+        Mappings:
         - 거래명세서 = Transaction Statement
         - 등록번호 = Business Registration Number
         - 상호(법인명) = Company Name
@@ -165,12 +183,13 @@ class OCRService:
 
     def _clean_and_parse_json(self, text_result: str) -> Dict[str, Any]:
         import re
+
         text_result = text_result.strip()
-        
+
         # Pattern to find a JSON block enclosed in triple backticks with optional language identifier
         code_block_pattern = r"```(?:json)?\s*({[\s\S]*?})\s*```"
         match = re.search(code_block_pattern, text_result)
-        
+
         if match:
             json_str = match.group(1)
         else:
@@ -187,17 +206,18 @@ class OCRService:
 
         return json.loads(json_str)
 
-    def _call_gemini_sync(self, model_name: str, image_bytes: bytes, mime_type: str, prompt: str) -> str:
+    def _call_gemini_sync(
+        self, model_name: str, image_bytes: bytes, mime_type: str, prompt: str
+    ) -> str:
         response = self.google_client.models.generate_content(
             model=model_name,
-            contents=[
-                types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-                prompt
-            ]
+            contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), prompt],
         )
         return response.text
 
-    def _call_claude_sync(self, model_name: str, image_bytes: bytes, mime_type: str, prompt: str) -> str:
+    def _call_claude_sync(
+        self, model_name: str, image_bytes: bytes, mime_type: str, prompt: str
+    ) -> str:
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
         message = self.anthropic_client.messages.create(
             model=model_name,
@@ -214,30 +234,28 @@ class OCRService:
                                 "data": b64_image,
                             },
                         },
-                        {
-                            "type": "text",
-                            "text": prompt
-                        }
+                        {"type": "text", "text": prompt},
                     ],
                 }
-            ]
+            ],
         )
         return message.content[0].text
 
     def analyze_image(self, image_bytes: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
-        if not self.models:
+        models = self._get_active_models()
+        if not models:
             raise Exception("No OCR models configured (Missing API Keys)")
 
         prompt = self._generate_prompt()
         last_exception = None
 
-        for provider, model_name in self.models:
+        for provider, model_name in models:
             print(f"🔄 Trying OCR with [{provider}] model: {model_name}...")
             try:
                 text_result = ""
-                if provider == 'gemini':
+                if provider == "gemini":
                     text_result = self._call_gemini_sync(model_name, image_bytes, mime_type, prompt)
-                elif provider == 'claude':
+                elif provider == "claude":
                     text_result = self._call_claude_sync(model_name, image_bytes, mime_type, prompt)
 
                 result = self._clean_and_parse_json(text_result)
@@ -247,14 +265,25 @@ class OCRService:
             except Exception as e:
                 error_str = str(e)
                 last_exception = e
-                
-                retry_codes = ["429", "503", "500", "529", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "Internal Server Error", "Overloaded"]
-                
+
+                retry_codes = [
+                    "429",
+                    "503",
+                    "500",
+                    "529",
+                    "RESOURCE_EXHAUSTED",
+                    "UNAVAILABLE",
+                    "Internal Server Error",
+                    "Overloaded",
+                ]
+
                 if any(code in error_str for code in retry_codes):
-                    print(f"⚠️ Transient Error ({error_str}) for {model_name}. Switching to next model...")
+                    print(
+                        f"⚠️ Transient Error ({error_str}) for {model_name}. Switching to next model..."
+                    )
                     time.sleep(1)
                     continue
-                
+
                 print(f"❌ Error during OCR analysis ({model_name}): {e}")
                 continue
 
@@ -266,7 +295,8 @@ class OCRService:
         """
         Async Generator that yields status updates and finally the result.
         """
-        if not self.models:
+        models = self._get_active_models()
+        if not models:
             yield {"status": "error", "message": "No OCR models configured"}
             return
 
@@ -278,25 +308,30 @@ class OCRService:
 
         last_exception = None
 
-        for provider, model_name in self.models:
-            provider_label = "Gemini" if provider == 'gemini' else "Claude"
-            yield {"status": "progress", "message": f"{provider_label} ({model_name}) 모델로 분석 중..."}
-            
+        for provider, model_name in models:
+            provider_label = "Gemini" if provider == "gemini" else "Claude"
+            yield {
+                "status": "progress",
+                "message": f"{provider_label} ({model_name}) 모델로 분석 중...",
+            }
+
             try:
                 text_result = ""
                 # Wrap sync calls in asyncio.to_thread to avoid blocking event loop
                 import asyncio
-                
-                if provider == 'gemini':
+
+                if provider == "gemini":
                     text_result = await asyncio.to_thread(
                         self._call_gemini_sync, model_name, image_bytes, mime_type, prompt
                     )
-                elif provider == 'claude':
+                elif provider == "claude":
                     text_result = await asyncio.to_thread(
                         self._call_claude_sync, model_name, image_bytes, mime_type, prompt
                     )
 
-                print(f"📄 [OCR Raw] {provider} Response:\n{text_result[:500]}...") # Log first 500 chars
+                print(
+                    f"📄 [OCR Raw] {provider} Response:\n{text_result[:500]}..."
+                )  # Log first 500 chars
 
                 result_json = self._clean_and_parse_json(text_result)
                 yield {"status": "complete", "data": result_json}
@@ -305,17 +340,32 @@ class OCRService:
             except Exception as e:
                 error_str = str(e)
                 last_exception = e
-                
-                retry_codes = ["429", "503", "500", "529", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "Internal Server Error", "Overloaded"]
-                
+
+                retry_codes = [
+                    "429",
+                    "503",
+                    "500",
+                    "529",
+                    "RESOURCE_EXHAUSTED",
+                    "UNAVAILABLE",
+                    "Internal Server Error",
+                    "Overloaded",
+                ]
+
                 if any(code in error_str for code in retry_codes):
                     print(f"⚠️ [OCR Stream] Transient Error for {model_name}: {e}")
-                    yield {"status": "progress", "message": f"{provider_label} 일시적 오류. 다음 모델로 전환합니다..."}
+                    yield {
+                        "status": "progress",
+                        "message": f"{provider_label} 일시적 오류. 다음 모델로 전환합니다...",
+                    }
                     await asyncio.sleep(1)
                     continue
-                
+
                 print(f"❌ [OCR Stream] Error for {model_name}: {e}")
-                yield {"status": "progress", "message": f"{provider_label} 분석 실패: {e}. 다음 모델 시도..."}
+                yield {
+                    "status": "progress",
+                    "message": f"{provider_label} 분석 실패: {e}. 다음 모델 시도...",
+                }
                 continue
 
         yield {"status": "error", "message": f"모든 분석 모델 시도 실패: {last_exception}"}

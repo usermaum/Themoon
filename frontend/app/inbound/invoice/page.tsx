@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Printer, Download, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Printer, Download, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // OCR Response 타입 정의
 interface OCRData {
@@ -69,13 +69,13 @@ export default function InvoicePage() {
 
   useEffect(() => {
     // sessionStorage에서 OCR 데이터 가져오기
-    const storedData = sessionStorage.getItem("ocrResult");
+    const storedData = sessionStorage.getItem('ocrResult');
     if (storedData) {
       try {
         const parsed = JSON.parse(storedData);
         setOcrData(parsed);
       } catch (error) {
-        console.error("Failed to parse OCR data:", error);
+        console.error('Failed to parse OCR data:', error);
       }
     }
     setLoading(false);
@@ -83,15 +83,15 @@ export default function InvoicePage() {
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount?: number) => {
-    if (!amount && amount !== 0) return "0";
-    return amount.toLocaleString("ko-KR");
+    if (!amount && amount !== 0) return '0';
+    return amount.toLocaleString('ko-KR');
   };
 
   // 날짜 포맷팅 함수
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
+    if (!dateStr) return '';
     // YYYY-MM-DD 형식을 YYYY 년 MM월 DD일로 변환
-    const [year, month, day] = dateStr.split("-");
+    const [year, month, day] = dateStr.split('-');
     return `${year} 년 ${month}월 ${day}일`;
   };
 
@@ -117,7 +117,7 @@ export default function InvoicePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-lg text-red-600">OCR 데이터를 불러올 수 없습니다.</p>
-        <Button onClick={() => router.push("/inventory/inbound")}>
+        <Button onClick={() => router.push('/inventory/inbound')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           인바운드 페이지로 돌아가기
         </Button>
@@ -150,15 +150,18 @@ export default function InvoicePage() {
 
       {/* 거래명세서 컨테이너 */}
       <div className="page-container bg-surface-light dark:bg-surface-dark w-full max-w-4xl shadow-xl dark:shadow-none border border-border-light dark:border-border-dark p-6 md:p-10 relative">
-
         {/* 헤더: GSC 로고 + 거래명세서 타이틀 */}
         <div className="flex justify-between items-center mb-8 border-b-2 border-primary pb-4">
           <div className="w-32 h-24 bg-primary flex flex-col justify-center items-center text-white p-2 rounded-sm">
             <div className="text-3xl font-bold tracking-widest leading-none">
-              {supplier?.name?.includes("GSC") || supplier?.name?.includes("지에스씨") ? "GSC" : supplier?.name?.substring(0, 3) || "???"}
+              {supplier?.name?.includes('GSC') || supplier?.name?.includes('지에스씨')
+                ? 'GSC'
+                : supplier?.name?.substring(0, 3) || '???'}
             </div>
             <div className="text-[0.6rem] tracking-wider uppercase mt-1">
-              {supplier?.name?.includes("GSC") || supplier?.name?.includes("지에스씨") ? "Green Coffee" : "Coffee"}
+              {supplier?.name?.includes('GSC') || supplier?.name?.includes('지에스씨')
+                ? 'Green Coffee'
+                : 'Coffee'}
             </div>
           </div>
           <div className="text-center flex-1">
@@ -173,7 +176,10 @@ export default function InvoicePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-gray-400 dark:border-gray-600 mb-6 text-sm">
           {/* 공급받는자 (좌측) */}
           <div className="flex border-b md:border-b-0 md:border-r border-gray-400 dark:border-gray-600">
-            <div className="w-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 text-center p-2 font-bold" style={{ writingMode: "vertical-rl" }}>
+            <div
+              className="w-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 text-center p-2 font-bold"
+              style={{ writingMode: 'vertical-rl' }}
+            >
               공급받는자
             </div>
             <div className="flex-1">
@@ -183,33 +189,37 @@ export default function InvoicePage() {
                   등록번호
                 </div>
                 <div className="flex-1 p-2 flex items-center justify-center font-bold text-lg tracking-widest text-primary dark:text-red-400">
-                  {receiver?.business_number || "197-04-00506"}
+                  {receiver?.business_number || '197-04-00506'}
                 </div>
               </div>
               {/* 상호(법인명) + 성명 */}
               <div className="flex border-b border-gray-300 dark:border-gray-600 h-16">
                 <div className="w-20 bg-gray-50 dark:bg-gray-700/50 p-2 text-center border-r border-gray-300 dark:border-gray-600 flex items-center justify-center font-medium">
-                  상호<br />(법인명)
+                  상호
+                  <br />
+                  (법인명)
                 </div>
                 <div className="flex-1 flex">
                   <div className="flex-1 p-2 flex items-center justify-center border-r border-gray-300 dark:border-gray-600">
-                    {receiver?.name || "더문커피"}
+                    {receiver?.name || '더문커피'}
                   </div>
                   <div className="w-12 bg-gray-50 dark:bg-gray-700/50 p-1 flex items-center justify-center border-r border-gray-300 dark:border-gray-600 font-medium text-xs">
                     성명
                   </div>
                   <div className="flex-1 p-2 flex items-center justify-center">
-                    {receiver?.contact_person || "김기문"}
+                    {receiver?.contact_person || '김기문'}
                   </div>
                 </div>
               </div>
               {/* 사업장 주소 */}
               <div className="flex border-b border-gray-300 dark:border-gray-600 h-16">
                 <div className="w-20 bg-gray-50 dark:bg-gray-700/50 p-2 text-center border-r border-gray-300 dark:border-gray-600 flex items-center justify-center font-medium">
-                  사업장<br />주소
+                  사업장
+                  <br />
+                  주소
                 </div>
                 <div className="flex-1 p-2 flex items-center justify-center text-center text-xs break-words">
-                  {receiver?.address || "경기 부천시 부흥로315번길 27 (중동) 땅차커피 드립바"}
+                  {receiver?.address || '경기 부천시 부흥로315번길 27 (중동) 땅차커피 드립바'}
                 </div>
               </div>
               {/* 업태 + 종목 */}
@@ -224,9 +234,7 @@ export default function InvoicePage() {
                   <div className="w-12 bg-gray-50 dark:bg-gray-700/50 p-1 flex items-center justify-center border-r border-gray-300 dark:border-gray-600 font-medium text-xs">
                     종목
                   </div>
-                  <div className="flex-1 p-2 flex items-center justify-center">
-                    커피전문점
-                  </div>
+                  <div className="flex-1 p-2 flex items-center justify-center">커피전문점</div>
                 </div>
               </div>
             </div>
@@ -234,7 +242,10 @@ export default function InvoicePage() {
 
           {/* 공급자 (우측) */}
           <div className="flex">
-            <div className="w-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 text-center p-2 font-bold" style={{ writingMode: "vertical-rl" }}>
+            <div
+              className="w-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800 border-r border-gray-300 dark:border-gray-600 text-center p-2 font-bold"
+              style={{ writingMode: 'vertical-rl' }}
+            >
               공급자
             </div>
             <div className="flex-1">
@@ -244,26 +255,28 @@ export default function InvoicePage() {
                   등록번호
                 </div>
                 <div className="flex-1 p-2 flex items-center justify-center font-bold text-lg tracking-widest text-primary dark:text-red-400">
-                  {supplier?.business_number || "106-86-70680"}
+                  {supplier?.business_number || '106-86-70680'}
                 </div>
               </div>
               {/* 상호(법인명) + 성명 */}
               <div className="flex border-b border-gray-300 dark:border-gray-600 h-16 relative">
                 <div className="w-20 bg-gray-50 dark:bg-gray-700/50 p-2 text-center border-r border-gray-300 dark:border-gray-600 flex items-center justify-center font-medium">
-                  상호<br />(법인명)
+                  상호
+                  <br />
+                  (법인명)
                 </div>
                 <div className="flex-1 flex relative">
                   <div className="flex-1 p-2 flex items-center justify-center border-r border-gray-300 dark:border-gray-600 text-xs">
-                    {supplier?.name || "지에스씨인터내셔날(주)"}
+                    {supplier?.name || '지에스씨인터내셔날(주)'}
                   </div>
                   <div className="w-12 bg-gray-50 dark:bg-gray-700/50 p-1 flex items-center justify-center border-r border-gray-300 dark:border-gray-600 font-medium text-xs">
                     성명
                   </div>
                   <div className="flex-1 p-2 flex items-center justify-center relative">
                     <span className="relative z-10">
-                      {supplier?.representative || "황두용,"}
+                      {supplier?.representative || '황두용,'}
                       <br />
-                      {supplier?.contact_person || "조진환"}
+                      {supplier?.contact_person || '조진환'}
                     </span>
                     {/* 인(印) 도장 */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-70 pointer-events-none z-0 ml-6">
@@ -277,12 +290,14 @@ export default function InvoicePage() {
               {/* 사업장 주소 */}
               <div className="flex border-b border-gray-300 dark:border-gray-600 h-16">
                 <div className="w-20 bg-gray-50 dark:bg-gray-700/50 p-2 text-center border-r border-gray-300 dark:border-gray-600 flex items-center justify-center font-medium">
-                  사업장<br />주소
+                  사업장
+                  <br />
+                  주소
                 </div>
                 <div className="flex-1 p-2 flex items-center justify-center text-center text-xs break-words">
-                  {supplier?.address || "서울특별시 마포구 동교로 65"}
+                  {supplier?.address || '서울특별시 마포구 동교로 65'}
                   <br />
-                  {supplier?.address?.includes("2층") ? "" : "(망원동, 2층)"}
+                  {supplier?.address?.includes('2층') ? '' : '(망원동, 2층)'}
                 </div>
               </div>
               {/* 업태 + 종목 */}
@@ -322,48 +337,51 @@ export default function InvoicePage() {
             </thead>
             <tbody>
               {/* OCR 추출 품목 */}
-              {items && items.length > 0 ? (
-                items.map((item, index) => (
-                  <tr key={index} className="bg-white dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
-                      {item.item_number || index + 1}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2">
-                      {item.bean_name || item.bean_name_kr || "-"}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
-                      {item.specification || item.unit || "1kg"}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
-                      {item.quantity || 0}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
-                      {item.quantity || 0}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-right">
-                      {formatCurrency(item.unit_price)}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 p-2 text-right">
-                      {formatCurrency(item.amount)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                // 빈 행 (최소 10개)
-                Array.from({ length: 10 }).map((_, i) => (
-                  <tr key={`empty-${i}`} className="bg-white dark:bg-surface-dark h-8">
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                    <td className="border border-gray-300 dark:border-gray-600"></td>
-                  </tr>
-                ))
-              )}
+              {items && items.length > 0
+                ? items.map((item, index) => (
+                    <tr
+                      key={index}
+                      className="bg-white dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                    >
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
+                        {item.item_number || index + 1}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2">
+                        {item.bean_name || item.bean_name_kr || '-'}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
+                        {item.specification || item.unit || '1kg'}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
+                        {item.quantity || 0}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-center">
+                        {item.quantity || 0}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-right">
+                        {formatCurrency(item.unit_price)}
+                      </td>
+                      <td className="border border-gray-300 dark:border-gray-600 p-2 text-right">
+                        {formatCurrency(item.amount)}
+                      </td>
+                    </tr>
+                  ))
+                : // 빈 행 (최소 10개)
+                  Array.from({ length: 10 }).map((_, i) => (
+                    <tr key={`empty-${i}`} className="bg-white dark:bg-surface-dark h-8">
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                      <td className="border border-gray-300 dark:border-gray-600"></td>
+                    </tr>
+                  ))}
               {/* 추가 빈 행 (품목이 10개 미만일 경우) */}
-              {items && items.length > 0 && items.length < 10 && (
+              {items &&
+                items.length > 0 &&
+                items.length < 10 &&
                 Array.from({ length: 10 - items.length }).map((_, i) => (
                   <tr key={`padding-${i}`} className="bg-white dark:bg-surface-dark h-8">
                     <td className="border border-gray-300 dark:border-gray-600"></td>
@@ -374,8 +392,7 @@ export default function InvoicePage() {
                     <td className="border border-gray-300 dark:border-gray-600"></td>
                     <td className="border border-gray-300 dark:border-gray-600"></td>
                   </tr>
-                ))
-              )}
+                ))}
             </tbody>
           </table>
         </div>
@@ -402,7 +419,7 @@ export default function InvoicePage() {
               <div className="flex items-center">
                 <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>계약번호
               </div>
-              <div>: {document_info?.contract_number || "N/A"}</div>
+              <div>: {document_info?.contract_number || 'N/A'}</div>
               <div className="flex items-center">
                 <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>계약일자
               </div>
@@ -410,7 +427,9 @@ export default function InvoicePage() {
               <div className="flex items-center">
                 <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>합계금액
               </div>
-              <div className="font-bold">: {formatCurrency(amounts?.total_amount || amounts?.grand_total)} 원</div>
+              <div className="font-bold">
+                : {formatCurrency(amounts?.total_amount || amounts?.grand_total)} 원
+              </div>
             </div>
           </div>
 
@@ -418,21 +437,25 @@ export default function InvoicePage() {
           <div className="border border-gray-400 dark:border-gray-600 p-4 rounded-sm">
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
               <div className="flex items-center">
-                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>영업 담당자
+                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>영업
+                담당자
               </div>
-              <div>: {supplier?.contact_person || "-"}</div>
+              <div>: {supplier?.contact_person || '-'}</div>
               <div className="flex items-center">
-                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>공급처 대표 전화
+                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>공급처
+                대표 전화
               </div>
-              <div>: {supplier?.phone || "-"}</div>
+              <div>: {supplier?.phone || '-'}</div>
               <div className="flex items-center">
-                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>담당자 전화
+                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>담당자
+                전화
               </div>
-              <div>: {supplier?.contact_phone || "-"}</div>
+              <div>: {supplier?.contact_phone || '-'}</div>
               <div className="flex items-center">
-                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>담당자 이메일
+                <span className="w-2 h-2 bg-black dark:bg-white rounded-full mr-2"></span>담당자
+                이메일
               </div>
-              <div>: {supplier?.email || "-"}</div>
+              <div>: {supplier?.email || '-'}</div>
             </div>
           </div>
         </div>

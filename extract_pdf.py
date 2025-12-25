@@ -1,8 +1,8 @@
 import pdfplumber
 import sys
 
-pdf_path = "Documents/gsc_price_20251221.pdf"
-output_path = "Documents/gsc_price_list_extracted.txt"
+pdf_path = "docs/gsc_price_20251221.pdf"
+output_path = "docs/gsc_price_list_extracted.txt"
 
 try:
     with pdfplumber.open(pdf_path) as pdf:

@@ -102,7 +102,7 @@
 **❌ 절대 금지**:
 
 ```text
-웹앱은 http://localhost:3000에서 실행 중입니다!  ← URL 뒤에 한글 붙음
+웹앱은 http://localhost:3500에서 실행 중입니다!  ← URL 뒤에 한글 붙음
 ```
 
 **✅ 반드시**:
@@ -110,7 +110,7 @@
 ```text
 웹앱이 실행되었습니다:
 
-http://localhost:3000
+http://localhost:3500
 
 위 주소로 접속하세요.
 ```
@@ -213,23 +213,24 @@ cat docs/Progress/SESSION_END_CHECKLIST.md
 > **이 섹션은 AI가 세션을 시작할 때 자동으로 읽어들이는 "기억" 영역입니다.**
 > **세션 종료 전 반드시 AI에게 "상태 저장해줘" 또는 "세션 종료"를 요청하여 이 부분을 업데이트하세요.**
 
-### 📅 마지막 세션: 2025-12-24 (Bean Refactoring & Clean Architecture)
+### 📅 마지막 세션: 2025-12-25 (Premium UI & Admin Dashboard Enhancement)
 
-**✅ 완료된 작업 (v0.4.8)**:
-1. **Bean Module Refactoring (Clean Architecture)**:
-   - **Repository Pattern 적용**: `BeanRepository`에 검색 및 집계 메서드 추가.
-   - **Service Layer 개선**: `BeanService`의 직접 DB 접근 코드 제거.
-   - **Verification**: `tests/verify_bean_refactor.py` 스크립트로 기능 검증 완료.
-2. **Bug Fixes**:
-   - `logs/update_version.py`: `SyntaxError` (missing except block) 수정.
-3. **OCR Engine & UI (이전 작업)**:
-   - Auto-Deskew, Sharpening, Adaptive Upscale 등 이미지 전처리 고도화.
-   - 설정 페이지 UI 개선.
+**✅ 완료된 작업 (v0.5.2)**:
+1. **Admin Dashboard 고도화**:
+   - **System Metrics**: CPU, 메모리, 디스크 실시간 사용량 모니터링 카드 구현.
+   - **Service Integration**: `MemoSection`을 시스템 설정 페이지로 통합하여 운영 효율 개선.
+2. **Premium Restart Experience**:
+   - **Mascot UI**: 관리자 냥이 비디오를 활용한 프리미엄 재시작 오버레이 구현.
+   - **Ambient Effects**: 굴절과 하이라이트가 포함된 리얼 "Water Drops on Window" 효과 적용.
+3. **시스템 안정화 및 복구**:
+   - **SSR Conflict 해결**: Hydration 오류로 인한 500 에러 해결 및 견고한 포털 패턴 도입.
+   - **Build Clean**: `.next` 캐시 클런 및 `tsconfig.json` 정규화로 빌드 환경 정상화.
 
 **Git 상태**:
 - 현재 브랜치: main
-- 최신 커밋: fix: update_version.py 구문 오류 수정 (except 블록 추가)
+- 최신 커밋: Premium Water Drops UI and System Monitoring Integration
 
 **🎯 다음 작업 (Immediate Next Step)**:
-1. **로스팅 로그 시스템 (Phase 2)**: 리팩토링된 `BeanRepository` 활용하여 로스팅 데이터 연동 구현.
-2. **OCR 테스트 & 튜닝**: 실제 영수증 이미지로 새로운 설정값 테스트.
+1. **Repository Pattern 확장**: `BeanRepository` 외 다른 도메인 모델에도 Repository 패턴 적용.
+2. **로스팅 로그 고도화 (Phase 2)**: 신규 아키텍처를 로스팅 로그 생성 로직에 적용.
+3. **마스코트 시스템 확장**: 관리자 냥이 테마를 에러 핸들링 및 각종 Empty State UI로 확대.

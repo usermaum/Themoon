@@ -1,11 +1,14 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+
 from app.database import get_db
 from app.schemas.inventory_log import InventoryLog, InventoryLogCreate, InventoryLogListResponse
 from app.services.inventory_log_service import inventory_log_service
 
 router = APIRouter()
+
 
 @router.get("/", response_model=InventoryLogListResponse)
 def read_inventory_logs(
@@ -14,7 +17,7 @@ def read_inventory_logs(
     bean_id: Optional[int] = Query(None, description="원두 ID 필터"),
     change_type: List[str] = Query([], description="변동 유형 필터 (PURCHASE, SALES 등)"),
     search: Optional[str] = Query(None, description="검색어 (원두 이름/원산지)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     재고 입출고 기록 조회 (페이징 지원)
@@ -29,20 +32,19 @@ def read_inventory_logs(
     change_types = change_type if change_type else None
 
     # 데이터 조회
-    logs = inventory_log_service.get_logs(db, bean_id=bean_id, change_types=change_types, search=search, skip=skip, limit=size)
-    total = inventory_log_service.get_logs_count(db, bean_id=bean_id, change_types=change_types, search=search)
+    logs = inventory_log_service.get_logs(
+        db, bean_id=bean_id, change_types=change_types, search=search, skip=skip, limit=size
+    )
+    total = inventory_log_service.get_logs_count(
+        db, bean_id=bean_id, change_types=change_types, search=search
+    )
     pages = (total + size - 1) // size if size > 0 else 0
 
     # Explicit conversation
     logs_data = [InventoryLog.model_validate(log) for log in logs]
 
-    return InventoryLogListResponse(
-        items=logs_data,
-        total=total,
-        page=page,
-        size=size,
-        pages=pages
-    )
+    return InventoryLogListResponse(items=logs_data, total=total, page=page, size=size, pages=pages)
+
 
 @router.post("/", response_model=InventoryLog, status_code=status.HTTP_201_CREATED)
 def create_inventory_log(log: InventoryLogCreate, db: Session = Depends(get_db)):
@@ -57,12 +59,10 @@ def create_inventory_log(log: InventoryLogCreate, db: Session = Depends(get_db))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.put("/{log_id}", response_model=InventoryLog)
 def update_inventory_log(
-    log_id: int,
-    change_amount: float,
-    notes: Optional[str] = None,
-    db: Session = Depends(get_db)
+    log_id: int, change_amount: float, notes: Optional[str] = None, db: Session = Depends(get_db)
 ):
     """
     재고 입출고 기록 수정
@@ -74,6 +74,7 @@ def update_inventory_log(
         return InventoryLog.model_validate(updated_log)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.delete("/{log_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_inventory_log(log_id: int, db: Session = Depends(get_db)):

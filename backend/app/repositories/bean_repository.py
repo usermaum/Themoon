@@ -12,6 +12,20 @@ class BeanRepository(BaseRepository[Bean, BeanCreate, BeanUpdate]):
     def get_by_name(self, name: str) -> Optional[Bean]:
         return self.db.query(Bean).filter(Bean.name == name).first()
 
+    def get_by_sku(self, sku: str) -> Optional[Bean]:
+        """SKU로 원두 조회"""
+        return self.db.query(Bean).filter(Bean.sku == sku).first()
+
+    def get_unique_origins(self) -> List[str]:
+        """등록된 모든 원두의 원산지 목록 조회"""
+        results = self.db.query(Bean.origin).distinct().all()
+        return [r[0] for r in results if r[0]]
+
+    def get_unique_varieties(self) -> List[str]:
+        """등록된 모든 원두의 품종 목록 조회"""
+        results = self.db.query(Bean.variety).distinct().all()
+        return [r[0] for r in results if r[0]]
+
     def search_beans(
         self,
         skip: int = 0,

@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.4.6** | Next.js + FastAPI로 완전히 재작성
+> **v0.5.2** | Next.js + FastAPI로 고도화된 시스템 기능
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
@@ -48,6 +48,8 @@
 - 📈 **Analytics 대시보드** - 공급업체별 재고 분포, Top 3 가치 품목, Smart Analysis Briefing
 - 🛡️ **엔터프라이즈급 보안** - EXIF 제거, Magic Bytes 검증, 원자적 저장, 경로 검증
 - ⏳ **실시간 분석** - SSE 기반 OCR 분석 상태 스트리밍 (v0.4.6)
+- 🖥️ **시스템 대시보드** - CPU, 메모리, 디스크 실시간 사용량 모니터링 및 메모 통합 (v0.5.0)
+- 🐱 **프리미엄 UX** - 냥이 테마 재재시작 오버레이 및 리얼 물방울 효과 (v0.5.2)
 
 ---
 
@@ -57,7 +59,7 @@
 
 ```
 ┌──────────────────────────────────────┐
-│    Next.js Frontend (Port 3000)      │
+│    Next.js Frontend (Port 3500)      │
 │  ┌────────────────────────────────┐  │
 │  │  React 18 + TypeScript         │  │
 │  │  Tailwind CSS + shadcn/ui      │  │
@@ -119,412 +121,42 @@ Themoon/                       # 신규 프로젝트 (Clean Slate)
 │   ├── tsconfig.json
 │   └── README.md
 │
-├── Documents/                 # 프로젝트 문서 (80+ 파일)
+├── docs/                  # 프로젝트 문서 (80+ 파일)
 │   ├── Architecture/          # 아키텍처 문서 (8개)
 │   ├── Guides/                # 가이드 (4개)
 │   ├── Implementation/        # 구현 문서 (2개)
 │   ├── Planning/              # 계획 문서 (15개)
 │   ├── Progress/              # 진행 상황 (40+ 세션)
 │   └── Resources/             # 자료 (엑셀, 문서 등)
-│
-├── logs/                      # 버전 관리
-│   ├── VERSION                # 현재: 0.4.1
-│   └── CHANGELOG.md           # 변경 로그
-│
-├── venv/                      # Python 가상환경 (원본 참조용)
-├── scripts/                   # 유틸리티 스크립트
-├── .env                       # 환경 변수
-├── .gitignore
-└── README.md                  # 이 파일
-```
 
-### 계획된 구조 (개발 예정)
+### 프로젝트 문서 (docs/)
 
-아래는 Week 1-2에 추가될 예정인 구조입니다:
+모든 기술 문서는 `docs/` 폴더에 체계적으로 정리되어 있습니다.
 
-```
-backend/app/
-├── api/                       # (추가 예정)
-│   └── v1/
-│       ├── endpoints/         # Bean, Blend, Inventory API
-│       └── deps.py
-├── core/                      # (추가 예정)
-│   ├── security.py            # JWT, 인증
-│   └── config.py
-├── models/                    # (추가 예정) SQLAlchemy 모델
-├── schemas/                   # (추가 예정) Pydantic 스키마
-└── services/                  # (추가 예정) 비즈니스 로직
-
-frontend/
-├── beans/                     # (추가 예정) 원두 관리 페이지
-├── blends/                    # (추가 예정) 블렌드 관리 페이지
-└── components/                # (추가 예정) 재사용 컴포넌트
-```
-
----
-
-## 🚀 빠른 시작
-
-### 시스템 요구사항
-
-- **Python**: 3.12 이상
-- **Node.js**: 18.0 이상
-- **PostgreSQL**: 15.0 이상
-- **Redis**: 7.0 이상 (선택사항)
-
-### 방법 1: 자동 실행 스크립트 (권장)
-
-#### 🚀 전체 서버 한 번에 실행 (Backend + Frontend)
-
-```bash
-./start_all.sh
-```
-
-**기능:**
-
-- ✅ Backend + Frontend 동시 실행 (백그라운드)
-- ✅ Frontend 캐시 삭제 옵션 선택 가능
-- ✅ 자동 가상환경 및 의존성 관리
-- ✅ 포트 충돌 자동 해결 (8000, 3000)
-- ✅ Ctrl+C로 모든 서버 동시 종료
-- ✅ 실시간 로그 출력 (Backend + Frontend)
-
-**접속:**
-
-<http://localhost:8000>
-
-(Backend API)
-
-<http://localhost:8000/docs>
-
-(API 문서)
-
-<http://localhost:3000>
-
-(Frontend)
-
-**로그 확인:**
-
-```bash
-# Backend 로그
-tail -f /tmp/themoon_backend.log
-
-# Frontend 로그
-tail -f /tmp/themoon_frontend.log
-```
-
----
-
-#### Backend만 실행
-
-```bash
-./start_backend.sh
-```
-
-**기능:**
-
-- 자동 가상환경 확인 및 생성
-- 의존성 자동 설치
-- 포트 충돌 자동 해결
-- 서버 시작
-
-**접속:**
-
-<http://localhost:8000>
-
-**API 문서:**
-
-<http://localhost:8000/docs>
-
-#### Frontend만 실행
-
-```bash
-./start_frontend.sh
-```
-
-**옵션 선택:**
-
-1. 일반 시작 (캐시 유지)
-2. 캐시 삭제 후 시작 (`rm -rf .next`)
-3. 취소
-
-**접속:**
-
-<http://localhost:3000>
-
----
-
-### 방법 2: 수동 실행
-
-#### 1. Backend (FastAPI) 실행
-
-```bash
-cd backend
-
-# 의존성 설치
-pip install -r requirements.txt
-
-# 환경 변수 설정
-cp .env.example .env
-# .env 파일 편집 (DATABASE_URL, SECRET_KEY 등)
-
-# 개발 서버 실행
-uvicorn app.main:app --reload --port 8000
-```
-
-**접속:**
-
-<http://localhost:8000>
-
-**API 문서:**
-
-<http://localhost:8000/docs>
-
-#### 2. Frontend (Next.js) 실행
-
-```bash
-cd frontend
-
-# 의존성 설치
-npm install
-
-# 환경 변수 설정
-cp .env.example .env.local
-# NEXT_PUBLIC_API_URL=http://localhost:8000
-
-# 개발 서버 실행
-npm run dev
-```
-
-**접속:**
-
-<http://localhost:3000>
-
----
-
-## 📊 Claude Code Statusline 사용법
-
-프로젝트에는 Claude Pro 사용량을 실시간으로 추적하는 statusline 시스템이 포함되어 있습니다.
-
-### 빠른 동기화 (추천)
-
-1. Claude Code에서 `/config` 실행
-2. 사용량 퍼센트 확인 (예: 64%)
-3. 빠른 동기화 실행:
-
-```bash
-python3 .claude/statusline.py -q 64
-```
-
-### 정확한 동기화
-
-리셋 시간을 수동으로 지정하려면:
-
-```bash
-python3 .claude/statusline.py -s 64 "4시간 30분"
-```
-
-### 상세 출력 (Settings 스타일)
-
-```bash
-python3 .claude/statusline.py -d
-```
-
-출력 예시:
-```
-╔═══════════════════════════════════════════════════════════
-║ Settings: Status Config [Usage] (tab to cycle)
-║
-║ Current session - Resets 8pm (asia/seoul)
-║ ████████████████████████████████
-║ 64% used (64/100)
-║
-║ Current week (all models) - Resets dec 22, 10pm (asia/seoul)
-║ █████████▌
-║ 19% used (97/500)
-╚═══════════════════════════════════════════════════════════
-```
-
-### 연속 모드 (자동 새로고침)
-
-```bash
-python3 .claude/statusline.py -c 60  # 60초 간격
-```
-
----
-
-## 🛠️ 기술 스택
-
-### Backend
-
-| 분류             | 기술              | 버전   |
-| ---------------- | ----------------- | ------ |
-| **프레임워크**   | FastAPI           | 0.109+ |
-| **언어**         | Python            | 3.12+  |
-| **데이터베이스** | PostgreSQL        | 15+    |
-| **ORM**          | SQLAlchemy        | 2.0+   |
-| **스키마**       | Pydantic          | 2.5+   |
-| **인증**         | JWT (python-jose) | 3.3+   |
-| **서버**         | Uvicorn           | 0.27+  |
-
-### Frontend
-
-| 분류                | 기술         | 버전  |
-| ------------------- | ------------ | ----- |
-| **프레임워크**      | Next.js      | 14.1+ |
-| **언어**            | TypeScript   | 5.3+  |
-| **UI 라이브러리**   | React        | 18.2+ |
-| **스타일링**        | Tailwind CSS | 3.4+  |
-| **UI 컴포넌트**     | shadcn/ui    | -     |
-| **HTTP 클라이언트** | Axios        | 1.6+  |
-
----
-
-## 📚 개발 가이드
-
-### Backend 개발
-
-원본 프로젝트의 비즈니스 로직을 참조하여 FastAPI로 재작성합니다.
-
-```bash
-# 원본 모델 참조
-/mnt/d/Ai/WslProject/TheMoon_Project/app/models/bean.py
-→ backend/app/models/bean.py (새로 작성)
-
-# 원본 서비스 참조
-/mnt/d/Ai/WslProject/TheMoon_Project/app/services/bean_service.py
-→ backend/app/services/bean_service.py (새로 작성)
-```
-
-**개발 순서:**
-
-1. **모델 정의** (`app/models/`) - 원본 참조
-2. **스키마 정의** (`app/schemas/`) - Pydantic으로 작성
-3. **서비스 로직** (`app/services/`) - 원본 로직 이식
-4. **API 엔드포인트** (`app/api/v1/endpoints/`) - RESTful API 작성
-5. **테스트 작성** (`tests/`) - pytest
-
-### Frontend 개발
-
-원본 프로젝트의 UI/UX를 참조하여 Next.js로 재작성합니다.
-
-```bash
-# 원본 페이지 참조
-/mnt/d/Ai/WslProject/TheMoon_Project/app/pages/Dashboard.py
-→ frontend/app/page.tsx (새로 작성)
-
-/mnt/d/Ai/WslProject/TheMoon_Project/app/pages/BeanManagement.py
-→ frontend/app/beans/page.tsx (새로 작성)
-```
-
-**개발 순서:**
-
-1. **페이지 작성** (`app/*/page.tsx`) - 원본 UI 참조
-2. **컴포넌트 작성** (`components/`) - 재사용 가능하게 설계
-3. **API 통신** (`lib/api.ts`) - Axios 사용
-4. **상태 관리** - React Hooks (useState, useEffect)
-
----
-
-## 🧪 테스트
-
-### Backend 테스트
-
-```bash
-cd backend
-
-# 전체 테스트
-pytest tests/ -v
-
-# 커버리지 포함
-pytest tests/ --cov=app --cov-report=html
-```
-
-### Frontend 테스트
-
-```bash
-cd frontend
-
-# Jest 테스트 (설정 필요)
-npm run test
-
-# E2E 테스트 (Playwright 설정 필요)
-npm run test:e2e
-```
-
----
-
-## 🔧 환경 변수
-
-### Backend (.env)
-
-```env
-# Database
-DATABASE_URL=postgresql://themoon:password@localhost:5432/themoon_db
-
-# Redis (Optional)
-REDIS_URL=redis://localhost:6379/0
-
-# JWT
-SECRET_KEY=your-secret-key-change-in-production
-ACCESS_TOKEN_EXPIRE_MINUTES=10080
-
-# AI APIs (Optional)
-GEMINI_API_KEY=your-gemini-api-key
-ANTHROPIC_API_KEY=your-claude-api-key
-```
-
-### Frontend (.env.local)
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
-
----
-
-## 📝 원본 프로젝트 대응표
-
-| 원본 (Streamlit)               | 신규 (Next.js + FastAPI)       | 설명                     |
-| ------------------------------ | ------------------------------ | ------------------------ |
-| `app/models/`                  | `backend/app/models/`          | SQLAlchemy 모델 (재작성) |
-| `app/services/`                | `backend/app/services/`        | 비즈니스 로직 (재작성)   |
-| `app/pages/Dashboard.py`       | `frontend/app/page.tsx`        | 메인 대시보드            |
-| `app/pages/BeanManagement.py`  | `frontend/app/beans/page.tsx`  | 원두 관리                |
-| `app/pages/BlendManagement.py` | `frontend/app/blends/page.tsx` | 블렌드 관리              |
-| `app/components/`              | `frontend/components/`         | UI 컴포넌트              |
-
----
-
-## 📖 문서
-
-### 프로젝트 문서 (Documents/)
-
-모든 기술 문서는 `Documents/` 폴더에 체계적으로 정리되어 있습니다.
-
-- **📚 문서 인덱스**: [Documents/README.md](Documents/README.md) - 모든 문서 네비게이션
+- **📚 문서 인덱스**: [docs/README.md](docs/README.md) - 모든 문서 네비게이션
 
 #### 핵심 아키텍처 문서 ✅
 
-| 문서              | 설명                                  | 경로                                                                              |
-| ----------------- | ------------------------------------- | --------------------------------------------------------------------------------- |
-| **시스템 개요**   | 전체 시스템 개요 및 핵심 기능         | [SYSTEM_OVERVIEW.md](Documents/Architecture/SYSTEM_OVERVIEW.md)                   |
-| **데이터 흐름**   | 데이터 흐름도 및 프로세스 간 상호작용 | [DATA_FLOW.md](Documents/Architecture/DATA_FLOW.md)                               |
-| **DB 스키마**     | PostgreSQL 데이터베이스 스키마 (ERD)  | [DATABASE_SCHEMA.md](Documents/Architecture/DATABASE_SCHEMA.md)                   |
-| **API 명세**      | RESTful API 엔드포인트 상세 명세      | [API_SPECIFICATION.md](Documents/Architecture/API_SPECIFICATION.md) ⭐             |
-| **기술 스택**     | 기술 선정 이유 및 버전 정보           | [TECHNOLOGY_STACK.md](Documents/Architecture/TECHNOLOGY_STACK.md) ⭐               |
-| **배포 아키텍처** | Render.com 배포 구조 및 CI/CD         | [DEPLOYMENT_ARCHITECTURE.md](Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ |
+| 문서              | 설명                                  | 경로                                                                         |
+| ----------------- | ------------------------------------- | ---------------------------------------------------------------------------- |
+| **시스템 개요**   | 전체 시스템 개요 및 핵심 기능         | [SYSTEM_OVERVIEW.md](docs/Architecture/SYSTEM_OVERVIEW.md)                   |
+| **데이터 흐름**   | 데이터 흐름도 및 프로세스 간 상호작용 | [DATA_FLOW.md](docs/Architecture/DATA_FLOW.md)                               |
+| **DB 스키마**     | PostgreSQL 데이터베이스 스키마 (ERD)  | [DATABASE_SCHEMA.md](docs/Architecture/DATABASE_SCHEMA.md)                   |
+| **API 명세**      | RESTful API 엔드포인트 상세 명세      | [API_SPECIFICATION.md](docs/Architecture/API_SPECIFICATION.md) ⭐             |
+| **기술 스택**     | 기술 선정 이유 및 버전 정보           | [TECHNOLOGY_STACK.md](docs/Architecture/TECHNOLOGY_STACK.md) ⭐               |
+| **배포 아키텍처** | Render.com 배포 구조 및 CI/CD         | [DEPLOYMENT_ARCHITECTURE.md](docs/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ |
 
 #### 개발 가이드
 
 - **Backend README:** [backend/README.md](backend/README.md)
 - **Frontend README:** [frontend/README.md](frontend/README.md)
-- **개발 가이드**: [Documents/Architecture/DEVELOPMENT_GUIDE.md](Documents/Architecture/DEVELOPMENT_GUIDE.md)
-- **문제 해결**: [Documents/Architecture/TROUBLESHOOTING.md](Documents/Architecture/TROUBLESHOOTING.md)
+- **개발 가이드**: [docs/Architecture/DEVELOPMENT_GUIDE.md](docs/Architecture/DEVELOPMENT_GUIDE.md)
+- **문제 해결**: [docs/Architecture/TROUBLESHOOTING.md](docs/Architecture/TROUBLESHOOTING.md)
 
 #### 원본 프로젝트 참조
 
 - **원본 프로젝트 위치**: `/mnt/d/Ai/WslProject/TheMoon_Project/`
-- **마이그레이션 계획**: [Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md](Documents/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md)
+- **마이그레이션 계획**: [docs/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md](docs/Planning/MIGRATION_TO_MODERN_STACK_GEMINI.md)
 
 ---
 
@@ -604,7 +236,7 @@ MIT License - 자유롭게 사용 가능
 
 ---
 
-**버전:** 0.4.6
-**최종 업데이트:** 2025-12-23
-**최종 커밋:** c47cf05
+**버전:** 0.5.2
+**최종 업데이트:** 2025-12-25
+**최종 커밋:** Premium Water Drops UI and System Monitoring Integration
 **원본 프로젝트 참조:** `/mnt/d/Ai/WslProject/TheMoon_Project/`

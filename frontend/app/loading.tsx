@@ -1,5 +1,5 @@
-import LoadingState from "@/components/ui/loading-state"
+import LoadingState from '@/components/ui/loading-state';
 
 export default function Loading() {
-    return <LoadingState message="Welcome to The Moon" />
+  return <LoadingState message="Welcome to The Moon" />;
 }

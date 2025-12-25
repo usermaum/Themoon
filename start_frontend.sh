@@ -1,101 +1,60 @@
 #!/bin/bash
-# Frontend Server Start Script
-# TheMoon - Coffee Roasting Cost Calculator
+# TheMoon - Frontend Server Start Script
 
-echo "========================================="
-echo "🎨 TheMoon Frontend Server"
-echo "========================================="
-echo ""
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CLEAN_CACHE=false
+AUTO_MODE=false
 
-# 옵션 표시
-echo "다음 중 하나를 선택하세요:"
-echo ""
-echo "1) 일반 시작 (캐시 유지)"
-echo "2) 캐시 삭제 후 시작 (rm -rf .next)"
-echo "3) 취소"
-echo ""
-read -p "선택 (1-3): " choice
+# Argument Parsing
+for i in "$@"; do
+    case $i in
+        --clean) CLEAN_CACHE=true ;;
+        --auto) AUTO_MODE=true ;;
+    esac
+done
 
-case $choice in
-    1)
-        CLEAN_CACHE=false
-        echo ""
-        echo "✅ 일반 시작 모드"
-        ;;
-    2)
-        CLEAN_CACHE=true
-        echo ""
-        echo "✅ 캐시 삭제 모드"
-        ;;
-    3)
-        echo ""
-        echo "❌ 취소되었습니다."
-        exit 0
-        ;;
-    *)
-        echo ""
-        echo "❌ 잘못된 선택입니다."
-        exit 1
-        ;;
-esac
+echo "🧹 Cleaning up previous processes..."
 
-echo ""
+# Kill existing frontend processes & scripts
+CURRENT_PID=$$
+pgrep -f "frontend_dev.sh|start_frontend.sh" | grep -v "$CURRENT_PID" | xargs kill -9 2>/dev/null || true
+pkill -f "node|next-server" || true
 
-# 1. Frontend 디렉토리로 이동
-cd "$(dirname "$0")/frontend" || {
-    echo "❌ Error: frontend 디렉토리를 찾을 수 없습니다."
-    exit 1
-}
+# Free port 3500
+if lsof -ti :3500 > /dev/null; then
+    lsof -ti :3500 | xargs kill -9 2>/dev/null || true
+    for i in {1..5}; do
+        ! lsof -ti :3500 > /dev/null && break
+        sleep 1
+    done
+fi
 
-# 2. 캐시 삭제 (옵션 2 선택 시)
+# Apply clean cache if requested
 if [ "$CLEAN_CACHE" = true ]; then
-    if [ -d ".next" ]; then
-        echo "🗑️  .next 캐시 삭제 중..."
-        rm -rf .next
-        echo "✅ 캐시 삭제 완료"
-        echo ""
-    else
-        echo "ℹ️  .next 캐시가 없습니다."
-        echo ""
-    fi
+    echo "🗑️  Cleaning build cache (.next)..."
+    rm -rf "$ROOT_DIR/frontend/.next"
 fi
 
-# 3. node_modules 확인
-if [ ! -d "node_modules" ]; then
-    echo "📦 의존성 설치 중..."
-    npm install
-    echo "✅ 설치 완료"
-    echo ""
-elif [ "package.json" -nt "node_modules/.modules.yaml" ] 2>/dev/null; then
-    # package.json이 변경된 경우에만
-    echo "📦 의존성 업데이트 중..."
-    npm install
-    echo ""
+# Handle script termination
+cleanup() {
+    echo -e "\n🛑 Stopping server..."
+    [ ! -z "$FRONTEND_PID" ] && kill $FRONTEND_PID 2>/dev/null
+    exit 0
+}
+trap cleanup SIGINT SIGTERM
+
+echo "🚀 Starting Frontend server..."
+
+cd "$ROOT_DIR/frontend"
+> ../logs/themoon_frontend.log
+npm run dev -- -H 0.0.0.0 -p 3500 > ../logs/themoon_frontend.log 2>&1 &
+FRONTEND_PID=$!
+
+if [ "$AUTO_MODE" = false ]; then
+    WSL_IP=$(hostname -I | awk '{print $1}')
+    echo -e "\n🌍 URL: http://localhost:3500 (Network: http://$WSL_IP:3500)"
+    echo -e "📊 Monitoring logs... (Ctrl+C to stop)\n"
+    tail -f ../logs/themoon_frontend.log
+else
+    echo "✅ Frontend started in background (PID: $FRONTEND_PID)"
 fi
-
-# 4. 포트 충돌 확인 및 해결
-if lsof -ti :3000 > /dev/null 2>&1; then
-    echo "⚠️  Warning: 포트 3000이 이미 사용 중입니다."
-    read -p "기존 프로세스를 종료하시겠습니까? (y/n): " answer
-    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-        echo "🔄 기존 프로세스 종료 중..."
-        lsof -ti :3000 | xargs kill -9
-        echo "✅ 기존 프로세스 종료 완료"
-        echo ""
-    else
-        echo "❌ 서버 시작을 취소합니다."
-        exit 1
-    fi
-fi
-
-# 5. 서버 시작
-echo "========================================="
-echo "✅ Frontend 서버 시작"
-echo "========================================="
-echo ""
-echo "📍 URL: http://localhost:3000"
-echo ""
-echo "🛑 종료하려면 Ctrl+C를 누르세요."
-echo ""
-
-npm run dev

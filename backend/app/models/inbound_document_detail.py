@@ -1,14 +1,19 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from app.database import Base
 from app.utils.timezone import get_kst_now
 
+
 class InboundDocumentDetail(Base):
     """인바운드 문서 상세 정보 (OCR 추출 데이터)"""
+
     __tablename__ = "inbound_document_details"
 
     id = Column(Integer, primary_key=True, index=True)
-    inbound_document_id = Column(Integer, ForeignKey("inbound_documents.id"), nullable=False, unique=True)
+    inbound_document_id = Column(
+        Integer, ForeignKey("inbound_documents.id"), nullable=False, unique=True
+    )
 
     # 문서 정보
     document_number = Column(String, nullable=True, comment="문서번호")
@@ -43,4 +48,6 @@ class InboundDocumentDetail(Base):
     updated_at = Column(DateTime(timezone=True), default=get_kst_now, onupdate=get_kst_now)
 
     # Relationships
-    inbound_document = relationship("app.models.inbound_document.InboundDocument", back_populates="detail")
+    inbound_document = relationship(
+        "app.models.inbound_document.InboundDocument", back_populates="detail"
+    )

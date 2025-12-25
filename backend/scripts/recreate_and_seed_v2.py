@@ -17,6 +17,7 @@ from app.database import engine, Base
 from sqlalchemy.orm import sessionmaker
 # Import all models to ensure they are registered for metadata drop/create
 from app.models import Bean, InboundDocument, InboundDocumentDetail, InboundReceiver, InboundItem, InventoryLog, Supplier, Blend
+from app.models.roasting_log import RoastingLog
 from app.models.bean import BeanType, RoastProfile
 from app.models.inventory_log import InventoryChangeType
 
@@ -174,6 +175,26 @@ def seed_blends(db, bean_map):
 
     db.commit()
 
+def seed_roasted_blends(db):
+    print("🌱 Seeding Roasted Blend (Stock)...")
+    # Manually create a roasted blend item for inventory testing
+    full_moon = Bean(
+        name="풀문 (Full Moon)",
+        name_ko="풀문 (Full Moon)",
+        name_en="Full Moon Blend",
+        origin="Blend",
+        type=BeanType.BLEND_BEAN,
+        roast_profile=RoastProfile.MEDIUM,
+        sku="BLEND-FULLMOON-001",
+        quantity_kg=5.0, # Initial stock
+        avg_price=25000,
+        cost_price=12000,
+        expected_loss_rate=0.15
+    )
+    db.add(full_moon)
+    db.commit()
+    print(f"   Created Roasted Blend Stock: {full_moon.name}")
+
 # ==========================================
 # 3. Main Execution
 # ==========================================
@@ -186,6 +207,7 @@ def main():
         seed_suppliers(db)
         bean_map = seed_beans(db)
         seed_blends(db, bean_map)
+        seed_roasted_blends(db)
         print("✅ Database Recreated and Seeded Successfully!")
     except Exception as e:
         print(f"❌ Error during seeding: {e}")

@@ -30,7 +30,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
 
-**접속:** http://localhost:3000
+**접속:** http://localhost:3500
 
 ## 📁 프로젝트 구조
 
@@ -51,12 +51,12 @@ frontend/
 
 ## 🔗 원본 대응표
 
-| 원본 (Streamlit) | 신규 (Next.js) | 설명 |
-|------------------|----------------|------|
-| `pages/Dashboard.py` | `app/page.tsx` | 메인 대시보드 |
-| `pages/BeanManagement.py` | `app/beans/page.tsx` | 원두 관리 |
-| `pages/BlendManagement.py` | `app/blends/page.tsx` | 블렌드 관리 |
-| `components/` | `components/` | 재사용 컴포넌트 |
+| 원본 (Streamlit)           | 신규 (Next.js)        | 설명            |
+| -------------------------- | --------------------- | --------------- |
+| `pages/Dashboard.py`       | `app/page.tsx`        | 메인 대시보드   |
+| `pages/BeanManagement.py`  | `app/beans/page.tsx`  | 원두 관리       |
+| `pages/BlendManagement.py` | `app/blends/page.tsx` | 블렌드 관리     |
+| `components/`              | `components/`         | 재사용 컴포넌트 |
 
 ## 🎨 스타일링
 
@@ -89,18 +89,21 @@ npm run start
 **← 상위**: [프로젝트 루트](../README.md)
 
 **아키텍처 문서**:
-- [시스템 개요](../Documents/Architecture/SYSTEM_OVERVIEW.md) - 전체 시스템 개요 및 핵심 기능
-- [데이터 흐름도](../Documents/Architecture/DATA_FLOW.md) - 시스템 내 데이터 흐름 상세 분석
-- [API 명세](../Documents/Architecture/API_SPECIFICATION.md) ⭐ - 모든 API 엔드포인트 상세 문서
-- [기술 스택](../Documents/Architecture/TECHNOLOGY_STACK.md) ⭐ - 사용 기술 상세 설명
-- [배포 아키텍처](../Documents/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ - 배포 환경 상세 구조
+
+- [시스템 개요](../docs/Architecture/SYSTEM_OVERVIEW.md) - 전체 시스템 개요 및 핵심 기능
+- [데이터 흐름도](../docs/Architecture/DATA_FLOW.md) - 시스템 내 데이터 흐름 상세 분석
+- [API 명세](../docs/Architecture/API_SPECIFICATION.md) ⭐ - 모든 API 엔드포인트 상세 문서
+- [기술 스택](../docs/Architecture/TECHNOLOGY_STACK.md) ⭐ - 사용 기술 상세 설명
+- [배포 아키텍처](../docs/Architecture/DEPLOYMENT_ARCHITECTURE.md) ⭐ - 배포 환경 상세 구조
 
 **개발 가이드**:
-- [개발 가이드](../Documents/Architecture/DEVELOPMENT_GUIDE.md) - 5단계 개발 프로세스
-- [컴포넌트 설계](../Documents/Architecture/COMPONENT_DESIGN.md) - UI 컴포넌트 설계 문서
-- [문제 해결](../Documents/Architecture/TROUBLESHOOTING.md) - 16가지 오류 & 해결법
+
+- [개발 가이드](../docs/Architecture/DEVELOPMENT_GUIDE.md) - 5단계 개발 프로세스
+- [컴포넌트 설계](../docs/Architecture/COMPONENT_DESIGN.md) - UI 컴포넌트 설계 문서
+- [문제 해결](../docs/Architecture/TROUBLESHOOTING.md) - 16가지 오류 & 해결법
 
 **Backend**:
+
 - [Backend README](../backend/README.md) - Backend 개발 가이드
 
 ---

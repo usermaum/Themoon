@@ -22,7 +22,7 @@ pkill -f "python backend/app/main.py" || true
 pkill -f "next-server" || true
 
 # Kill by port (3000, 3500, 8000)
-ports=(3000 3500 8000)
+ports=(3500 8000)
 for port in "${ports[@]}"; do
     # 1. Check if port is in use
     if lsof -ti :$port > /dev/null; then
