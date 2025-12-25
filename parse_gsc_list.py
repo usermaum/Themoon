@@ -1,7 +1,7 @@
 import re
 
-input_path = "Documents/gsc_price_list_extracted.txt"
-output_path = "Documents/Bean_List_GSC_20251221.md"
+input_path = "docs/gsc_price_list_extracted.txt"
+output_path = "docs/Bean_List_GSC_20251221.md"
 
 def parse_price(line):
     # Extract numbers at the end of the line

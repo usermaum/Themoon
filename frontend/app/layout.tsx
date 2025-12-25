@@ -1,38 +1,36 @@
-import type { Metadata, Viewport } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
-import './globals.css'
-import AppLayout from '@/components/layout/AppLayout'
+import type { Metadata, Viewport } from 'next';
+import { Inter, Playfair_Display } from 'next/font/google';
+import './globals.css';
+import AppLayout from '@/components/layout/AppLayout';
 
-import { cookies } from 'next/headers'
-import { SWRProvider } from '@/lib/swr-config'
+import { cookies } from 'next/headers';
+import { SWRProvider } from '@/lib/swr-config';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
 export const viewport: Viewport = {
   themeColor: '#FFF8F0',
-}
+};
 
 export const metadata: Metadata = {
   title: 'The Moon Drip Bar',
   description: 'Premium Roasting Management System',
-}
+};
 
 import NextTopLoader from 'nextjs-toploader';
-import { Toaster } from "@/components/ui/toaster"
-import { LoadingProvider } from "@/components/providers/loading-provider"
+import { Toaster } from '@/components/ui/toaster';
+import { LoadingProvider } from '@/components/providers/loading-provider';
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const cookieStore = cookies()
-  const sidebarState = cookieStore.get('sidebar:state')
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = cookies();
+  const sidebarState = cookieStore.get('sidebar:state');
 
   return (
     <html lang="ko">
-      <body className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-latte-50 text-latte-800`}>
+      <body
+        className={`${inter.variable} ${playfair.variable} font-sans min-h-screen bg-latte-50 text-latte-800`}
+      >
         <NextTopLoader
           color="#D97706"
           initialPosition={0.08}
@@ -57,5 +55,5 @@ export default function RootLayout({
         </LoadingProvider>
       </body>
     </html>
-  )
+  );
 }

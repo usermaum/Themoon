@@ -16,6 +16,18 @@ class BeanService:
         """ID로 원두 조회"""
         return self.repository.get(bean_id)
 
+    def get_bean_by_sku(self, sku: str) -> Optional[Bean]:
+        """SKU로 원두 조회"""
+        return self.repository.get_by_sku(sku)
+
+    def get_unique_origins(self) -> List[str]:
+        """모든 원산지 목록 조회"""
+        return self.repository.get_unique_origins()
+
+    def get_unique_varieties(self) -> List[str]:
+        """모든 품종 목록 조회"""
+        return self.repository.get_unique_varieties()
+
     def get_beans(
         self,
         skip: int = 0,

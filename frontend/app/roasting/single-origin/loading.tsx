@@ -1,5 +1,5 @@
-import LoadingState from "@/components/ui/loading-state"
+import LoadingState from '@/components/ui/loading-state';
 
 export default function Loading() {
-    return <LoadingState message="Brewing Data..." />
+  return <LoadingState message="Brewing Data..." />;
 }

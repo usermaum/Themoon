@@ -1,18 +1,20 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
-from typing import List, Any, Optional
 from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+
 from app.database import get_db
 from app.services import cost_service, stats_service
-from app.models.bean import Bean
 
 router = APIRouter()
+
 
 @router.get("/cost/fifo/{bean_id}")
 def get_fifo_cost(
     bean_id: int,
     quantity: float = Query(..., gt=0, description="Quantity to calculate cost for"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Calculate FIFO cost for a specific bean and quantity.
@@ -25,11 +27,12 @@ def get_fifo_cost(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/stats/supplier")
 def get_supplier_statistics(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get total purchase stats by supplier with optional date filtering.
@@ -40,26 +43,32 @@ def get_supplier_statistics(
     """
     # Parse dates if provided
     start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
+    end_dt = (
+        datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+        if end_date
+        else None
+    )
 
     return stats_service.get_supplier_stats(db, start_dt, end_dt)
+
 
 @router.get("/stats/buying/monthly")
 def get_buying_trends(
     months: int = Query(12, description="Number of months to look back"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get monthly buying total amounts.
     """
     return stats_service.get_monthly_buying_stats(db, months)
 
+
 @router.get("/stats/item/trends")
 def get_item_trends(
     bean_name: str = Query(..., description="Bean name to search for"),
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get price history for a specific item with optional date filtering.
@@ -71,21 +80,29 @@ def get_item_trends(
     """
     # Parse dates if provided
     start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
+    end_dt = (
+        datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+        if end_date
+        else None
+    )
 
     return stats_service.get_item_price_trends(db, bean_name, start_dt, end_dt)
+
 
 @router.get("/stats/inventory")
 def get_inventory_statistics(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get current inventory value aggregated by bean, filtered by the date range they were purchased.
     """
     start_dt = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
-    end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59) if end_date else None
+    end_dt = (
+        datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+        if end_date
+        else None
+    )
 
     return stats_service.get_inventory_stats(db, start_dt, end_dt)
-

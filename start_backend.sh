@@ -7,6 +7,48 @@ echo "🚀 TheMoon Backend Server"
 echo "========================================="
 echo ""
 
+# Default values
+FORCE_KILL=false
+AUTO_MODE=false
+
+# Argument Parsing
+for i in "$@"
+do
+case $i in
+    --force)
+    FORCE_KILL=true
+    shift
+    ;;
+    --auto)
+    AUTO_MODE=true
+    shift
+    ;;
+    *)
+    ;;
+esac
+done
+
+if [ "$AUTO_MODE" = true ]; then
+    # 로그 디렉토리 확인
+    mkdir -p ../logs
+    echo "" >> ../logs/themoon_backend.log
+    echo "🔄 [System] Backend Server Restarting..." >> ../logs/themoon_backend.log
+    echo "" >> ../logs/themoon_backend.log
+
+    # 0. 초기화 및 기존 프로세스 정리 (Early Aggressive Cleanup)
+    echo "🧹 [System] Cleaning up previous processes..." >> ../logs/themoon_backend.log
+    
+    # 1. Kill backend processes (Name-based)
+    pkill -f "uvicorn" 2>/dev/null || true
+    pkill -f "python backend/app/main.py" 2>/dev/null || true
+    
+    # 2. Kill port 8000
+    lsof -ti :8000 | xargs kill -9 2>/dev/null || true
+    
+    # Wait for release
+    sleep 2
+fi
+
 # 1. Backend 디렉토리로 이동
 cd "$(dirname "$0")/backend" || {
     echo "❌ Error: backend 디렉토리를 찾을 수 없습니다."
@@ -35,17 +77,36 @@ else
     fi
 fi
 
-# 3. 포트 충돌 확인 및 해결
-if lsof -ti :8000 > /dev/null 2>&1; then
-    echo "⚠️  Warning: 포트 8000이 이미 사용 중입니다."
-    read -p "기존 프로세스를 종료하시겠습니까? (y/n): " answer
-    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-        echo "🔄 기존 프로세스 종료 중..."
-        lsof -ti :8000 | xargs kill -9
-        echo "✅ 기존 프로세스 종료 완료"
-    else
-        echo "❌ 서버 시작을 취소합니다."
-        exit 1
+# 3. 포트 및 프로세스 확인 (Interactive Only with Robust Check)
+if [ "$AUTO_MODE" = false ]; then
+    IS_RUNNING=false
+    
+    # 1. Port Check
+    if lsof -ti :8000 > /dev/null; then
+        IS_RUNNING=true
+        echo "⚠️  Port 8000 is in use."
+    fi
+    
+    # 2. Name Check (Uvicorn / Python)
+    if pgrep -f "uvicorn" > /dev/null; then
+        IS_RUNNING=true
+        echo "⚠️  'uvicorn' process is running."
+    fi
+
+    if [ "$IS_RUNNING" = true ]; then
+        echo ""
+        read -p "기존 서버가 감지되었습니다. 종료하고 시작하시겠습니까? (y/n): " answer
+        if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+            echo "🧹 Cleaning up..."
+            pkill -f "uvicorn" 2>/dev/null || true
+            pkill -f "python backend/app/main.py" 2>/dev/null || true
+            lsof -ti :8000 | xargs kill -9 2>/dev/null || true
+            sleep 2
+            echo "✅ Cleanup complete."
+        else
+            echo "❌ Cancelled."
+            exit 1
+        fi
     fi
 fi
 
@@ -61,4 +122,17 @@ echo ""
 echo "🛑 종료하려면 Ctrl+C를 누르세요."
 echo ""
 
-uvicorn app.main:app --reload --port 8000
+# 로그 디렉토리 확인
+mkdir -p ../logs
+
+echo "📝 Output redirected to logs/themoon_backend.log"
+nohup uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > ../logs/themoon_backend.log 2>&1 &
+echo "✅ Backend server started in background."
+
+if [ "$AUTO_MODE" = false ]; then
+    echo ""
+    echo "📊 실시간 로그를 출력합니다. (모니터링 종료: Ctrl+C)"
+    echo "   (서버는 백그라운드에서 계속 실행됩니다)"
+    echo "========================================="
+    tail -f ../logs/themoon_backend.log
+fi

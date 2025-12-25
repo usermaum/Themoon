@@ -11,14 +11,39 @@
 
 ---
 
-## [0.4.6] - 2025-12-23
 
-### 🐛 패치 (Bug Fix): OCR 서비스 Claude 모델 연동 안정화 및 MIME Type 버그 수정, JSON 파싱 견고성 강화
 
-#### 📝 변경사항
-- 변경사항 상세 기록 필요
+## [0.5.2] - 2025-12-25
+
+### ✨ 프리미엄 관리자 경험 및 시스템 모니터링 (Phase 22-24)
+
+#### 🖥️ 관리자 대시보드 고도화 (Phase 22 - 8개 작업)
+- **실시간 시스템 메트릭**: CPU 사용량, 메모리 점유율, 디스크 여유 공간을 시각화하는 모니터링 카드 구현.
+- **관리 기능 통합**: `MemoSection`을 시스템 설정 페이지로 통합하여 관리 동선 최적화 및 UI 일관성 확보.
+- **디자인 폴리싱**: 전반적인 어드민 UI 레이아웃 및 너비 최적화.
+
+#### 🐱 프리미엄 재시작 UI 완성 (Phase 23 - 10개 작업)
+- **마스코트 냥이 테마**: 서버 재시작 시 "관리자 냥이" 비디오가 포함된 감성적인 오버레이 구현.
+- **Water Drops on Window Effect**: 굴절(Refraction)과 하이라이트가 포함된 리얼한 유리창 물방울 효과 구현.
+- **애니메이션 정밀 튜닝**: 180개의 물방울 입자가 무작위 속도와 지터(Jitter)로 흘러내리는 유기적 모션 적용.
+- **비디오 재생 최적화**: 브라우저 정책 대응(`muted`, `playsInline`) 및 루프 재생 끊김 방지.
+
+#### 🔧 시스템 안정성 및 복구 (Phase 24 - 5개 작업)
+- **Hydration & Portal 오류 복구**: SSR 환경에서 `createPortal`과 `AnimatePresence` 충돌로 인한 500 에러 해결.
+- **견고한 포털 패턴**: `isMounted` 훅을 활용하여 클라이언트 사이드 포털 렌더링 안정성 확보.
+- **TSConfig 정규화**: IDE 에러를 유발하는 `.next/types` 관련 불필요한 include 구문 제거 및 정리.
+- **환경 정화**: `.next` 캐시 클린 및 서버 프로세스 재배치를 통한 런타임 안정화.
+
+---
 
 ## [Unreleased]
+
+### 🔧 Refactoring (Bean Module Architecture)
+- **Repository Pattern 적용**: `BeanRepository` 기능 확장 및 `BeanService`의 직접 DB 접근 코드 제거 (Clean Architecture 준수).
+- **New Repository Methods**:
+  - `search_beans`: 필터링 및 검색 로직 캡슐화.
+  - `get_total_stock_sum`, `get_low_stock_beans`: 재고 분석 쿼리 최적화.
+  - `get_all_for_check`: 배치 유효성 검사 쿼리 분리.
 
 ### ✨ 기능 추가 (Features) - Gemini 작업 완료 (91개 작업)
 
@@ -143,6 +168,43 @@
 - **Interactive Feedback**:
   - 분석 버튼에 로딩 스피너와 함께 현재 진행 중인 작업 텍스트 표시.
   - 에러 발생 시 즉각적인 피드백 제공.
+
+### 🐛 패치 (Fixes & Refactoring)
+
+### 4. OCR 디버깅 및 고도화 (Phase 16)
+- **Claude 모델 ID 수정**: 잘못된 모델 ID 404 오류 해결, `claude-sonnet-4-5` 적용.
+- **JSON 파싱 견고성 강화**: 정규식 도입으로 마크다운 코드 블록 및 사족이 포함된 응답 처리 개선.
+- **치명적 버그 수정**: 이미지 전처리 시 MIME Type 불일치(PNG→JPEG) 문제 해결, Claude 400 오류 근본 원인 제거.
+- **문서 정리**: Phase 2, 3, 4, 9 완료 처리.
+
+### 5. UI/UX 개선 (Currency Formatting - Phase 17)
+- **전역 통화 포맷팅 적용**: 소수점 없는 정수형 원화 표시(`formatCurrency` 유틸리티 도입).
+- **적용 범위 확대**:
+  - **Analytics**: 자산 가치 테이블, 원가 추이 차트, 공급자 파이 차트.
+  - **Inventory/Inbound**: 명세서 분석 결과, 명세서 목록/상세, 입고 아이템.
+  - **Beans**: 구매 단가 표시.
+  - **Roasting**: 싱글/블렌드 로스팅 원가 시뮬레이션 및 결과.
+- **코드 일관성 확보**: 개별 컴포넌트의 산재된 포맷팅 로직을 `frontend/lib/utils.ts`로 통합.
+
+---
+
+## [0.4.7] - 2025-12-23
+
+### 🏗️ 아키텍처 및 설정 관리 (Architecture & Configuration)
+
+#### Admin & System Evolution (Phase 1 Planning)
+- **Master Plan 수립**: 관리자 페이지 및 시스템 진화 마스터 플랜(`ADMIN_AND_SYSTEM_EVOLUTION_PLAN.md`) 작성.
+  - 4단계 로드맵: Foundation(통합 설정) → Observability(모니터링) → Data Safety(백업) → AI Lab(지능화).
+  - 시스템 아키텍처 다이어그램(Mermaid) 추가.
+- **Configuration Management**: 통합 설정 관리 시스템 설계안(`CONFIGURATION_MANAGEMENT_PLAN.md`) 수립.
+  - 파편화된 JSON 설정 파일(`ocr_prompt_structure.json`, `image_processing_config.json`)을 중앙화.
+  - `ConfigService` 아키텍처 설계.
+
+#### 🔧 Refactoring & Chore
+- **Resource Directory**: `backend/app/schemas/*.json` → `backend/app/resources/*.json`으로 이동 및 코드 경로 수정.
+- **OCR Model Config**: 기본 모델을 Gemini 1.5 Flash로 변경 및 모델 우선순위 조정 로직 리팩토링.
+- **VS Code Settings**: FontAwesome 스타일 및 Mermaid 테마 설정 추가로 개발 환경 개선.
+- **Bug Fix**: 터미널 캐싱 오류 해결 및 Mermaid 다이어그램 구문 오류(Syntax Error) 수정.
 
 ---
 

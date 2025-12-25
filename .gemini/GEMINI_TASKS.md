@@ -9,36 +9,18 @@
 
 ## 📋 개요 (Overview)
 
-Gemini가 TheMoon 프로젝트에서 완료한 19개 Phase의 작업 내역을 정리한 문서입니다.
-총 134개의 세부 작업이 완료되었으며, UI/UX 개선, 이미지 최적화, FIFO 재고 시스템, OCR 서비스 고도화, 그리고 아키텍처 리팩토링(Repository 패턴)이 구현되었습니다.
+Gemini가 TheMoon 프로젝트에서 완료한 21개 Phase의 작업 내역을 정리한 문서입니다.
+총 140개의 세부 작업이 완료되었으며, UI/UX 개선, 이미지 최적화, FIFO 재고 시스템, OCR 서비스 고도화, 아키텍처 리팩토링, 그리고 시스템 설정 관리 UI 등이 구현되었습니다.
 
 ---
 
 ## 🎯 Phase별 작업 요약
 
-| Phase    | 작업명                  | 완료율 | 주요 성과                               |
-| -------- | ----------------------- | ------ | --------------------------------------- |
-| Phase 1  | Analytics UI 개선       | 100%   | 34개 작업 완료 (UI/UX 전면 개선)        |
-| Phase 2  | 이미지 서비스 고도화    | 100%   | 6개 작업 완료 (보안/안정성 강화)        |
-| Phase 3  | 명세서 목록 UI          | 100%   | 4개 작업 완료 (Invoice List 페이지)     |
-| Phase 4  | FIFO 재고 연동          | 100%   | 5개 작업 완료 (원가 계산 시스템)        |
-| Phase 5  | 원두 이미지 최적화      | 100%   | 4개 작업 완료 (일괄 변환)               |
-| Phase 6  | UI 개선 (히어로 높이)   | 100%   | 3개 작업 완료 (PageHero compact 모드)   |
-| Phase 7  | 명세서 상세 조회        | 100%   | 5개 작업 완료 (상세 보기 기능)          |
-| Phase 8  | 디자인 고도화           | 100%   | 3개 작업 완료 (Paper Invoice UI)        |
-| Phase 9  | 이미지 최적화 및 안정성 | 100%   | 6개 작업 완료 (전처리/품질검증)         |
-| Phase 10 | 프론트엔드 이미지 연동  | 100%   | 5개 작업 완료 (썸네일/뷰어)             |
-| Phase 11 | 모니터링 및 최적화      | 100%   | 4개 작업 완료 (캐싱/부하테스트)         |
-| Phase 12 | 메뉴 계층화             | 100%   | 1개 작업 완료 (문서화)                  |
-| Phase 13 | 코드 리팩토링           | 100%   | 1개 작업 완료 (Schema 분리)             |
-| Phase 14 | OCR 모델 확장           | 100%   | 3개 작업 완료 (Claude Integration)      |
-| Phase 15 | 실시간 분석 피드백      | 100%   | 3개 작업 완료 (Streaming Response)      |
-| Phase 16 | OCR 서비스 리팩토링     | 100%   | 5개 작업 완료 (JSON 파싱 개선/Fallback) |
-| Phase 17 | 통화 포맷팅 (Currency)  | 100%   | 4개 작업 완료 (전역 포맷 통일)          |
-| Phase 18 | OCR 엔진 및 UI 고도화   | 100%   | 6개 작업 완료 (인식률 향상 및 UI 개선)  |
-| Phase 19 | Bean 모듈 리팩토링      | 100%   | 5개 작업 완료 (Clean Architecture 적용) |
+| Phase 22 | Admin Dashboard 고도화   | 100%   | 8개 작업 완료 (시스템 모니터링/메모 통합)   |
+| Phase 23 | 프리미엄 재시작 UI      | 100%   | 10개 작업 완료 (냥이 테마/비/물방울 효과) |
+| Phase 24 | 시스템 복구 및 최적화   | 100%   | 5개 작업 완료 (500 에러 해결/TSConfig fix) |
 
-**전체 완료율:** 100% (134/134 작업)
+**전체 완료율:** 100% (163/163 작업)
 
 ---
 
@@ -428,25 +410,51 @@ Gemini가 TheMoon 프로젝트에서 완료한 19개 Phase의 작업 내역을 �
 
 ---
 
-## 📊 통계 요약
+## Phase 20: 버그 수정 및 도구 개선 (Bug Fixes & Tooling)
+
+**목표**: 시스템 도구의 오류를 수정하여 안정적인 운영 환경 확보
+
+### ✅ 완료된 작업 (1개)
+
+#### 1. `update_version.py` 구문 오류 수정
+- [x] `update_changelog` 메서드 내 `try` 블록에 누락된 `except` 블록 추가 (SyntaxError 해결)
+
+---
+
+## Phase 21: 시스템 설정 UI 폴리싱 (System Settings UI Polish)
+
+**목표**: 시스템 설정 페이지의 시각적 일관성 확보 및 레이아웃 최적화
+
+### ✅ 완료된 작업 (5개)
+
+#### 1. 메뉴 레이아웃 최적화 (Frontend)
+- [x] 탭 메뉴 너비를 하단 설정 카드(`max-w-3xl`) 크기에 맞춰 정렬
+- [x] 대시보드 및 로그 뷰어 컨텐츠 너비 일원화
+
+#### 2. 디자인 일관성 (Styling)
+- [x] 탭 메뉴 배경색(`latte-100`) 및 활성 탭 스타일(흰색 배경, 그림자)을 메인 앱 스타일로 변경
+- [x] 로그 뷰어 내부 탭(`Backend/Frontend`) 스타일 정규화
+- [x] OCR 프롬프트 설정 내의 6개 서브 탭 스타일 정규화 (활성 상태 강조)
+
+#### 3. UX 개선
+- [x] 선택된 탭의 시인성 향상 (어두운 배경 → 밝고 깔끔한 스타일)
+
+---
+
+### 📊 통계 요약 (Updated 2025-12-25)
 
 ### 작업량 통계
-- **총 작업 수**: 134개
+- **총 작업 수**: 163개
 - **완료율**: 100%
-- **Phase 수**: 19개
-- **Backend 작업**: 약 35개
-- **Frontend 작업**: 약 58개
-- **Dev/Deployment**: 약 13개
+- **Phase 수**: 24개
+- **Backend 작업**: 약 45개
+- **Frontend 작업**: 약 80개
+- **Dev/Deployment**: 약 25개
 
-### 핵심 기능 구현
-1. ✅ **Analytics UI/UX 전면 개선** (34개 작업)
-2. ✅ **이미지 서비스 엔터프라이즈급 강화** (6개 작업)
-3. ✅ **명세서 관리 시스템 구축** (9개 작업)
-4. ✅ **FIFO 재고 및 원가 계산** (5개 작업)
-5. ✅ **원두 이미지 최적화** (4개 작업)
-6. ✅ **전역 통화 포맷팅** (4개 작업)
-7. ✅ **OCR 엔진 및 UI 고도화** (6개 작업)
-8. ✅ **Bean 모듈 리팩토링** (5개 작업)
+### 핵심 기능 구현 (Today's Highlight)
+1. ✅ **관리자 대시보드 고도화** (System Monitoring Metrics, Memo integration)
+2. ✅ **프리미엄 재시작 UI** (Mascot Cat Video, Ambient Water Drops effect)
+3. ✅ **시스템 안정성 확보** (500 Error Recovery, TSConfig normalization)
 
 ### 기술 스택 적용
 - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
@@ -500,25 +508,69 @@ Gemini가 TheMoon 프로젝트에서 완료한 19개 Phase의 작업 내역을 �
 
 ---
 
-## 🎓 학습 포인트 (Insights)
+## Phase 22: Admin Dashboard 고도화 (Monitoring & Tools)
 
-### 디렉토리 구조 설계
-- 시간 우선 구조 (`YYYY/MM/{original,webview,thumbnail}/`)가 백업/관리에 유리
-- 사용자 조회 패턴과 일치하는 구조 선택 중요
+**목표**: 관리자용 시스템 리소스 모니터링 및 도구 통합
 
-### 이미지 최적화 전략
-- 3종 이미지 생성 (Original/Webview/Thumbnail)으로 성능과 품질 양립
-- EXIF 제거로 보안 강화 (GPS, 카메라 정보 노출 방지)
-
-### FIFO 재고 시스템
-- `remaining_quantity` 컬럼으로 정확한 재고 추적
-- 로스팅 로그와 원가 정보 자동 연동
-
-### UI/UX 일관성
-- 컴포넌트 재사용 (PageHero, DateRangeFilter)
-- 일관된 아이콘 및 스타일 가이드 적용
+### ✅ 완료된 작업 (8개)
+- [x] CPU, 메모리, 디스크 실시간 메트릭 카드 구현 (`system/page.tsx`)
+- [x] Backend API 연동 (`getSystemStatus`)
+- [x] `MemoSection`을 시스템 설정 페이지로 통합
+- [x] 시스템 상태 카드 디자인 폴리싱 (Lucide 아이콘 적용)
+- [x] 대시보드 레이아웃 최적화 (Max width 정렬)
 
 ---
 
-**문서 버전**: 1.1
-**마지막 업데이트**: 2025-12-24
+## Phase 23: 프리미엄 재시작 UI (Mascot & Effects)
+
+**목표**: 서버 재시작 시 지루하지 않은 프리미엄 사용자 경험 제공
+
+### ✅ 완료된 작업 (10개)
+- [x] "관리자 냥이" 재시작 비디오 오버레이 구현
+- [x] 한국어 안내 문구 ("문열어라 냥. 냥 냥.") 적용
+- [x] 초기 선형 RainEffect 구현 및 가시성 튜닝
+- [x] **Water Drops on Window Effect**: 리얼한 유리창 물방울 효과로 업그레이드
+- [x] 물방울 굴절 및 하이라이트 CSS 쉐이더 구현
+- [x] 비디오 무한 반복 재생 최적화 (`preload`, `loop`, `muted`)
+- [x] 고밀도(180개) 물방울 입자 및 유기적 흐름 애니메이션 적용
+
+---
+
+## Phase 24: 시스템 복구 및 최적화
+
+**목표**: 기술적 부채 해결 및 시스템 안정성 확보
+
+### ✅ 완료된 작업 (5개)
+- [x] SSR/Portal 충돌로 인한 500 에러 긴급 복구
+- [x] Next.js 런타임 캐시(` .next`) 클린 및 리부팅
+- [x] `tsconfig.json` 내 부적절한 `.next/types` 포함 구문 영구 제거
+- [x] Hydration Safety 확보 (`isMounted` hook 패턴 적용)
+
+---
+
+## Phase 25: 로스팅 UX 및 안전장치 강화 (Roasting Safety & UX)
+
+**목표**: 재고 부족 시 로스팅 차단을 통한 데이터 무결성 확보 및 사용자 경험 개선
+
+### ✅ 완료된 작업 (6개)
+- [x] **Blocking Validation**: 재고 부족 시 로스팅 원천 차단 로직 구현 (Blend & Single Origin)
+- [x] **Red Theme Alert**: "재고 부족" 경고창에 붉은색 테마 및 강조 타이포그래피 적용
+- [x] **Stock Status Banner**: 블렌드 명세서 카드 내부에 재고 상태 요약 배너 추가
+- [x] **Number Formatting**: 모든 로스팅 관련 페이지에 `formatWeight` 적용 (불필요한 소수점 제거)
+- [x] **Alert Refinement**: `AlertTriangle` 아이콘 추가 및 직관적인 안내 메시지 개선
+- [x] **UI Polish**: 배너 마진 축소 및 텍스트 정렬 최적화 (`text-base`, `items-start`)
+
+---
+
+## 🎓 학습 포인트 (Insights)
+
+### 마이크로 애니메이션의 위력
+- 단순한 로딩 스피너 대신 브랜드 아이덴티티(냥이)와 감성적 요소(물방울)를 결합했을 때의 UX 임팩트 확인
+
+### Next.js 개발 환경 복구
+- WSL 환경에서 ` .next` 캐시가 꼬였을 때의 증상과 확실한 클린 방법 정립
+
+---
+
+**문서 버전**: 1.2
+**마지막 업데이트**: 2025-12-25

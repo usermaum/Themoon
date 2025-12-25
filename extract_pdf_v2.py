@@ -1,7 +1,7 @@
 from pypdf import PdfReader
 
-pdf_path = "Documents/[지에스씨] 생두 단가표.pdf"
-output_path = "Documents/gsc_price_list_pypdf.txt"
+pdf_path = "docs/[지에스씨] 생두 단가표.pdf"
+output_path = "docs/gsc_price_list_pypdf.txt"
 
 try:
     reader = PdfReader(pdf_path)

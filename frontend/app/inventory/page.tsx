@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle, Search } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import MascotStatus from '@/components/ui/mascot-status'
 
 const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
     <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
@@ -149,9 +150,8 @@ export default function InventoryPage() {
                 typeFilter = ['ROASTED_BEAN']
                 excludeBlend = true  // 원두 탭에서는 블렌드 제외
             } else if (tab === 'blend') {
-                // 블렌드: type=ROASTED_BEAN AND origin=Blend
-                typeFilter = ['ROASTED_BEAN']
-                originFilter = 'Blend'
+                // 블렌드: type=BLEND_BEAN
+                typeFilter = ['BLEND_BEAN']
             }
 
             const data = await BeanAPI.getAll({
@@ -409,7 +409,30 @@ export default function InventoryPage() {
                                             </thead>
                                             <tbody className="bg-white divide-y divide-latte-100">
                                                 {beans.length === 0 ? (
-                                                    <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                                                    <tr>
+                                                        <td colSpan={7} className="px-6 py-12">
+                                                            {beanSearch ? (
+                                                                <MascotStatus
+                                                                    variant="search"
+                                                                    title="검색 결과가 없습니다"
+                                                                    description={`'${beanSearch}'에 일치하는 원두를 찾을 수 없습니다.`}
+                                                                    className="border-none shadow-none bg-transparent py-8"
+                                                                />
+                                                            ) : (
+                                                                <MascotStatus
+                                                                    variant="empty"
+                                                                    title="재고가 없습니다"
+                                                                    description="현재 관리 중인 원두 재고가 없습니다. 새로운 원두를 등록하거나 입고 처리를 진행해보세요."
+                                                                    className="border-none shadow-none bg-transparent py-8"
+                                                                    action={
+                                                                        <Button onClick={() => router.push('/beans')} className="mt-4">
+                                                                            <Plus className="w-4 h-4 mr-2" /> 새 원두 등록하기
+                                                                        </Button>
+                                                                    }
+                                                                />
+                                                            )}
+                                                        </td>
+                                                    </tr>
                                                 ) : beans.map((bean) => (
                                                     <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
                                                         <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">
@@ -535,7 +558,25 @@ export default function InventoryPage() {
                                             </thead>
                                             <tbody className="bg-white divide-y divide-latte-100">
                                                 {logs.length === 0 ? (
-                                                    <tr><td colSpan={6} className="px-6 py-12 text-center text-latte-400">입출고 기록이 없습니다.</td></tr>
+                                                    <tr>
+                                                        <td colSpan={6} className="px-6 py-12">
+                                                            {logSearch ? (
+                                                                <MascotStatus
+                                                                    variant="search"
+                                                                    title="검색 결과가 없습니다"
+                                                                    description={`'${logSearch}'에 일치하는 기록을 찾을 수 없습니다.`}
+                                                                    className="border-none shadow-none bg-transparent py-8"
+                                                                />
+                                                            ) : (
+                                                                <MascotStatus
+                                                                    variant="sleep"
+                                                                    title="입출고 기록이 없습니다"
+                                                                    description="아직 이력이 없네요. 로스팅이나 판매 기록이 생기면 이곳에서 관리자 냥이가 보여드릴게요!"
+                                                                    className="border-none shadow-none bg-transparent py-8"
+                                                                />
+                                                            )}
+                                                        </td>
+                                                    </tr>
                                                 ) : (
                                                     logs.map((log) => (
                                                         <tr key={log.id} className="hover:bg-latte-50/30 transition-colors">

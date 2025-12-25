@@ -1,92 +1,88 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/lib/utils';
 
 interface OCRData {
-  debug_raw_text?: string
+  debug_raw_text?: string;
   document_info?: {
-    contract_number?: string
-    invoice_date?: string
-    invoice_type?: string
-  }
+    contract_number?: string;
+    invoice_date?: string;
+    invoice_type?: string;
+  };
   supplier?: {
-    name?: string
-    business_number?: string
-    address?: string
-    phone?: string
-    email?: string
-    representative?: string
-    contact_person?: string
-  }
+    name?: string;
+    business_number?: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+    representative?: string;
+    contact_person?: string;
+  };
   receiver?: {
-    name?: string
-    business_number?: string
-    address?: string
-    phone?: string
-  }
+    name?: string;
+    business_number?: string;
+    address?: string;
+    phone?: string;
+  };
   amounts?: {
-    subtotal?: number
-    tax_amount?: number
-    total_amount?: number
-    grand_total?: number
-  }
+    subtotal?: number;
+    tax_amount?: number;
+    total_amount?: number;
+    grand_total?: number;
+  };
   items?: Array<{
-    item_number?: string
-    bean_name?: string
-    bean_name_kr?: string
-    specification?: string
-    origin?: string
-    quantity?: number
-    unit?: string
-    unit_price?: number
-    amount?: number
-    note?: string
-  }>
+    item_number?: string;
+    bean_name?: string;
+    bean_name_kr?: string;
+    specification?: string;
+    origin?: string;
+    quantity?: number;
+    unit?: string;
+    unit_price?: number;
+    amount?: number;
+    note?: string;
+  }>;
   additional_info?: {
-    payment_terms?: string
-    shipping_method?: string
-    notes?: string
-  }
+    payment_terms?: string;
+    shipping_method?: string;
+    notes?: string;
+  };
 }
 
 export default function InvoiceViewPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [ocrData, setOcrData] = useState<OCRData | null>(null)
-  const [activeTab, setActiveTab] = useState<'invoice' | 'debug'>('invoice')
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [ocrData, setOcrData] = useState<OCRData | null>(null);
+  const [activeTab, setActiveTab] = useState<'invoice' | 'debug'>('invoice');
 
   useEffect(() => {
     // URL 파라미터 또는 sessionStorage에서 데이터 로드
-    const dataParam = searchParams.get('data')
+    const dataParam = searchParams.get('data');
     if (dataParam) {
       try {
-        setOcrData(JSON.parse(decodeURIComponent(dataParam)))
+        setOcrData(JSON.parse(decodeURIComponent(dataParam)));
       } catch (e) {
-        console.error('Failed to parse data:', e)
+        console.error('Failed to parse data:', e);
       }
     } else {
-      const storedData = sessionStorage.getItem('invoiceData')
+      const storedData = sessionStorage.getItem('invoiceData');
       if (storedData) {
-        setOcrData(JSON.parse(storedData))
+        setOcrData(JSON.parse(storedData));
       }
     }
-  }, [searchParams])
+  }, [searchParams]);
 
-  const formatNumber = (num: number | undefined) => {
-    if (!num || num === 0) return ''
-    return num.toLocaleString('ko-KR')
-  }
-
-  const totalWeight = ocrData?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0
-  const grandTotal = ocrData?.amounts?.grand_total || ocrData?.amounts?.total_amount || 0
+  const totalWeight = ocrData?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+  const grandTotal = ocrData?.amounts?.grand_total || ocrData?.amounts?.total_amount || 0;
 
   // 빈 행 추가 (최소 15행)
   const allItems = [
     ...(ocrData?.items || []),
-    ...Array.from({ length: Math.max(0, 15 - (ocrData?.items?.length || 0)) }, () => ({}))
-  ]
+    ...Array.from({ length: Math.max(0, 15 - (ocrData?.items?.length || 0)) }, () => ({})),
+  ];
 
   if (!ocrData) {
     return (
@@ -96,7 +92,7 @@ export default function InvoiceViewPage() {
           <p className="text-gray-600">데이터 로딩 중...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -147,7 +143,10 @@ export default function InvoiceViewPage() {
               {/* 왼쪽: 수신자 정보 */}
               <div className="border-2 border-black p-3 space-y-1">
                 <InfoRow label="등록번호" value={ocrData.receiver?.business_number} />
-                <InfoRow label="상호\n(법인명)" value={ocrData.receiver?.name || 'The Moon Coffee'} />
+                <InfoRow
+                  label="상호\n(법인명)"
+                  value={ocrData.receiver?.name || 'The Moon Coffee'}
+                />
                 <InfoRow label="사업장" value={ocrData.receiver?.address} small />
                 <InfoRow label="성명" value="" />
                 <InfoRow label="담당자" value={ocrData.receiver?.phone} />
@@ -188,7 +187,9 @@ export default function InvoiceViewPage() {
                 <tbody>
                   {allItems.map((item: any, index) => (
                     <tr key={index} className="border-b border-gray-300">
-                      <td className="border-r border-gray-300 px-2 py-1.5 text-center">{index + 1}</td>
+                      <td className="border-r border-gray-300 px-2 py-1.5 text-center">
+                        {index + 1}
+                      </td>
                       <td className="border-r border-gray-300 px-2 py-1.5 text-xs">
                         {item.bean_name || item.bean_name_kr || ''}
                       </td>
@@ -196,15 +197,15 @@ export default function InvoiceViewPage() {
                         {item.specification || ''}
                       </td>
                       <td className="border-r border-gray-300 px-2 py-1.5 text-right">
-                        {formatNumber(item.quantity)}
+                        {formatCurrency(item.quantity)}
                       </td>
                       <td className="border-r border-gray-300 px-2 py-1.5 text-right">
-                        {formatNumber(item.quantity)}
+                        {formatCurrency(item.quantity)}
                       </td>
                       <td className="border-r border-gray-300 px-2 py-1.5 text-right">
-                        {formatNumber(item.unit_price)}
+                        {formatCurrency(item.unit_price)}
                       </td>
-                      <td className="px-2 py-1.5 text-right">{formatNumber(item.amount)}</td>
+                      <td className="px-2 py-1.5 text-right">{formatCurrency(item.amount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -217,14 +218,14 @@ export default function InvoiceViewPage() {
               <div className="space-y-2">
                 <SummaryItem label="박스합" value="0 원" />
                 <SummaryItem label="총 중량" value={`${totalWeight} Kg`} />
-                <SummaryItem label="합계금액" value={`${formatNumber(grandTotal)} 원`} bold />
+                <SummaryItem label="합계금액" value={`${formatCurrency(grandTotal)} 원`} bold />
               </div>
 
               {/* 오른쪽: 계약 정보 */}
               <div className="space-y-1 text-sm">
                 <ContactItem label="계약번호" value={ocrData.document_info?.contract_number} />
                 <ContactItem label="계약일자" value={ocrData.document_info?.invoice_date} />
-                <ContactItem label="본계금액" value={`${formatNumber(grandTotal)} 원`} />
+                <ContactItem label="본계금액" value={`${formatCurrency(grandTotal)} 원`} />
                 <ContactItem label="공급 담당자" value={ocrData.supplier?.contact_person} />
                 <ContactItem label="공급자전화번호" value={ocrData.supplier?.phone} />
                 <ContactItem label="공급자이메일" value={ocrData.supplier?.email} />
@@ -284,30 +285,48 @@ export default function InvoiceViewPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }
 
 // 헬퍼 컴포넌트
-function InfoRow({ label, value, small = false }: { label: string; value?: string; small?: boolean }) {
+function InfoRow({
+  label,
+  value,
+  small = false,
+}: {
+  label: string;
+  value?: string;
+  small?: boolean;
+}) {
   return (
     <div className="flex text-sm">
       <span className="w-24 font-semibold bg-gray-100 px-2 py-1 border border-gray-300 whitespace-pre-line">
         {label}
       </span>
-      <span className={`flex-1 px-2 py-1 border border-gray-300 ${small ? 'text-xs leading-relaxed' : ''}`}>
+      <span
+        className={`flex-1 px-2 py-1 border border-gray-300 ${small ? 'text-xs leading-relaxed' : ''}`}
+      >
         {value || ''}
       </span>
     </div>
-  )
+  );
 }
 
-function SummaryItem({ label, value, bold = false }: { label: string; value: string; bold?: boolean }) {
+function SummaryItem({
+  label,
+  value,
+  bold = false,
+}: {
+  label: string;
+  value: string;
+  bold?: boolean;
+}) {
   return (
     <div className="flex items-center text-sm">
       <span className="font-semibold">● {label} :</span>
       <span className={`ml-2 ${bold ? 'text-lg font-bold' : ''}`}>{value}</span>
     </div>
-  )
+  );
 }
 
 function ContactItem({ label, value }: { label: string; value?: string }) {
@@ -316,5 +335,5 @@ function ContactItem({ label, value }: { label: string; value?: string }) {
       <span className="font-semibold">● {label} :</span>
       <span className="ml-2 text-sm">{value || ''}</span>
     </div>
-  )
+  );
 }

@@ -1,0 +1,94 @@
+{
+  "system": {
+    "version": "1.0.0",
+    "last_updated": "2025-12-23"
+  },
+  "image_processing": {
+    "_comments_guide": {
+      "to_grayscale": "흑백 변환 여부 (true: 색상 정보 제거, 텍스트 인식 집중)",
+      "enhance_contrast": "대비 향상 여부 (true: 흐린 글씨 강화, false: 밝은 이미지 손실 방지)",
+      "contrast_factor": "대비 강도 (1.0 = 원본, 1.8 = 80% 더 강하게, 높을수록 흰색/검은색이 뚜렷해짐)",
+      "remove_noise": "노이즈 제거 여부 (true: 점 같은 잡티 제거, 글자가 뭉개질 수 있음)",
+      "median_filter_size": "노이즈 제거 강도 (3: 약함, 5: 강함)"
+    },
+    "preprocess_for_ocr": {
+      "to_grayscale": true,
+      "enhance_contrast": false,
+      "contrast_factor": 1.8,
+      "remove_noise": false,
+      "median_filter_size": 3,
+      "enhance_sharpness": true,
+      "sharpness_factor": 2.0,
+      "upscale_image": true,
+      "auto_rotate": true
+    }
+  },
+  "ocr": {
+    "_model_priority_rule": "DO NOT EDIT. This list is finalized. Modification requires explicit authorization.",
+    "model_priority": [
+      "gemini-flash-latest",
+      "gemini-2.0-flash",
+      "gemini-2.5-flash",
+      "claude-sonnet-4-5"
+    ],
+    "prompt_structure": {
+      "error": null,
+      "debug_raw_text": "FULL TRANSCRIPTION of ALL text in the document. Include EVERYTHING visible.",
+      "document_info": {
+        "document_number": "문서번호, Document No",
+        "contract_number": "발주번호, 계약번호, Order No, Ref No",
+        "issue_date": "발행일 (YYYY-MM-DD)",
+        "invoice_date": "거래일 (YYYY-MM-DD)",
+        "delivery_date": "납품일 (YYYY-MM-DD)",
+        "payment_due_date": "지급기한 (YYYY-MM-DD)",
+        "invoice_type": "GSC, HACIELO, STANDARD, or UNKNOWN"
+      },
+      "supplier": {
+        "name": "공급자명, Supplier Name",
+        "business_number": "사업자등록번호",
+        "address": "주소",
+        "phone": "대표 전화번호",
+        "fax": "팩스",
+        "email": "Email",
+        "representative": "대표자명",
+        "contact_person": "담당자명",
+        "contact_phone": "담당자 전화번호"
+      },
+      "receiver": {
+        "name": "수신자명 (default: The Moon Coffee)",
+        "business_number": "사업자등록번호",
+        "address": "주소",
+        "phone": "전화번호",
+        "contact_person": "담당자명"
+      },
+      "amounts": {
+        "subtotal": "공급가액 (Number)",
+        "tax_amount": "세액 (Number)",
+        "total_amount": "합계금액 (Number)",
+        "total_amount_kr": "합계금액 (Number, if total_amount is unclear)",
+        "grand_total": "총합계 (Number)",
+        "currency": "통화 (KRW, USD, etc.)"
+      },
+      "items": [
+        {
+          "item_number": "순번, No",
+          "bean_name": "품명, 원두명",
+          "bean_name_kr": "품명 한역",
+          "specification": "규격",
+          "origin": "원산지",
+          "quantity": "수량 (Number)",
+          "unit": "단위 (kg, bag, etc.)",
+          "unit_price": "단가 (Number)",
+          "amount": "금액 (Number)",
+          "note": "비고"
+        }
+      ],
+      "additional_info": {
+        "payment_terms": "결제조건",
+        "shipping_method": "배송방법",
+        "notes": "비고, 특이사항",
+        "remarks": "기타 메모"
+      }
+    }
+  }
+}

@@ -3,10 +3,12 @@
 
 환경 변수 기반 설정 관리
 """
-from pydantic_settings import BaseSettings
-from typing import Optional
+
 import json
 import os
+from typing import Optional
+
+from pydantic_settings import BaseSettings
 
 # 프로젝트 디렉토리 경로 (모듈 레벨에서 정의)
 _BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,7 +38,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7일
 
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3500"]
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3500"]
 
     # AI API Keys
     GEMINI_API_KEY: Optional[str] = None
@@ -56,6 +58,12 @@ class Settings(BaseSettings):
     IMAGE_WEBVIEW_QUALITY: int = 85
     IMAGE_THUMBNAIL_MAX_SIZE: tuple[int, int] = (400, 400)
     IMAGE_THUMBNAIL_QUALITY: int = 75
+
+    # Logging
+    LOG_FILE_PATH: str = os.path.join(_ROOT_DIR, "logs", "themoon_backend.log")
+    FRONTEND_LOG_FILE_PATH: str = os.path.join(_ROOT_DIR, "logs", "themoon_frontend.log")
+    MEMO_FILE_PATH: str = os.path.join(_ROOT_DIR, "logs", "dev_memos.json")
+    FRONTEND_CACHE_DIR: str = os.path.join(_ROOT_DIR, "frontend", ".next", "cache")
 
     class Config:
         # 프로젝트 루트의 .env 파일 사용 (모노레포 구조)

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, JSON, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import JSON, Column, DateTime, Integer, String, Text
 from sqlalchemy.sql import func
+
 from app.database import Base
+
 
 class Blend(Base):
     __tablename__ = "blends"
@@ -17,6 +18,6 @@ class Blend(Base):
 
     target_roast_level = Column(String(50), nullable=True)
     notes = Column(Text, nullable=True)
-    
+
     created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
     updated_at = Column(DateTime(timezone=True), onupdate=func.current_timestamp())

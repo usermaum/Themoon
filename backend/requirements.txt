@@ -23,3 +23,10 @@ python-dotenv>=1.0.0,<2.0.0
 Pillow>=10.2.0
 python-magic>=0.4.27
 httpx
+
+# Code Quality (Dev)
+pylint
+mypy
+black
+ruff
+psutil>=5.9.0

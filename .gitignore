@@ -53,6 +53,7 @@ logs/*
 !logs/VERSION_MANAGEMENT.md
 !logs/VERSION_STRATEGY.md
 !logs/update_version.py
+!logs/dev_memos.json
 
 
 # Next.js

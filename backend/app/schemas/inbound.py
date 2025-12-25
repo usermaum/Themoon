@@ -1,11 +1,14 @@
-from pydantic import BaseModel, BeforeValidator
-from typing import List, Optional, Dict, Any, Union, Annotated
 from datetime import datetime
+from typing import Annotated, List, Optional
+
+from pydantic import BaseModel, BeforeValidator
 
 # --- OCR/Analysis Schemas ---
 
+
 class DocumentInfo(BaseModel):
     """문서 정보"""
+
     document_number: Optional[str] = None
     contract_number: Optional[str] = None
     issue_date: Optional[str] = None
@@ -14,8 +17,10 @@ class DocumentInfo(BaseModel):
     payment_due_date: Optional[str] = None
     invoice_type: Optional[str] = None
 
+
 class SupplierInfo(BaseModel):
     """공급자 정보"""
+
     name: Optional[str] = None
     business_number: Optional[str] = None
     address: Optional[str] = None
@@ -26,24 +31,30 @@ class SupplierInfo(BaseModel):
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
 
+
 class ReceiverInfo(BaseModel):
     """수신자 정보"""
+
     name: Optional[str] = None
     business_number: Optional[str] = None
     address: Optional[str] = None
     phone: Optional[str] = None
     contact_person: Optional[str] = None
 
+
 class AmountsInfo(BaseModel):
     """금액 정보"""
+
     subtotal: Optional[float] = None
     tax_amount: Optional[float] = None
     total_amount: Optional[float] = None
     grand_total: Optional[float] = None
     currency: Optional[str] = None
 
+
 class OCRItem(BaseModel):
     """품목 정보 (확장)"""
+
     item_number: Optional[Annotated[str, BeforeValidator(str)]] = None
     bean_name: Optional[str] = None
     bean_name_kr: Optional[str] = None
@@ -61,15 +72,19 @@ class OCRItem(BaseModel):
     match_method: Optional[str] = None  # 매칭 방법: "exact", "case_insensitive", "new"
     bean_id: Optional[int] = None  # 매칭된 생두 ID (matched=True일 때)
 
+
 class AdditionalInfo(BaseModel):
     """추가 정보"""
+
     payment_terms: Optional[str] = None
     shipping_method: Optional[str] = None
     notes: Optional[str] = None
     remarks: Optional[str] = None
 
+
 class OCRResponse(BaseModel):
     """OCR 분석 결과 (전체 명세서 데이터)"""
+
     # 에러 정보 (문서 유효성 등)
     error: Optional[str] = None
 
@@ -102,18 +117,19 @@ class OCRResponse(BaseModel):
     image_height: Optional[int] = None
     file_size_bytes: Optional[int] = None
 
+
 # --- Inbound Document DB Schemas ---
 class InboundDocumentBase(BaseModel):
     supplier_name: Optional[str] = None
     contract_number: Optional[str] = None
     supplier_id: Optional[int] = None
     receiver_name: Optional[str] = None
-    
+
     invoice_date: Optional[str] = None
     total_amount: Optional[float] = None
     image_url: Optional[str] = None
     drive_file_id: Optional[str] = None
-    
+
     # Tiered Storage
     original_image_path: Optional[str] = None
     webview_image_path: Optional[str] = None
@@ -124,10 +140,12 @@ class InboundDocumentBase(BaseModel):
     processing_status: Optional[str] = "pending"
     notes: Optional[str] = None
 
+
 class InboundDocumentCreate(InboundDocumentBase):
     # Extra fields for Supplier creation/update
     supplier_phone: Optional[str] = None
     supplier_email: Optional[str] = None
+
 
 class InboundDocument(InboundDocumentBase):
     id: int
@@ -136,14 +154,16 @@ class InboundDocument(InboundDocumentBase):
     class Config:
         from_attributes = True
 
+
 # --- API Request Schemas ---
 class AnalyzeUrlRequest(BaseModel):
     url: str
 
+
 class InboundConfirmRequest(BaseModel):
     # Data to save to DB (Log + Document)
     document: InboundDocumentCreate
-    items: List[OCRItem] # Validated list of items
+    items: List[OCRItem]  # Validated list of items
 
     # New: Full OCR data for detailed storage (Option B redesign)
     document_info: Optional[DocumentInfo] = None
@@ -151,6 +171,7 @@ class InboundConfirmRequest(BaseModel):
     receiver: Optional[ReceiverInfo] = None
     amounts: Optional[AmountsInfo] = None
     additional_info: Optional[AdditionalInfo] = None
+
 
 class PaginatedInboundResponse(BaseModel):
     items: List[InboundDocument]

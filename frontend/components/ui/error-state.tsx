@@ -3,21 +3,21 @@
  *
  * Render.com 슬립 모드, 네트워크 에러 등에 대한 친화적인 UI 제공
  */
-import { AlertTriangle, RefreshCw, WifiOff, Clock } from 'lucide-react'
-import { Button } from './button'
+import { AlertTriangle, RefreshCw, WifiOff, Clock } from 'lucide-react';
+import { Button } from './button';
 
 interface ErrorStateProps {
-  error?: any
-  onRetry?: () => void
-  message?: string
-  type?: 'network' | 'timeout' | 'server' | 'unknown'
+  error?: any;
+  onRetry?: () => void;
+  message?: string;
+  type?: 'network' | 'timeout' | 'server' | 'unknown';
 }
 
 export function ErrorState({ error, onRetry, message, type }: ErrorStateProps) {
   // 에러 타입 자동 감지
-  const errorType = type || detectErrorType(error)
+  const errorType = type || detectErrorType(error);
 
-  const config = getErrorConfig(errorType)
+  const config = getErrorConfig(errorType);
 
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4">
@@ -25,20 +25,14 @@ export function ErrorState({ error, onRetry, message, type }: ErrorStateProps) {
         {config.icon}
       </div>
 
-      <h3 className="text-lg font-semibold text-latte-900 mb-2">
-        {config.title}
-      </h3>
+      <h3 className="text-lg font-semibold text-latte-900 mb-2">{config.title}</h3>
 
       <p className="text-sm text-latte-600 text-center max-w-md mb-6">
         {message || config.message}
       </p>
 
       {onRetry && (
-        <Button
-          onClick={onRetry}
-          variant="outline"
-          className="gap-2"
-        >
+        <Button onClick={onRetry} variant="outline" className="gap-2">
           <RefreshCw className="w-4 h-4" />
           다시 시도
         </Button>
@@ -46,34 +40,33 @@ export function ErrorState({ error, onRetry, message, type }: ErrorStateProps) {
 
       {errorType === 'timeout' && (
         <p className="text-xs text-latte-500 mt-4 text-center max-w-md">
-          💡 팁: 서버가 절전 모드에서 깨어나는 중일 수 있습니다.
-          잠시 후 자동으로 재시도됩니다.
+          💡 팁: 서버가 절전 모드에서 깨어나는 중일 수 있습니다. 잠시 후 자동으로 재시도됩니다.
         </p>
       )}
     </div>
-  )
+  );
 }
 
 // 에러 타입 감지
 function detectErrorType(error: any): 'network' | 'timeout' | 'server' | 'unknown' {
-  if (!error) return 'unknown'
+  if (!error) return 'unknown';
 
   // 네트워크 에러
   if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
-    return 'network'
+    return 'network';
   }
 
   // 타임아웃
   if (error.message?.includes('timeout') || error.code === 'ECONNABORTED') {
-    return 'timeout'
+    return 'timeout';
   }
 
   // 5xx 서버 에러
   if (error.response?.status >= 500) {
-    return 'server'
+    return 'server';
   }
 
-  return 'unknown'
+  return 'unknown';
 }
 
 // 에러 타입별 설정
@@ -99,9 +92,9 @@ function getErrorConfig(type: string) {
       title: '오류가 발생했습니다',
       message: '데이터를 불러올 수 없습니다. 다시 시도해주세요.',
     },
-  }
+  };
 
-  return configs[type as keyof typeof configs] || configs.unknown
+  return configs[type as keyof typeof configs] || configs.unknown;
 }
 
 // 로딩 스켈레톤 컴포넌트
@@ -114,11 +107,17 @@ export function LoadingSkeleton({ count = 3 }: { count?: number }) {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 // 빈 상태 컴포넌트
-export function EmptyState({ message = '데이터가 없습니다', icon }: { message?: string, icon?: React.ReactNode }) {
+export function EmptyState({
+  message = '데이터가 없습니다',
+  icon,
+}: {
+  message?: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4">
       <div className="w-16 h-16 rounded-full bg-latte-100 flex items-center justify-center mb-4">
@@ -126,5 +125,5 @@ export function EmptyState({ message = '데이터가 없습니다', icon }: { me
       </div>
       <p className="text-sm text-latte-600 text-center">{message}</p>
     </div>
-  )
+  );
 }

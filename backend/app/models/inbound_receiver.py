@@ -1,14 +1,19 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from app.database import Base
 from app.utils.timezone import get_kst_now
 
+
 class InboundReceiver(Base):
     """인바운드 문서 공급받는자 정보 (OCR 추출 데이터)"""
+
     __tablename__ = "inbound_receivers"
 
     id = Column(Integer, primary_key=True, index=True)
-    inbound_document_id = Column(Integer, ForeignKey("inbound_documents.id"), nullable=False, unique=True)
+    inbound_document_id = Column(
+        Integer, ForeignKey("inbound_documents.id"), nullable=False, unique=True
+    )
 
     # 공급받는자 기본 정보
     name = Column(String, nullable=True, comment="공급받는자명 (default: The Moon Coffee)")
@@ -21,4 +26,6 @@ class InboundReceiver(Base):
     updated_at = Column(DateTime(timezone=True), default=get_kst_now, onupdate=get_kst_now)
 
     # Relationships
-    inbound_document = relationship("app.models.inbound_document.InboundDocument", back_populates="receiver")
+    inbound_document = relationship(
+        "app.models.inbound_document.InboundDocument", back_populates="receiver"
+    )

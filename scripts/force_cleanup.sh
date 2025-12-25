@@ -11,7 +11,7 @@ pkill -f "python" || echo "No python found"
 pkill -f "next-server" || echo "No next-server found"
 
 # Kill by port
-ports=(3000 3500 8000)
+ports=(3500 8000)
 for port in "${ports[@]}"; do
     echo "Checking port $port..."
     pids=$(lsof -ti :$port)
@@ -33,6 +33,6 @@ if [ $? -ne 0 ]; then
     echo "✅ All ports are clear."
 else
     echo "❌ Some ports are still in use!"
-    lsof -i :3000,3500,8000
+    lsof -i :3500,8000
     exit 1
 fi
