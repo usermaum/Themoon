@@ -38,6 +38,6 @@
 - 최신 커밋: Roasting UX and Safety Improvements
 
 **🎯 다음 작업 (Feature Expansion)**:
-1. `BeanRepository` 구현 및 Service 리팩토링 (Domain Driven Design 적용)
-2. Phase 2: 로스팅 로그 시스템 고도화 (신규 아키텍처 연동)
-3. 관리자 냥이 마스코트를 활용한 에러 페이지 및 빈 상태 UI 확장
+1. **로스팅 이력 고도화**: 날짜/생두 필터링 기능 추가 (`RoastingHistoryTable`).
+2. **UI 실험 및 개선**: `/roasting/demo` 페이지 구현 및 대시보드 레이아웃 최적화.
+3. **Mascot Error Pages**: 관리자 냥이 캐릭터를 활용한 커스텀 404/500 페이지 확장.
