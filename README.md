@@ -1,6 +1,6 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.5.2** | Next.js + FastAPI로 고도화된 시스템 기능
+> **v0.4.8** | Next.js + FastAPI로 고도화된 시스템 기능
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)

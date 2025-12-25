@@ -13,6 +13,20 @@
 
 
 
+## [0.4.8] - 2025-12-26
+
+### 🐛 패치 (Bug Fix): Roasting UX/Safety: Blocking Validation, Red Theme Alerts, Stock Banner
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
+## [0.4.7] - 2025-12-26
+
+### 🐛 패치 (Bug Fix): Roasting UX/Safety: Blocking Validation, Red Theme Alerts, Stock Banner
+
+#### 📝 변경사항
+- 변경사항 상세 기록 필요
+
 ## [0.5.2] - 2025-12-25
 
 ### ✨ 프리미엄 관리자 경험 및 시스템 모니터링 (Phase 22-24)
