@@ -25,6 +25,11 @@ class InboundItem(Base):
     remaining_quantity = Column(Float, nullable=True, default=0.0, comment="잔여 수량 (FIFO)")
     origin = Column(String, nullable=True, comment="원산지")
 
+    # 주문 정보 (다중 주문 처리 지원)
+    order_number = Column(
+        String(100), nullable=True, index=True, comment="주문번호 (YYYYMMDD-XXXXX 형식)"
+    )
+
     # 금액 정보
     unit_price = Column(Float, nullable=True, comment="단가")
     supply_amount = Column(Float, nullable=True, comment="공급가액")

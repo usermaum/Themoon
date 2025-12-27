@@ -165,6 +165,26 @@ class OCRService:
         - "unit_price": Ensure this is the price PER UNIT, not the total line amount.
 
         ────────────────────────────────────────
+        STEP 5-1. ORDER NUMBER EXTRACTION (CRITICAL)
+        ────────────────────────────────────────
+        If the document contains MULTIPLE order numbers for different items:
+
+        1. Each item MUST include its corresponding "order_number" field.
+        2. Format: YYYYMMDD-XXXXX (e.g., "20251108-8B7C2")
+        3. Extract from context (date + identifier pattern).
+        4. Look for patterns in:
+           - Table columns labeled "주문번호", "Order No", "발주번호"
+           - Row headers or item descriptions
+           - Sections grouped by order
+        5. Validation:
+           - Verify format: YYYYMMDD-XXXXX
+           - Date must be valid (YYYY=year, MM=01-12, DD=01-31)
+        6. Fallback:
+           - If no order number found: use null
+           - If single order for entire document: extract once and apply to all items
+           - When uncertain: prefer null over incorrect extraction
+
+        ────────────────────────────────────────
         STEP 6. NORMALIZATION RULES
         ────────────────────────────────────────
         - Dates -> YYYY-MM-DD

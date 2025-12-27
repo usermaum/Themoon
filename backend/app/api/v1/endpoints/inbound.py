@@ -574,6 +574,7 @@ def confirm_inbound(request: InboundConfirmRequest, db: Session = Depends(get_db
             supply_amount=item.amount,  # OCRItem.amount maps to supply_amount
             tax_amount=None,  # Not provided in OCRItem
             notes=item.note,
+            order_number=item.order_number,  # Multi-order support
         )
         db.add(inbound_item)
 

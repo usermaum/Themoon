@@ -56,6 +56,7 @@ class OCRItem(BaseModel):
     """품목 정보 (확장)"""
 
     item_number: Optional[Annotated[str, BeforeValidator(str)]] = None
+    order_number: Optional[str] = None  # 주문번호 (YYYYMMDD-XXXXX 형식)
     bean_name: Optional[str] = None
     bean_name_kr: Optional[str] = None
     specification: Optional[str] = None

@@ -39,6 +39,7 @@
     "items": [
         {
             "item_number": "순번, No",
+            "order_number": "주문번호, Order No (YYYYMMDD-XXXXX 형식)",
             "bean_name": "품명, 원두명",
             "bean_name_kr": "품명 한역",
             "specification": "규격",

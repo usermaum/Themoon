@@ -55,6 +55,14 @@ interface InboundItem {
   quantity: number;
   unit_price: number;
   amount: number;
+  order_number?: string;
+}
+
+interface OrderGroup {
+  order_number: string;
+  order_date: string;
+  items: InboundItem[];
+  subtotal: number;
 }
 
 interface InboundForm {
@@ -95,6 +103,20 @@ export default function InboundPage() {
   const [itemStatus, setItemStatus] = useState<
     Record<string, { status: string; bean_id: number | null }>
   >({});
+
+  // Multi-order states
+  const [hasMultipleOrders, setHasMultipleOrders] = useState(false);
+  const [totalOrderCount, setTotalOrderCount] = useState(0);
+  const [orderGroups, setOrderGroups] = useState<OrderGroup[]>([]);
+
+  // Modal states
+  const [showMultiOrderModal, setShowMultiOrderModal] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showCancelConfirmDialog, setShowCancelConfirmDialog] = useState(false);
+
+  // Pending orders
+  const [pendingOrders, setPendingOrders] = useState<OrderGroup[]>([]);
+  const [selectedOrderIndex, setSelectedOrderIndex] = useState<number | null>(null);
 
   // Dialog States
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
@@ -265,7 +287,20 @@ export default function InboundPage() {
       setStatusMessage('분석 완료!');
       setOcrResult(data);
 
-      // Auto-fill form using structured data
+      // Check for multiple orders
+      if (data.has_multiple_orders) {
+        setHasMultipleOrders(true);
+        setTotalOrderCount(data.total_order_count);
+        setOrderGroups(data.order_groups);
+        setShowMultiOrderModal(true);
+        toast({
+          title: '다중 주문 감지',
+          description: `${data.total_order_count}개의 주문번호가 발견되었습니다.`
+        });
+        return;
+      }
+
+      // Auto-fill form using structured data (single order flow)
       const contractNum = data.document_info?.contract_number || data.contract_number || '';
       setValue('contract_number', contractNum);
 
@@ -496,6 +531,138 @@ export default function InboundPage() {
     if (itemToDelete !== null) {
       remove(itemToDelete);
       setItemToDelete(null);
+    }
+  };
+
+  // Multi-order handlers
+  const handleAcceptMultiOrders = () => {
+    setShowMultiOrderModal(false);
+    setPendingOrders([...orderGroups]);
+    toast({
+      title: '개별 처리 모드',
+      description: '각 주문을 개별적으로 처리할 수 있습니다.',
+    });
+  };
+
+  const handleCancelMultiOrders = () => {
+    setShowMultiOrderModal(false);
+    setShowCancelConfirmDialog(true);
+  };
+
+  const confirmCancelWork = () => {
+    // Reset all states
+    setOcrResult(null);
+    setHasMultipleOrders(false);
+    setOrderGroups([]);
+    setPendingOrders([]);
+    setShowCancelConfirmDialog(false);
+    setDriveLink(null);
+    setSelectedFile(null);
+    setPastedImage(null);
+    setUrlInput('');
+    setPreviewUrl(null);
+    setDuplicateStatus({ status: 'idle', message: '' });
+    setItemStatus({});
+    reset();
+
+    toast({
+      title: '작업 취소',
+      description: '모든 데이터가 초기화되었습니다.',
+    });
+  };
+
+  const handleAddOrder = (orderGroup: OrderGroup, index: number) => {
+    setSelectedOrderIndex(index);
+    setShowConfirmDialog(true);
+  };
+
+  const confirmAddOrder = async () => {
+    if (selectedOrderIndex === null) return;
+
+    const orderGroup = pendingOrders[selectedOrderIndex];
+
+    try {
+      const payload = {
+        items: orderGroup.items,
+        document: {
+          supplier_name: ocrResult?.supplier?.name || ocrResult?.supplier_name || '',
+          contract_number: orderGroup.order_number,
+          supplier_phone: ocrResult?.supplier?.phone || ocrResult?.supplier_phone || '',
+          supplier_email: ocrResult?.supplier?.email || ocrResult?.supplier_email || '',
+          receiver_name: ocrResult?.supplier?.contact_person || ocrResult?.supplier?.representative || '',
+          invoice_date: orderGroup.order_date,
+          total_amount: orderGroup.subtotal,
+          image_url: driveLink,
+          notes: '',
+          // Tiered Storage
+          original_image_path: ocrResult?.original_image_path,
+          webview_image_path: ocrResult?.webview_image_path,
+          thumbnail_image_path: ocrResult?.thumbnail_image_path,
+          image_width: ocrResult?.image_width,
+          image_height: ocrResult?.image_height,
+          file_size_bytes: ocrResult?.file_size_bytes,
+        },
+        // Include full OCR data
+        document_info: ocrResult?.document_info,
+        supplier: ocrResult?.supplier,
+        receiver: ocrResult?.receiver,
+        amounts: {
+          ...ocrResult?.amounts,
+          total_amount: orderGroup.subtotal,
+        },
+        additional_info: ocrResult?.additional_info,
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/inbound/confirm`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || '입고 처리 실패');
+      }
+
+      toast({
+        title: '입고 처리 완료',
+        description: `${orderGroup.order_number} 주문이 성공적으로 처리되었습니다.`,
+      });
+
+      // Remove from pending orders
+      const newPendingOrders = pendingOrders.filter((_, i) => i !== selectedOrderIndex);
+      setPendingOrders(newPendingOrders);
+      setShowConfirmDialog(false);
+      setSelectedOrderIndex(null);
+
+      // Check if all orders are processed
+      if (newPendingOrders.length === 0) {
+        toast({
+          title: '모든 주문 처리 완료',
+          description: '모든 주문이 성공적으로 입고 처리되었습니다.',
+        });
+
+        // Reset to allow new document upload
+        setOcrResult(null);
+        setHasMultipleOrders(false);
+        setOrderGroups([]);
+        setPendingOrders([]);
+        setDriveLink(null);
+        setDuplicateStatus({ status: 'idle', message: '' });
+        setItemStatus({});
+        reset();
+      }
+    } catch (error: any) {
+      toast({
+        title: '입고 처리 실패',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -1012,6 +1179,218 @@ export default function InboundPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Multi-Order Detection Modal */}
+      <AlertDialog open={showMultiOrderModal} onOpenChange={setShowMultiOrderModal}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="w-6 h-6" />
+              다중 주문 감지
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              이 명세서에는 <strong className="text-amber-900">{totalOrderCount}개의 주문 번호</strong>가 포함되어 있습니다.
+              각 주문을 개별적으로 입고 처리할 수 있습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {orderGroups.map((order, index) => (
+              <div key={index} className="p-3 bg-latte-50 rounded-lg border border-latte-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono">
+                      {order.order_number}
+                    </Badge>
+                    <span className="text-sm text-latte-600">{order.order_date}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-latte-600">
+                      {order.items.length}개 품목
+                    </span>
+                    <span className="font-mono font-bold text-latte-900">
+                      {formatCurrency(order.subtotal)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelMultiOrders}>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAcceptMultiOrders} className="bg-latte-900 hover:bg-latte-800">
+              확인 - 개별 처리 모드로 전환
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={showCancelConfirmDialog} onOpenChange={setShowCancelConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-amber-600">
+              작업 취소 확인
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mt-2">
+                <p className="text-amber-900 font-bold">
+                  ⚠️ 모든 내용이 초기화됩니다
+                </p>
+                <p className="text-sm text-amber-800 mt-2">
+                  진행 중인 OCR 분석 결과가 모두 삭제되며, 복구할 수 없습니다.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowCancelConfirmDialog(false)}>
+              돌아가기
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCancelWork}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              확인 - 작업 취소
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Order Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6" />
+              입고 처리 확인
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-3">
+                {selectedOrderIndex !== null && pendingOrders[selectedOrderIndex] && (
+                  <>
+                    <p className="font-bold text-base text-gray-900">
+                      주문번호: {pendingOrders[selectedOrderIndex].order_number}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      총 {pendingOrders[selectedOrderIndex].items.length}개 품목 /
+                      {' '}{formatCurrency(pendingOrders[selectedOrderIndex].subtotal)}
+                    </p>
+                  </>
+                )}
+
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                  <p className="text-red-900 font-bold mb-2">
+                    ⚠️ 주의사항
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-red-800 space-y-1">
+                    <li><strong>입고 처리 후 리스트에서 삭제됩니다</strong></li>
+                    <li><strong>취소 불가능합니다</strong></li>
+                    <li>재고가 즉시 업데이트됩니다</li>
+                    <li>입고 내역이 데이터베이스에 저장됩니다</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmAddOrder}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              확인 - 입고 처리
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Pending Orders List */}
+      {pendingOrders.length > 0 && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b border-latte-200">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-bold">입고 대기 주문 목록</CardTitle>
+                <Badge variant="secondary" className="text-base">
+                  {pendingOrders.length}개 주문 대기 중
+                </Badge>
+              </div>
+              <CardDescription>
+                각 주문을 개별적으로 처리하세요. 처리된 주문은 리스트에서 자동 삭제됩니다.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {pendingOrders.map((orderGroup, index) => (
+                  <Card key={orderGroup.order_number} className="border-2 border-latte-200 hover:border-latte-400 transition-colors">
+                    <CardHeader className="bg-latte-50/50">
+                      <CardTitle className="flex justify-between items-center text-lg">
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className="text-base font-mono">
+                            {orderGroup.order_number}
+                          </Badge>
+                          <span className="text-sm text-latte-600 font-normal">
+                            {orderGroup.order_date}
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold text-xl text-latte-900">
+                          {formatCurrency(orderGroup.subtotal)}
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="p-4">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-latte-50 border-b border-latte-200">
+                            <tr>
+                              <th className="text-left p-2 font-semibold">품명</th>
+                              <th className="text-right p-2 font-semibold">수량</th>
+                              <th className="text-right p-2 font-semibold">단가</th>
+                              <th className="text-right p-2 font-semibold">금액</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {orderGroup.items.map((item, idx) => (
+                              <tr key={idx} className="border-b border-latte-100 last:border-0">
+                                <td className="p-2">{item.bean_name}</td>
+                                <td className="text-right p-2">
+                                  {item.quantity} kg
+                                </td>
+                                <td className="text-right p-2">
+                                  {formatCurrency(item.unit_price || 0)}
+                                </td>
+                                <td className="text-right p-2 font-bold">
+                                  {formatCurrency(item.amount)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="mt-4">
+                        <Button
+                          onClick={() => handleAddOrder(orderGroup, index)}
+                          className="w-full bg-green-600 hover:bg-green-700"
+                          size="lg"
+                        >
+                          <CheckCircle2 className="w-5 h-5 mr-2" />
+                          이 주문 입고 처리하기
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
