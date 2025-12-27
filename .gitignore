@@ -77,6 +77,8 @@ backend/static/uploads/
 
 # Test outputs
 test_*.txt
-test_*.py
+# test_*.py
 suppliers.json
 
+frontend/test-results/
+frontend/playwright-report/

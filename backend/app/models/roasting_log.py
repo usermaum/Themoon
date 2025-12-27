@@ -20,6 +20,12 @@ class RoastingLog(Base):
     
     loss_rate = Column(Float, nullable=True, comment="손실률 (%)")
     production_cost = Column(Float, nullable=True, comment="총 투입 생두 원가")
+    
+    # Extended Data (v2)
+    roast_profile = Column(String(20), nullable=True, comment="로스팅 프로필 (LIGHT/MEDIUM/DARK)")
+    roasting_time = Column(Integer, nullable=True, comment="로스팅 소요 시간 (초)")
+    ambient_temp = Column(Float, nullable=True, comment="실내 온도 (섭씨)")
+    humidity = Column(Float, nullable=True, comment="실내 습도 (%)")
 
     notes = Column(Text, nullable=True, comment="비고")
     created_at = Column(DateTime(timezone=True), default=get_kst_now)

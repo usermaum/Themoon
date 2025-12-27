@@ -1,203 +1,181 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { RoastingDashboard } from "@/components/roasting/RoastingDashboard"
-import MascotStatus from "@/components/ui/mascot-status"
-import { RoastingLog, RoastingAPI } from "@/lib/api"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import Link from "next/link"
-import {
-    Flame,
-    ArrowRight,
-    Activity,
-    Wifi,
-    Package,
-    History,
-    ChevronRight,
-    Plus,
-    Coffee,
-    Clock
-} from "lucide-react"
+import { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import PageHero from '@/components/ui/page-hero';
+import { Flame, Gauge, Fan, Play, Pause, RotateCcw, Thermometer } from 'lucide-react';
 
-export default function RoastingConsoleDemo() {
-    const [recentLogs, setRecentLogs] = useState<RoastingLog[]>([])
+export default function RoastingDemoPage() {
+    return (
+        <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+            <PageHero
+                title="Roasting Simulator"
+                description="가상 로스팅 체험관에 오신 것을 환영합니다. 직접 로스터가 되어 원두를 볶아보세요!"
+                icon={<Flame />}
+                image="/images/hero/roasting-hero.png" // Fallback to existing hero
+            />
 
+            <div className="flex-1 container mx-auto px-6 py-12 max-w-6xl">
+                <RoastingSimulatorInterface />
+            </div>
+        </div>
+    );
+}
+
+function RoastingSimulatorInterface() {
+    const [status, setStatus] = useState<'IDLE' | 'ROASTING' | 'COOLING' | 'FINISHED'>('IDLE');
+    const [temperature, setTemperature] = useState(20); // Ambient temp
+    const [time, setTime] = useState(0);
+    const [beanColor, setBeanColor] = useState('#9CA3AF'); // Initial Green/Gray
+
+    // Simulation Loop
     useEffect(() => {
-        // Fetch limited history for the "Mini list"
-        RoastingAPI.getHistory({ limit: 4 }).then(setRecentLogs).catch(console.error)
-        console.log("Rendering RoastingConsoleDemo page...");
-    }, [])
+        let interval: NodeJS.Timeout;
+        if (status === 'ROASTING') {
+            interval = setInterval(() => {
+                setTime(t => t + 1);
+                setTemperature(temp => {
+                    // Simple logic: Temp rises, but slows down
+                    const increment = Math.max(0.5, (220 - temp) * 0.05);
+                    return Math.min(230, temp + increment);
+                });
+            }, 100);
+        }
+        return () => clearInterval(interval);
+    }, [status]);
+
+    // Color Change Logic based on Temp
+    useEffect(() => {
+        if (temperature < 150) setBeanColor('#869668'); // Green
+        else if (temperature < 180) setBeanColor('#EAB308'); // Yellow
+        else if (temperature < 205) setBeanColor('#A86F3E'); // Light Brown
+        else if (temperature < 215) setBeanColor('#5D4037'); // Medium Brown
+        else setBeanColor('#3E2723'); // Dark Brown
+    }, [temperature]);
+
+    const handleStart = () => {
+        setStatus('ROASTING');
+        setTemperature(100); // Pre-heat
+        setTime(0);
+    };
+
+    const handleStop = () => {
+        setStatus('FINISHED');
+    };
+
+    const handleReset = () => {
+        setStatus('IDLE');
+        setTemperature(20);
+        setTime(0);
+        setBeanColor('#869668');
+    };
 
     return (
-        <div className="min-h-screen bg-[#F8F5F2] text-latte-900 font-sans">
-            {/* 1. Header & Status Bar */}
-            <header className="bg-white border-b border-latte-100 sticky top-0 z-20 shadow-sm">
-                <div className="max-w-[1600px] mx-auto">
-                    <div className="flex items-center justify-between px-6 h-16">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-latte-900 p-2 rounded-lg">
-                                <Flame className="w-5 h-5 text-white" />
-                            </div>
-                            <h1 className="text-xl font-serif font-bold text-latte-900 tracking-tight">
-                                Roasting Console
-                                <span className="ml-2 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-sans">Testnet</span>
-                            </h1>
-                        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
+            {/* Left: Visualizer (Drum) */}
+            <div className="lg:col-span-2 bg-zinc-900 rounded-3xl p-8 relative overflow-hidden shadow-2xl flex items-center justify-center border-4 border-zinc-800">
+                <div className="absolute top-6 left-6 text-zinc-500 font-mono text-xs flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${status === 'ROASTING' ? 'bg-red-500 animate-pulse' : 'bg-zinc-600'}`} />
+                    STATUS: {status}
+                </div>
 
-                        {/* Mock System Status */}
-                        <div className="flex items-center gap-6 text-xs font-medium text-latte-500 bg-latte-50/50 px-4 py-2 rounded-full border border-latte-100/50">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span>System Online</span>
-                            </div>
-                            <div className="w-px h-3 bg-latte-200" />
-                            <div className="flex items-center gap-2">
-                                <Wifi className="w-3.5 h-3.5" />
-                                <span>Connected</span>
-                            </div>
-                            <div className="w-px h-3 bg-latte-200" />
-                            <div className="flex items-center gap-2">
-                                <Activity className="w-3.5 h-3.5" />
-                                <span>Idle (24°C)</span>
-                            </div>
-                        </div>
+                {/* Roasting Drum Animation */}
+                <motion.div
+                    className="w-96 h-96 relative"
+                    animate={status === 'ROASTING' ? { rotate: 360 } : { rotate: 0 }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                >
+                    {/* Simplified Drum Graphic */}
+                    <div className="absolute inset-0 border-[12px] border-zinc-700 rounded-full border-dashed opacity-50" />
+                    <div className="absolute inset-4 border-[2px] border-zinc-700 rounded-full opacity-30" />
+
+                    {/* Beans Particles (Simulated by simple circles for now) */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <motion.div
+                            className="w-64 h-64 rounded-full blur-xl transition-colors duration-1000"
+                            style={{ backgroundColor: beanColor }}
+                            animate={{ scale: [0.95, 1.05, 0.95] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                        />
+                        <motion.div
+                            className="w-48 h-48 rounded-full transition-colors duration-1000 mix-blend-overlay"
+                            style={{ backgroundColor: beanColor }}
+                        />
+                    </div>
+                </motion.div>
+
+                {/* Flame Effect */}
+                {status === 'ROASTING' && (
+                    <motion.div
+                        className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full h-32 bg-orange-500/20 blur-3xl rounded-full"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.9, 1.1, 0.9] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                    />
+                )}
+            </div>
+
+            {/* Right: Control Panel */}
+            <div className="bg-zinc-100 rounded-3xl p-6 flex flex-col gap-6 border border-zinc-200">
+                {/* Display */}
+                <div className="bg-zinc-900 rounded-2xl p-6 text-green-400 font-mono shadow-inner border border-zinc-800">
+                    <div className="flex justify-between items-end mb-4">
+                        <span className="text-zinc-500 text-sm">BEAN TEMP</span>
+                        <span className="text-4xl font-bold">{Math.round(temperature)}°C</span>
+                    </div>
+                    <div className="flex justify-between items-end">
+                        <span className="text-zinc-500 text-sm">DURATION</span>
+                        <span className="text-2xl">{Math.floor(time / 60)}:{(time % 60).toString().padStart(2, '0')}</span>
                     </div>
                 </div>
-            </header>
 
-            {/* 2. Main Dashboard Grid */}
-            <main className="max-w-[1600px] mx-auto p-6">
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start h-[calc(100vh-140px)]">
-
-                    {/* Left Column: Analytics (Visuals) - Spans 7 cols */}
-                    <div className="xl:col-span-7 flex flex-col gap-6 h-full overflow-hidden">
-                        {/* Dashboard Component Wrapper */}
-                        <section className="bg-white/60 backdrop-blur-sm rounded-2xl border border-latte-200/60 p-1 shadow-sm h-full overflow-y-auto custom-scrollbar">
-                            <RoastingDashboard />
-                        </section>
-                    </div>
-
-                    {/* Right Column: Operations (Controls) - Spans 5 cols */}
-                    <div className="xl:col-span-5 flex flex-col gap-6 h-full">
-
-                        {/* Quick Actions Panel */}
-                        <section className="grid grid-cols-2 gap-4">
-                            <Link
-                                href="/roasting/single-origin"
-                                className="group relative flex flex-col justify-between p-6 bg-white rounded-2xl shadow-sm border border-latte-100 hover:border-latte-300 hover:shadow-md transition-all duration-300 h-40 overflow-hidden"
-                            >
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-latte-100/50 to-transparent rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform" />
-
-                                <div className="relative z-10">
-                                    <div className="w-10 h-10 bg-latte-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-latte-900 group-hover:text-white transition-colors">
-                                        <Coffee className="w-5 h-5" />
-                                    </div>
-                                    <h3 className="font-bold text-lg text-latte-900">Single Origin</h3>
-                                </div>
-
-                                <div className="relative z-10 flex items-center text-sm font-medium text-latte-500 group-hover:text-latte-900">
-                                    New Roast <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </Link>
-
-                            <Link
-                                href="/roasting/blend"
-                                className="group relative flex flex-col justify-between p-6 bg-white rounded-2xl shadow-sm border border-latte-100 hover:border-latte-300 hover:shadow-md transition-all duration-300 h-40 overflow-hidden"
-                            >
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-br from-amber-50 to-transparent rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform" />
-
-                                <div className="relative z-10">
-                                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                                        <Package className="w-5 h-5 text-amber-600 group-hover:text-white" />
-                                    </div>
-                                    <h3 className="font-bold text-lg text-latte-900">Blend Roast</h3>
-                                </div>
-
-                                <div className="relative z-10 flex items-center text-sm font-medium text-latte-500 group-hover:text-latte-900">
-                                    Create Batch <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </Link>
-                        </section>
-
-                        {/* Recent Batches List (Compact) */}
-                        <section className="flex-1 bg-white rounded-2xl border border-latte-200 shadow-sm flex flex-col overflow-hidden">
-                            <div className="px-6 py-4 border-b border-latte-100 flex items-center justify-between bg-latte-50/30">
-                                <h3 className="font-bold text-latte-900 flex items-center gap-2">
-                                    <History className="w-4 h-4 text-latte-400" />
-                                    Recent Activity
-                                </h3>
-                                <Link href="/roasting" className="text-xs font-semibold text-latte-500 hover:text-latte-800 flex items-center">
-                                    View All <ChevronRight className="w-3 h-3" />
-                                </Link>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                                {recentLogs.map((log) => (
-                                    <motion.div
-                                        key={log.id}
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="p-3 hover:bg-latte-50/50 rounded-xl transition-colors border border-transparent hover:border-latte-100 group"
-                                    >
-                                        <div className="flex justify-between items-start mb-1">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold text-latte-400 font-mono tracking-tight">{log.batch_no}</span>
-                                                <h4 className="font-bold text-sm text-latte-900 line-clamp-1">{log.target_bean?.name}</h4>
-                                            </div>
-                                            <span className="text-xs font-mono font-medium bg-latte-100 text-latte-700 px-2 py-0.5 rounded-md">
-                                                {log.output_weight_total}kg
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between text-xs text-latte-400">
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-3 h-3" />
-                                                {format(new Date(log.roast_date), "MM.dd HH:mm")}
-                                            </span>
-                                            {log.loss_rate && (
-                                                <span className={`font-medium ${log.loss_rate > 15 ? 'text-red-500' : 'text-amber-600'}`}>
-                                                    Loss: {log.loss_rate.toFixed(1)}%
-                                                </span>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                ))}
-
-                                {recentLogs.length === 0 && (
-                                    <div className="h-full flex flex-col items-center justify-center p-6">
-                                        <MascotStatus
-                                            variant="empty"
-                                            title="기록 없음"
-                                            description="최근 로스팅 이력이 없습니다."
-                                            className="transform scale-75"
-                                            videoClassName="w-24 h-24"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-                    </div>
-
+                {/* Controls Simulation */}
+                <div className="grid grid-cols-2 gap-4 flex-1">
+                    <ControlKnob label="GAS POWER" icon={<Flame size={16} />} value={75} />
+                    <ControlKnob label="AIR FLOW" icon={<Fan size={16} />} value={40} />
+                    <ControlKnob label="DRUM SPEED" icon={<RotateCcw size={16} />} value={60} />
                 </div>
-            </main>
 
-            <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(168, 139, 125, 0.2);
-          border-radius: 20px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(168, 139, 125, 0.4);
-        }
-      `}</style>
+                {/* Actions */}
+                <div className="flex gap-3 mt-auto">
+                    {status === 'IDLE' || status === 'FINISHED' ? (
+                        <button
+                            onClick={handleStart}
+                            className="flex-1 bg-latte-900 text-white rounded-xl py-4 font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Play size={20} fill="currentColor" /> START
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleStop}
+                            className="flex-1 bg-amber-600 text-white rounded-xl py-4 font-bold hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Pause size={20} fill="currentColor" /> DROP
+                        </button>
+                    )}
+
+                    <button
+                        onClick={handleReset}
+                        className="px-4 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 transition-colors"
+                    >
+                        <RotateCcw size={20} className="text-zinc-400" />
+                    </button>
+                </div>
+            </div>
         </div>
-    )
+    );
+}
+
+function ControlKnob({ label, icon, value }: { label: string, icon: any, value: number }) {
+    return (
+        <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm flex flex-col items-center justify-center gap-3">
+            <div className="text-[10px] font-bold text-zinc-400 tracking-wider flex items-center gap-1">
+                {icon} {label}
+            </div>
+            <div className="relative w-24 h-24 rounded-full border-4 border-zinc-100 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-4 border-latte-500" style={{ clipPath: `polygon(0 0, 100% 0, 100% ${value}%, 0 ${value}%)` }} />
+                <span className="text-xl font-bold text-zinc-700">{value}</span>
+            </div>
+        </div>
+    );
 }

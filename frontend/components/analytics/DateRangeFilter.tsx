@@ -3,22 +3,24 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar } from 'lucide-react';
+import { Calendar, RotateCcw } from 'lucide-react';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 
 interface DateRangeFilterProps {
   onDateChange: (startDate: string | null, endDate: string | null) => void;
 }
 
 export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [activePreset, setActivePreset] = useState<string>('all');
 
   const handlePreset = (preset: string) => {
-    console.log('handlePreset called:', preset);
     setActivePreset(preset);
     const today = new Date();
     let start: Date | null = null;
+    const end = today;
 
     switch (preset) {
       case '30days':
@@ -38,37 +40,36 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
         start.setFullYear(today.getFullYear() - 1);
         break;
       case 'all':
-        setStartDate('');
-        setEndDate('');
+        setDateRange(undefined);
         onDateChange(null, null);
         return;
     }
 
     if (start) {
-      const startStr = start.toISOString().split('T')[0];
-      const endStr = today.toISOString().split('T')[0];
+      const newRange: DateRange = { from: start, to: end };
+      setDateRange(newRange);
 
-      // UI Update
-      setStartDate(startStr);
-      setEndDate(endStr);
-
-      // Parent Callback
+      const startStr = format(start, 'yyyy-MM-dd');
+      const endStr = format(end, 'yyyy-MM-dd');
       onDateChange(startStr, endStr);
     }
   };
 
-  const handleCustomDate = () => {
+  const handleDateSelect = (range: DateRange | undefined) => {
+    setDateRange(range);
     setActivePreset('custom');
-    if (startDate && endDate) {
-      onDateChange(startDate, endDate);
-    } else if (!startDate && !endDate) {
+
+    if (range?.from && range?.to) {
+      const startStr = format(range.from, 'yyyy-MM-dd');
+      const endStr = format(range.to, 'yyyy-MM-dd');
+      onDateChange(startStr, endStr);
+    } else if (!range) {
       onDateChange(null, null);
     }
   };
 
   const handleReset = () => {
-    setStartDate('');
-    setEndDate('');
+    setDateRange(undefined);
     setActivePreset('all');
     onDateChange(null, null);
   };
@@ -130,47 +131,23 @@ export function DateRangeFilter({ onDateChange }: DateRangeFilterProps) {
             {/* Separator (Desktop Only) */}
             <div className="hidden xl:block h-5 w-px bg-stone-200" />
 
-            {/* Right: Date Inputs & Reset */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-stone-500 whitespace-nowrap">시작일</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    const newStart = e.target.value;
-                    setStartDate(newStart);
-                    setActivePreset('custom');
-                    if (newStart && endDate) {
-                      onDateChange(newStart, endDate);
-                    }
-                  }}
-                  className="w-[140px] rounded-full border border-[#F5E6D3] bg-[#FFF9F2] px-4 py-1.5 text-sm text-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-400"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-stone-500 whitespace-nowrap">종료일</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => {
-                    const newEnd = e.target.value;
-                    setEndDate(newEnd);
-                    setActivePreset('custom');
-                    if (startDate && newEnd) {
-                      onDateChange(startDate, newEnd);
-                    }
-                  }}
-                  className="w-[140px] rounded-full border border-[#F5E6D3] bg-[#FFF9F2] px-4 py-1.5 text-sm text-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-400"
+            {/* Right: Date Picker & Reset */}
+            <div className="flex flex-wrap items-center gap-4 flex-1">
+              <div className="w-[300px]">
+                <DateRangePicker
+                  date={dateRange}
+                  onSelect={handleDateSelect}
+                  placeholder="기간 직접 선택"
                 />
               </div>
               <Button
-                size="sm"
+                size="icon"
                 variant="outline"
                 onClick={handleReset}
-                className="rounded-full px-5 bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3]"
+                className="rounded-full w-10 h-10 bg-[#FFF9F2] border border-[#F5E6D3] text-stone-600 hover:bg-[#F5E6D3] hover:text-stone-800"
+                title="초기화"
               >
-                초기화
+                <RotateCcw className="h-4 w-4" />
               </Button>
             </div>
           </div>

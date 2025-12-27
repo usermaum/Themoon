@@ -300,7 +300,39 @@ export default function BlendRoastingPage() {
 
     showDialog(
       '로스팅 결과 저장',
-      `다음 내용으로 블렌드 로스팅 이력을 저장하시겠습니까?\n\n- 실제 투입: ${inputW.toFixed(2)}kg\n- 실제 생산: ${outputW}kg\n- 실제 손실률: ${lossRate.toFixed(1)}%\n\n(목표 생산량: ${targetWeight}kg)`,
+      <div className="space-y-6">
+        <div className="flex justify-center mb-2">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center shadow-inner">
+            <CheckCircle2 className="w-8 h-8 text-amber-600" />
+          </div>
+        </div>
+        <p className="text-center text-latte-600 text-lg font-medium leading-relaxed">
+          다음 내용으로<br />블렌드 로스팅 이력을 저장하시겠습니까?
+        </p>
+
+        <div className="bg-white rounded-2xl p-5 border border-latte-100 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 투입</span>
+            <span className="font-mono font-bold text-lg text-latte-900">{inputW.toFixed(2)}<span className="text-sm text-latte-400 ml-0.5">kg</span></span>
+          </div>
+          <div className="w-full h-px bg-latte-50" />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 생산</span>
+            <span className="font-mono font-bold text-lg text-latte-900">{outputW}<span className="text-sm text-latte-400 ml-0.5">kg</span></span>
+          </div>
+          <div className="w-full h-px bg-latte-50" />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 손실률</span>
+            <span className="font-mono font-bold text-lg text-amber-600">{lossRate.toFixed(1)}<span className="text-sm ml-0.5 text-amber-600/70">%</span></span>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-latte-50 text-xs font-bold text-latte-400 border border-latte-100">
+            목표 생산량: {targetWeight}kg
+          </span>
+        </div>
+      </div>,
       'confirm',
       proceedRoasting
     );
@@ -327,7 +359,7 @@ export default function BlendRoastingPage() {
       <div className="container mx-auto p-6 max-w-5xl">
         <div className="mb-6">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/roasting')}
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -550,7 +582,7 @@ export default function BlendRoastingPage() {
           <section className="lg:col-span-7 h-full flex flex-col">
             {simulationResult ? (
               <>
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6 flex-1 flex flex-col">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-3 flex-1 flex flex-col">
                   <div className="p-6 border-b border-slate-100 bg-slate-50">
                     <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800">
                       <Scale className="w-5 h-5 text-blue-600" />
@@ -614,41 +646,58 @@ export default function BlendRoastingPage() {
                   </div>
 
                   {/* Stock Status Check Banner (Embedded in Card) */}
+                  {/* Stock Status Check Banner (Refined UI: Compact & Integrated) */}
                   <div
-                    className={`mx-3 mb-3 p-3 rounded-xl border flex items-start gap-3 ${simulationResult.details.some(d => d.isStockShort)
-                      ? 'bg-red-50 border-red-200 text-red-700'
-                      : 'bg-green-50 border-green-200 text-green-700'
+                    className={`border-t transition-all duration-300 ${simulationResult.details.some(d => d.isStockShort)
+                        ? 'bg-red-50/30 border-red-100'
+                        : 'bg-green-50/30 border-green-100'
                       }`}
                   >
-                    {simulationResult.details.some(d => d.isStockShort) ? (
-                      <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
-                    ) : (
-                      <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-green-500 mt-0.5" />
-                    )}
-                    <div className="flex-1">
-                      <p className="font-bold text-base leading-tight">
-                        {simulationResult.details.some(d => d.isStockShort) ? '재고 부족 경고' : '모든 재고 충분'}
-                      </p>
+                    <div className="p-4">
                       {simulationResult.details.some(d => d.isStockShort) ? (
-                        <div className="text-sm mt-1.5 space-y-1.5">
-                          <p className="text-red-700/80 font-medium text-xs">다음 품목의 재고가 부족합니다:</p>
-                          <div className="flex flex-wrap gap-1.5">
+                        <>
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 bg-red-100 rounded-lg shrink-0">
+                              <AlertTriangle className="w-4 h-4 text-red-600" />
+                            </div>
+                            <h3 className="font-bold text-sm text-red-900">
+                              재고 부족 경고
+                            </h3>
+                            <div className="h-px flex-1 bg-red-100/50 text-red-100"></div>
+                          </div>
+
+                          <div className="max-h-[140px] overflow-y-auto pr-1 space-y-1.5 scrollbar-thin scrollbar-thumb-red-200 scrollbar-track-transparent">
                             {simulationResult.details.filter(d => d.isStockShort).map(d => (
-                              <span key={d.beanId} className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-white/60 text-red-600 border border-red-100 shadow-sm">
-                                {d.beanName} (부족: {(d.requiredAmount - d.currentStock).toFixed(1)}kg)
-                              </span>
+                              <div key={d.beanId} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-red-100 shadow-sm transition-all hover:bg-red-50/50">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                                  <span className="font-bold text-slate-700 text-sm truncate">{d.beanName}</span>
+                                  <span className="text-xs text-slate-400 shrink-0">({d.origin})</span>
+                                </div>
+                                <div className="text-right shrink-0 flex items-center gap-2">
+                                  <span className="text-xs text-red-500 font-bold">
+                                    -{formatWeight(d.requiredAmount - d.currentStock)} kg
+                                  </span>
+                                  <span className="text-[10px] text-red-300 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">부족</span>
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        </div>
+                        </>
                       ) : (
-                        <p className="text-xs text-green-700/80 font-medium mt-0.5">현재 보유 중인 생두로 로스팅이 가능합니다.</p>
+                        <div className="flex items-center gap-2 text-green-700/80">
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                          <p className="text-sm font-medium mt-0.5">
+                            현재 보유 중인 생두로 로스팅이 가능합니다.
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {/* Chart Section (Separated) */}
-                <div className="mt-6">
+                <div className="mt-3">
                   <BlendRatioChart data={simulationResult.details} />
                 </div>
               </>
@@ -665,29 +714,25 @@ export default function BlendRoastingPage() {
         </div>
 
         <AlertDialog open={dialogConfig.isOpen} onOpenChange={closeDialog}>
-          <AlertDialogContent className="bg-[#FFF9F0] border-amber-100 shadow-2xl rounded-3xl max-w-md p-0 overflow-visible">
-            {/* Punch Hole Decoration */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-red-50 border border-red-100 shadow-inner z-10"></div>
-
-            <div className="pt-10 pb-8 px-8 flex flex-col items-center">
-              <AlertDialogHeader className="mb-6 w-full flex flex-col items-center justify-center text-center space-y-4">
-                <AlertDialogTitle className="w-full text-center text-3xl font-bold text-red-900 italic font-serif">
+          <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/20 ring-1 ring-latte-900/5 shadow-[0_32px_64px_-12px_rgba(80,50,30,0.15)] rounded-[2rem] p-0 max-w-md overflow-hidden outline-none">
+            <div className="bg-gradient-to-b from-amber-50/40 to-white p-8">
+              <AlertDialogHeader className="space-y-4">
+                <AlertDialogTitle className="hidden">
                   {dialogConfig.title}
                 </AlertDialogTitle>
-                <div className="w-full border-t-2 border-dashed border-[#E6DCC9]"></div>
+
+                <AlertDialogDescription asChild>
+                  <div className="w-full text-latte-700 text-base leading-relaxed">
+                    {dialogConfig.description}
+                  </div>
+                </AlertDialogDescription>
               </AlertDialogHeader>
 
-              <div className="w-full bg-[#FAF6F1] rounded-xl p-6 mb-8 border border-[#E6DCC9]/50 min-h-[100px] flex items-center">
-                <AlertDialogDescription className="w-full text-[#6D5D53] text-base space-y-4 font-bold text-left whitespace-pre-wrap leading-relaxed font-mono break-keep" asChild>
-                  <div className="w-full">{dialogConfig.description}</div>
-                </AlertDialogDescription>
-              </div>
-
-              <AlertDialogFooter className="w-full flex justify-center gap-8 sm:justify-center sm:space-x-8">
+              <AlertDialogFooter className="mt-8 flex gap-3 sm:space-x-0 w-full">
                 {dialogConfig.type === 'confirm' && (
                   <AlertDialogCancel
                     onClick={closeDialog}
-                    className="border-none bg-transparent text-[#8C7A63] hover:text-[#5D4037] hover:bg-transparent shadow-none"
+                    className="flex-1 border-0 bg-white hover:bg-latte-50 text-latte-500 hover:text-latte-700 rounded-xl py-6 font-bold shadow-sm ring-1 ring-latte-100 transition-all text-base"
                   >
                     취소
                   </AlertDialogCancel>
@@ -697,7 +742,10 @@ export default function BlendRoastingPage() {
                     if (dialogConfig.onConfirm) dialogConfig.onConfirm();
                     closeDialog();
                   }}
-                  className="bg-[#5D4037] text-[#FFF9F0] hover:bg-[#4A332A] rounded-xl h-12 px-10 shadow-lg text-base font-bold"
+                  className={`flex-1 rounded-xl py-6 shadow-lg shadow-amber-900/20 transition-all font-bold text-base ${dialogConfig.type === 'alert'
+                    ? 'bg-red-500 hover:bg-red-600 text-white w-full'
+                    : 'bg-latte-900 hover:bg-latte-800 text-white'
+                    }`}
                 >
                   확인
                 </AlertDialogAction>

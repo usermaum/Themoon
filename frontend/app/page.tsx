@@ -127,40 +127,89 @@ export default function HomePage() {
               </Card>
             </motion.div>
 
-            {/* 재고 부족 알림 */}
+            {/* 재고 부족 알림 (Red Theme - Polished) */}
             {lowStockBeans.length > 0 && (
               <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
                 className="mb-8"
               >
-                <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="w-6 h-6 text-red-500" />
-                  재고 부족 알림
-                </h2>
-                <div className="bg-white rounded-[1em] border border-red-200 p-6 shadow-sm">
-                  <ul className="space-y-3">
-                    {lowStockBeans.map((bean) => (
-                      <li
-                        key={bean.id}
-                        className="flex justify-between items-center bg-red-50/50 p-3 rounded-xl"
-                      >
-                        <span className="text-latte-800 font-medium flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                          {bean.name}{' '}
-                          <span className="text-latte-500 text-sm">({bean.origin})</span>
-                        </span>
-                        <span className="text-red-600 font-bold bg-white px-3 py-1 rounded-full shadow-sm">
-                          {bean.quantity_kg.toFixed(1)} kg
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4 text-right">
-                    <Button variant="link" asChild className="text-red-600 hover:text-red-700 p-0">
-                      <Link href="/inventory" className="flex items-center gap-1">
-                        재고 관리로 이동 <ArrowRight className="w-4 h-4" />
+                <div className="bg-[#FFFBF5] rounded-[2.5rem] border-2 border-dashed border-red-200 p-8 shadow-xl relative overflow-visible">
+                  {/* Top Pin Decoration (Punch Hole) */}
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-red-50 shadow-sm z-20 border-4 border-red-100 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-red-200 shadow-inner"></div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b-2 border-dashed border-red-100 pb-6">
+                    <div>
+                      <h2 className="text-3xl font-serif font-bold text-red-900 mb-1 flex items-center gap-3">
+                        <AlertTriangle className="w-8 h-8 text-red-500 animate-pulse" />
+                        STOCK ALERT
+                      </h2>
+                      <p className="text-red-700/60 font-mono text-xs font-bold tracking-widest uppercase">
+                        System Critical Warning
+                      </p>
+                    </div>
+                    <Badge className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg border-none animate-bounce md:animate-none">
+                      {lowStockBeans.length} Items Short!
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="bg-red-50/80 p-5 rounded-2xl border border-red-100/50 backdrop-blur-sm shadow-inner flex items-start gap-4">
+                      <div className="bg-white p-2 rounded-xl shadow-sm border border-red-100">
+                        <span className="text-2xl">💡</span>
+                      </div>
+                      <div>
+                        <p className="text-red-900 font-bold text-lg leading-snug">
+                          재고 부족 품목이 감지되었습니다.
+                        </p>
+                        <p className="text-red-800/70 text-sm font-medium mt-1">
+                          원활한 로스팅 작업을 위해 다음 품목의 재고를 확인하고 보충해주시기 바랍니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {lowStockBeans.map((bean) => (
+                        <div
+                          key={bean.id}
+                          className="bg-white rounded-2xl p-5 flex flex-col gap-3 shadow-md border border-red-100/30 hover:border-red-300 transition-all hover:-translate-y-1.5 hover:shadow-xl group relative overflow-hidden"
+                        >
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-red-50/50 rounded-bl-[2rem] -mr-4 -mt-4 transition-colors group-hover:bg-red-100/50" />
+
+                          <div className="flex justify-between items-start relative z-10">
+                            <span className="text-red-900 font-bold text-xl group-hover:text-red-700 transition-colors line-clamp-1">
+                              {bean.name_ko || bean.name}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 relative z-10">
+                            <Badge variant="outline" className="text-[10px] font-bold border-red-200 text-red-800 py-0 h-5">
+                              {bean.origin_ko || bean.origin}
+                            </Badge>
+                          </div>
+
+                          <div className="flex justify-between items-end mt-2 pt-3 border-t border-red-50 relative z-10">
+                            <span className="text-latte-400 text-xs font-bold uppercase tracking-tighter">Current Stock</span>
+                            <span className="text-red-600 font-mono font-black text-2xl bg-red-50/50 px-3 py-1 rounded-xl shadow-sm border border-red-100/50">
+                              {bean.quantity_kg.toFixed(1)}<span className="text-sm ml-0.5">kg</span>
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-10 pt-6 border-t-2 border-dashed border-red-100/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <span className="text-red-800/30 text-[10px] font-mono select-none tracking-widest order-2 sm:order-1">
+                      SR_LOG_SEC_404_STOCK_LVL_CRITICAL
+                    </span>
+                    <Button variant="ghost" asChild className="text-red-700 hover:text-red-900 hover:bg-red-50 p-0 px-6 h-12 rounded-2xl font-black text-lg transition-all order-1 sm:order-2">
+                      <Link href="/inventory" className="flex items-center gap-3">
+                        재고 관리로 이동
+                        <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
                   </div>

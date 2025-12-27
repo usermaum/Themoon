@@ -1,20 +1,19 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
 import PageHero from '@/components/ui/page-hero'
+import InventoryStats from '@/components/inventory/InventoryStats' // Import Stats
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle, Search } from 'lucide-react'
+import { Package, Plus, Minus, Edit2, Trash2, X, AlertTriangle, Search, FileText } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import MascotStatus from '@/components/ui/mascot-status'
 
 const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (bean: Bean, type: 'IN' | 'OUT') => void }) => (
-    <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+    <div className="bg-white/60 backdrop-blur-md rounded-[1.5rem] shadow-sm overflow-hidden border border-latte-200">
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-latte-100">
                 <thead className="bg-latte-50/50">
@@ -24,40 +23,59 @@ const InventoryTable = ({ beans, onOpenModal }: { beans: Bean[], onOpenModal: (b
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">특징</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">원산지</th>
                         <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">현재 재고</th>
-                        <th className="px-6 py-4 text-left text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
+                        <th className="px-6 py-4 text-center text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">상태</th>
                         <th className="px-6 py-4 text-right text-xs font-serif font-bold text-latte-600 uppercase tracking-wider">작업</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-latte-100">
+                <tbody className="bg-white/40 divide-y divide-latte-100">
                     {beans.length === 0 ? (
-                        <tr><td colSpan={7} className="px-6 py-8 text-center text-latte-400">데이터가 없습니다.</td></tr>
+                        <tr><td colSpan={7} className="px-6 py-12 text-center text-latte-400">데이터가 없습니다.</td></tr>
                     ) : beans.map((bean) => (
-                        <tr key={bean.id} className="hover:bg-latte-50/30 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-latte-900">
-                                <div>{bean.name_ko || bean.name}</div>
-                                {bean.name_en && <div className="text-xs font-normal text-latte-500 font-sans">{bean.name_en}</div>}
+                        <tr key={bean.id} className="group hover:bg-latte-50/80 transition-all duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-bold text-latte-900 group-hover:text-latte-700 transition-colors">{bean.name_ko || bean.name}</div>
+                                {bean.name_en && <div className="text-xs font-normal text-latte-400 font-sans">{bean.name_en}</div>}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-500">
-                                {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">생두</Badge> :
-                                    bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50">블렌드</Badge> :
-                                        <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50">원두</Badge>}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                                {bean.type === 'GREEN_BEAN' ? <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-none">생두</Badge> :
+                                    bean.type === 'BLEND_BEAN' ? <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-none">블렌드</Badge> :
+                                        <Badge variant="secondary" className="bg-latte-100 text-latte-700 hover:bg-latte-200 border-none">원두</Badge>}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">
-                                {bean.roast_profile === 'LIGHT' ? <Badge className="bg-lime-500 hover:bg-lime-600 border-none text-white">신콩(Light)</Badge> :
-                                    bean.roast_profile === 'DARK' ? <Badge className="bg-slate-800 hover:bg-slate-900 border-none text-white">탄콩(Dark)</Badge> :
-                                        bean.roast_profile === 'MEDIUM' ? <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200 border-none">미디엄</Badge> :
-                                            '-'}
+                                {bean.roast_profile === 'LIGHT' ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-lime-100 text-lime-800">신콩 (Light)</span> :
+                                    bean.roast_profile === 'DARK' ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">탄콩 (Dark)</span> :
+                                        bean.roast_profile === 'MEDIUM' ? <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">미디엄</span> :
+                                            <span className="text-latte-300">-</span>}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-latte-600">{bean.origin_ko || bean.origin || '-'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-latte-900 font-bold">{bean.quantity_kg.toFixed(2)} kg</td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                                {bean.quantity_kg < 5 ? <Badge variant="destructive">재고 부족</Badge> :
-                                    bean.quantity_kg < 10 ? <Badge variant="secondary" className="bg-amber-100 text-amber-800">주의</Badge> :
-                                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">충분</Badge>}
+                                <div className="text-sm font-mono text-latte-900 font-bold bg-latte-50 inline-block px-3 py-1 rounded-md border border-latte-100">
+                                    {bean.quantity_kg.toFixed(2)} <span className="text-latte-400 font-normal">kg</span>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                {bean.quantity_kg < 5 ?
+                                    <div className="flex items-center justify-center gap-1.5 text-red-600 text-xs font-bold animate-pulse">
+                                        <AlertTriangle className="w-4 h-4" /> 부족
+                                    </div>
+                                    :
+                                    bean.quantity_kg < 10 ?
+                                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                            주의
+                                        </div>
+                                        :
+                                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            충분
+                                        </div>
+                                }
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'IN')} className="text-green-600 hover:bg-green-50"><Plus className="w-4 h-4 mr-1" /> 입고</Button>
-                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'OUT')} className="text-red-500 hover:bg-red-50"><Minus className="w-4 h-4 mr-1" /> 출고</Button>
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'IN')} className="text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full px-4 border border-transparent hover:border-green-200 transition-all font-bold">
+                                    <Plus className="w-3.5 h-3.5 mr-1.5" /> 입고
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => onOpenModal(bean, 'OUT')} className="text-latte-400 hover:text-red-600 hover:bg-red-50 rounded-full px-4 border border-transparent hover:border-red-200 transition-all">
+                                    <Minus className="w-3.5 h-3.5 mr-1.5" /> 출고
+                                </Button>
                             </td>
                         </tr>
                     ))}
@@ -81,6 +99,13 @@ export default function InventoryPage() {
     const [loadingBeans, setLoadingBeans] = useState(true)
     const [loadingLogs, setLoadingLogs] = useState(true)
     const [error, setError] = useState<string | null>(null)
+
+    // Stats State
+    const [stats, setStats] = useState({
+        totalWeight: 0,
+        lowStockCount: 0,
+        activeVarieties: 0
+    })
 
     // Pagination State derived from URL
     const beanPage = Number(searchParams.get('beanPage')) || 1
@@ -135,6 +160,30 @@ export default function InventoryPage() {
         }, 500)
         return () => clearTimeout(timer)
     }, [logSearch])
+
+    // Calculate Stats on Mount (fetch all beans roughly)
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                // Fetch up to 1000 items to calculate global stats
+                const data = await BeanAPI.getAll({ limit: 1000 })
+                const allBeans = data.items
+
+                const totalWeight = allBeans.reduce((sum, bean) => sum + bean.quantity_kg, 0)
+                const lowStockCount = allBeans.filter(bean => bean.quantity_kg < 5).length
+                const activeVarieties = allBeans.length
+
+                setStats({
+                    totalWeight,
+                    lowStockCount,
+                    activeVarieties
+                })
+            } catch (e) {
+                console.error("Failed to fetch stats", e)
+            }
+        }
+        fetchStats()
+    }, []) // Run once on mount
 
     const fetchBeans = async (page: number, tab: string, search: string) => {
         try {
@@ -353,38 +402,78 @@ export default function InventoryPage() {
                     </div>
                 )}
 
+                {/* Dashboard Stats */}
+                <InventoryStats
+                    totalWeight={stats.totalWeight}
+                    lowStockCount={stats.lowStockCount}
+                    activeVarieties={stats.activeVarieties}
+                />
+
                 {/* 재고 현황 테이블 (Tabs 적용) */}
                 <section className="mb-16">
-                    <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4 flex items-center gap-2">
-                        <Package className="w-6 h-6 text-latte-400" />
-                        현재 재고 현황
-                    </h2>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+                        <h2 className="text-2xl font-serif font-bold text-latte-900 flex items-center gap-2">
+                            <Package className="w-6 h-6 text-latte-400" />
+                            현재 재고 현황
+                        </h2>
+                        <Button
+                            onClick={() => router.push('/inventory/inbound')}
+                            className="bg-latte-900 text-white hover:bg-latte-800 shadow-sm"
+                        >
+                            <FileText className="w-4 h-4 mr-2" />
+                            명세서 입고 (OCR)
+                        </Button>
+                    </div>
 
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
-                            <TabsList className="bg-latte-100 p-1 rounded-xl overflow-x-auto w-full md:w-auto">
-                                <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">전체</TabsTrigger>
-                                <TabsTrigger value="green" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">생두</TabsTrigger>
-                                <TabsTrigger value="roasted" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">원두</TabsTrigger>
-                                <TabsTrigger value="blend" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">블렌드</TabsTrigger>
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                            <TabsList className="bg-white/60 backdrop-blur-md p-1 rounded-full border border-latte-200 shadow-sm h-auto inline-flex">
+                                <TabsTrigger
+                                    value="all"
+                                    className="rounded-full px-4 py-2 text-sm data-[state=active]:bg-latte-900 data-[state=active]:text-white transition-all"
+                                >
+                                    전체 보기
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="green"
+                                    className="rounded-full px-4 py-2 text-sm data-[state=active]:bg-green-600 data-[state=active]:text-white transition-all"
+                                >
+                                    생두 (Green)
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="roasted"
+                                    className="rounded-full px-4 py-2 text-sm data-[state=active]:bg-latte-600 data-[state=active]:text-white transition-all"
+                                >
+                                    원두 (Roasted)
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="blend"
+                                    className="rounded-full px-4 py-2 text-sm data-[state=active]:bg-amber-600 data-[state=active]:text-white transition-all"
+                                >
+                                    블렌드 (Blend)
+                                </TabsTrigger>
                             </TabsList>
-                            <div className="relative w-full md:w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-latte-400" />
+
+                            <motion.div
+                                layout
+                                className="relative w-full md:w-72 group"
+                            >
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-latte-400 group-focus-within:text-latte-600 transition-colors" />
                                 <Input
-                                    placeholder="원두명 검색..."
+                                    placeholder="원두명, 품종, 국가 검색..."
                                     value={beanSearch}
                                     onChange={(e) => setBeanSearch(e.target.value)}
-                                    className="pl-9 pr-8 h-10 bg-white border-latte-200 focus:border-latte-400"
+                                    className="pl-11 pr-10 h-11 bg-white/80 backdrop-blur-sm border-latte-200 focus:border-latte-400 rounded-full shadow-sm transition-all focus:ring-2 focus:ring-latte-100"
                                 />
                                 {beanSearch && (
                                     <button
                                         onClick={() => setBeanSearch('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-latte-400 hover:text-latte-600 focus:outline-none"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-latte-400 hover:text-latte-600 focus:outline-none p-1 bg-latte-50 rounded-full"
                                     >
-                                        <X className="w-4 h-4" />
+                                        <X className="w-3 h-3" />
                                     </button>
                                 )}
-                            </div>
+                            </motion.div>
                         </div>
 
                         {['all', 'green', 'roasted', 'blend'].map((tabValue) => (

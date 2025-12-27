@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layouts/AppLayout';
 
 import { cookies } from 'next/headers';
 import { SWRProvider } from '@/lib/swr-config';
+import NextTopLoader from 'nextjs-toploader';
+import { Toaster } from '@/components/ui/toaster';
+import { LoadingProvider } from '@/components/providers/loading-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
@@ -17,10 +20,6 @@ export const metadata: Metadata = {
   title: 'The Moon Drip Bar',
   description: 'Premium Roasting Management System',
 };
-
-import NextTopLoader from 'nextjs-toploader';
-import { Toaster } from '@/components/ui/toaster';
-import { LoadingProvider } from '@/components/providers/loading-provider';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = cookies();

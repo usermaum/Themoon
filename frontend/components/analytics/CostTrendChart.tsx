@@ -52,7 +52,7 @@ export function CostTrendChart({ data }: CostTrendChartProps) {
             tickFormatter={(value) => `₩${formatCurrency(value)}`}
           />
           <Tooltip
-            formatter={(value: number) => [`₩${formatCurrency(value)}`, '단가']}
+            formatter={(value: number | undefined) => [`₩${formatCurrency(value || 0)}`, '단가']}
             labelFormatter={(label) => `${label}`} // Shows full "YYYY-MM-DD HH:mm"
             contentStyle={{
               borderRadius: '8px',

@@ -47,6 +47,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import PageHero from '@/components/ui/page-hero';
 import Image from 'next/image';
+import DigitalReceipt from '@/components/inbound/DigitalReceipt'; // Import DigitalReceipt
 
 // Types
 interface InboundItem {
@@ -510,58 +511,87 @@ export default function InboundPage() {
       />
 
       <div className="container mx-auto px-4 max-w-7xl">
+
+        {/* Step Indicator */}
+        <div className="flex justify-center mb-10">
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <div className="flex items-center gap-2 text-latte-900">
+              <div className="w-8 h-8 rounded-full bg-latte-900 text-white flex items-center justify-center font-bold">1</div>
+              <span>업로드</span>
+            </div>
+            <div className="w-12 h-px bg-latte-200"></div>
+            <div className={`flex items-center gap-2 ${ocrResult ? 'text-latte-900' : 'text-latte-400'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${ocrResult ? 'bg-latte-900 text-white' : 'bg-latte-100'}`}>2</div>
+              <span>분석 & 확인</span>
+            </div>
+            <div className="w-12 h-px bg-latte-200"></div>
+            <div className="flex items-center gap-2 text-latte-400">
+              <div className="w-8 h-8 rounded-full bg-latte-100 flex items-center justify-center font-bold">3</div>
+              <span>저장</span>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Input & Preview */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>입력 소스</CardTitle>
+            <Card className="overflow-hidden border-latte-200 shadow-md">
+              <CardHeader className="bg-latte-50/50 border-b border-latte-100">
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="w-5 h-5" /> 입력 소스
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="file">
-                      <Upload className="w-4 h-4 mr-2" /> 파일 업로드
+                  <TabsList className="grid w-full grid-cols-3 mb-6 bg-latte-100/50 p-1 rounded-lg">
+                    <TabsTrigger value="file" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                      <Upload className="w-4 h-4 mr-2" /> 파일
                     </TabsTrigger>
-                    <TabsTrigger value="clipboard">
+                    <TabsTrigger value="clipboard" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
                       <Clipboard className="w-4 h-4 mr-2" /> 붙여넣기
                     </TabsTrigger>
-                    <TabsTrigger value="url">
-                      <LinkIcon className="w-4 h-4 mr-2" /> URL 입력
+                    <TabsTrigger value="url" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                      <LinkIcon className="w-4 h-4 mr-2" /> URL
                     </TabsTrigger>
                   </TabsList>
 
-                  <div className="mt-4 space-y-4">
-                    <TabsContent value="file">
-                      <div className="space-y-2">
-                        <Label htmlFor="picture" className="text-sm font-medium text-latte-700">
+                  <div className="space-y-4">
+                    <TabsContent value="file" className="mt-0">
+                      <div className="space-y-3">
+                        <Label htmlFor="picture" className="text-sm font-bold text-latte-900 hidden">
                           명세서 이미지
                         </Label>
-                        <div className="relative group">
+                        <div className="relative group perspective-1000">
                           <label
                             htmlFor="picture"
-                            className={`flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-latte-200 border-dashed rounded-[1em] appearance-none cursor-pointer hover:border-latte-400 hover:bg-latte-50/50 focus:outline-none ${selectedFile ? 'border-latte-400 bg-latte-50/30' : ''}`}
+                            className={`flex flex-col items-center justify-center w-full h-64 px-4 transition-all duration-300 bg-white border-2 border-dashed rounded-[1.5em] appearance-none cursor-pointer hover:border-latte-600 hover:shadow-lg focus:outline-none overflow-hidden relative ${selectedFile ? 'border-green-500 bg-green-50/10' : 'border-latte-300'}`}
                           >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            {/* Animated background shape */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-latte-50/0 to-latte-100/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6 relative z-10">
                               {selectedFile ? (
                                 <>
-                                  <CheckCircle2 className="w-8 h-8 mb-2 text-green-500 animate-in zoom-in-50 duration-300" />
-                                  <p className="text-sm font-medium text-latte-800">
+                                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-in zoom-in spin-in-12 duration-500">
+                                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                                  </div>
+                                  <p className="text-lg font-bold text-latte-900">
                                     {selectedFile.name}
                                   </p>
-                                  <p className="text-xs text-latte-500 mt-1">
-                                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • 클릭하여
-                                    변경
+                                  <p className="text-sm text-latte-500 mt-2 bg-white/80 px-3 py-1 rounded-full border border-latte-100">
+                                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • 변경하려면 클릭
                                   </p>
                                 </>
                               ) : (
                                 <>
-                                  <Upload className="w-8 h-8 mb-2 text-latte-400 group-hover:text-latte-600 transition-colors" />
-                                  <p className="text-sm font-medium text-latte-700">
-                                    파일을 클릭하거나 여기로 드래그하세요
+                                  <div className="w-20 h-20 bg-latte-50 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:bg-latte-100">
+                                    <Upload className="w-10 h-10 text-latte-400 group-hover:text-latte-600 transition-colors" />
+                                  </div>
+                                  <p className="text-lg font-bold text-latte-700">
+                                    명세서 이미지를 드래그하세요
                                   </p>
-                                  <p className="text-xs text-latte-400 mt-1">
-                                    이미지 파일 (JPG, PNG) 최대 10MB
+                                  <p className="text-sm text-latte-400 mt-2">
+                                    또는 클릭하여 파일 선택 (JPG, PNG)
                                   </p>
                                 </>
                               )}
@@ -646,70 +676,28 @@ export default function InboundPage() {
               </Alert>
             )}
 
-            {/* Temporary Debug View with Invoice Button */}
+            {/* Receipt Preview */}
             {ocrResult && (
-              <Card className="border-blue-400 bg-blue-50/50">
-                <CardHeader className="py-3">
-                  <CardTitle className="text-sm font-mono text-blue-800 flex items-center justify-between">
-                    <span className="flex items-center gap-2">✅ OCR 분석 완료</span>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        sessionStorage.setItem('ocrResult', JSON.stringify(ocrResult));
-                        router.push('/inbound/invoice');
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      📄 거래명세서 보기
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="py-2 pb-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="bg-white p-2 rounded border">
-                      <span className="text-gray-600 text-xs">공급자:</span>
-                      <div className="font-semibold">
-                        {ocrResult.supplier?.name || ocrResult.supplier_name || '-'}
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border">
-                      <span className="text-gray-600 text-xs">계약번호:</span>
-                      <div className="font-semibold">
-                        {ocrResult.document_info?.contract_number ||
-                          ocrResult.contract_number ||
-                          '-'}
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border">
-                      <span className="text-gray-600 text-xs">품목 수:</span>
-                      <div className="font-semibold">{ocrResult.items?.length || 0}개</div>
-                    </div>
-                    <div className="bg-white p-2 rounded border">
-                      <span className="text-gray-600 text-xs">합계:</span>
-                      <div className="font-semibold">
-                        {formatCurrency(
-                          ocrResult.amounts?.total_amount || ocrResult.total_amount || 0
-                        )}
-                        원
-                      </div>
-                    </div>
-                  </div>
-                  <details className="text-xs bg-white p-2 rounded border">
-                    <summary className="cursor-pointer font-semibold text-gray-700">
-                      🔍 원본 데이터 보기 (개발자용)
-                    </summary>
-                    <pre className="mt-2 p-2 bg-gray-50 rounded overflow-auto max-h-40 font-mono text-xs">
-                      {JSON.stringify(ocrResult, null, 2)}
-                    </pre>
-                  </details>
-                </CardContent>
-              </Card>
+              <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <DigitalReceipt
+                  data={ocrResult}
+                  onConfirm={() => {
+                    const formElement = document.getElementById('inbound-form');
+                    if (formElement) {
+                      formElement.scrollIntoView({ behavior: 'smooth' });
+                      toast({
+                        title: "상세 정보 확인",
+                        description: "우측(모바일: 하단) 입력 폼에서 내용을 수정할 수 있습니다."
+                      });
+                    }
+                  }}
+                />
+              </div>
             )}
           </div>
 
           {/* Right: Form */}
-          <div className="space-y-6">
+          <div className="space-y-6" id="inbound-form">
             <Card>
               <CardHeader>
                 <CardTitle>입고 상세 정보</CardTitle>

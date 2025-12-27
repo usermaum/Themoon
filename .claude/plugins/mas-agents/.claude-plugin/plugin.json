@@ -1,0 +1,26 @@
+{
+  "name": "mas-agents",
+  "version": "1.0.0",
+  "description": "Multi-Agent System (MAS) - Specialized agents for frontend, backend, and system maintenance tasks",
+  "author": "TheMoon Project Team",
+  "agents": [
+    {
+      "name": "agent-2-frontend",
+      "description": "Frontend specialist for UI/UX, React components, and Tailwind CSS",
+      "color": "cyan"
+    },
+    {
+      "name": "agent-3-backend",
+      "description": "Backend engineer for FastAPI, databases, and business logic",
+      "color": "green"
+    },
+    {
+      "name": "agent-4-maintainer",
+      "description": "System maintainer for debugging, quality assurance, and infrastructure",
+      "color": "red"
+    }
+  ],
+  "skills": [],
+  "commands": [],
+  "hooks": []
+}

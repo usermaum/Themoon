@@ -147,6 +147,21 @@ class InboundDocumentCreate(InboundDocumentBase):
     supplier_email: Optional[str] = None
 
 
+class InboundDocumentUpdate(BaseModel):
+    supplier_name: Optional[str] = None
+    contract_number: Optional[str] = None
+    supplier_id: Optional[int] = None
+    receiver_name: Optional[str] = None
+    invoice_date: Optional[str] = None
+    total_amount: Optional[float] = None
+    image_url: Optional[str] = None
+    drive_file_id: Optional[str] = None
+    processing_status: Optional[str] = None
+    notes: Optional[str] = None
+    supplier_phone: Optional[str] = None
+    supplier_email: Optional[str] = None
+
+
 class InboundDocument(InboundDocumentBase):
     id: int
     created_at: datetime

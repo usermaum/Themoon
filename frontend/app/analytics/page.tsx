@@ -18,8 +18,8 @@ import { DateRangeFilter } from '@/components/analytics/DateRangeFilter';
 import { AnalysisBriefing } from '@/components/analytics/AnalysisBriefing';
 import PageHero from '@/components/ui/page-hero';
 import { BarChart3, TrendingUp, DollarSign } from 'lucide-react';
-import axios from 'axios';
 import { formatCurrency } from '@/lib/utils';
+import { AnalyticsAPI, BeanAPI } from '@/lib/api';
 
 function Counter({
   value,
@@ -64,40 +64,31 @@ export default function AnalyticsPage() {
       if (end) dateParams.end_date = end;
 
       // 1. Fetch Supplier Stats
-      const supplierRes = await axios.get('http://localhost:8000/api/v1/analytics/stats/supplier', {
-        params: dateParams,
-      });
-      setSupplierStats(supplierRes.data);
+      const supplierData = await AnalyticsAPI.getSupplierStats(dateParams);
+      setSupplierStats(supplierData);
 
-      // 3. Fetch Inventory (Filtered by Date)
-      const inventoryRes = await axios.get(
-        'http://localhost:8000/api/v1/analytics/stats/inventory',
-        {
-          params: dateParams,
-        }
-      );
-      const invData = inventoryRes.data;
+      // 2. Fetch Inventory (Filtered by Date)
+      const invData = await AnalyticsAPI.getInventoryStats(dateParams);
       setInventoryValue(invData.items || []);
       setInventoryStats(invData);
 
-      // 4. Fetch All Beans (for Selector and possibly other lists)
-      const beansRes = await axios.get('http://localhost:8000/api/v1/beans/', {
-        params: { size: 100 },
-      });
-      const allBeans = beansRes.data.items;
+      // 3. Fetch All Beans (for Selector and possibly other lists)
+      const beansData = await BeanAPI.getAll({ limit: 100 });
+      const allBeans = beansData.items;
 
       // Set Available Beans for Selector (Unique names)
       const beanNames = Array.from(new Set(allBeans.map((b: any) => b.name))) as string[];
       setAvailableBeans(beanNames);
 
-      // 2. Fetch Cost Trends (Using selectedBeanForTrend)
+      // 4. Fetch Cost Trends (Using selectedBeanForTrend)
       // Note: If selectedBeanForTrend is not in list (initial load), default to first available or "예가체프"
       const targetBean = selectedBeanForTrend || (beanNames.length > 0 ? beanNames[0] : '예가체프');
 
-      const trendRes = await axios.get('http://localhost:8000/api/v1/analytics/stats/item/trends', {
-        params: { bean_name: targetBean, ...dateParams },
+      const trendData = await AnalyticsAPI.getItemTrends({
+        bean_name: targetBean,
+        ...dateParams
       });
-      setCostTrends(trendRes.data);
+      setCostTrends(trendData);
 
       setLoading(false);
     } catch (error) {

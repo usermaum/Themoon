@@ -56,6 +56,11 @@ export default function SingleOriginRoastingPage() {
   const [actualOutputWeight, setActualOutputWeight] = useState<string>(''); // 실제 생산량 (Input - Final)
   const [notes, setNotes] = useState('');
 
+  // Extended Data (v2)
+  const [roastingTime, setRoastingTime] = useState(''); // seconds
+  const [ambientTemp, setAmbientTemp] = useState(''); // Celsius
+  const [humidity, setHumidity] = useState(''); // %
+
   // 계산된 상태 (Simulation Result)
   const [simulation, setSimulation] = useState<{
     requiredInput: number; // 필요 투입량
@@ -192,7 +197,39 @@ export default function SingleOriginRoastingPage() {
 
     showDialog(
       '로스팅 결과 저장',
-      `다음 내용으로 로스팅 이력을 저장하시겠습니까?\n\n- 실제 투입: ${simulation.requiredInput.toFixed(2)}kg\n- 실제 생산: ${actualOutputWeight}kg\n- 실제 손실률: ${actualLoss.toFixed(1)}%\n\n(목표 생산량: ${targetWeight}kg)`,
+      <div className="space-y-6">
+        <div className="flex justify-center mb-2">
+          <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center shadow-inner">
+            <CheckCircle2 className="w-8 h-8 text-amber-600" />
+          </div>
+        </div>
+        <p className="text-center text-latte-600 text-lg font-medium leading-relaxed">
+          다음 내용으로<br />로스팅 이력을 저장하시겠습니까?
+        </p>
+
+        <div className="bg-white rounded-2xl p-5 border border-latte-100 shadow-sm space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 투입</span>
+            <span className="font-mono font-bold text-lg text-latte-900">{simulation.requiredInput.toFixed(2)}<span className="text-sm text-latte-400 ml-0.5">kg</span></span>
+          </div>
+          <div className="w-full h-px bg-latte-50" />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 생산</span>
+            <span className="font-mono font-bold text-lg text-latte-900">{actualOutputWeight}<span className="text-sm text-latte-400 ml-0.5">kg</span></span>
+          </div>
+          <div className="w-full h-px bg-latte-50" />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-latte-500">실제 손실률</span>
+            <span className="font-mono font-bold text-lg text-amber-600">{actualLoss.toFixed(1)}<span className="text-sm ml-0.5 text-amber-600/70">%</span></span>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-latte-50 text-xs font-bold text-latte-400 border border-latte-100">
+            목표 생산량: {targetWeight}kg
+          </span>
+        </div>
+      </div>,
       'confirm',
       proceedRoasting
     );
@@ -211,6 +248,9 @@ export default function SingleOriginRoastingPage() {
         input_weight: simulation.requiredInput, // 실제 투입량 (시뮬레이션 값 사용)
         output_weight: parseFloat(actualOutputWeight), // 실제 생산량
         roast_profile: roastProfile,
+        roasting_time: roastingTime ? parseInt(roastingTime) : undefined,
+        ambient_temp: ambientTemp ? parseFloat(ambientTemp) : undefined,
+        humidity: humidity ? parseFloat(humidity) : undefined,
         notes: notes,
       });
 
@@ -227,10 +267,9 @@ export default function SingleOriginRoastingPage() {
       setSubmitting(false);
     }
   };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-latte-500" />
       </div>
     );
@@ -356,6 +395,47 @@ export default function SingleOriginRoastingPage() {
                     <p className="text-xs text-latte-500">
                       * 최종적으로 얻고자 하는 원두의 무게를 입력하세요.
                     </p>
+                  </div>
+
+
+
+                  {/* 4.5 Environmental Data (New) */}
+                  <div className="space-y-4 pt-4 border-t border-latte-100">
+                    <h3 className="text-sm font-bold text-latte-700 flex items-center gap-2">
+                      <span>환경 데이터 (Optional)</span>
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs text-latte-500">시간(초)</label>
+                        <Input
+                          type="number"
+                          placeholder="600"
+                          value={roastingTime}
+                          onChange={(e) => setRoastingTime(e.target.value)}
+                          className="h-9 text-right font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-latte-500">온도(℃)</label>
+                        <Input
+                          type="number"
+                          placeholder="25.0"
+                          value={ambientTemp}
+                          onChange={(e) => setAmbientTemp(e.target.value)}
+                          className="h-9 text-right font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-latte-500">습도(%)</label>
+                        <Input
+                          type="number"
+                          placeholder="45.0"
+                          value={humidity}
+                          onChange={(e) => setHumidity(e.target.value)}
+                          className="h-9 text-right font-mono"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* 4. 노트 */}
@@ -692,6 +772,10 @@ export default function SingleOriginRoastingPage() {
                       setSimulation(null);
                       setSelectedBeanId('');
                       setRoastProfile('LIGHT');
+                      setRoastProfile('LIGHT');
+                      setRoastingTime('');
+                      setAmbientTemp('');
+                      setHumidity('');
                       setNotes('');
                     }}
                   >
@@ -704,31 +788,28 @@ export default function SingleOriginRoastingPage() {
         </div>
       </div>
 
-      {/* Alert Dialog (Receipt Style) */}
+      {/* Alert Dialog (Premium Style) */}
       <AlertDialog open={dialogConfig.isOpen} onOpenChange={closeDialog}>
-        <AlertDialogContent className="bg-[#FFFBF5] border-2 border-dashed border-[#D7CCC8] rounded-[2.5rem] shadow-2xl p-0 max-w-xl overflow-visible outline-none sm:rounded-[2.5rem]">
-          {/* Top Pin Decoration */}
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-red-50 shadow-sm z-20 border-4 border-red-100"></div>
+        <AlertDialogContent className="bg-white/95 backdrop-blur-xl border border-white/20 ring-1 ring-latte-900/5 shadow-[0_32px_64px_-12px_rgba(80,50,30,0.15)] rounded-[2rem] p-0 max-w-md overflow-hidden outline-none">
+          <div className="bg-gradient-to-b from-amber-50/40 to-white p-8">
+            <AlertDialogHeader className="space-y-4">
+              <AlertDialogTitle className="hidden">
+                {/* Title is hidden visually but kept for accessibility, or integrated into custom UI */}
+                {dialogConfig.title}
+              </AlertDialogTitle>
 
-          <div className="p-8 relative">
-            {/* Vintage Title */}
-            <AlertDialogHeader className="space-y-6">
-              <div className="text-center space-y-2 pb-6 border-b-2 border-dashed border-[#D7CCC8]">
-                <AlertDialogTitle className="font-serif italic text-3xl text-red-900 font-bold tracking-tight">
-                  {dialogConfig.title}
-                </AlertDialogTitle>
-              </div>
-
-              <AlertDialogDescription className="whitespace-pre-wrap font-mono text-[#5D4037] text-lg font-bold leading-relaxed bg-[#FAF7F2] p-8 rounded-xl border border-[#EFEBE9] text-left" asChild>
-                <div className="w-full">{dialogConfig.description}</div>
+              <AlertDialogDescription asChild>
+                <div className="w-full text-latte-700 text-base leading-relaxed">
+                  {dialogConfig.description}
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
 
-            <AlertDialogFooter className="mt-8 gap-3 sm:space-x-4 sm:justify-center w-full">
+            <AlertDialogFooter className="mt-8 flex gap-3 sm:space-x-0 w-full">
               {dialogConfig.type === 'confirm' && (
                 <AlertDialogCancel
                   onClick={closeDialog}
-                  className="border-none bg-transparent text-[#8D6E63] hover:bg-[#D7CCC8]/20 hover:text-[#5D4037] rounded-xl px-6 font-bold"
+                  className="flex-1 border-0 bg-white hover:bg-latte-50 text-latte-500 hover:text-latte-700 rounded-xl py-6 font-bold shadow-sm ring-1 ring-latte-100 transition-all text-base"
                 >
                   취소
                 </AlertDialogCancel>
@@ -738,7 +819,10 @@ export default function SingleOriginRoastingPage() {
                   if (dialogConfig.onConfirm) dialogConfig.onConfirm();
                   closeDialog();
                 }}
-                className="bg-[#5D4037] hover:bg-[#4E342E] text-[#EFEBE9] rounded-xl px-8 shadow-lg hover:shadow-xl transition-all font-bold"
+                className={`flex-1 rounded-xl py-6 shadow-lg shadow-amber-900/20 transition-all font-bold text-base ${dialogConfig.type === 'alert'
+                  ? 'bg-red-500 hover:bg-red-600 text-white w-full'
+                  : 'bg-latte-900 hover:bg-latte-800 text-white'
+                  }`}
               >
                 확인
               </AlertDialogAction>

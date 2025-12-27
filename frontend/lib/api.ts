@@ -138,6 +138,9 @@ export interface SingleOriginRoastingRequest {
   input_weight: number;
   output_weight: number;
   roast_profile: RoastProfile;
+  roasting_time?: number;
+  ambient_temp?: number;
+  humidity?: number;
   notes?: string;
 }
 
@@ -146,6 +149,15 @@ export interface BlendRoastingRequest {
   output_weight: number;
   input_weight?: number;
   notes?: string;
+}
+
+export interface RoastingHistoryParams {
+  skip?: number;
+  limit?: number;
+  start_date?: string;
+  end_date?: string;
+  bean_id?: number;
+  bean_type?: string;
 }
 
 export interface RoastingResponse {
@@ -166,6 +178,13 @@ export interface RoastingLog {
   output_weight_total: number;
   loss_rate?: number;
   production_cost?: number;
+
+  // Extended Data
+  roast_profile?: string; // or RoastProfile
+  roasting_time?: number;
+  ambient_temp?: number;
+  humidity?: number;
+
   notes?: string;
   created_at: string;
   target_bean?: Bean;
@@ -267,8 +286,22 @@ export const RoastingAPI = {
     return response.data;
   },
 
-  getHistory: async (params?: { skip?: number; limit?: number }) => {
-    const response = await api.get<RoastingLog[]>('/api/v1/roasting/history', { params });
+  getHistory: async (params?: RoastingHistoryParams) => {
+    // Manually serialize params to handle bean_id=0 correctly if needed, or rely on standard axios params
+    // Adding bean_type to axios params
+    const response = await api.get<RoastingLog[]>('/api/v1/roasting/history', {
+      params,
+      paramsSerializer: (p) => {
+        const searchParams = new URLSearchParams();
+        if (p.skip !== undefined) searchParams.append('skip', p.skip.toString());
+        if (p.limit !== undefined) searchParams.append('limit', p.limit.toString());
+        if (p.start_date) searchParams.append('start_date', p.start_date);
+        if (p.end_date) searchParams.append('end_date', p.end_date);
+        if (p.bean_id !== undefined && p.bean_id !== null) searchParams.append('bean_id', p.bean_id.toString());
+        if (p.bean_type) searchParams.append('bean_type', p.bean_type);
+        return searchParams.toString();
+      }
+    });
     return response.data;
   },
 
@@ -419,6 +452,23 @@ export interface DashboardStats {
 export const DashboardAPI = {
   getStats: async () => {
     const response = await api.get<DashboardStats>('/api/v1/dashboard/');
+    return response.data;
+  },
+};
+
+export const AnalyticsAPI = {
+  getSupplierStats: async (params?: { start_date?: string; end_date?: string }) => {
+    const response = await api.get('/api/v1/analytics/stats/supplier', { params });
+    return response.data;
+  },
+
+  getInventoryStats: async (params?: { start_date?: string; end_date?: string }) => {
+    const response = await api.get('/api/v1/analytics/stats/inventory', { params });
+    return response.data;
+  },
+
+  getItemTrends: async (params: { bean_name: string; start_date?: string; end_date?: string }) => {
+    const response = await api.get('/api/v1/analytics/stats/item/trends', { params });
     return response.data;
   },
 };

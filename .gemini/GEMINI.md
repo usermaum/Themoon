@@ -20,24 +20,24 @@
 2. **컴퓨터 간 이동**: Git Sync 필수 (`git commit && git push` → `git pull`)
 3. **새 세션 시작**: 자동으로 마지막 상태 로드 및 제안 (Read AGENTS.md)
 
-### 📅 마지막 세션: 2025-12-26 (Roasting UX & Safety Refinement)
+### 📅 마지막 세션: 2025-12-26 (Environment Recovery & E2E Verification)
 
-**✅ 완료된 작업 (v0.5.3)**:
-1. 🛡️ **로스팅 안전장치 강화 (Blocking Validation)**
-   - **재고 부족 차단**: Blend/Single Origin 로스팅 시 재고 부족이 감지되면 '확인' 버튼을 비활성화하여 마이너스 재고 발생 원천 차단.
-   - **Red Theme Alert**: 기존의 단순한 Dialog를 붉은색 테마의 경고창으로 교체하여 시인성 강화.
-2. 📊 **재고 상태 시각화 (Embedded Banner)**
-   - **Blend Stock Banner**: 명세서 카드 내부에 재고 상태(충분/부족)를 실시간으로 보여주는 배너 추가.
-   - **Responsive Design**: 카드 내부 공간에 맞춰 마진/패딩 최적화 (`p-3`, `text-base`).
-3. 🔧 **UI/UX 폴리싱**
-   - **숫자 포맷팅**: `formatWeight` 유틸리티 전면 적용 (불필요한 소수점 제거 `30.00` -> `30`).
-   - **삭제 UX 개선**: `window.confirm`을 커스텀 `AlertDialog`로 교체하여 일관된 경험 제공.
+**✅ 완료된 작업 (v0.5.4)**:
+1. 🛠️ **환경 복구 및 안정화 (Environment Recovery)**
+   - **무한 루프 해결**: 루트의 중복 `package.json` 제거 및 의존성 정리를 통해 Next.js "missing required error components" 무한 새로고침 차단.
+   - **의존성 고정**: Next.js 버전을 `14.2.33`으로 고정하여 환경 호환성 확보.
+   - **에러 바운더리 복구**: `error.tsx`, `not-found.tsx` 등 마스코트 기반 에러 페이지 복구.
+2. 🧪 **E2E 테스트 인프라 복구 및 검증**
+   - **Playwright 재설치**: WSL 환경에 맞는 Playwright 및 브라우저 의존성 재설정.
+   - **비즈니스 로직 시나리오 검증**: Single-Origin 로스팅 전체 플로우(`roasting_flow.spec.ts`) 테스트 통과 확인.
+3. 🧹 **프로젝트 구조 정리**
+   - 루트의 불필요한 `node_modules`, `package-lock.json` 등 잠재적 충돌 요소 제거.
 
 **Git 상태**:
 - 현재 브랜치: main
-- 최신 커밋: Roasting UX and Safety Improvements
+- 최신 커밋: Environment recovery and E2E verification success
 
 **🎯 다음 작업 (Feature Expansion)**:
 1. **로스팅 이력 고도화**: 날짜/생두 필터링 기능 추가 (`RoastingHistoryTable`).
 2. **UI 실험 및 개선**: `/roasting/demo` 페이지 구현 및 대시보드 레이아웃 최적화.
-3. **Mascot Error Pages**: 관리자 냥이 캐릭터를 활용한 커스텀 404/500 페이지 확장.
+3. **E2E 테스트 확장**: 블렌딩 로스팅 및 재고 관리 시나리오 추가.

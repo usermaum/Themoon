@@ -62,7 +62,12 @@
       "WebSearch",
       "WebFetch(domain:ai.google.dev)",
       "Bash(for file in /mnt/d/Ai/WslProject/Themoon/backend/app/api/v1/endpoints/*.py)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(../venv/bin/python -m mypy:*)",
+      "Bash(../venv/bin/python:*)",
+      "Skill(plugin-dev:agent-development)",
+      "Bash(bash dev.sh:*)",
+      "Skill(plugin-dev:plugin-structure)"
     ],
     "deny": [],
     "ask": []

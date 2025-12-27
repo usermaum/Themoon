@@ -3,15 +3,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import asc
 from app.models.inbound_document import InboundDocument
 from app.models.inbound_item import InboundItem
-from app.schemas.inbound import InboundDocumentCreate
+from app.schemas.inbound import InboundDocumentCreate, InboundDocumentUpdate
 from app.repositories.base_repository import BaseRepository
 
 
-class InboundRepository(BaseRepository[InboundDocument, InboundDocumentCreate, dict]):
+class InboundRepository(BaseRepository[InboundDocument, InboundDocumentCreate, InboundDocumentUpdate]):
     def __init__(self, db: Session):
         super().__init__(InboundDocument, db)
 
     def get_document_with_items(self, document_id: int) -> Optional[InboundDocument]:
+        """문서 및 포함된 품목 조회"""
         return self.db.query(InboundDocument).filter(InboundDocument.id == document_id).first()
 
     def get_fifo_candidates(self, bean_id: int) -> List[InboundItem]:
@@ -24,6 +25,7 @@ class InboundRepository(BaseRepository[InboundDocument, InboundDocumentCreate, d
         )
 
     def update_item_remaining_quantity(self, item_id: int, new_quantity: float) -> Optional[InboundItem]:
+        """입고 품목 재고 수량 업데이트"""
         item = self.db.query(InboundItem).filter(InboundItem.id == item_id).first()
         if item:
             item.remaining_quantity = new_quantity

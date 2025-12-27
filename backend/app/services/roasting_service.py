@@ -59,6 +59,9 @@ class RoastingService:
         input_weight: float,
         output_weight: float,
         roast_profile: RoastProfile,
+        roasting_time: int = None,
+        ambient_temp: float = None,
+        humidity: float = None,
         notes: str = None,
     ) -> tuple[Bean, str]:
         """
@@ -98,6 +101,10 @@ class RoastingService:
             "output_weight_total": output_weight,
             "loss_rate": ((input_weight - output_weight) / input_weight * 100) if input_weight > 0 else 0,
             "production_cost": total_input_cost,
+            "roast_profile": roast_profile.value,
+            "roasting_time": roasting_time,
+            "ambient_temp": ambient_temp,
+            "humidity": humidity,
             "notes": notes
         })
 

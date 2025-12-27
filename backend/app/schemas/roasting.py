@@ -3,13 +3,21 @@
 Ref: Documents/Planning/Themoon_Rostings_v2.md
 """
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
 from app.models.bean import RoastProfile
 from app.schemas.bean import Bean
+
+
+class RoastingHistoryFilter(BaseModel):
+    """로스팅 이력 필터링 옵션"""
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    bean_id: Optional[int] = None
+    bean_name: Optional[str] = None
 
 
 class SingleOriginRoastingRequest(BaseModel):
@@ -19,6 +27,9 @@ class SingleOriginRoastingRequest(BaseModel):
     input_weight: float = Field(..., gt=0, description="생두 투입량 (kg)")
     output_weight: float = Field(..., ge=0, description="원두 생산량 (kg)")
     roast_profile: RoastProfile = Field(..., description="로스팅 프로필 (LIGHT/DARK)")
+    roasting_time: Optional[int] = Field(None, description="로스팅 소요 시간 (초)")
+    ambient_temp: Optional[float] = Field(None, description="실내 온도 (섭씨)")
+    humidity: Optional[float] = Field(None, description="실내 습도 (%)")
     notes: Optional[str] = Field(None, description="로스팅 노트")
 
 
@@ -54,6 +65,13 @@ class RoastingLogBase(BaseModel):
     output_weight_total: float
     loss_rate: Optional[float] = None
     production_cost: Optional[float] = None
+    
+    # Extended Data
+    roast_profile: Optional[str] = None
+    roasting_time: Optional[int] = None
+    ambient_temp: Optional[float] = None
+    humidity: Optional[float] = None
+    
     notes: Optional[str] = None
 
 
@@ -65,6 +83,12 @@ class RoastingLogCreate(BaseModel):
     output_weight_total: float
     loss_rate: Optional[float] = None
     production_cost: Optional[float] = None
+    
+    roast_profile: Optional[str] = None
+    roasting_time: Optional[int] = None
+    ambient_temp: Optional[float] = None
+    humidity: Optional[float] = None
+    
     notes: Optional[str] = None
 
 

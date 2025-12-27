@@ -1,6 +1,28 @@
 #!/bin/bash
 # TheMoon - Automated Dev Server Script
-# start_all.sh 기반 (메뉴 선택 없이 즉시 실행)
+# 🚀 Force WSL Execution Mode
+# ==========================================
+if [ -n "$WSL_DISTRO_NAME" ] || grep -qEi "(Microsoft|WSL)" /proc/version; then
+    echo "✅ Running in WSL environment."
+else
+    if command -v wsl >/dev/null 2>&1; then
+        echo "🔄 Windows environment detected. Switching to WSL..."
+        echo "🚀 Re-launching script in WSL (Ubuntu)..."
+        
+        # Convert the current path to WSL path format
+        CURRENT_PATH=$(pwd)
+        WSL_PATH="/mnt/d${CURRENT_PATH#d:}"
+        WSL_PATH="${WSL_PATH//\\//}" # Replace backslashes with slashes
+        
+        # Execute this script inside WSL
+        wsl -d Ubuntu -- bash -c "cd '$WSL_PATH' && ./dev.sh"
+        exit 0
+    else
+        echo "❌ Error: This script must be run in WSL (Windows Subsystem for Linux)."
+        echo "   Please install WSL or run this from a WSL terminal."
+        exit 1
+    fi
+fi
 
 # 프로젝트 루트 디렉토리
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -95,8 +117,8 @@ cd ..
 cd "$ROOT_DIR/frontend"
 # 로그 파일 비우기 및 시작
 > ../logs/themoon_frontend.log
-# 0.0.0.0으로 호스트 바인딩하여 외부 접속 허용하며 포트 3500 지정
-npm run dev -- -H 0.0.0.0 -p 3500 > ../logs/themoon_frontend.log 2>&1 &
+# 0.0.0.0으로 호스트 바인딩하여 외부 접속 허용 (포트는 package.json의 dev 스크립트에 이미 정의됨)
+npm run dev -- -H 0.0.0.0 > ../logs/themoon_frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "✅ Frontend 시작됨 (PID: $FRONTEND_PID)"
 

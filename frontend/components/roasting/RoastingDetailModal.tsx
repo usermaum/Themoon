@@ -132,6 +132,45 @@ export default function RoastingDetailModal({ logId, onClose }: RoastingDetailMo
                                     </div>
                                 </div>
 
+                                {/* Environmental Conditions (New) */}
+                                {(log.roasting_time || log.ambient_temp || log.humidity) && (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="p-3 bg-white rounded-xl border border-latte-100 flex items-center justify-center gap-3 shadow-sm">
+                                            <div className="p-2 rounded-full bg-blue-50 text-blue-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-latte-400 uppercase">Duration</span>
+                                                <span className="text-sm font-bold font-mono text-latte-700">
+                                                    {log.roasting_time ? `${Math.floor(log.roasting_time / 60)}m ${log.roasting_time % 60}s` : '-'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-white rounded-xl border border-latte-100 flex items-center justify-center gap-3 shadow-sm">
+                                            <div className="p-2 rounded-full bg-orange-50 text-orange-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" /></svg>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-latte-400 uppercase">Temp</span>
+                                                <span className="text-sm font-bold font-mono text-latte-700">
+                                                    {log.ambient_temp ? `${log.ambient_temp}℃` : '-'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-white rounded-xl border border-latte-100 flex items-center justify-center gap-3 shadow-sm">
+                                            <div className="p-2 rounded-full bg-cyan-50 text-cyan-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" /></svg>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-latte-400 uppercase">Humidity</span>
+                                                <span className="text-sm font-bold font-mono text-latte-700">
+                                                    {log.humidity ? `${log.humidity}%` : '-'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Production Flow (Input -> Output) */}
                                 <div className="space-y-4">
                                     <h4 className="text-sm font-bold text-latte-400 uppercase tracking-widest flex items-center gap-2">

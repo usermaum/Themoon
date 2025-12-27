@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.15",
-    "react-icons": "^5.5.0"
-  }
-}

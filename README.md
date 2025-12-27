@@ -1,6 +1,12 @@
 # TheMoon - 커피 로스팅 원가 계산 시스템 (Modern Stack)
 
-> **v0.4.8** | Next.js + FastAPI로 고도화된 시스템 기능
+> [!IMPORTANT]
+> **WSL 환경 필수 (Mandatory WSL)**
+> 이 프로젝트는 **반드시 WSL (Ubuntu)** 환경에서 실행되어야 합니다.
+> Windows CMD/PowerShell에서 직접 실행 시 `node_modules` 호환성 문제가 발생할 수 있습니다.
+> `dev.sh` 스크립트를 통해 실행하세요.
+
+> **v0.6.0** | Multi-Agent System 도입 및 UX 개선
 
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)

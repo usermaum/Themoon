@@ -105,10 +105,70 @@ module.exports = {
             height: '0',
           },
         },
+        'float-slow': {
+          '0%, 100%': {
+            transform: 'translate(0, 0) rotate(0deg)',
+          },
+          '25%': {
+            transform: 'translate(10px, -15px) rotate(5deg)',
+          },
+          '50%': {
+            transform: 'translate(-5px, -25px) rotate(-3deg)',
+          },
+          '75%': {
+            transform: 'translate(-15px, -10px) rotate(8deg)',
+          },
+        },
+        'float-medium': {
+          '0%, 100%': {
+            transform: 'translate(0, 0) rotate(0deg) scale(1)',
+          },
+          '33%': {
+            transform: 'translate(15px, -20px) rotate(-10deg) scale(1.05)',
+          },
+          '66%': {
+            transform: 'translate(-10px, -30px) rotate(12deg) scale(0.95)',
+          },
+        },
+        'float-fast': {
+          '0%, 100%': {
+            transform: 'translate(0, 0) rotate(0deg)',
+          },
+          '20%': {
+            transform: 'translate(8px, -12px) rotate(15deg)',
+          },
+          '40%': {
+            transform: 'translate(-8px, -20px) rotate(-10deg)',
+          },
+          '60%': {
+            transform: 'translate(12px, -28px) rotate(20deg)',
+          },
+          '80%': {
+            transform: 'translate(-5px, -15px) rotate(-15deg)',
+          },
+        },
+        'float-reverse': {
+          '0%, 100%': {
+            transform: 'translate(0, 0) rotate(0deg)',
+          },
+          '25%': {
+            transform: 'translate(-12px, 18px) rotate(-8deg)',
+          },
+          '50%': {
+            transform: 'translate(8px, 30px) rotate(5deg)',
+          },
+          '75%': {
+            transform: 'translate(15px, 12px) rotate(-12deg)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'float-slow': 'float-slow 8s ease-in-out infinite',
+        'float-medium': 'float-medium 6s ease-in-out infinite',
+        'float-fast': 'float-fast 4s ease-in-out infinite',
+        'float-reverse': 'float-reverse 7s ease-in-out infinite',
       },
     },
   },

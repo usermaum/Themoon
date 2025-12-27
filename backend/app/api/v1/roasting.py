@@ -122,11 +122,21 @@ def roast_blend(
 def get_roasting_history(
     skip: int = 0,
     limit: int = 100,
+    start_date: Optional[date] = Query(None, description="조회 시작일"),
+    end_date: Optional[date] = Query(None, description="조회 종료일"),
+    bean_id: Optional[int] = Query(None, description="생두 ID 필터"),
+    bean_type: Optional[str] = Query(None, description="원두 유형 필터 (GREEN_BEAN, BLEND_BEAN)"),
     db: Session = Depends(get_db),
 ):
     """로스팅 이력 조회"""
     repo = RoastingLogRepository(db)
-    return repo.get_multi(skip=skip, limit=limit)
+    filters = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "bean_id": bean_id,
+        "bean_type": bean_type
+    }
+    return repo.get_multi(skip=skip, limit=limit, filters=filters)
 
 
 @router.get("/{log_id}", response_model=RoastingLogDetail)
