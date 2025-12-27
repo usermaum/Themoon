@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { FileText, Calendar, Building, Package, CreditCard, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
@@ -13,7 +13,7 @@ export default function DigitalReceipt({ data, onConfirm }: DigitalReceiptProps)
     if (!data) return null;
 
     // Animation for receipt printing effect
-    const receiptVariants = {
+    const receiptVariants: Variants = {
         hidden: { scaleY: 0.1, opacity: 0, transformOrigin: "top" },
         visible: {
             scaleY: 1,
