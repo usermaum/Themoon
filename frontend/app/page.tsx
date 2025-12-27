@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI } from '@/lib/api';
+import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI, AnalyticsAPI } from '@/lib/api';
+import InventoryStats from '@/components/inventory/InventoryStats';
 import Link from 'next/link';
 import {
   Card,
@@ -27,6 +28,12 @@ export default function HomePage() {
     low_stock_count: number;
   } | null>(null);
 
+  const [inventoryStats, setInventoryStats] = useState<{
+    total_weight: number;
+    low_stock_count: number;
+    active_varieties: number;
+  } | null>(null);
+
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
@@ -36,13 +43,15 @@ export default function HomePage() {
       setLoading(true);
       setError(null);
 
-      const [statsData, logsData] = await Promise.all([
+      const [statsData, logsData, invStatsData] = await Promise.all([
         DashboardAPI.getStats(),
         InventoryLogAPI.getAll({ limit: 10 }),
+        AnalyticsAPI.getInventorySummary(),
       ]);
 
       setStats(statsData);
       setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : []);
+      setInventoryStats(invStatsData);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
       setError(err);
@@ -58,8 +67,10 @@ export default function HomePage() {
   // stats가 없으면 0으로 처리 (로딩 중 또는 에러)
   const totalBeans = stats?.total_beans || 0;
   const totalBlends = stats?.total_blends || 0;
-  const totalStock = stats?.total_stock_kg || 0;
+  const totalStock = inventoryStats?.total_weight || 0;
   const lowStockBeans = stats?.low_stock_beans || [];
+  const lowStockCount = inventoryStats?.low_stock_count || 0;
+  const activeVarieties = inventoryStats?.active_varieties || 0;
 
   return (
     <div className="min-h-screen">
@@ -73,59 +84,14 @@ export default function HomePage() {
           <ErrorState error={error} onRetry={fetchData} />
         ) : (
           <>
-            {/* 통계 카드 섹션 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-            >
-              <Card className="hover:border-latte-400">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-latte-500 text-sm font-medium">보유 생두</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalBeans}</p>
-                  </div>
-                  <Coffee className="w-10 h-10 text-latte-300" />
-                </CardContent>
-              </Card>
-
-              <Card className="hover:border-latte-400">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-latte-500 text-sm font-medium">블렌드 레시피</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">{totalBlends}</p>
-                  </div>
-                  <Layers className="w-10 h-10 text-latte-300" />
-                </CardContent>
-              </Card>
-
-              <Card className="hover:border-latte-400">
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-latte-500 text-sm font-medium">총 재고량</p>
-                    <p className="text-3xl font-bold text-latte-900 mt-1">
-                      {totalStock.toFixed(1)} <span className="text-lg text-latte-400">kg</span>
-                    </p>
-                  </div>
-                  <Package className="w-10 h-10 text-latte-300" />
-                </CardContent>
-              </Card>
-
-              <Card
-                className={`hover:border-red-300 ${lowStockBeans.length > 0 ? 'border-red-200 bg-red-50/50' : ''}`}
-              >
-                <CardContent className="p-6 flex items-center justify-between">
-                  <div>
-                    <p className="text-red-600/80 text-sm font-medium">재고 부족</p>
-                    <p className="text-3xl font-bold text-red-600 mt-1">
-                      {stats?.low_stock_count || 0}
-                    </p>
-                  </div>
-                  <AlertTriangle className="w-10 h-10 text-red-300" />
-                </CardContent>
-              </Card>
-            </motion.div>
+            {/* 재고 통계 위젯 (InventoryStats Component) */}
+            {inventoryStats && (
+              <InventoryStats
+                totalWeight={totalStock}
+                lowStockCount={lowStockCount}
+                activeVarieties={activeVarieties}
+              />
+            )}
 
             {/* 재고 부족 알림 (Red Theme - Polished) */}
             {lowStockBeans.length > 0 && (

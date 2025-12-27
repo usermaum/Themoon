@@ -1,7 +1,9 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData } from '@/lib/api'
+import { Bean, BeanAPI, InventoryLog, InventoryLogAPI, InventoryLogCreateData, AnalyticsAPI } from '@/lib/api'
 import PageHero from '@/components/ui/page-hero'
 import InventoryStats from '@/components/inventory/InventoryStats' // Import Stats
 import { Button } from '@/components/ui/button'
@@ -161,22 +163,17 @@ export default function InventoryPage() {
         return () => clearTimeout(timer)
     }, [logSearch])
 
-    // Calculate Stats on Mount (fetch all beans roughly)
+    // Calculate Stats on Mount (use optimized backend aggregation)
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // Fetch up to 1000 items to calculate global stats
-                const data = await BeanAPI.getAll({ limit: 1000 })
-                const allBeans = data.items
-
-                const totalWeight = allBeans.reduce((sum, bean) => sum + bean.quantity_kg, 0)
-                const lowStockCount = allBeans.filter(bean => bean.quantity_kg < 5).length
-                const activeVarieties = allBeans.length
+                // Use new backend aggregation API (much faster)
+                const data = await AnalyticsAPI.getInventorySummary()
 
                 setStats({
-                    totalWeight,
-                    lowStockCount,
-                    activeVarieties
+                    totalWeight: data.total_weight,
+                    lowStockCount: data.low_stock_count,
+                    activeVarieties: data.active_varieties
                 })
             } catch (e) {
                 console.error("Failed to fetch stats", e)
@@ -482,7 +479,123 @@ export default function InventoryPage() {
                                 value={tabValue}
                                 className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
                             >
-                                <div className="bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
+                                {/* Mobile Card Layout (< md) */}
+                                <div className="md:hidden space-y-3">
+                                    {beans.length === 0 ? (
+                                        <div className="py-12">
+                                            {beanSearch ? (
+                                                <MascotStatus
+                                                    variant="search"
+                                                    title="검색 결과가 없습니다"
+                                                    description={`'${beanSearch}'에 일치하는 원두를 찾을 수 없습니다.`}
+                                                    className="border-none shadow-none bg-transparent"
+                                                />
+                                            ) : (
+                                                <MascotStatus
+                                                    variant="empty"
+                                                    title="재고가 없습니다"
+                                                    description="현재 관리 중인 원두 재고가 없습니다."
+                                                    className="border-none shadow-none bg-transparent"
+                                                    action={
+                                                        <Button onClick={() => router.push('/beans')} className="mt-4">
+                                                            <Plus className="w-4 h-4 mr-2" /> 새 원두 등록하기
+                                                        </Button>
+                                                    }
+                                                />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        beans.map((bean) => (
+                                            <motion.div
+                                                key={bean.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-latte-200 shadow-sm"
+                                            >
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-latte-900">{bean.name_ko || bean.name}</h3>
+                                                        {bean.name_en && <p className="text-xs text-latte-500 font-sans">{bean.name_en}</p>}
+                                                    </div>
+                                                    {bean.quantity_kg < 5 ? (
+                                                        <Badge variant="destructive" className="whitespace-nowrap">부족</Badge>
+                                                    ) : bean.quantity_kg < 10 ? (
+                                                        <Badge variant="secondary" className="bg-amber-100 text-amber-800 whitespace-nowrap">주의</Badge>
+                                                    ) : (
+                                                        <Badge variant="default" className="bg-green-600 whitespace-nowrap">충분</Badge>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                                                    <div>
+                                                        <span className="text-latte-500 text-xs">유형</span>
+                                                        <div className="mt-1">
+                                                            {bean.type === 'GREEN_BEAN' ? <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50 text-xs">생두</Badge> :
+                                                                bean.type === 'BLEND_BEAN' ? <Badge variant="outline" className="border-amber-200 text-amber-700 bg-amber-50 text-xs">블렌드</Badge> :
+                                                                    <Badge variant="outline" className="border-latte-200 text-latte-700 bg-latte-50 text-xs">원두</Badge>}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-latte-500 text-xs">원산지</span>
+                                                        <p className="mt-1 text-latte-900 font-medium">{bean.origin_ko || bean.origin || '-'}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-latte-50 rounded-lg p-3 mb-3">
+                                                    <span className="text-latte-500 text-xs">현재 재고</span>
+                                                    <p className="text-xl font-mono font-bold text-latte-900 mt-1">
+                                                        {bean.quantity_kg.toFixed(2)} <span className="text-sm text-latte-500">kg</span>
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        onClick={() => openModal(bean, 'IN')}
+                                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                                                        size="sm"
+                                                    >
+                                                        <Plus className="w-4 h-4 mr-1" /> 입고
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => openModal(bean, 'OUT')}
+                                                        className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                                        size="sm"
+                                                    >
+                                                        <Minus className="w-4 h-4 mr-1" /> 출고
+                                                    </Button>
+                                                </div>
+                                            </motion.div>
+                                        ))
+                                    )}
+
+                                    {/* Mobile Pagination */}
+                                    {beans.length > 0 && (
+                                        <div className="flex justify-center items-center py-4 gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.max(1, beanPage - 1))}
+                                                disabled={beanPage === 1}
+                                            >
+                                                이전
+                                            </Button>
+                                            <span className="text-sm font-medium text-latte-600">
+                                                {beanPage} / {beanTotalPages || 1}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => updatePage('beanPage', Math.min(beanTotalPages || 1, beanPage + 1))}
+                                                disabled={beanPage >= (beanTotalPages || 1)}
+                                            >
+                                                다음
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Desktop Table Layout (>= md) */}
+                                <div className="hidden md:block bg-white rounded-[1em] shadow-sm overflow-hidden border border-latte-200">
                                     <div className="overflow-x-auto">
                                         <table className="min-w-full divide-y divide-latte-100">
                                             <thead className="bg-latte-50/50">
@@ -559,7 +672,7 @@ export default function InventoryPage() {
                                             </tbody>
                                         </table>
                                     </div>
-                                    {/* Bean Pagination */}
+                                    {/* Desktop Pagination */}
                                     {beans.length > 0 && (
                                         <div className="flex justify-center items-center py-4 gap-2 bg-latte-50/30 border-t border-latte-100">
                                             <Button

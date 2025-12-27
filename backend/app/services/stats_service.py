@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.inbound_document import InboundDocument
 from app.models.inbound_item import InboundItem
+from app.models.bean import Bean
 
 
 def get_supplier_stats(
@@ -225,4 +226,30 @@ def get_inventory_stats(
         "suppliers": supplier_list,
         "top_items": bean_results[:3],
         "total_value": total_inventory_value,
+    }
+
+
+def get_inventory_summary(db: Session) -> dict:
+    """
+    Get current inventory summary statistics.
+
+    Returns:
+        - total_weight: Total weight of all beans in stock (kg)
+        - low_stock_count: Number of beans with quantity < 5kg
+        - active_varieties: Total number of active bean varieties
+    """
+    # Calculate total weight
+    total_weight_result = db.query(func.sum(Bean.quantity_kg)).scalar()
+    total_weight = float(total_weight_result) if total_weight_result else 0.0
+
+    # Count low stock beans (< 5kg)
+    low_stock_count = db.query(Bean).filter(Bean.quantity_kg < 5).count()
+
+    # Count active varieties (all beans)
+    active_varieties = db.query(Bean).count()
+
+    return {
+        "total_weight": round(total_weight, 2),
+        "low_stock_count": low_stock_count,
+        "active_varieties": active_varieties
     }

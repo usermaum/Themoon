@@ -471,4 +471,13 @@ export const AnalyticsAPI = {
     const response = await api.get('/api/v1/analytics/stats/item/trends', { params });
     return response.data;
   },
+
+  getInventorySummary: async (): Promise<{
+    total_weight: number;
+    low_stock_count: number;
+    active_varieties: number;
+  }> => {
+    const response = await api.get('/api/v1/analytics/stats/inventory/summary');
+    return response.data;
+  },
 };

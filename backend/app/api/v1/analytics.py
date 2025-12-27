@@ -106,3 +106,16 @@ def get_inventory_statistics(
     )
 
     return stats_service.get_inventory_stats(db, start_dt, end_dt)
+
+
+@router.get("/stats/inventory/summary")
+def get_inventory_summary(db: Session = Depends(get_db)):
+    """
+    Get current inventory summary statistics (fast, aggregated).
+
+    Returns:
+        - total_weight: Total weight of all beans in stock (kg)
+        - low_stock_count: Number of beans with quantity < 5kg
+        - active_varieties: Total number of active bean varieties
+    """
+    return stats_service.get_inventory_summary(db)
