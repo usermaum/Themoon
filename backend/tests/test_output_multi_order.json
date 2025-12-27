@@ -1,0 +1,150 @@
+{
+  "error": null,
+  "debug_raw_text": "HACIELO 칸편주문 생두찾기 세일/혜택 커피재료&냉동생지 이슈&인포\n최근 3개월 주문내역\n\n주문번호: 20251108-8B7C2 (2025/11/08)\n브라질 산토스 NY2 FC (2) 택배 494,000원 40kg\n\n주문번호: 20250926-8BD28 (2025/09/26)\n에티오피아 모모라 내추럴 구지 G1 (1) 택배 430,000원 20kg\n\n주문번호: 20250822-9533C (2025/08/22)\n(주간생두)에티오피아 모모라 내추럴 구지 G1 (2) 택배 870,000원 40kg",
+  "document_info": {
+    "document_number": "HACIELO-202511",
+    "contract_number": null,
+    "issue_date": "2025-11-08",
+    "invoice_date": "2025-11-08",
+    "delivery_date": null,
+    "payment_due_date": null,
+    "invoice_type": "HACIELO"
+  },
+  "supplier": {
+    "name": "HACIELO",
+    "business_number": null,
+    "address": null,
+    "phone": "031-984-6034",
+    "fax": null,
+    "email": null,
+    "representative": null,
+    "contact_person": null,
+    "contact_phone": null
+  },
+  "receiver": {
+    "name": "The Moon Coffee",
+    "business_number": null,
+    "address": null,
+    "phone": null,
+    "contact_person": null
+  },
+  "amounts": {
+    "subtotal": 1794000,
+    "tax_amount": 179400,
+    "total_amount": 1794000,
+    "total_amount_kr": 1794000,
+    "grand_total": 1973400,
+    "currency": "KRW"
+  },
+  "items": [
+    {
+      "item_number": "1",
+      "order_number": "20251108-8B7C2",
+      "bean_name": "브라질 산토스 NY2 FC (2)",
+      "bean_name_kr": "브라질 산토스 NY2 FC",
+      "specification": null,
+      "origin": "브라질",
+      "quantity": 40,
+      "unit": "kg",
+      "unit_price": 12350,
+      "amount": 494000,
+      "note": "택배"
+    },
+    {
+      "item_number": "2",
+      "order_number": "20250926-8BD28",
+      "bean_name": "에티오피아 모모라 내추럴 구지 G1 (1)",
+      "bean_name_kr": "에티오피아 모모라 내추럴 구지 G1",
+      "specification": null,
+      "origin": "에티오피아",
+      "quantity": 20,
+      "unit": "kg",
+      "unit_price": 21500,
+      "amount": 430000,
+      "note": "택배"
+    },
+    {
+      "item_number": "3",
+      "order_number": "20250822-9533C",
+      "bean_name": "(주간생두)에티오피아 모모라 내추럴 구지 G1 (2)",
+      "bean_name_kr": "에티오피아 모모라 내추럴 구지 G1",
+      "specification": null,
+      "origin": "에티오피아",
+      "quantity": 40,
+      "unit": "kg",
+      "unit_price": 21750,
+      "amount": 870000,
+      "note": "택배"
+    }
+  ],
+  "additional_info": {
+    "payment_terms": null,
+    "shipping_method": "택배",
+    "notes": "최근 3개월 주문내역",
+    "remarks": null
+  },
+  "has_multiple_orders": true,
+  "total_order_count": 3,
+  "order_groups": [
+    {
+      "order_number": "20251108-8B7C2",
+      "order_date": "2025-11-08",
+      "items": [
+        {
+          "item_number": "1",
+          "order_number": "20251108-8B7C2",
+          "bean_name": "브라질 산토스 NY2 FC (2)",
+          "bean_name_kr": "브라질 산토스 NY2 FC",
+          "specification": null,
+          "origin": "브라질",
+          "quantity": 40,
+          "unit": "kg",
+          "unit_price": 12350,
+          "amount": 494000,
+          "note": "택배"
+        }
+      ],
+      "subtotal": 494000
+    },
+    {
+      "order_number": "20250926-8BD28",
+      "order_date": "2025-09-26",
+      "items": [
+        {
+          "item_number": "2",
+          "order_number": "20250926-8BD28",
+          "bean_name": "에티오피아 모모라 내추럴 구지 G1 (1)",
+          "bean_name_kr": "에티오피아 모모라 내추럴 구지 G1",
+          "specification": null,
+          "origin": "에티오피아",
+          "quantity": 20,
+          "unit": "kg",
+          "unit_price": 21500,
+          "amount": 430000,
+          "note": "택배"
+        }
+      ],
+      "subtotal": 430000
+    },
+    {
+      "order_number": "20250822-9533C",
+      "order_date": "2025-08-22",
+      "items": [
+        {
+          "item_number": "3",
+          "order_number": "20250822-9533C",
+          "bean_name": "(주간생두)에티오피아 모모라 내추럴 구지 G1 (2)",
+          "bean_name_kr": "에티오피아 모모라 내추럴 구지 G1",
+          "specification": null,
+          "origin": "에티오피아",
+          "quantity": 40,
+          "unit": "kg",
+          "unit_price": 21750,
+          "amount": 870000,
+          "note": "택배"
+        }
+      ],
+      "subtotal": 870000
+    }
+  ]
+}

@@ -206,6 +206,60 @@ class OCRService:
 
         return json.loads(json_str)
 
+    def _post_process_ocr_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        OCR 결과를 후처리하여 주문별로 그룹화
+
+        Returns:
+            Enhanced result with:
+            - has_multiple_orders: bool
+            - total_order_count: int
+            - order_groups: List[OrderGroup]
+        """
+        import re
+
+        items = result.get("items", [])
+
+        if not items:
+            result["has_multiple_orders"] = False
+            result["total_order_count"] = 0
+            result["order_groups"] = []
+            return result
+
+        # 주문번호로 그룹화
+        order_groups = {}
+
+        for item in items:
+            order_num = item.get("order_number") or "UNKNOWN"
+
+            if order_num not in order_groups:
+                order_groups[order_num] = {
+                    "order_number": order_num,
+                    "order_date": None,
+                    "items": [],
+                    "subtotal": 0,
+                }
+
+            order_groups[order_num]["items"].append(item)
+            order_groups[order_num]["subtotal"] += item.get("amount", 0)
+
+        # 주문 날짜 추출 (YYYYMMDD-XXXXX 형식에서)
+        for group in order_groups.values():
+            order_num = group["order_number"]
+            # YYYYMMDD-XXXXX 형식 파싱
+            match = re.match(r"^(\d{4})(\d{2})(\d{2})", order_num)
+            if match:
+                year, month, day = match.groups()
+                group["order_date"] = f"{year}-{month}-{day}"
+
+        # 결과 enrichment
+        order_groups_list = list(order_groups.values())
+        result["has_multiple_orders"] = len(order_groups_list) > 1
+        result["total_order_count"] = len(order_groups_list)
+        result["order_groups"] = order_groups_list
+
+        return result
+
     def _call_gemini_sync(
         self, model_name: str, image_bytes: bytes, mime_type: str, prompt: str
     ) -> str:
@@ -334,6 +388,10 @@ class OCRService:
                 )  # Log first 500 chars
 
                 result_json = self._clean_and_parse_json(text_result)
+
+                # 🆕 후처리: 주문별 그룹화
+                result_json = self._post_process_ocr_result(result_json)
+
                 yield {"status": "complete", "data": result_json}
                 return
 

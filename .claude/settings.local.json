@@ -67,7 +67,8 @@
       "Bash(../venv/bin/python:*)",
       "Skill(plugin-dev:agent-development)",
       "Bash(bash dev.sh:*)",
-      "Skill(plugin-dev:plugin-structure)"
+      "Skill(plugin-dev:plugin-structure)",
+      "Bash(PYTHONPATH=. ../venv/bin/python:*)"
     ],
     "deny": [],
     "ask": []
