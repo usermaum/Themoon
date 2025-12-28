@@ -30,3 +30,4 @@ mypy
 black
 ruff
 psutil>=5.9.0
+pytest

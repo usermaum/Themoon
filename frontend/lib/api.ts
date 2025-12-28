@@ -195,6 +195,31 @@ export interface RoastingLogDetail extends RoastingLog {
   inventory_logs: InventoryLog[];
 }
 
+export interface RoastingStatsResponse {
+  overview: {
+    total_production_kg: number;
+    total_batches: number;
+    avg_loss_rate: number;
+  };
+  daily_production: Array<{
+    date: string;
+    total_weight: number;
+    batch_count: number;
+  }>;
+  bean_usage: Array<{
+    bean_type: string;
+    bean_name: string;
+    total_output: number;
+    percentage: number;
+  }>;
+  recent_loss_rates: Array<{
+    batch_no: string;
+    roast_date: string;
+    bean_name: string;
+    loss_rate: number;
+  }>;
+}
+
 // --- Bean API ---
 
 export const BeanAPI = {
@@ -307,6 +332,11 @@ export const RoastingAPI = {
 
   getLog: async (id: number) => {
     const response = await api.get<RoastingLog>(`/api/v1/roasting/${id}`);
+    return response.data;
+  },
+
+  getStats: async (params?: { start_date?: string; end_date?: string }) => {
+    const response = await api.get<RoastingStatsResponse>('/api/v1/roasting/dashboard/stats', { params });
     return response.data;
   },
 };

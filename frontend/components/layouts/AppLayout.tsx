@@ -31,7 +31,7 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isSidebarOpen]);
+  }, []);
 
   const toggleSidebar = () => {
     const newState = !isSidebarOpen;
@@ -40,15 +40,9 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
     document.cookie = `sidebar:state=${newState}; path=/; max-age=31536000`;
   };
 
-  // Use 0px as default for SSR to avoid ReferenceError
-  const sidebarWidth =
-    typeof window !== 'undefined'
-      ? window.innerWidth < 1024
-        ? '0px'
-        : isSidebarOpen
-          ? '256px'
-          : '80px'
-      : '256px';
+  // Use 256px as default to match server-side rendering and avoid hydration mismatch
+  // The actual width for mobile will be handled by the useEffect hook
+  const sidebarWidth = isSidebarOpen ? '256px' : '80px';
 
   return (
     <div
@@ -73,10 +67,10 @@ export default function AppLayout({ children, initialSidebarState = true }: AppL
         <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blob-orange/30 rounded-full blur-[100px] pointer-events-none -z-10"></div>
         <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-blob-green/30 rounded-full blur-[100px] pointer-events-none -z-10"></div>
         {/* Mobile menu button */}
-        <div className="lg:hidden fixed top-4 left-4 z-30">
+        <div className="lg:hidden fixed top-4 left-4 z-50">
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700"
+            className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
             <svg

@@ -1,10 +1,11 @@
 from typing import List, Optional
 
-from sqlalchemy.orm import Session, contains_eager
+from sqlalchemy.orm import Session
 
 from app.models.bean import Bean
 from app.models.inventory_log import InventoryLog
 from app.schemas.inventory_log import InventoryLogCreate
+from app.repositories.inventory_repository import InventoryRepository
 
 
 class InventoryLogService:
@@ -17,28 +18,8 @@ class InventoryLogService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[InventoryLog]:
-        query = db.query(InventoryLog).join(Bean)
-
-        if bean_id:
-            query = query.filter(InventoryLog.bean_id == bean_id)
-        if change_types:
-            query = query.filter(InventoryLog.change_type.in_(change_types))
-        if search:
-            query = query.filter(
-                (Bean.name.contains(search))
-                | (Bean.name_ko.contains(search))
-                | (Bean.name_en.contains(search))
-                | (Bean.origin.contains(search))
-                | (Bean.origin_ko.contains(search))
-            )
-
-        return (
-            query.options(contains_eager(InventoryLog.bean))
-            .order_by(InventoryLog.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        repo = InventoryRepository(db)
+        return repo.get_logs(bean_id, change_types, search, skip, limit)
 
     def get_logs_count(
         self,
@@ -47,27 +28,14 @@ class InventoryLogService:
         change_types: Optional[List[str]] = None,
         search: Optional[str] = None,
     ) -> int:
-        """입출고 기록 총 개수 조회"""
-        query = db.query(InventoryLog).join(Bean)
-
-        if bean_id:
-            query = query.filter(InventoryLog.bean_id == bean_id)
-        if change_types:
-            query = query.filter(InventoryLog.change_type.in_(change_types))
-        if search:
-            query = query.filter(
-                (Bean.name.contains(search))
-                | (Bean.name_ko.contains(search))
-                | (Bean.name_en.contains(search))
-                | (Bean.origin.contains(search))
-                | (Bean.origin_ko.contains(search))
-            )
-
-        return query.count()
+        repo = InventoryRepository(db)
+        return repo.count_logs(bean_id, change_types, search)
 
     def create_log(self, db: Session, log: InventoryLogCreate) -> InventoryLog:
+        repo = InventoryRepository(db)
+        
         # Bean의 현재 재고량 가져오기
-        bean = db.query(Bean).filter(Bean.id == log.bean_id).first()
+        bean = repo.get_bean(log.bean_id)
         if not bean:
             raise ValueError("Bean not found")
 
@@ -87,21 +55,20 @@ class InventoryLogService:
             notes=log.notes,
         )
 
-        db.add(db_log)
-        db.commit()
-        db.refresh(db_log)
-        return db_log
+        return repo.create_log(db_log)
 
     def update_log(
         self, db: Session, log_id: int, change_amount: float, notes: Optional[str] = None
     ) -> Optional[InventoryLog]:
+        repo = InventoryRepository(db)
+        
         # 기존 로그 조회
-        db_log = db.query(InventoryLog).filter(InventoryLog.id == log_id).first()
+        db_log = repo.get_log(log_id)
         if not db_log:
             return None
 
         # 원두 조회
-        bean = db.query(Bean).filter(Bean.id == db_log.bean_id).first()
+        bean = repo.get_bean(db_log.bean_id)
         if not bean:
             raise ValueError("Bean not found")
 
@@ -115,24 +82,34 @@ class InventoryLogService:
 
         bean.quantity_kg = new_quantity
 
-        # 로그 업데이트
+        # 로그 업데이트 (This part remains in service as it modifies object state before commit)
+        # However, repository's save method isn't explicitly used for update in SQLAlchemy usually unless using specific pattern.
+        # But we need to commit. We can add a method to repo or just use db.commit() here if we want strict repo pattern we'd verify.
+        # Given the repo `create_log` does commit, let's add `update_log` or `commit` to repo.
+        # For now, let's keep direct object modification and use a repo method to save/commit.
+        
         db_log.change_amount = change_amount
         db_log.current_quantity = new_quantity
         if notes is not None:
             db_log.notes = notes
 
-        db.commit()
-        db.refresh(db_log)
+        # Using implicit commit for now or adding a save method to repo.
+        # Let's use `repo.db.commit()` effectively via a repo wrapper method if strictly following pattern,
+        # but the request was to isolate query logic.
+        repo.db.commit()
+        repo.db.refresh(db_log)
         return db_log
 
     def delete_log(self, db: Session, log_id: int) -> bool:
+        repo = InventoryRepository(db)
+        
         # 기존 로그 조회
-        db_log = db.query(InventoryLog).filter(InventoryLog.id == log_id).first()
+        db_log = repo.get_log(log_id)
         if not db_log:
             return False
 
         # 원두 조회
-        bean = db.query(Bean).filter(Bean.id == db_log.bean_id).first()
+        bean = repo.get_bean(db_log.bean_id)
         if not bean:
             raise ValueError("Bean not found")
 
@@ -144,8 +121,7 @@ class InventoryLogService:
         bean.quantity_kg = new_quantity
 
         # 로그 삭제
-        db.delete(db_log)
-        db.commit()
+        repo.delete_log(db_log)
         return True
 
 

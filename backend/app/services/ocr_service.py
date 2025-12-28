@@ -80,7 +80,7 @@ class OCRService:
         ────────────────────────────────────────
         Carefully inspect the image.
 
-        If the image is NOT a business document
+        if the image is NOT a business document
         (invoice, transaction statement, tax invoice, delivery note, purchase order),
         return ONLY the following JSON:
         {{
@@ -140,14 +140,27 @@ class OCRService:
         - 사업장 = Address
         - 업태 / 종목 = Business Type (put in additional_info or notes if no specific field)
         - 규격 = Specification / Package unit (e.g. 1kg)
-        - 수량 = Quantity (Count of packages)
-        - 중량 = Total Weight (if distinct from quantity)
+        - 수량 = Quantity / Count (Integer). 
+          * [WARNING] Do NOT confuse with Total Weight.
+          * If value is 1-100 (integer) -> Quantity.
+          * If value has 'kg' (e.g. 40kg) -> Total Weight.
+        - 중량/총중량 = Total Weight (kg).
+          * [CRITICAL] Map '40kg', '20kg' etc. to "total_weight".
+          * NEVER map a weight value (e.g. 40kg) to "quantity" (e.g. 2).
+          * Do NOT calculate bag count unless explicitly stated.
         - 단가 = Unit Price
         - 공급가액 = Supply Amount (Line Amount EXCLUDING tax)
         - 세액/부가세 = Tax Amount
         - 합계금액 / 총액 = Total Amount (Supply + Tax)
-        - 배송비 = Shipping cost (add as a line item or in additional_info)
-        - 계약번호 / 계약일자 = Contract Number / Date
+        [SPECIAL RULE: SUPPLIER NAME & BRANDING]
+        - The Supplier Name (상호) is commonly the LOGO or HUGE TEXT at the very top.
+        - **SPECIFIC OVERRIDE**: If you see "LACIELO", "L A C I E L O", "라씨엘로", or similar, SET "supplier_name" to "LACIELO".
+        - If you see "COFFEE ZIP", "커피집", SET "supplier_name" to "COFFEE ZIP".
+        - If you see "Almacielo", "알마씨엘로", SET "supplier_name" to "Almacielo".
+        - If the document starts with a prominent English or Korean brand name, treat it as the "supplier_name".
+        - Do not ignore the header/logo text.
+        - If "공급자" section exists, prioritize the "상호(법인명)" value in that section.
+        - If no clear "supplier_name" is found, leave it as null.
 
         ────────────────────────────────────────
         STEP 5. ITEM (COFFEE BEAN) INTELLIGENCE
@@ -228,15 +241,33 @@ class OCRService:
 
     def _post_process_ocr_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """
-        OCR 결과를 후처리하여 주문별로 그룹화
-
-        Returns:
-            Enhanced result with:
-            - has_multiple_orders: bool
-            - total_order_count: int
-            - order_groups: List[OrderGroup]
+        OCR 결과를 후처리하여 주문별로 그룹화 및 누락된 정보 보완
         """
         import re
+
+        # Fallback: Check debug_raw_text for Supplier Name if missing
+        supplier_data = result.get("supplier", {})
+        if not supplier_data:
+            supplier_data = {}
+            result["supplier"] = supplier_data
+        
+        current_name = supplier_data.get("name")
+        raw_text = result.get("debug_raw_text", "")
+
+        if not current_name and raw_text:
+            # Check for known suppliers in the first few lines of raw text
+            # Simply check if the keyword exists in the first 1000 chars to cover headers
+            head_text = raw_text[:1000].upper()
+            
+            if any(k in head_text for k in ["LACIELO", "L A C I E L O", "라씨엘로", "LACIELOR", "LACIEL0"]):
+                supplier_data["name"] = "LACIELO"
+                result["supplier_name"] = "LACIELO" # Populate top-level as well for convenience
+            elif "COFFEE ZIP" in head_text or "커피집" in head_text:
+                supplier_data["name"] = "COFFEE ZIP"
+            elif "ALMACIELO" in head_text or "알마씨엘로" in head_text:
+                supplier_data["name"] = "Almacielo"
+            elif "THE MOON" in head_text:
+                supplier_data["name"] = "The Moon Coffee"
 
         items = result.get("items", [])
 

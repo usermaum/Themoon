@@ -80,6 +80,7 @@
           "unit": "단위 (kg, bag, etc.)",
           "unit_price": "단가 (Number)",
           "amount": "금액 (Number)",
+          "total_weight": "총중량 (Number)",
           "note": "비고"
         }
       ],

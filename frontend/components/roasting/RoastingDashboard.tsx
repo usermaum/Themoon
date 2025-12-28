@@ -34,14 +34,20 @@ interface DashboardStats {
     }>;
 }
 
-export function RoastingDashboard() {
-    const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [loading, setLoading] = useState(true)
+interface RoastingDashboardProps {
+    initialData?: DashboardStats
+}
+
+export function RoastingDashboard({ initialData }: RoastingDashboardProps) {
+    const [stats, setStats] = useState<DashboardStats | null>(initialData || null)
+    const [loading, setLoading] = useState(!initialData)
     const [error, setError] = useState("")
 
     useEffect(() => {
-        fetchStats()
-    }, [])
+        if (!initialData) {
+            fetchStats()
+        }
+    }, [initialData])
 
     const fetchStats = async () => {
         try {

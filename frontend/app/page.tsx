@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI, AnalyticsAPI } from '@/lib/api';
+import { Bean, InventoryLog, InventoryLogAPI, DashboardAPI, AnalyticsAPI, RoastingAPI, RoastingStatsResponse } from '@/lib/api';
 import InventoryStats from '@/components/inventory/InventoryStats';
 import Link from 'next/link';
 import {
@@ -34,6 +34,8 @@ export default function HomePage() {
     active_varieties: number;
   } | null>(null);
 
+  const [roastingStats, setRoastingStats] = useState<RoastingStatsResponse | null>(null);
+
   const [recentLogs, setRecentLogs] = useState<InventoryLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
@@ -43,15 +45,17 @@ export default function HomePage() {
       setLoading(true);
       setError(null);
 
-      const [statsData, logsData, invStatsData] = await Promise.all([
+      const [statsData, logsData, invStatsData, roastingData] = await Promise.all([
         DashboardAPI.getStats(),
         InventoryLogAPI.getAll({ limit: 10 }),
         AnalyticsAPI.getInventorySummary(),
+        RoastingAPI.getStats(),
       ]);
 
       setStats(statsData);
       setRecentLogs(Array.isArray(logsData?.items) ? logsData.items : []);
       setInventoryStats(invStatsData);
+      setRoastingStats(roastingData);
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err);
       setError(err);
@@ -91,6 +95,67 @@ export default function HomePage() {
                 lowStockCount={lowStockCount}
                 activeVarieties={activeVarieties}
               />
+            )}
+
+            {/* 로스팅 현황 (Roasting Stats) */}
+            {roastingStats && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.25 }}
+                className="mb-8"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-serif font-bold text-latte-900">
+                    로스팅 현황
+                  </h2>
+                  <Link href="/roasting" className="text-sm font-medium text-latte-500 hover:text-latte-700 flex items-center gap-1 transition-colors">
+                    상세 보기 <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Production Stat */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-latte-100 flex items-center justify-between group hover:border-latte-300 transition-all">
+                    <div>
+                      <p className="text-latte-400 text-xs font-bold uppercase tracking-widest mb-1">Total Production</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-latte-900">
+                          {roastingStats.overview.total_production_kg.toFixed(1)}
+                        </span>
+                        <span className="text-latte-500 font-bold">kg</span>
+                      </div>
+                      <p className="text-latte-400 text-xs mt-2">
+                        최근 30일간 {roastingStats.overview.total_batches} 배치 생산
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-latte-50 rounded-full flex items-center justify-center group-hover:bg-latte-100 transition-colors">
+                      <Package className="w-6 h-6 text-latte-600" />
+                    </div>
+                  </div>
+
+                  {/* Loss Rate Stat */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-latte-100 flex items-center justify-between group hover:border-latte-300 transition-all">
+                    <div>
+                      <p className="text-latte-400 text-xs font-bold uppercase tracking-widest mb-1">Avg. Loss Rate</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-3xl font-black ${roastingStats.overview.avg_loss_rate > 15 ? 'text-red-500' : 'text-green-600'
+                          }`}>
+                          {roastingStats.overview.avg_loss_rate.toFixed(1)}
+                        </span>
+                        <span className="text-latte-500 font-bold">%</span>
+                      </div>
+                      <p className="text-latte-400 text-xs mt-2">
+                        목표 손실률 12-15%
+                        {roastingStats.overview.avg_loss_rate > 15 && <span className="ml-1 text-red-500 font-bold">(높음)</span>}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-latte-50 rounded-full flex items-center justify-center group-hover:bg-latte-100 transition-colors">
+                      <Layers className="w-6 h-6 text-latte-600" />
+                    </div>
+                  </div>
+                </div>
+              </motion.section>
             )}
 
             {/* 재고 부족 알림 (Red Theme - Polished) */}
@@ -187,7 +252,7 @@ export default function HomePage() {
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
+              transition={{ duration: 0.4, delay: 0.25 }}
               className="mb-8"
             >
               <h2 className="text-2xl font-serif font-bold text-latte-900 mb-4">
@@ -244,6 +309,8 @@ export default function HomePage() {
                 )}
               </div>
             </motion.section>
+
+
 
             {/* 빠른 링크 */}
             <motion.section

@@ -7,81 +7,21 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.bean import Bean, BeanType
 from app.models.inbound_document import InboundDocument
-from app.models.inbound_document_detail import InboundDocumentDetail
-from app.models.inbound_item import InboundItem
-from app.models.inbound_receiver import InboundReceiver
-from app.models.inventory_log import InventoryChangeType, InventoryLog
-from app.models.supplier import Supplier
+from app.repositories.inbound_repository import InboundRepository
 from app.schemas.inbound import (
     InboundConfirmRequest,
-    OCRResponse,
     PaginatedInboundResponse,
 )
 from app.services.image_service import image_service
 from app.services.ocr_service import OCRService
+from app.services.inbound_service import inbound_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Initialize services
+# Initialize services (ocr_service is used here for streaming analysis)
 ocr_service = OCRService()
-
-
-# === 생두 매칭 헬퍼 함수 ===
-def match_bean_multi_field(bean_name: str, db: Session) -> tuple[Bean | None, str, str]:
-    """
-    다중 필드로 생두 매칭 시도 (대소문자 무시)
-
-    Args:
-        bean_name: OCR에서 추출한 생두명
-        db: DB 세션
-
-    Returns:
-        (매칭된 Bean 객체 또는 None, 매칭 필드, 매칭 방법)
-        - Bean: 매칭된 생두 객체 (없으면 None)
-        - match_field: "name", "name_en", "name_ko", "new"
-        - match_method: "exact", "case_insensitive", "new"
-    """
-    if not bean_name:
-        return None, "new", "new"
-
-    from sqlalchemy import func
-
-    # 1. Exact match 시도 (Bean.name)
-    bean = db.query(Bean).filter(Bean.name == bean_name).first()
-    if bean:
-        return bean, "name", "exact"
-
-    # 2. Exact match 시도 (Bean.name_en)
-    bean = db.query(Bean).filter(Bean.name_en == bean_name).first()
-    if bean:
-        return bean, "name_en", "exact"
-
-    # 3. Exact match 시도 (Bean.name_ko)
-    bean = db.query(Bean).filter(Bean.name_ko == bean_name).first()
-    if bean:
-        return bean, "name_ko", "exact"
-
-    # 4. Case-insensitive match 시도 (Bean.name)
-    bean = db.query(Bean).filter(func.lower(Bean.name) == bean_name.lower()).first()
-    if bean:
-        return bean, "name", "case_insensitive"
-
-    # 5. Case-insensitive match 시도 (Bean.name_en)
-    bean = db.query(Bean).filter(func.lower(Bean.name_en) == bean_name.lower()).first()
-    if bean:
-        return bean, "name_en", "case_insensitive"
-
-    # 6. Case-insensitive match 시도 (Bean.name_ko)
-    bean = db.query(Bean).filter(func.lower(Bean.name_ko) == bean_name.lower()).first()
-    if bean:
-        return bean, "name_ko", "case_insensitive"
-
-    # 7. 매칭 실패
-    return None, "new", "new"
-
 
 import asyncio
 import json
@@ -271,6 +211,7 @@ async def analyze_inbound_document(
                 DocumentInfo,
                 ReceiverInfo,
                 SupplierInfo,
+                OCRResponse,
             )
 
             document_info = (
@@ -296,7 +237,8 @@ async def analyze_inbound_document(
             items_with_match_info = []
             for item_data in ocr_result.get("items", []):
                 bean_name = item_data.get("bean_name")
-                matched_bean, match_field, match_method = match_bean_multi_field(bean_name, db)
+                # Use InboundService for matching
+                matched_bean, match_field, match_method = inbound_service.match_bean_multi_field(bean_name, db)
                 item_data["matched"] = matched_bean is not None
                 item_data["match_field"] = match_field
                 item_data["match_method"] = match_method
@@ -311,6 +253,9 @@ async def analyze_inbound_document(
                 amounts=amounts_info,
                 items=items_with_match_info,
                 additional_info=additional_info,
+                has_multiple_orders=ocr_result.get("has_multiple_orders", False),
+                total_order_count=ocr_result.get("total_order_count", 0),
+                order_groups=ocr_result.get("order_groups", []),
                 supplier_name=ocr_result.get("supplier", {}).get("name"),
                 contract_number=ocr_result.get("document_info", {}).get("contract_number"),
                 supplier_phone=ocr_result.get("supplier", {}).get("phone"),
@@ -349,32 +294,15 @@ def get_inbound_list(
     """
     명세서 목록 조회 (Pagination & Filtering)
     """
-    query = db.query(InboundDocument)
-
-    # Filtering
-    if from_date:
-        query = query.filter(InboundDocument.invoice_date >= from_date)
-    if to_date:
-        query = query.filter(InboundDocument.invoice_date <= to_date)
-
-    if keyword:
-        # Search in Contract Number or Supplier Name
-        query = query.filter(
-            or_(
-                InboundDocument.contract_number.ilike(f"%{keyword}%"),
-                InboundDocument.supplier_name.ilike(f"%{keyword}%"),
-            )
-        )
-
-    # Sorting (Latest first)
-    query = query.order_by(InboundDocument.created_at.desc())
-
-    # Pagination
-    total = query.count()
+    inbound_repo = InboundRepository(db)
+    items, total = inbound_repo.get_list(
+        skip=(page - 1) * limit,
+        limit=limit,
+        from_date=from_date,
+        to_date=to_date,
+        keyword=keyword
+    )
     total_pages = (total + limit - 1) // limit
-
-    offset = (page - 1) * limit
-    items = query.offset(offset).limit(limit).all()
 
     return {"items": items, "total": total, "page": page, "size": limit, "total_pages": total_pages}
 
@@ -384,199 +312,39 @@ def get_inbound_detail(document_id: int, db: Session = Depends(get_db)):
     """
     명세서 상세 정보 조회 (Document + Detail + Receiver + Items)
     """
-    doc = db.query(InboundDocument).filter(InboundDocument.id == document_id).first()
+    inbound_repo = InboundRepository(db)
+    doc = inbound_repo.get_document(document_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
-
-    # Eager loading isn't strictly necessary here if using standard relationships,
-    # but let's ensure we return what we need.
-    # The models have relationships defined.
 
     return {"document": doc, "detail": doc.detail, "receiver": doc.receiver, "items": doc.items}
 
 
-@router.get("/check-duplicate/{contract_number}")
 @router.get("/check-duplicate/{contract_number}")
 def check_duplicate_contract_number(contract_number: str, db: Session = Depends(get_db)):
     """
     Check if a contract number already exists.
     Returns {"exists": true/false}
     """
-    existing_doc = (
-        db.query(InboundDocument).filter(InboundDocument.contract_number == contract_number).first()
-    )
+    inbound_repo = InboundRepository(db)
+    existing_doc = inbound_repo.get_document_by_contract_number(contract_number)
 
     if existing_doc:
         return {"exists": True, "detail": "⚠️ 이미 등록된 명세서(계약번호)입니다."}
     return {"exists": False, "detail": "사용 가능한 번호입니다."}
 
 
-# --- Save Endpoint ---
-
-
 @router.post("/confirm", status_code=201)
 def confirm_inbound(request: InboundConfirmRequest, db: Session = Depends(get_db)):
     """
-    Saves the confirmed inbound data:
-    1. Check for Duplicate Contract Number.
-    2. Manage Supplier (Find existing or Create new).
-    3. Create InboundDocument record.
-    4. Create InventoryLog records for each item.
-    5. Update Bean quantity.
+    Saves the confirmed inbound data.
+    Delegates logic to InboundService.
     """
-    # 0. Check Duplicate Check
-    if request.document.contract_number:
-        # Check strict match on contract_number
-        existing_doc = (
-            db.query(InboundDocument)
-            .filter(InboundDocument.contract_number == request.document.contract_number)
-            .first()
-        )
-        if existing_doc:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Duplicate Contract Number: {request.document.contract_number}",
-            )
-
-    # 1. Manage Supplier
-    supplier_id = request.document.supplier_id
-    if not supplier_id and request.document.supplier_name:
-        # Try to find by name
-        supplier = (
-            db.query(Supplier).filter(Supplier.name == request.document.supplier_name).first()
-        )
-        if not supplier:
-            # Create New Supplier
-            supplier = Supplier(
-                name=request.document.supplier_name,
-                contact_phone=request.document.supplier_phone,
-                contact_email=request.document.supplier_email,
-                representative_name=request.document.receiver_name
-                or "",  # Fallback or separate field?
-            )
-            db.add(supplier)
-            db.flush()  # Get ID
-
-        # If supplier exists, we could update info, but let's skip for safety.
-        supplier_id = supplier.id
-
-    # 2. Create Document
-    doc_data = request.document.dict(exclude={"supplier_phone", "supplier_email"})
-    doc_data["supplier_id"] = supplier_id
-    doc_data["processing_status"] = "completed"
-
-    new_doc = InboundDocument(**doc_data)
-    db.add(new_doc)
-    db.flush()  # Get ID
-
-    # 2-1. Create Document Detail (NEW - Option B)
-    if request.document_info or request.supplier or request.amounts or request.additional_info:
-        detail_data = {}
-
-        # Document info
-        if request.document_info:
-            detail_data["document_number"] = request.document_info.document_number
-            detail_data["issue_date"] = request.document_info.issue_date
-            detail_data["delivery_date"] = request.document_info.delivery_date
-            detail_data["payment_due_date"] = request.document_info.payment_due_date
-            detail_data["invoice_type"] = request.document_info.invoice_type
-
-        # Supplier detailed info
-        if request.supplier:
-            detail_data["supplier_business_number"] = request.supplier.business_number
-            detail_data["supplier_address"] = request.supplier.address
-            detail_data["supplier_phone"] = request.supplier.phone
-            detail_data["supplier_fax"] = request.supplier.fax
-            detail_data["supplier_email"] = request.supplier.email
-            detail_data["supplier_representative"] = request.supplier.representative
-            detail_data["supplier_contact_person"] = request.supplier.contact_person
-            detail_data["supplier_contact_phone"] = request.supplier.contact_phone
-
-        # Amount details
-        if request.amounts:
-            detail_data["subtotal"] = request.amounts.subtotal
-            detail_data["tax_amount"] = request.amounts.tax_amount
-            detail_data["grand_total"] = request.amounts.grand_total or request.amounts.total_amount
-            detail_data["currency"] = request.amounts.currency
-
-        # Additional info
-        if request.additional_info:
-            detail_data["payment_terms"] = request.additional_info.payment_terms
-            detail_data["shipping_method"] = request.additional_info.shipping_method
-            detail_data["notes"] = request.additional_info.notes
-            detail_data["remarks"] = request.additional_info.remarks
-
-        detail = InboundDocumentDetail(inbound_document_id=new_doc.id, **detail_data)
-        db.add(detail)
-
-    # 2-2. Create Receiver (NEW - Option B)
-    if request.receiver:
-        receiver = InboundReceiver(
-            inbound_document_id=new_doc.id,
-            name=request.receiver.name,
-            business_number=request.receiver.business_number,
-            address=request.receiver.address,
-            phone=request.receiver.phone,
-            contact_person=request.receiver.contact_person,
-        )
-        db.add(receiver)
-
-    # 3. Process Items
-    for idx, item in enumerate(request.items):
-        bean_name = item.bean_name
-        quantity = item.quantity or 0.0
-
-        # Find Bean (다중 필드 매칭)
-        bean, match_field, match_method = match_bean_multi_field(bean_name, db)
-
-        if not bean:
-            # Auto-create bean if missing
-            logger.info(f"Creating new bean: {bean_name} (no match found)")
-            bean = Bean(
-                name=bean_name,
-                name_en=bean_name,  # OCR 결과를 영문명으로 저장
-                quantity_kg=0.0,
-                origin=item.origin or "Unknown",
-                type=BeanType.GREEN_BEAN,
-            )
-            db.add(bean)
-            db.flush()
-        else:
-            logger.info(
-                f"Matched bean: {bean_name} → {bean.name} (ID: {bean.id}, field: {match_field})"
-            )
-
-        # Create Log (기존 로직 유지)
-        log = InventoryLog(
-            bean_id=bean.id,
-            change_type=InventoryChangeType.PURCHASE,
-            change_amount=quantity,
-            current_quantity=bean.quantity_kg + quantity,
-            inbound_document_id=new_doc.id,
-            notes=f"Inbound from {new_doc.supplier_name} (Contract: {new_doc.contract_number or 'N/A'})",
-        )
-        db.add(log)
-
-        # Update Bean Quantity
-        bean.quantity_kg += quantity
-
-        # Create InboundItem (NEW - Option B)
-        inbound_item = InboundItem(
-            inbound_document_id=new_doc.id,
-            item_order=idx,
-            bean_name=item.bean_name,
-            specification=item.specification,
-            unit=item.unit,
-            quantity=item.quantity,
-            remaining_quantity=item.quantity,  # FIFO Initial State
-            origin=item.origin,
-            unit_price=item.unit_price,
-            supply_amount=item.amount,  # OCRItem.amount maps to supply_amount
-            tax_amount=None,  # Not provided in OCRItem
-            notes=item.note,
-            order_number=item.order_number,  # Multi-order support
-        )
-        db.add(inbound_item)
-
-    db.commit()
-    return {"status": "success", "document_id": new_doc.id, "supplier_id": supplier_id}
+    try:
+        result = inbound_service.confirm_inbound(db, request)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Inbound Confirm Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"서버 오류: {str(e)}")

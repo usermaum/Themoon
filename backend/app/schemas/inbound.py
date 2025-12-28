@@ -65,6 +65,7 @@ class OCRItem(BaseModel):
     unit: Optional[str] = None
     unit_price: Optional[float] = None
     amount: Optional[float] = None
+    total_weight: Optional[float] = None # Added for weight vs quantity distinction
     note: Optional[str] = None
 
     # 매칭 상태 정보 (NEW)
@@ -83,6 +84,14 @@ class AdditionalInfo(BaseModel):
     remarks: Optional[str] = None
 
 
+class OrderGroup(BaseModel):
+    """주문 번호별 그룹 정보"""
+    order_number: str
+    order_date: Optional[str] = None
+    items: List[OCRItem] = []
+    subtotal: float = 0.0
+
+
 class OCRResponse(BaseModel):
     """OCR 분석 결과 (전체 명세서 데이터)"""
 
@@ -99,6 +108,11 @@ class OCRResponse(BaseModel):
     amounts: Optional[AmountsInfo] = None
     items: List[OCRItem] = []
     additional_info: Optional[AdditionalInfo] = None
+
+    # 다중 주문 정보 (Multiple Orders)
+    has_multiple_orders: bool = False
+    total_order_count: int = 0
+    order_groups: List[OrderGroup] = []
 
     # 기존 호환성 유지 (deprecated, 하위 호환성)
     supplier_name: Optional[str] = None
@@ -195,3 +209,9 @@ class PaginatedInboundResponse(BaseModel):
     page: int
     size: int
     total_pages: int
+
+
+class InboundConfirmResponse(BaseModel):
+    status: str
+    document_id: int
+    supplier_id: int
